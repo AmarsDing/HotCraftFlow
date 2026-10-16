@@ -1,0 +1,436 @@
+// 夜间 CSS 变量（Quasar Dark → body.body--dark）；与 UX.md §2.2 / §5.2a 对齐
+// stylelint-disable color-no-hex -- 主题变量定义文件，必须使用 hex 值
+body.body--dark
+  --q-primary: #4DD8E8
+  --q-secondary: #94A3B8
+  --q-accent: var(--color-accent)
+  // Quasar 品牌色暗色版（不覆盖则沿用编译期浅色值，昼夜按钮同色）
+  --q-positive: #3FE0A0
+  --q-negative: #FF5E7A
+  --q-info: #60A5FA
+  --q-warning: #FFAF4D
+  --q-dark: #1E293B
+  // Quasar 静态 Material 调色板映射 → 霓虹暗色 token
+  --color-q-deep-purple: #A78BFA
+  --color-q-purple: #C084FC
+  --color-q-teal: #2DD4BF
+  --color-q-cyan: #22D3EE
+  --color-q-amber: #FFD60A
+  --color-q-orange: #FFAF4D
+  --color-q-deep-orange: #FB923C
+  --canvas-base: #0A1018
+  --glass-surface: rgba(18, 26, 40, 0.68)
+  --glass-surface-hover: rgba(22, 32, 48, 0.78)
+  --glass-border: rgba(77, 216, 232, 0.15)
+  --glass-border-hover: rgba(77, 216, 232, 0.28)
+  --glass-blur-default: 18px
+  --glass-blur-hover: 20px
+  --glass-elevated: rgba(22, 28, 40, 0.78)
+  --glass-blur-elevated: 24px
+  --glass-inner-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(77, 216, 232, 0.04)
+  // 数据密度与时效口径（2026-09-22 气象雷达监控页方案 §5 新增）——
+  // --row-band-h: 指标行统一行高，异常底色块与网格等高以它为基准；
+  // --stale-* 由 utils/metRadar.ts 的 STALE_LABEL_SECONDS/STALE_CRITICAL_SECONDS 对应，供 SASS 兜底引用。
+  --row-band-h: 22px
+  --stale-minutes: 5
+  --stale-critical-minutes: 15
+  --color-accent: #4DD8E8
+  --color-accent-hover: #7AE5F0
+  --color-accent-soft: rgba(77, 216, 232, 0.16)
+  // 楼宇舞台六状态/告警扩展色（2026-08-24 融合：自 .twin-page 作用域提升为暗色全局——
+  // 融合后 StormMatrix/详情抽屉/巡检卡/事件泳道在综合监控大屏渲染，不再处于 .twin-page 作用域；
+  // 值与 scene/materials.ts TWIN_STATUS_COLORS 同源；.twin-page 保留同名同值覆盖，旧页行为不变）
+  --twin-status-critical: #FF5E7A
+  --twin-status-offline: #94A3B8
+  --twin-status-warning: #FFAF4D
+  --twin-status-stale: #FCD34D
+  --twin-status-unknown: #6A7D9A
+  --twin-status-normal: #3FE0A0
+  --twin-status-emergency: #FF3D5E
+  --twin-status-info: #6EA8FF
+  --twin-text-on-bright: #0A1018
+  // Tech Night 排版阶梯（冷蓝灰，替代大面积纯白）
+  --tech-text-primary: #D0DCE8
+  --tech-text-secondary: #94A5BE
+  --tech-text-tertiary: #6A7D9A
+  --tech-text-heading: #E0ECFF
+  --tech-text-muted: #7A8EAA
+  --tech-text-active: #4DD8E8
+  --tech-text-hover: #B8F0FF
+  --tech-text-bright: #ECF4FF
+  // 侧栏 / 列表「未选中」— Quiet Rail（透明底，悬停才提亮，无逐条边框）
+  --sidebar-idle-section: #687A9E
+  --sidebar-idle-text: #9EB2CC
+  --sidebar-idle-icon: #788CA8
+  --sidebar-idle-icon-opacity: 0.88
+  --chat-idle-text: #9EB2CC
+  --chat-idle-label: #687A9E
+  --chat-idle-meta: #7288A4
+  --chat-idle-surface: rgba(22, 32, 48, 0.38)
+  --chat-idle-surface-hover: rgba(28, 40, 58, 0.52)
+  --chat-idle-border: rgba(120, 160, 220, 0.1)
+  --chat-idle-border-hover: rgba(77, 216, 232, 0.16)
+  --color-text-primary: var(--tech-text-primary)
+  --color-text-secondary: var(--tech-text-secondary)
+  --color-text-icon-muted: var(--tech-text-muted)
+  --color-icon-muted: var(--tech-text-muted)
+  --shadow-accent-focus: 0 0 0 3px rgba(77, 216, 232, 0.20)
+  --shadow-warm: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(77, 216, 232, 0.04)
+  --focus-ring-light: 2px solid rgba(77, 216, 232, 0.4)
+  --interaction-surface-hover: rgba(77, 216, 232, 0.08)
+  --color-neon-cyan: #4DD8E8
+  --color-neon-violet: #A855F7
+  --color-success: #3FE0A0
+  --color-warning: #FFAF4D
+  --color-danger: #FF5E7A
+  // ── 告警级别色（alarm level: info/warning/critical/emergency）──
+  --color-alarm-info: #60A5FA
+  --color-alarm-warning: #FFAF4D
+  --color-alarm-critical: #FF5E7A
+  --color-alarm-emergency: #C084FC
+  --color-alarm-info-soft: rgba(96, 165, 250, 0.16)
+  --color-alarm-warning-soft: rgba(255, 175, 77, 0.16)
+  --color-alarm-critical-soft: rgba(255, 94, 122, 0.16)
+  --color-alarm-emergency-soft: rgba(192, 132, 252, 0.16)
+  --nav-bg-dark: rgba(9, 13, 20, 0.55)
+  --nav-blur: 22px
+  --nav-divider-dark: rgba(255, 255, 255, 0.06)
+  --text-xs: 12px
+  --text-sm: 13px
+  --text-base: 14px
+  --text-md: 16px
+  --text-lg: 20px
+  --text-xl: 25px
+  --space-1: 4px
+  --space-2: 8px
+  --space-3: 12px
+  --space-4: 16px
+  --space-5: 20px
+  --space-6: 24px
+  --space-8: 32px
+  --space-12: 48px
+  --space-16: 64px
+  --layout-max-width: 1440px
+  --sidebar-width: 232px
+  --sidebar-mini-width: 64px
+  --sidebar-inset-x: 12px
+  --sidebar-inset-y: 12px
+  --sidebar-radius: 20px
+  --sidebar-bg: rgba(10, 16, 28, 0.58)
+  --sidebar-blur: 20px
+  --sidebar-saturate: 1.2
+  --sidebar-border: rgba(77, 216, 232, 0.14)
+  --sidebar-shadow: var(--glass-inner-highlight), 0 16px 48px rgba(0, 0, 0, 0.32)
+  --sidebar-overlay: linear-gradient(180deg, rgba(77, 216, 232, 0.06) 0%, transparent 46%)
+  --sidebar-padding-x: 10px
+  --sidebar-padding-y: 8px
+  --sidebar-mini-padding-x: 8px
+  --sidebar-item-indent: 16px
+  --sidebar-section-padding: 12px 10px 6px
+  --sidebar-section-color: var(--sidebar-idle-section)
+  --sidebar-item-padding-x: 12px
+  --sidebar-item-padding-y: 7px
+  --sidebar-item-gap: 3px
+  --sidebar-item-radius: 10px
+  --sidebar-item-min-height: 40px
+  --sidebar-item-font-size: 14px
+  --sidebar-section-font-size: 12px
+  --sidebar-item-color: var(--sidebar-idle-text)
+  --sidebar-item-hover-bg: rgba(77, 216, 232, 0.07)
+  --sidebar-item-hover-color: var(--tech-text-primary)
+  --sidebar-item-active-bg: rgba(77, 216, 232, 0.12)
+  --sidebar-item-active-color: var(--tech-text-active)
+  --sidebar-item-active-shadow: inset 3px 0 0 var(--color-accent), 0 0 20px rgba(77, 216, 232, 0.12)
+  --sidebar-icon-size: 20px
+  --sidebar-icon-gap: 12px
+  --sidebar-icon-color: var(--sidebar-idle-icon)
+  --sidebar-icon-hover-color: var(--tech-text-hover)
+  --sidebar-icon-opacity: var(--sidebar-idle-icon-opacity)
+  --sidebar-icon-active-color: var(--color-accent)
+  --color-code-block-bg: rgba(18, 24, 34, 0.45)
+  --color-json-key: #d2a8ff
+  --color-json-string: #7ee787
+  --color-json-number: #79c0ff
+  --color-json-boolean: #ff7b72
+  --color-json-null: #8b949e
+  --shadow-login: 0 22px 50px rgba(0, 0, 0, 0.5), 0 0 32px rgba(77, 216, 232, 0.08)
+  --color-on-accent: #FFFFFF
+  --color-surface-solid: #0F172A
+  --color-surface-soft: #1E293B
+  --color-surface-elevated: #111827
+  --color-border-soft: rgba(148, 163, 184, 0.16)
+  --color-warm-muted-surface: rgba(148, 163, 184, 0.1)
+  --color-link: #93C5FD
+  --color-info: #60A5FA
+  --color-info-soft: rgba(37, 99, 235, 0.18)
+  --color-success-soft: rgba(34, 197, 94, 0.18)
+  --color-danger-soft: rgba(248, 113, 113, 0.18)
+  --color-danger-surface: rgba(248, 113, 113, 0.15)
+  --color-warning-soft: rgba(245, 158, 11, 0.18)
+  --color-text-dark: #E2E8F0
+  --color-text-tertiary: var(--tech-text-tertiary)
+  --color-text-heading: var(--tech-text-heading)
+  --color-accent-blue: #3B82F6
+  --color-accent-blue-soft: rgba(59, 130, 246, 0.16)
+  --color-accent-green: #86EFAC
+  --color-accent-green-soft: rgba(34, 197, 94, 0.18)
+  --gradient-page: linear-gradient(160deg, #0A1018 0%, #121A28 48%, #141E30 100%)
+  --gradient-page-accent: linear-gradient(180deg, rgba(18, 28, 44, 0.96), rgba(14, 22, 36, 0.9))
+  --chat-page-bg: radial-gradient(ellipse 80% 50% at 12% 0%, rgba(77, 216, 232, 0.06), transparent 55%), linear-gradient(165deg, #0A1018 0%, #101828 42%, #141E30 100%)
+  --chat-text-primary: var(--tech-text-primary)
+  --chat-text-secondary: var(--chat-idle-text)
+
+  // Agent tree palette — brighter variants for dark mode
+  --agent-palette-0: #8B7CF7   // purple
+  --agent-palette-1: #FFAF4D   // gold
+  --agent-palette-2: #3FE0A0   // green
+  --agent-palette-3: #FF5E7A   // pink-red
+  --agent-palette-4: #FFAF4D   // orange
+  --agent-palette-5: #93C5FD   // light blue
+  --agent-palette-6: #A78BFA   // violet
+  --agent-palette-7: #F472B6   // rose
+  --agent-palette-8: #34D399   // emerald
+  --chat-text-heading: var(--tech-text-heading)
+  --chat-text-muted: var(--chat-idle-meta)
+  --chat-text-label: var(--chat-idle-label)
+  --chat-text-active: var(--tech-text-active)
+  --chat-canvas-dark: linear-gradient(180deg, rgba(14, 22, 36, 0.82) 0%, rgba(16, 26, 42, 0.94) 100%)
+  --chat-canvas-fade-to: rgba(15, 23, 42, 0.92)
+  --color-page-tint: #0F172A
+  --color-page-tint-alt: #111827
+  --color-page-tint-blue: #0F172A
+  --color-page-tint-cool: #1E293B
+  --color-page-tint-warm: #1A1F2E
+  --color-status-info-bg: rgba(37, 99, 235, 0.18)
+  --color-status-success-bg: rgba(34, 197, 94, 0.18)
+  --color-status-warning-bg: rgba(245, 158, 11, 0.18)
+  --color-status-danger-bg: rgba(248, 113, 113, 0.18)
+  --color-status-warning-text: #FBBF24
+  --color-status-warning-text-dark: #FCD34D
+  --color-status-info-text: #93C5FD
+  --color-status-info-text-light: #BFDBFE
+  --color-status-warning-bg-alt: rgba(245, 158, 11, 0.15)
+  --color-status-warning-bg-warm: rgba(245, 158, 11, 0.12)
+  --color-status-info-bg-alt: rgba(37, 99, 235, 0.15)
+  --color-status-blue-bg: rgba(37, 99, 235, 0.12)
+  --color-text-slate-700: #CBD5E1
+  --color-text-slate-600: #94A3B8
+  --color-text-slate-500: #64748B
+  --color-text-slate-400: #475569
+  --color-text-slate-300: #334155
+  --color-text-gray-700: #CBD5E1
+  --color-text-gray-600: #9CA3AF
+  --color-text-gray-500: #6B7280
+  --color-text-gray-400: #4B5563
+  --color-text-gray-300: #374151
+  --color-text-gray-800: #F1F5F9
+  --color-text-gray-600-alt: #94A3B8
+  --color-accent-indigo: #818CF8
+  --color-accent-indigo-light: #A5B4FC
+  --color-accent-indigo-lighter: #C7D2FE
+  --color-accent-indigo-dark: #6366F1
+  --color-accent-indigo-darker: #4F46E5
+  --color-accent-cyan: #22D3EE
+  --color-accent-cyan-soft: rgba(34, 211, 238, 0.35)
+  --color-accent-amber: #FBBF24
+  --color-accent-amber-light: #FDE68A
+  --color-accent-amber-dark: #FCD34D
+  --color-accent-orange-light: #FDBA74
+  --color-accent-orange-bg: rgba(253, 186, 116, 0.2)
+  --color-accent-green-light: #4ADE80
+  --color-accent-green-bright: rgba(74, 222, 128, 0.2)
+  --color-accent-blue-light: #93C5FD
+  --color-accent-blue-bright: rgba(147, 197, 253, 0.2)
+  --color-bubble-accent: #818CF8
+  --color-bubble-accent-dark: #6366F1
+  --color-bubble-gradient: linear-gradient(135deg, #4338CA 0%, #6366F1 50%, #818CF8 100%)
+  --color-bubble-gradient-dark: linear-gradient(135deg, #3730A3 0%, #4338CA 55%, #4F46E5 100%)
+  --color-quasar-positive: #3FE0A0
+  --color-quasar-negative: #FF5E7A
+  --color-quasar-warning: #FFAF4D
+  --color-quasar-grey: #9CA3AF
+  --color-cream-text: var(--tech-text-primary)
+  --color-cream-text-muted: var(--tech-text-secondary)
+  --color-cream-text-light: var(--tech-text-muted)
+  --color-cream-accent: var(--tech-text-heading)
+  --color-cream-accent-dark: #CBD5E1
+  --color-danger-text: #FCA5A5
+  --color-gradient-blue-soft: linear-gradient(180deg, rgba(37, 99, 235, 0.15), rgba(37, 99, 235, 0.08))
+  --color-gradient-red-soft: linear-gradient(180deg, rgba(248, 113, 113, 0.15), rgba(248, 113, 113, 0.08))
+  --color-gradient-warm: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(37, 99, 235, 0.08))
+  --color-gradient-warm-alt: linear-gradient(180deg, rgba(245, 158, 11, 0.12), rgba(37, 99, 235, 0.08))
+  --color-interaction-surface-alt: rgba(148, 163, 184, 0.1)
+  --gradient-entity-page-dark: radial-gradient(circle at 86% 0%, rgba(59, 130, 246, 0.16), transparent 30%), linear-gradient(160deg, var(--canvas-base) 0%, var(--color-surface-elevated) 48%, var(--color-surface-solid) 100%)
+  --gradient-entity-page-dark-warm: radial-gradient(circle at 86% 0%, rgba(59, 130, 246, 0.16), transparent 30%), radial-gradient(circle at 10% 16%, rgba(245, 158, 11, 0.1), transparent 24%), linear-gradient(160deg, var(--canvas-base) 0%, var(--color-surface-elevated) 48%, var(--color-surface-solid) 100%)
+  --chat-text-muted: color-mix(in srgb, var(--tech-text-muted) 88%, transparent)
+  --chat-pending-item-bg: rgba(15, 23, 42, 0.35)
+  --chat-header-bg-top: var(--chat-header-bg-top-dark)
+  --chat-header-bg-bottom: var(--chat-header-bg-bottom-dark)
+  --chat-header-bg-bottom-dark-alt: rgba(15, 23, 42, 0.32)
+  --chat-side-toggle-width: 32px
+  --chat-side-left-width: 280px
+  --chat-side-right-width: 360px
+  --chart-color-system-prompt: #FBBF24
+  --chart-color-skills: #A78BFA
+  --chart-color-memory: #22D3EE
+  --chart-color-intent-pass: #FCD34D
+  --chart-color-session-summary: #34D399
+  --chart-color-tool-results: #F87171
+  --chart-color-history: #9CA3AF
+  --chart-color-user-message: #F472B6
+  --chat-danger-faint-bg: rgba(239, 68, 68, 0.10)
+  --chat-status-danger-bg: rgba(255, 94, 122, 0.08)
+  --chat-status-warning-bg: rgba(255, 175, 77, 0.1)
+  --chat-status-warning-border: rgba(255, 175, 77, 0.3)
+  --chat-status-success-bg: rgba(63, 224, 160, 0.1)
+  --chat-status-accent-bg: rgba(77, 216, 232, 0.1)
+  --chat-accent-bg-strong: rgba(0, 229, 255, 0.12)
+  --chat-accent-border-strong: rgba(0, 229, 255, 0.3)
+  --chat-indigo-shadow: rgba(129, 140, 248, 0.25)
+  --chat-info-soft-bg: rgba(56, 189, 248, 0.12)
+  --chat-surface-muted-92: rgba(30, 41, 59, 0.92)
+  --chat-avatar-ring: rgba(30, 41, 59, 0.95)
+  --chat-avatar-shadow: rgba(0, 0, 0, 0.5)
+  --chat-table-border: rgba(148, 163, 184, 0.2)
+  --chat-scroll-shadow: rgba(0, 0, 0, 0.32)
+  --chat-text-slate-95: rgba(148, 163, 184, 0.95)
+  --chat-text-slate-92: rgba(148, 163, 184, 0.92)
+  --chat-border-slate-28: rgba(148, 163, 184, 0.28)
+  --chat-text-copy-btn: rgba(226, 232, 240, 0.82)
+  --color-diff-removed: #f87171
+  --color-diff-removed-bg: rgba(248, 113, 113, 0.12)
+  --color-diff-added: #4ade80
+  --color-diff-added-bg: rgba(74, 222, 128, 0.12)
+  --table-scrollbar-thumb: rgba(148, 163, 184, 0.16)
+  --table-scrollbar-thumb-hover: rgba(148, 163, 184, 0.32)
+  // 全局统一滚动条（webkit + q-scroll-area 共用）
+  --app-scrollbar-thumb: rgba(148, 163, 184, 0.20)
+  --app-scrollbar-thumb-hover: rgba(148, 163, 184, 0.38)
+  --toggle-track-off: rgba(148, 163, 184, 0.18)
+  --toggle-track-on: color-mix(in srgb, var(--color-accent) 68%, var(--glass-surface))
+  --toggle-thumb-on: var(--color-accent)
+  --toggle-label-color: var(--color-text-primary)
+  // ── Overview / Monitor 中性色 token（暗色） ──
+  --overview-neutral-bg: rgba(255, 255, 255, 0.025)
+  --overview-neutral-bg-alt: rgba(255, 255, 255, 0.03)
+  --overview-neutral-border: rgba(255, 255, 255, 0.05)
+  --overview-neutral-border-alt: rgba(255, 255, 255, 0.06)
+  --overview-neutral-border-hover: rgba(255, 255, 255, 0.10)
+  --overview-neutral-border-hover-alt: rgba(255, 255, 255, 0.12)
+  --overview-neutral-bg-icon: rgba(255, 255, 255, 0.06)
+  --overview-neutral-bg-bar: rgba(255, 255, 255, 0.06)
+  --overview-neutral-border-chip: rgba(255, 255, 255, 0.06)
+  --overview-neutral-border-table: rgba(255, 255, 255, 0.03)
+  --overview-danger-border: rgba(255, 94, 122, 0.45)
+  --overview-warning-border: rgba(255, 175, 77, 0.55)
+  --overview-warn-icon-bg: rgba(240, 155, 84, 0.12)
+  --overview-danger-icon-bg: rgba(229, 92, 92, 0.10)
+  --overview-field-bg: rgba(30, 41, 59, 0.40)
+  --overview-shadow-clickable: 0 4px 12px rgba(0, 0, 0, 0.3)
+  --overview-accent-glow: rgba(77, 216, 232, 0.13)
+  --overview-accent-glow-soft: rgba(77, 216, 232, 0.06)
+  --overview-accent-focus-ring: 0 0 0 2px rgba(77, 216, 232, 0.15)
+  --overview-accent-icon-bg: rgba(77, 216, 232, 0.14)
+  // ── Agent avatar palette (dark-optimized) ──
+  --avatar-color-1: #4DD8E8
+  --avatar-color-2: #A78BFA
+  --avatar-color-3: #FCD34D
+  --avatar-color-4: #6EE7B7
+  --avatar-color-5: #FB7185
+  --avatar-color-6: #C084FC
+  // ── 拓扑画布 token（TopologyGraph 编辑器/查看页/大屏共用；暗色霓虹钢青）──
+  --topo-grid-dot: rgba(77, 216, 232, 0.16)
+  --topo-link: #4A6B94
+  --topo-link-label: #93AFD2
+  --topo-canvas-bg: radial-gradient(ellipse 130% 100% at 50% 20%, #101C30 0%, #0A1018 62%)
+  // ── 场景树节点类型色（3D场景管理左侧场景树图标徽章，夜间霓虹）──
+  --scene-tree-all: #4DD8E8
+  --scene-tree-airport: #4DD8E8
+  --scene-tree-server-room: #FB923C
+  --scene-tree-radar: #C084FC
+  --scene-tree-terminal: #2DD4BF
+  --scene-tree-outdoor: #4ADE80
+  --scene-tree-topology: #818CF8
+  --scene-tree-default: #94A3B8
+  // ── ECharts 统一图表 token（chartTheme.ts 读取，全站图表强制走此色板）──
+  --chart-series-1: #4DD8E8
+  --chart-series-2: #A855F7
+  --chart-series-3: #3FE0A0
+  --chart-series-4: #FFAF4D
+  --chart-series-5: #FF5E7A
+  --chart-series-6: #60A5FA
+  --chart-series-7: #FACC15
+  --chart-series-8: #F472B6
+  --chart-axis-label: #94A5BE
+  --chart-axis-line: rgba(148, 165, 190, 0.35)
+  --chart-splitline: rgba(148, 165, 190, 0.12)
+  --chart-tooltip-bg: rgba(18, 26, 40, 0.92)
+  --chart-tooltip-border: rgba(77, 216, 232, 0.25)
+  --chart-axis-pointer: #22304A
+  --chart-pie-border: #0A1018
+  --chart-glow: rgba(77, 216, 232, 0.35)
+  // ── InsightCard 语义 token（EP-FE-03 收口）──
+  --insight-critical-bar: linear-gradient(180deg, #FF5E7A, #FF3D5E)
+  --insight-warning-bar: linear-gradient(180deg, #FFAF4D, #FF9500)
+  --insight-info-bar: linear-gradient(180deg, #60A5FA, #3B82F6)
+  --insight-critical-icon: #FCA5A5
+  --insight-warning-icon: #FDE68A
+  --insight-info-icon: #93C5FD
+  --insight-critical-icon-bg: rgba(248, 113, 113, 0.14)
+  --insight-warning-icon-bg: rgba(245, 158, 11, 0.14)
+  --insight-info-icon-bg: rgba(59, 130, 246, 0.14)
+  --insight-pattern-text: #C4B5FD
+  --insight-pattern-bg: rgba(139, 92, 246, 0.10)
+  --insight-pattern-border: rgba(139, 92, 246, 0.35)
+  --insight-critical-suggestion-bg: rgba(248, 113, 113, 0.08)
+  --insight-critical-suggestion-border: rgba(248, 113, 113, 0.55)
+  --insight-warning-suggestion-bg: rgba(245, 158, 11, 0.08)
+  --insight-warning-suggestion-border: rgba(245, 158, 11, 0.55)
+  --insight-info-suggestion-bg: rgba(59, 130, 246, 0.08)
+  --insight-info-suggestion-border: rgba(59, 130, 246, 0.55)
+  // ── Liquid Glass 液体玻璃材质（顶栏/侧栏增强，2026-08 新增；仅新增不改既有 token）──
+  --liquid-blur: 26px
+  --liquid-saturate: 1.7
+  --liquid-header-bg: linear-gradient(120deg, rgba(20, 30, 48, 0.62) 0%, rgba(10, 16, 28, 0.46) 55%, rgba(16, 24, 40, 0.58) 100%)
+  --liquid-header-border: rgba(77, 216, 232, 0.20)
+  --liquid-header-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 14px 36px rgba(0, 0, 0, 0.38), 0 0 24px rgba(77, 216, 232, 0.07)
+  --liquid-header-sheen: linear-gradient(105deg, transparent 34%, rgba(77, 216, 232, 0.10) 48%, transparent 64%)
+  --liquid-sidebar-bg: linear-gradient(165deg, rgba(14, 22, 38, 0.62) 0%, rgba(9, 14, 24, 0.46) 52%, rgba(13, 20, 34, 0.56) 100%)
+  --liquid-sidebar-border: rgba(77, 216, 232, 0.18)
+  --liquid-sidebar-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 18px 50px rgba(0, 0, 0, 0.42), 0 0 28px rgba(77, 216, 232, 0.08)
+  --liquid-sidebar-sheen: linear-gradient(150deg, rgba(77, 216, 232, 0.09) 0%, transparent 36%), radial-gradient(ellipse 130% 55% at 0% 0%, rgba(77, 216, 232, 0.07) 0%, transparent 60%)
+  --liquid-item-hover-bg: linear-gradient(120deg, rgba(77, 216, 232, 0.10), rgba(168, 85, 247, 0.05))
+  --liquid-item-hover-color: var(--tech-text-hover)
+  --liquid-item-hover-border: rgba(77, 216, 232, 0.18)
+  --liquid-item-active-bg: linear-gradient(120deg, rgba(77, 216, 232, 0.17) 0%, rgba(77, 216, 232, 0.06) 100%)
+  --liquid-item-active-border: rgba(77, 216, 232, 0.32)
+  --liquid-item-active-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 3px 0 0 var(--color-accent), 0 0 22px rgba(77, 216, 232, 0.18)
+  --liquid-divider: linear-gradient(90deg, transparent, rgba(77, 216, 232, 0.24), transparent)
+  --liquid-idle-text: #A9BEDC
+  --liquid-idle-icon: #88A0C0
+  --liquid-active-text-glow: 0 0 12px rgba(77, 216, 232, 0.45)
+  --liquid-icon-glow: drop-shadow(0 0 5px rgba(77, 216, 232, 0.55))
+
+// ── EP-FE-03 零散色收口（2026-08）──
+// 恒深/常量场景零散色（昼夜同值），挂 :root 全局生效；消费处一律 var(--*)
+:root
+  // 大屏静态文本渐变起点（TextStatic：暗色画布 / 亮色画布）
+  --screen-text-grad-from: #9FD4FF
+  --screen-text-grad-from-light: #2B5F9E
+  // 雷达通知配置页状态灯（默认 / 关闭 恒灰）
+  --radar-status-idle: #555555
+  --radar-status-off: #777777
+  // 卫星监测页（恒深）：页底渐变 + 准时到达时隙绿
+  --satellite-page-bg: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%)
+  --satellite-slot-ontime: #00e676
+  // 仪表盘画布底（DashboardConfigPage/DashboardViewPage 共用，亮 / 暗画布）
+  --dash-canvas-bg-light: #F5F7FA
+  --dash-canvas-bg-dark: #0B1220
+  // 仪表盘部件状态点（在线绿 / 离线灰）
+  --dash-dot-online: #52C41A
+  --dash-dot-offline: #8C8C8C
+  // 仪表盘部件库琥珀徽章（DashboardPalette --amber，旧 Quasar warning 等值迁移）
+  --dash-palette-amber: #F2C037
+  // 拓扑大屏画布（dark 模式恒深，与昼夜主题无关）
+  --topo-canvas-stage: radial-gradient(ellipse 120% 100% at 50% 30%, rgba(23, 38, 64, 0.55), rgba(6, 12, 24, 0.72) 75%)
+  --topo-grid-dot-stage: rgba(77, 216, 232, 0.16)

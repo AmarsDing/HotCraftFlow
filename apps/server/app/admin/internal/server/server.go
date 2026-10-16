@@ -1,0 +1,17 @@
+//go:build wireinject
+// +build wireinject
+
+package server
+
+import (
+	"github.com/google/wire"
+)
+
+// ProviderSet is server providers.
+var ProviderSet = wire.NewSet(
+	NewRESTServer,
+	NewAsynqServer,
+	NewTaskScheduler,
+	NewTaskWorker,
+	NewRegistrar,
+)

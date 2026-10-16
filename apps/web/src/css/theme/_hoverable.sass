@@ -1,0 +1,35 @@
+// 可点击容器（瓷贴 / 小区块 / 行）的统一悬停语言 —— 全站单一定义。
+//   用法（组件内）：@use '../../css/theme/hoverable' as *，给元素加 `hoverable` 类。
+//   悬停表现：accent 45% 描边 + accent 8% 底色（2026-09-22 态势总览 UI 优化定稿，见气象雷达指标格）。
+// 说明（为什么收敛）：态势总览此前并存三种悬停写法 ——
+//   ① `--color-primary` 40% 描边 + 14% 投影（采集三态/网络监控/到港来源/值班人条）
+//   ② accent 45% 描边 + accent 8% 底色（气象雷达核心指标格）
+//   ③ 仅位移或仅底色（告警瓷贴 translateY + 黑投影、各类文本行）
+//   其中 `--color-primary` 在本项目**从未定义**（Quasar 品牌色是 `--q-primary`），
+//   该声明整条失效，hover 视觉退化为「无变化」——鼠标放上去像没反应。故统一到实色 accent 方案。
+//
+// 分工：整块「容器级」可点击元素用本类；纯文本行/图标的轻量反馈仍用
+//   `background: color-mix(in srgb, var(--color-accent) 8%, transparent)`（同色同量，视觉一致）。
+.hoverable
+  transition: border-color 0.15s ease, background 0.15s ease
+  &:hover
+    border-color: color-mix(in srgb, var(--color-accent) 45%, var(--glass-border))
+    background: color-mix(in srgb, var(--color-accent) 8%, transparent)
+
+// 变色不可行（无描边语义）的「轻量行」：仅 accent 8% 底色
+.hoverable-row
+  transition: background 0.15s ease
+  &:hover
+    background: color-mix(in srgb, var(--color-accent) 8%, transparent)
+
+// 带语义左侧色条（border-left 3px 状态条）的瓷贴：只提亮底色，不动 border-color
+//   —— 否则 accent 描边会把状态色条整条覆盖（告警分级瓷贴 / 里程碑等）。
+.hoverable-tint
+  transition: background 0.15s ease
+  &:hover
+    background: color-mix(in srgb, var(--color-accent) 8%, transparent)
+
+// 深色下补一层霓虹外发光，与 dash-card 的夜间增强待遇一致
+body.body--dark
+  .hoverable:hover
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 22%, transparent), 0 4px 14px color-mix(in srgb, var(--color-accent) 12%, transparent)

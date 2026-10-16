@@ -1,0 +1,240 @@
+// 数字孪生大屏（/visual-twin）作用域 token（05 文档 §14.1 Tech Night）。
+// 大屏恒定深色科幻风：在 .twin-page 作用域内将玻璃/文字 token 锁定为 Tech Night 值，
+// 与全局昼夜主题解耦；六状态 DOM 色与 3D 侧 materials.ts 同源同值。
+.twin-page
+  // 玻璃与文字 token（锁定 Tech Night，值同 _css-vars-dark）
+  --glass-surface: rgba(18, 26, 40, 0.68)
+  --glass-surface-hover: rgba(22, 32, 48, 0.78)
+  --glass-border: rgba(77, 216, 232, 0.15)
+  --glass-border-hover: rgba(77, 216, 232, 0.28)
+  --glass-blur-default: 18px
+  --glass-elevated: rgba(22, 28, 40, 0.78)
+  --color-accent: #4DD8E8
+  --color-accent-hover: #7AE5F0
+  --color-text-primary: #D0DCE8
+  --color-text-heading: #E0ECFF
+  --color-text-secondary: #94A5BE
+  --color-text-tertiary: #6A7D9A
+  // 六状态 DOM 色（§14.1，与 scene/materials.ts TWIN_STATUS_COLORS 同值）
+  --twin-status-critical: #FF5E7A
+  --twin-status-offline: #94A3B8
+  --twin-status-warning: #FFAF4D
+  --twin-status-stale: #FCD34D
+  --twin-status-unknown: #6A7D9A
+  --twin-status-normal: #3FE0A0
+  // 告警扩展级（emergency 红闪 / info 蓝）与亮状态底上的深色文字
+  --twin-status-emergency: #FF3D5E
+  --twin-status-info: #6EA8FF
+  --twin-text-on-bright: #0A1018
+  // 画布底渐变（§14.1）
+  --twin-page-bg: linear-gradient(160deg, #0A1018 0%, #121A28 48%, #141E30 100%)
+
+// 全息引线标签芯片（2026-07-30 全息设计 §4.4：glass chip + i18n 键值行；
+// DOM 由 HologramLabelLayer 经 CSS2DRenderer 挂载，pointer-events 由容器层关闭）
+.twin-holo-chip
+  min-width: 148px
+  padding: 10px 12px
+  border-radius: 12px
+  background: var(--glass-elevated)
+  border: 1px solid var(--glass-border)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent) 18%, transparent)
+  transform: translate(0, -100%)
+  pointer-events: none
+
+.twin-holo-chip__title
+  font-size: 13px
+  font-weight: 700
+  color: var(--color-text-heading)
+  font-family: ui-monospace, Consolas, monospace
+  letter-spacing: 0.4px
+
+.twin-holo-chip__subtitle
+  margin-top: 2px
+  font-size: 11px
+  color: var(--color-text-secondary)
+
+.twin-holo-chip__row
+  display: flex
+  justify-content: space-between
+  gap: 16px
+  margin-top: 5px
+  font-size: 11px
+  line-height: 1.4
+
+.twin-holo-chip__key
+  color: var(--color-text-tertiary)
+
+.twin-holo-chip__value
+  font-weight: 600
+  color: var(--color-accent)
+  font-family: ui-monospace, Consolas, monospace
+
+.twin-holo-chip__value--stale
+  color: var(--twin-status-stale)
+  font-weight: 400
+
+// 通用选中跟随标签（v1.3 §5.3：设备名称 + 状态徽章 + 关键指标一行；标签背景色 = 六状态色）
+// DOM 由 SelectionLabelLayer 经 CSS2DRenderer 挂载，pointer-events 由容器层关闭
+.twin-sel-chip
+  min-width: 132px
+  padding: 8px 10px
+  border-radius: 10px
+  border: 1px solid var(--glass-border)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+  transform: translate(0, -120%)
+  pointer-events: none
+
+.twin-sel-chip--critical
+  background: color-mix(in srgb, var(--twin-status-critical) 26%, rgba(16, 32, 52, 0.86))
+  border-color: color-mix(in srgb, var(--twin-status-critical) 55%, transparent)
+.twin-sel-chip--offline
+  background: color-mix(in srgb, var(--twin-status-offline) 22%, rgba(16, 32, 52, 0.86))
+  border-color: color-mix(in srgb, var(--twin-status-offline) 45%, transparent)
+.twin-sel-chip--warning
+  background: color-mix(in srgb, var(--twin-status-warning) 24%, rgba(16, 32, 52, 0.86))
+  border-color: color-mix(in srgb, var(--twin-status-warning) 50%, transparent)
+.twin-sel-chip--stale
+  background: color-mix(in srgb, var(--twin-status-stale) 22%, rgba(16, 32, 52, 0.86))
+  border-color: color-mix(in srgb, var(--twin-status-stale) 45%, transparent)
+.twin-sel-chip--unknown
+  background: color-mix(in srgb, var(--twin-status-unknown) 24%, rgba(16, 32, 52, 0.86))
+  border-color: color-mix(in srgb, var(--twin-status-unknown) 45%, transparent)
+.twin-sel-chip--normal
+  background: color-mix(in srgb, var(--twin-status-normal) 20%, rgba(16, 32, 52, 0.86))
+  border-color: color-mix(in srgb, var(--twin-status-normal) 42%, transparent)
+
+.twin-sel-chip__head
+  display: flex
+  align-items: center
+  justify-content: space-between
+  gap: 10px
+
+.twin-sel-chip__title
+  font-size: 12px
+  font-weight: 700
+  color: var(--color-text-heading)
+  font-family: ui-monospace, Consolas, monospace
+  letter-spacing: 0.3px
+
+.twin-sel-chip__badge
+  flex-shrink: 0
+  padding: 1px 7px
+  border-radius: 999px
+  font-size: 10px
+  font-weight: 600
+  line-height: 1.5
+  color: var(--twin-text-on-bright)
+
+.twin-sel-chip__badge--critical
+  background: var(--twin-status-critical)
+.twin-sel-chip__badge--offline
+  background: var(--twin-status-offline)
+.twin-sel-chip__badge--warning
+  background: var(--twin-status-warning)
+.twin-sel-chip__badge--stale
+  background: var(--twin-status-stale)
+.twin-sel-chip__badge--unknown
+  background: var(--twin-status-unknown)
+.twin-sel-chip__badge--normal
+  background: var(--twin-status-normal)
+
+.twin-sel-chip__metrics
+  display: flex
+  align-items: center
+  gap: 6px
+  margin-top: 5px
+  font-size: 11px
+  line-height: 1.4
+  font-family: ui-monospace, Consolas, monospace
+
+.twin-sel-chip__sep
+  color: var(--color-text-tertiary)
+
+.twin-sel-chip__metric
+  font-weight: 600
+  color: var(--color-accent)
+
+.twin-sel-chip__metric--stale
+  color: var(--twin-status-stale)
+  font-weight: 400
+
+// ── 3D 巡检场景恒深色 token（room-3d / rack-3d / device-3d HUD 共用，2026-08 EP-FE-03 收口）──
+// 场景页恒深色，与昼夜主题解耦故挂 :root；值为历史硬编码等值迁移，视觉零变化
+:root
+  // 背景与边框
+  --scene3d-bg-deep: #04060B
+  --scene3d-bg-panel: #04121A
+  --scene3d-bg-card: #1A2026
+  --scene3d-border: #333C44
+  --scene3d-border-bright: #3D5A70
+  // 文字亮度阶梯（蓝白）
+  --scene3d-text-bright: #EAFCFF
+  --scene3d-text-title: #7FD8FF
+  --scene3d-text-primary: #CFE6F5
+  --scene3d-text-value: #BFEEFF
+  --scene3d-text-secondary: #9FD0EA
+  --scene3d-text-muted: #5F89A5
+  --scene3d-text-dim: #4A6A80
+  // 文字补充色（按用途语义化；单次出现的边缘色同享 token，不归并改色）
+  --scene3d-text-hover: #DFF4FF
+  --scene3d-text-data: #D8F2FF
+  --scene3d-text-key: #7FA8C8
+  --scene3d-text-empty: #7FA8C0
+  --scene3d-text-close: #5F7C90
+  --scene3d-text-stale: #6A7D9A
+  --scene3d-text-offline: #8A98A5
+  --scene3d-text-soft: #7D9DB5
+  --scene3d-text-hint: #3F5A70
+  --scene3d-text-loading: #58B6E8
+  --scene3d-text-caption: #5F8AA5
+  --scene3d-text-spark: #B0D4E8
+  --scene3d-text-panel: #6FC4EE
+  --scene3d-text-hero: #E0F2FE
+  --scene3d-text-hero-label: #6B9BB5
+  --scene3d-text-port-title: #BFEAFF
+  --scene3d-text-port: #9DC3DA
+  --scene3d-text-port-label: #557183
+  // 强调青阶梯
+  --scene3d-accent: #46C8FF
+  --scene3d-accent-bright: #8FE3FF
+  --scene3d-accent-title: #D8F4FF
+  --scene3d-accent-value: #35E0FF
+  --scene3d-accent-deep: #1A73FF
+  // 状态色
+  --scene3d-ok: #2DFFA0
+  --scene3d-ok-deep: #00E659
+  --scene3d-ok-bright: #7DFFCA
+  --scene3d-ok-teal: #2DD4BF
+  --scene3d-danger: #FF5F6B
+  --scene3d-critical: #FF1419
+  --scene3d-danger-soft: #FF7B84
+  --scene3d-danger-text: #FFB9BF
+  --scene3d-danger-bright: #F87171
+  --scene3d-danger-vivid: #EF4444
+  --scene3d-danger-dim: #8A6A70
+  --scene3d-danger-muted: #9A7A80
+  --scene3d-warning: #FFB020
+  --scene3d-warning-soft: #FFD479
+  --scene3d-warning-deep: #FF8C0D
+  --scene3d-warning-bright: #FBBF24
+  // 端口点与徽章（device-3d 指标面板 Tailwind 系等值迁移）
+  --scene3d-port-up: #00D4FF
+  --scene3d-port-down: #334155
+  --scene3d-port-down-border: #475569
+  --scene3d-port-unknown: #1E293B
+  --scene3d-badge-offline: #94A3B8
+  --scene3d-badge-unknown: #64748B
+  // 告警红渐变阶梯（HoloLeaderCard 全息卡片等；-800 与 --scene3d-danger 同值，语义分属）
+  --scene3d-danger-000: #FFFFFF
+  --scene3d-danger-050: #FFE9EB
+  --scene3d-danger-100: #FFDFE2
+  --scene3d-danger-200: #FFC4C9
+  --scene3d-danger-300: #FFB3B9
+  --scene3d-danger-400: #FF9AA2
+  --scene3d-danger-500: #FF8A95
+  --scene3d-danger-600: #FF8089
+  --scene3d-danger-700: #FF6B75
+  --scene3d-danger-800: #FF5F6B

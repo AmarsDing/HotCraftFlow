@@ -1,0 +1,247 @@
+// ── 综合态势大屏：液态玻璃材质 + 组件三态（综合态势大屏开发文档 §5.2）──
+// 层级：L0 画布背景（.screen-canvas）→ L1 液态玻璃面板（.glass-panel）→ L2 内容 → L3 光效点缀。
+// 昼夜分叉沿用 body:not(.body--dark) / body.body--dark；
+// 大屏查看页可强制画布主题（与 body 解耦）：.screen-theme-dark / .screen-theme-light 祖先类优先。
+// 性能分级：L1 主面板 blur(14px)；L2 次面板 .glass-panel--l2 blur(8px)；
+// 屏级性能模式 .screen-perf 全局关 blur 保留渐变描边；@supports 不支持时降级纯色半透明。
+
+// ── 文件内私有色值（无全局 token 等值项；颜色 token 门禁 EP-FE-03 收敛落点）──
+$sg-canvas-glow-dark: #0d1d3f
+$sg-canvas-dark-start: #050b1a
+$sg-canvas-dark-mid: #0a1530
+$sg-canvas-dark-end: #081226
+$sg-canvas-glow-light: #dce8fa
+$sg-canvas-light-start: #eef3fb
+$sg-canvas-light-mid: #e2eaf6
+$sg-canvas-light-end: #e9f0f9
+$sg-mask-opaque: #fff
+
+// ── 屏级色彩 token（v2.1 科技感增强：更深邃背景 + 更强发光对比）──
+body.body--dark, .screen-theme-dark
+  --screen-primary: #00d4ff
+  --screen-secondary: #7c4dff
+  --screen-accent: #ff6b35
+  --screen-success: #00e5a0
+  --screen-critical: #ff4d6d
+  --screen-emergency: #b388ff
+  --screen-major: #ffab40
+  --screen-minor: #ffd740
+  --glass-bg: rgba(8, 16, 40, 0.65)
+  --glass-bg-l2: rgba(8, 16, 40, 0.45)
+  --glass-border: rgba(0, 212, 255, 0.35)
+  --glass-highlight: rgba(0, 212, 255, 0.12)
+  --glass-text: rgba(230, 245, 255, 0.95)
+  --glass-text-dim: rgba(160, 200, 240, 0.65)
+  --glass-glow: rgba(0, 212, 255, 0.15)
+
+// ── 屏级动效 token（ui-animation 规范：命名曲线，禁用通用 ease）──
+// enter = 入场/hover 变换（先快后慢果断收尾）；move = 滑动/抽屉/面板位移
+.screen-canvas, .screen-theme-dark, .screen-theme-light
+  --screen-ease-enter: cubic-bezier(0.22, 1, 0.36, 1)
+  --screen-ease-move: cubic-bezier(0.25, 1, 0.5, 1)
+
+body:not(.body--dark), .screen-theme-light
+  --screen-primary: #2b7fd4
+  --screen-secondary: #6a4de0
+  --screen-success: #0aa97c
+  --screen-critical: #e5395a
+  --screen-emergency: #8f5cf0
+  --screen-major: #f09819
+  --screen-minor: #d9a816
+  --glass-bg: rgba(255, 255, 255, 0.55)
+  --glass-bg-l2: rgba(255, 255, 255, 0.4)
+  --glass-border: rgba(60, 110, 180, 0.2)
+  --glass-highlight: rgba(255, 255, 255, 0.5)
+  --glass-text: rgba(20, 34, 56, 0.92)
+  --glass-text-dim: rgba(40, 60, 90, 0.55)
+
+// 强制画布主题优先级高于 body（查看页 theme=dark 而 body 为亮色等组合）
+.screen-theme-dark
+  --glass-bg: rgba(18, 32, 64, 0.45)
+  --glass-bg-l2: rgba(18, 32, 64, 0.32)
+  // 底部工具坞底色（2026-08-14 UI 专项：0.55 透明度磨砂、无边框无光效）
+  --glass-bg-dock: rgba(18, 32, 64, 0.55)
+  --glass-border: rgba(120, 180, 255, 0.22)
+  --glass-highlight: rgba(255, 255, 255, 0.08)
+  --glass-text: rgba(234, 242, 255, 0.92)
+  --glass-text-dim: rgba(180, 200, 230, 0.6)
+
+.screen-theme-light
+  --glass-bg: rgba(255, 255, 255, 0.55)
+  --glass-bg-l2: rgba(255, 255, 255, 0.4)
+  --glass-bg-dock: rgba(255, 255, 255, 0.55)
+  --glass-border: rgba(60, 110, 180, 0.2)
+  --glass-highlight: rgba(255, 255, 255, 0.5)
+  --glass-text: rgba(20, 34, 56, 0.92)
+  --glass-text-dim: rgba(40, 60, 90, 0.55)
+
+// ── L0 画布背景：深空渐变 + 细网格 ──
+.screen-canvas
+  background: radial-gradient(ellipse 120% 80% at 50% -10%, $sg-canvas-glow-dark 0%, transparent 60%), linear-gradient(160deg, $sg-canvas-dark-start 0%, $sg-canvas-dark-mid 55%, $sg-canvas-dark-end 100%)
+
+.screen-canvas--grid
+  background-image: linear-gradient(rgba(120, 180, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(120, 180, 255, 0.05) 1px, transparent 1px)
+  background-size: 48px 48px
+
+.screen-theme-light .screen-canvas, body:not(.body--dark) .screen-canvas:not(.screen-canvas--force-dark)
+  background: radial-gradient(ellipse 120% 80% at 50% -10%, $sg-canvas-glow-light 0%, transparent 60%), linear-gradient(160deg, $sg-canvas-light-start 0%, $sg-canvas-light-mid 55%, $sg-canvas-light-end 100%)
+
+// ── L1 液态玻璃面板 ──
+=glass-panel-base($blur)
+  position: relative
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02) 40%, rgba(120, 180, 255, 0.05)), var(--glass-bg)
+  backdrop-filter: blur($blur) saturate(1.4)
+  -webkit-backdrop-filter: blur($blur) saturate(1.4)
+  border-radius: 12px
+  border: 1px solid transparent
+  background-clip: padding-box
+  color: var(--glass-text)
+
+.glass-panel
+  +glass-panel-base(14px)
+  // 1px 渐变描边（折射感）
+  &::before
+    content: ''
+    position: absolute
+    inset: 0
+    border-radius: inherit
+    padding: 1px
+    background: linear-gradient(160deg, rgba(160, 210, 255, 0.55), rgba(160, 210, 255, 0.06) 30%, rgba(124, 77, 255, 0.35) 70%, rgba(160, 210, 255, 0.12))
+    -webkit-mask: linear-gradient($sg-mask-opaque 0 0) content-box, linear-gradient($sg-mask-opaque 0 0)
+    -webkit-mask-composite: xor
+    mask-composite: exclude
+    pointer-events: none
+  // 顶部镜面高光（液态高光带）
+  &::after
+    content: ''
+    position: absolute
+    left: 8%
+    right: 8%
+    top: 0
+    height: 1px
+    background: linear-gradient(90deg, transparent, rgba(200, 230, 255, 0.8), transparent)
+    pointer-events: none
+
+// L2 次面板/小卡：弱模糊
+.glass-panel--l2
+  @extend .glass-panel
+  backdrop-filter: blur(8px) saturate(1.25)
+  -webkit-backdrop-filter: blur(8px) saturate(1.25)
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01) 40%, rgba(120, 180, 255, 0.04)), var(--glass-bg-l2)
+
+// 告警态：描边泛红 + 呼吸光晕（仅 transform/opacity/box-shadow 动画）
+.glass-panel--alert
+  animation: glass-alert-breathe 2.4s ease-in-out infinite
+  &::before
+    background: linear-gradient(160deg, rgba(255, 77, 109, 0.9), rgba(255, 77, 109, 0.15) 40%, rgba(179, 136, 255, 0.5) 75%, rgba(255, 77, 109, 0.2))
+    box-shadow: 0 0 12px rgba(255, 77, 109, 0.3)
+  &::after
+    background: linear-gradient(90deg, transparent, rgba(255, 77, 109, 0.9), rgba(179, 136, 255, 0.6), rgba(255, 77, 109, 0.9), transparent)
+    animation: glass-shimmer 2s linear infinite
+
+@keyframes glass-alert-breathe
+  0%, 100%
+    box-shadow: 0 0 0 rgba(255, 77, 109, 0)
+  50%
+    box-shadow: 0 0 28px rgba(255, 77, 109, 0.35)
+
+// 悬浮态：上浮 + 辉光增强 + 边框发光
+.glass-panel--active
+  transition: transform 0.18s ease, box-shadow 0.18s ease
+  &:hover
+    transform: translateY(-3px)
+    box-shadow: 0 8px 32px rgba(0, 212, 255, 0.25), 0 0 24px rgba(0, 212, 255, 0.2)
+
+// 亮色变体：描边/高光降弱（token 已分叉，此处仅补强描边透明度）
+body:not(.body--dark) .glass-panel::before, .screen-theme-light .glass-panel::before
+  opacity: 0.55
+
+body:not(.body--dark) .glass-panel::after, .screen-theme-light .glass-panel::after
+  opacity: 0.4
+
+// ── 性能模式与降级 ──
+.screen-perf .glass-panel
+  backdrop-filter: none
+  -webkit-backdrop-filter: none
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02) 40%, rgba(120, 180, 255, 0.05)), var(--glass-bg)
+
+@supports not (backdrop-filter: blur(1px))
+  .glass-panel
+    backdrop-filter: none
+    -webkit-backdrop-filter: none
+    background: var(--glass-bg)
+
+// ── 组件三态契约（.widget-state）──
+// loading：微光扫过骨架，不打断旧数据；empty：图标+文案；error：降级图标+悬停原因
+.widget-state
+  position: absolute
+  inset: 0
+  display: flex
+  flex-direction: column
+  align-items: center
+  justify-content: center
+  gap: 8px
+  font-size: 12px
+  color: var(--glass-text-dim)
+  pointer-events: none
+
+.widget-state--loading
+  &::before
+    content: ''
+    position: absolute
+    inset: 0
+    background: linear-gradient(100deg, transparent 30%, rgba(160, 210, 255, 0.08) 50%, transparent 70%)
+    background-size: 200% 100%
+    animation: widget-shimmer 1.6s linear infinite
+
+@keyframes widget-shimmer
+  0%
+    background-position: 120% 0
+  100%
+    background-position: -120% 0
+
+.widget-state--error
+  color: var(--screen-major)
+  pointer-events: auto
+
+// ── 大屏数字排版（质量门：等宽数字）──
+.screen-num
+  font-variant-numeric: tabular-nums
+  font-weight: 600
+  letter-spacing: 0.02em
+
+// ── 降级动效 ──
+@media (prefers-reduced-motion: reduce)
+  .glass-panel--alert
+    animation: none
+  .widget-state--loading::before
+    animation: none
+
+// ── 屏内 Quasar flat 按钮：泛白反色 → 科技感淡光晕（2026-08 UI 专项）──
+// Quasar 默认 q-hoverable hover 给 .q-focus-helper 15% currentColor 白 wash，深屏上呈"反转"泛白；
+// 屏内统一改为 --screen-primary 同色浸染 + 外部淡光晕，色彩随屏主题（青/蓝）一致。
+// 作用域限定 .screen-canvas / .screen-theme-* 祖先，不污染后台管理页与全局弹框层。
+// 组件已定义专属 hover 的按钮（定位/确认等）：:where 零权重让组件规则按源码序胜出。
+.screen-canvas, .screen-theme-dark, .screen-theme-light
+  .q-btn--flat, .q-btn--outline
+    // 按压反馈：0ms 触发的 scale 收缩（active 即时态，不做过渡动画）
+    &:active
+      transform: scale(0.92)
+    .q-icon
+      transition: filter 0.18s var(--screen-ease-enter), color 0.18s var(--screen-ease-enter)
+
+@media (hover: hover) and (pointer: fine)
+  :where(.screen-canvas, .screen-theme-dark, .screen-theme-light)
+    .q-btn--flat, .q-btn--outline
+      transition: box-shadow 0.18s var(--screen-ease-enter), color 0.18s var(--screen-ease-enter), border-color 0.18s var(--screen-ease-enter)
+      &:hover
+        color: var(--screen-primary)
+        box-shadow: 0 0 10px color-mix(in srgb, var(--screen-primary) 32%, transparent), inset 0 0 6px color-mix(in srgb, var(--screen-primary) 12%, transparent)
+        .q-icon
+          filter: drop-shadow(0 0 4px color-mix(in srgb, var(--screen-primary) 70%, transparent))
+  // 同色浸染替代泛白反色（需正权重盖过 Quasar body.desktop 15% currentColor 规则）
+  .screen-canvas, .screen-theme-dark, .screen-theme-light
+    .q-btn--flat, .q-btn--outline
+      &.q-hoverable:hover > .q-focus-helper
+        background: var(--screen-primary)
+        opacity: 0.1

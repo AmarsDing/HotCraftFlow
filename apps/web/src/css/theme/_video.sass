@@ -1,0 +1,64 @@
+// ═══════════════════════════════════════════════════════════════
+//  视频监控模块共享样式（实时监看/录像回放/计数统计/智能告警）
+//  · .video-filter-card  筛选栏玻璃卡（与实时监看顶栏同一玻璃语言）
+//  · .video-seg          胶囊分段控件（时间窗/粒度/倍速/分屏等单选切换，
+//                        替代 q-btn-toggle 默认 outline 形态；选中段玻璃浮起）
+// ═══════════════════════════════════════════════════════════════
+
+// ── 筛选栏玻璃卡 ──
+.video-filter-card
+  border-radius: 14px
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+  > .q-card-section.app-filter-bar
+    padding: 10px 14px
+    align-items: center
+
+// ── 胶囊分段控件：轨道 + 等宽分段，选中段玻璃浮起 ──
+.video-seg
+  display: inline-flex
+  align-items: center
+  flex-wrap: nowrap
+  flex: none
+  height: 34px
+  padding: 3px
+  gap: 2px
+  border-radius: 9px
+  background: color-mix(in srgb, var(--color-text-tertiary) 10%, transparent)
+  border: 1px solid var(--glass-border)
+
+.video-seg__item
+  position: relative
+  display: inline-flex
+  align-items: center
+  justify-content: center
+  gap: 5px
+  height: 26px
+  min-width: 46px
+  padding: 0 12px
+  border: 0
+  border-radius: 7px
+  background: transparent
+  font: inherit
+  font-size: 12px
+  font-weight: 600
+  font-variant-numeric: tabular-nums
+  white-space: nowrap
+  color: var(--color-text-secondary)
+  cursor: pointer
+  transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease
+  &:hover
+    color: var(--color-accent)
+
+.video-seg__item--active,
+.video-seg__item--active:hover
+  background: var(--glass-elevated)
+  color: var(--color-accent)
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18), inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent)
+
+body.body--dark .video-seg__item--active,
+body.body--dark .video-seg__item--active:hover
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 22%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 45%, transparent)

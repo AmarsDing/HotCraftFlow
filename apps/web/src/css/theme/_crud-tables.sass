@@ -1,0 +1,260 @@
+// CRUD 表格共享样式（用户/部门/职位/角色/字典等管理页）
+// 所有颜色必须从 design token 取值，禁止硬编码
+//
+// 操作列黄金样板：pages/asset/CredentialPage.vue
+// 约定：flat dense round + .crud-actions__btn；禁止业务页 outline/实底/sticky 黑条覆写
+// 详见 .cursor/rules/crud-table-actions.mdc
+
+// 操作按钮组：统一间距与居中
+.crud-actions
+  display: inline-flex
+  flex-wrap: nowrap
+  align-items: center
+  justify-content: center
+  gap: var(--space-1)
+
+// 操作按钮：幽灵图标（默认 muted，悬停才显强调色）
+.crud-actions .crud-actions__btn
+  width: 28px
+  height: 28px
+  min-width: 28px
+  min-height: 28px
+  padding: 0
+  border-radius: 8px
+  color: var(--color-icon-muted)
+  background: transparent
+  transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease
+
+  &:hover
+    background: var(--interaction-surface-hover)
+    color: var(--color-accent)
+
+  &:active
+    transform: scale(0.95)
+
+.crud-actions .crud-actions__btn--danger
+  &:hover
+    color: var(--color-danger)
+    background: var(--color-danger-soft)
+
+// ── 全站筛选栏统一规范（frontend-dev-guide §4.11）──
+// 单行 flex：条件控件靠左 + 固定紧凑宽度，功能按钮靠右；选中即查，无搜索按钮
+.app-filter-bar
+  display: flex
+  flex-wrap: wrap
+  align-items: flex-end
+  gap: var(--space-3)
+
+  // 直接子级的表单控件统一紧凑定宽，杜绝 col-md-3 拉跑道
+  > .q-field,
+  > .app-filter-bar__field
+    flex: 0 0 auto
+    width: 200px
+
+  > .app-filter-bar__field--sm
+    width: 140px
+
+  > .app-filter-bar__field--lg
+    width: 280px
+
+  > .app-filter-bar__field--auto
+    width: auto
+    min-width: 200px
+
+  // 功能按钮区：靠右、不收缩、纵向与控件对齐
+  > .app-filter-bar__actions
+    flex: 0 0 auto
+    margin-left: auto
+    display: flex
+    align-items: center
+    gap: var(--space-2)
+    white-space: nowrap
+
+    // 与 34px 筛选控件等高。必须压过 _component-density
+    // `.q-btn:not(.outline)` 的 min-height:30px（density 后导入，:not 特异性 4 类）。
+    .q-btn:not(.q-btn--round):not(.q-btn--fab)
+      height: 34px
+      min-height: 34px
+
+  // 筛选栏内带 label 的 dense 下拉同样压平 34px：筛选栏 label 仅作占位文案，
+  // 悬浮时落在 outlined 边框缺口（不占 control 内高）；全局密度规则为表单抽屉
+  // 豁免了 labeled 字段（保留 Quasar 40px 度量），筛选栏须收回该豁免，
+  // 否则 select(40px) 与 input/按钮(34px) 同排不齐（遵守 §4.10：height/min-height 同步覆盖）
+  > .q-field--dense.q-field--labeled.q-field--auto-height.q-select--without-chips .q-field__control,
+  > .q-field--dense.q-field--labeled.q-field--auto-height.q-select--without-chips .q-field__native,
+  > .q-field--dense.q-field--labeled.q-field--auto-height.q-select--without-chips .q-field__marginal
+    height: 34px
+    min-height: 34px
+
+  // 筛选栏禁止为 hint/error 留底：.q-field__bottom 默认 min-height:20px，
+  // 栏是 flex-end，任一控件多出底栏就会把邻控件顶矮（DeviceTreeSelect 空 :hint/:label 绑定教训）
+  > .q-field .q-field__bottom
+    display: none
+    min-height: 0
+    padding: 0
+
+// 窄屏回落：控件占满整行，按钮区左移随流
+@media (width <= 599px)
+  .app-filter-bar
+    > .q-field,
+    > .app-filter-bar__field
+      flex: 1 1 100%
+      width: 100%
+
+    > .app-filter-bar__actions
+      margin-left: 0
+      width: 100%
+      justify-content: flex-end
+
+// ── 全站表格统一规范（所有 q-table / q-markup-table，昼夜双主题同一 token 源）──
+// 布局：table-layout: fixed 固定列宽——列宽由各页 columns.headerStyle 决定，未指定列均分剩余宽度
+// 长文本：单元格 ellipsis 截断；boot/table-tooltip.ts 在文本被截断时注入原生 title，悬停显示全文
+// 视觉：玻璃表头 + 强调色表头下沿 + 斑马纹 + 行 hover 提亮，颜色全部取自 design token
+
+// 表格容器：玻璃表面，避免暗色模式 fallback 到 Quasar 默认近黑背景
+.q-table__container
+  background: var(--glass-surface)
+  color: var(--color-text-primary)
+
+// 表格本身透明，透出容器玻璃背景
+.q-table
+  background: transparent
+  color: var(--color-text-primary)
+
+// 注意：Quasar 将 q-table / q-markup-table 类直接挂在 <table> 元素上，
+// 必须同时覆盖 table.q-table（组件直出）与 .q-table table（嵌套兜底）两种结构
+table.q-table,
+.q-table table,
+table.q-markup-table,
+.q-markup-table table
+  table-layout: fixed
+  width: 100%
+
+// 表头：中性玻璃表面 + 模糊，字重 700 + 强调色下沿
+.q-table thead tr th,
+.q-markup-table thead tr th
+  background: var(--glass-surface)
+  color: var(--color-text-secondary)
+  font-weight: 700
+  letter-spacing: 0.02em
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+  border-color: var(--glass-border)
+  border-bottom: 2px solid color-mix(in srgb, var(--color-accent) 30%, var(--glass-border))
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+
+// 数据行透明 + 斑马纹（极淡强调色铺底，提升长表格横向扫读性）
+.q-table tbody tr,
+.q-markup-table tbody tr
+  background: transparent
+  transition: background 0.15s ease
+
+.q-table tbody tr:nth-child(even),
+.q-markup-table tbody tr:nth-child(even)
+  background: color-mix(in srgb, var(--color-accent) 4%, transparent)
+
+// 行 hover：玻璃表面提亮（必须位于斑马纹规则之后以覆盖之）
+.q-table tbody tr:hover,
+.q-markup-table tbody tr:hover
+  background: var(--glass-surface-hover)
+
+// 单元格：垂直居中 + 玻璃边框 + 长文本省略
+.q-table tbody td,
+.q-markup-table tbody td
+  vertical-align: middle
+  border-color: var(--glass-border)
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+
+// 多选框列：固定窄列，不参与内容列均分
+.q-table thead tr th:has(.q-checkbox),
+.q-table tbody tr td:has(.q-checkbox)
+  width: 48px
+  min-width: 48px
+
+// 表格内标签（q-badge）统一规范：放大一档、加粗字重、加大字距与内边距，单元格内垂直居中
+// （水平居中由列定义 align:'center' 控制；徽章/按钮类列一律 align center）
+.q-table .q-badge,
+.q-markup-table .q-badge
+  font-size: 13px
+  font-weight: 600
+  letter-spacing: 0.03em
+  padding: 5px 12px
+  border-radius: 6px
+  vertical-align: middle
+
+// 暗色科技感：徽章玻璃描边 + 顶部高光 + 强调色微光晕（克制不刺眼）
+body.body--dark
+  .q-table .q-badge,
+  .q-markup-table .q-badge
+    border: 1px solid rgba(255, 255, 255, 0.14)
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 0 10px color-mix(in srgb, var(--color-accent) 14%, transparent)
+
+  // outline 徽章：边框随语义色提亮，避免实底光晕叠加
+  .q-table .q-badge--outline,
+  .q-markup-table .q-badge--outline
+    border: 1px solid currentColor
+    box-shadow: 0 0 8px color-mix(in srgb, currentColor 22%, transparent)
+    background: color-mix(in srgb, currentColor 8%, transparent)
+
+body.body--dark
+  .crud-actions .crud-actions__btn
+    color: var(--color-text-secondary)
+
+    &:hover
+      background: color-mix(in srgb, var(--glass-surface-hover) 70%, transparent)
+      color: var(--color-accent)
+
+  .crud-actions .crud-actions__btn--danger:hover
+    color: var(--color-danger)
+    background: color-mix(in srgb, var(--color-danger) 12%, transparent)
+
+// ── 双栏管理页（角色 / 字典等）的分割面板卡片 ──
+// 与 crud-table-card 保持同一视觉层级：玻璃提升层 + 大圆角 + 霓虹边框
+.crud-split-card
+  border-radius: 16px
+  background: var(--glass-elevated)
+  border: 1px solid var(--glass-border)
+  box-shadow: var(--glass-inner-highlight)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+  .q-card__section
+    color: var(--color-text-primary)
+
+  // 面板内列表项：与表格行共用同一 hover token
+  .q-list > .q-item:not(.q-item--active):hover
+    background: var(--glass-surface-hover)
+    border-radius: 8px
+
+  // 面板分隔线使用玻璃边框
+  .q-separator
+    background: var(--glass-border)
+
+  // Tab 面板透明，透出卡片玻璃背景，避免暗色 fallback 到独立深色底
+  .q-tab-panels
+    background: transparent
+
+// 角色页双栏分隔条：去竖线、拉宽为透明空隙，左右面板不紧贴（仍保留拖拽热区）
+// 注意：Quasar separator 样式在组件 scoped :deep 下不生效，必须全局（同 agent-files-splitter 先例）
+// 双类选择器提升优先级，确保覆盖 .q-splitter--vertical/.q-splitter--dark 的原生 1px 竖线
+.q-splitter.role-splitter > .q-splitter__separator
+  width: 16px
+  background: transparent
+
+  > div
+    background: transparent
+
+// 暗色模式补充：按钮色在玻璃背景上的可读性
+body.body--dark
+  .crud-split-card
+    background: color-mix(in srgb, var(--glass-elevated) 92%, transparent)
+
+  .crud-split-card .q-list > .q-item:not(.q-item--active)
+    color: var(--color-text-primary)
+
+    &:hover
+      background: color-mix(in srgb, var(--glass-surface-hover) 72%, transparent)

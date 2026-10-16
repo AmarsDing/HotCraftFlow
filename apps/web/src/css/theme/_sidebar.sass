@@ -1,0 +1,364 @@
+// App Shell — 左侧导航（浮动玻璃 Card）
+// 结构：q-drawer.app-sidebar（透明槽）> .app-sidebar-card（玻璃面板）> 菜单
+
+body.body--dark .q-drawer.app-sidebar,
+body:not(.body--dark) .q-drawer.app-sidebar
+  background: transparent !important
+  border-right: none !important
+  box-shadow: none !important
+  padding: 0 var(--sidebar-inset-x) var(--sidebar-inset-y) !important
+
+body.body--dark .q-drawer.app-sidebar .q-drawer__content,
+body:not(.body--dark) .q-drawer.app-sidebar .q-drawer__content
+  background: transparent !important
+  overflow: hidden !important
+  scrollbar-width: none
+  -ms-overflow-style: none
+
+  &::-webkit-scrollbar
+    display: none
+    width: 0
+    height: 0
+
+.app-layout-root .q-drawer--standard,
+.app-layout-root .q-drawer--mini,
+.app-layout-root .q-drawer--design-mini
+  background: transparent !important
+
+.app-sidebar-card
+  display: flex
+  flex-direction: column
+  height: 100%
+  min-height: 0
+  border: 1px solid var(--liquid-sidebar-border)
+  // 底部与顶部一致：直角（圆角在贴边悬浮布局中会在下角露出缝隙）
+  border-radius: 0 !important
+  background: var(--liquid-sidebar-bg) !important
+  backdrop-filter: blur(var(--liquid-blur)) saturate(var(--liquid-saturate))
+  -webkit-backdrop-filter: blur(var(--liquid-blur)) saturate(var(--liquid-saturate))
+  box-shadow: var(--liquid-sidebar-shadow)
+  overflow: hidden
+  position: relative
+  isolation: isolate
+
+  &::before
+    content: ""
+    position: absolute
+    inset: 0
+    pointer-events: none
+    background: var(--liquid-sidebar-sheen)
+    border-radius: inherit
+    z-index: 0
+
+// ── 品牌区：logo 章 + 产品名/副标题（mini 态仅 logo 居中） ──
+.app-sidebar-brand
+  position: relative
+  z-index: 1
+  display: flex
+  align-items: center
+  gap: 10px
+  padding: 14px calc(var(--sidebar-padding-x) + 4px) 12px
+  margin-bottom: 2px
+
+  // 底部渐变分隔线
+  &::after
+    content: ""
+    position: absolute
+    left: calc(var(--sidebar-padding-x) + 4px)
+    right: calc(var(--sidebar-padding-x) + 4px)
+    bottom: 0
+    height: 1px
+    background: var(--liquid-divider)
+
+.app-sidebar-brand__logo
+  width: 34px
+  height: 34px
+  flex: none
+  display: flex
+  align-items: center
+  justify-content: center
+  border-radius: 10px
+  color: var(--color-on-accent)
+  background: linear-gradient(135deg, var(--color-accent) 0%, color-mix(in srgb, var(--color-accent) 58%, var(--color-neon-violet, var(--color-accent-hover))) 100%)
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25)
+
+.app-sidebar-brand__text
+  min-width: 0
+
+.app-sidebar-brand__title
+  font-size: 15px
+  font-weight: 700
+  letter-spacing: 0.01em
+  line-height: 1.25
+  color: var(--color-text-heading)
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
+
+.app-sidebar-brand__subtitle
+  margin-top: 1px
+  font-size: 10px
+  font-weight: 600
+  letter-spacing: 0.14em
+  color: var(--color-text-tertiary)
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
+
+body.body--dark .app-sidebar-brand__logo
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 0 14px rgba(77, 216, 232, 0.25)
+
+.q-drawer--mini .app-sidebar-brand,
+.q-drawer--design-mini .app-sidebar-brand
+  justify-content: center
+  padding-left: 0
+  padding-right: 0
+
+.app-sidebar__scroll
+  position: relative
+  z-index: 1
+  flex: 1
+  min-height: 0
+  padding: var(--sidebar-padding-y) 0
+  overflow-x: hidden
+  overflow-y: auto
+  overscroll-behavior: contain
+  scrollbar-width: none
+  -ms-overflow-style: none
+
+  &::-webkit-scrollbar
+    display: none
+    width: 0
+    height: 0
+
+.app-sidebar-nav
+  padding: 0 var(--sidebar-padding-x) !important
+  background: transparent !important
+
+  .app-sidebar-group__items
+    padding-left: var(--sidebar-item-indent)
+    padding-right: 2px
+    box-sizing: border-box
+
+  .q-item__label--header,
+  .app-sidebar-section-label
+    display: flex
+    align-items: center
+    gap: 8px
+    padding: var(--sidebar-section-padding)
+    margin: 0
+    font-size: var(--sidebar-section-font-size)
+    font-weight: 700
+    letter-spacing: 0.08em
+    text-transform: uppercase
+    line-height: 1.35
+    color: var(--sidebar-section-color) !important
+
+    // HUD 引导短横：分组标签前的渐变刻度线
+    &::before
+      content: ""
+      flex: 0 0 12px
+      width: 12px
+      height: 2px
+      border-radius: 1px
+      background: linear-gradient(90deg, var(--color-accent), transparent)
+      opacity: 0.75
+
+  button.app-sidebar-section-label
+    width: 100%
+    border: 0
+    background: transparent
+    cursor: pointer
+    user-select: none
+    text-align: left
+    font: inherit
+    appearance: none
+    border-radius: var(--sidebar-item-radius)
+
+    .app-sidebar-section-label__text
+      flex: 1
+      min-width: 0
+      white-space: nowrap
+
+    .app-sidebar-section-label__chevron
+      flex: none
+      margin-left: auto
+      font-size: 16px
+      width: 16px
+      height: 16px
+      color: var(--sidebar-section-color) !important
+      opacity: 0.8
+
+    &:hover
+      background: var(--liquid-item-hover-bg)
+      color: var(--liquid-item-hover-color) !important
+
+      .app-sidebar-section-label__chevron
+        color: var(--color-accent) !important
+        opacity: 1
+
+    &.is-collapsed.is-current
+      color: var(--color-accent) !important
+
+      .app-sidebar-section-label__chevron
+        color: var(--color-accent) !important
+        opacity: 1
+
+    &:focus-visible
+      outline: 2px solid var(--color-accent)
+      outline-offset: 2px
+
+  .q-item
+    min-height: var(--sidebar-item-min-height)
+    border: 1px solid transparent
+    border-radius: var(--sidebar-item-radius)
+    margin: var(--sidebar-item-gap) 0
+    padding: var(--sidebar-item-padding-y) var(--sidebar-item-padding-x)
+    gap: var(--sidebar-icon-gap)
+    color: var(--liquid-idle-text) !important
+    font-size: var(--sidebar-item-font-size)
+    line-height: 1.45
+    font-weight: 500
+    transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, opacity 0.16s ease
+
+    .q-item__section--main,
+    .q-item__label
+      color: inherit !important
+
+    &:hover
+      background: var(--liquid-item-hover-bg) !important
+      border-color: var(--liquid-item-hover-border)
+      color: var(--liquid-item-hover-color) !important
+
+  .q-item__section--main
+    min-width: 0
+    padding-left: 0
+    word-break: break-word
+
+  .q-item__section--avatar
+    flex: 0 0 var(--sidebar-icon-size)
+    min-width: var(--sidebar-icon-size)
+    max-width: var(--sidebar-icon-size)
+    padding-right: 0
+    align-items: center
+    justify-content: center
+
+  .q-icon:not(img)
+    font-size: var(--sidebar-icon-size)
+    width: 1em
+    height: 1em
+    line-height: 1
+    color: var(--liquid-idle-icon) !important
+    opacity: var(--sidebar-icon-opacity)
+    transition: color 0.16s ease, filter 0.16s ease
+
+  .q-item:hover .q-icon:not(img)
+    color: var(--sidebar-icon-hover-color, var(--liquid-item-hover-color)) !important
+
+.app-sidebar-item--active,
+.q-item.app-sidebar-item--active
+  background: var(--liquid-item-active-bg) !important
+  border-color: var(--liquid-item-active-border) !important
+  color: var(--sidebar-item-active-color) !important
+  font-weight: 600
+  box-shadow: var(--liquid-item-active-shadow) !important
+
+  .q-item__section--main,
+  .q-item__label
+    color: var(--sidebar-item-active-color) !important
+    text-shadow: var(--liquid-active-text-glow)
+
+  .q-item__section--avatar .q-icon,
+  .q-icon:not(img)
+    color: var(--sidebar-icon-active-color) !important
+    opacity: 1
+    filter: var(--liquid-icon-glow)
+
+// 分隔线：渐变淡出刻度线（需高于 app-global 中 q-separator 规则的优先级，故挂 body 前缀）
+body:not(.body--dark) .app-sidebar-nav .app-sidebar-divider,
+body.body--dark .app-sidebar-nav .app-sidebar-divider
+  margin: var(--space-3) var(--sidebar-padding-x)
+  background: var(--liquid-divider) !important
+  opacity: 1
+  height: 1px
+
+body:not(.body--dark) .app-sidebar-nav .app-sidebar-subdivider,
+body.body--dark .app-sidebar-nav .app-sidebar-subdivider
+  margin: var(--space-1) var(--sidebar-padding-x)
+  background: var(--liquid-divider) !important
+  opacity: 0.6
+  height: 1px
+
+// 夜间：Quiet Rail — 未选中透明，悬停淡 wash，选中液体玻璃 + 霓虹辉光
+body.body--dark .app-sidebar-nav
+  .app-sidebar-section-label
+    color: var(--sidebar-idle-section) !important
+    letter-spacing: 0.1em
+    opacity: 0.92
+
+  .q-item:not(.app-sidebar-item--active)
+    background: transparent !important
+    border-color: transparent !important
+    box-shadow: none !important
+    backdrop-filter: none !important
+    -webkit-backdrop-filter: none !important
+    color: var(--liquid-idle-text) !important
+    font-weight: 500
+
+    .q-item__section--main,
+    .q-item__label
+      color: var(--liquid-idle-text) !important
+
+    .q-icon:not(img)
+      color: var(--liquid-idle-icon) !important
+      opacity: var(--sidebar-idle-icon-opacity)
+      filter: none
+
+    &:hover
+      background: var(--liquid-item-hover-bg) !important
+      border-color: var(--liquid-item-hover-border) !important
+      color: var(--liquid-item-hover-color) !important
+
+      .q-item__section--main,
+      .q-item__label
+        color: var(--liquid-item-hover-color) !important
+
+      .q-icon:not(img)
+        color: var(--sidebar-icon-hover-color) !important
+        opacity: 1
+        filter: var(--liquid-icon-glow)
+
+  .q-item.app-sidebar-item--active,
+  .app-sidebar-item--active
+    backdrop-filter: none !important
+    -webkit-backdrop-filter: none !important
+
+    .q-item__section--main,
+    .q-item__label
+      text-shadow: var(--liquid-active-text-glow)
+
+    .q-icon:not(img)
+      filter: var(--liquid-icon-glow)
+
+.q-drawer--mini .app-sidebar-nav,
+.q-drawer--design-mini .app-sidebar-nav
+  padding: 0 var(--sidebar-mini-padding-x) !important
+
+  .app-sidebar-group__items
+    padding-left: 0
+
+  .q-item
+    justify-content: center
+    padding: 0
+    min-height: 0
+    aspect-ratio: 1 / 1
+
+  .q-item__section--avatar
+    padding-right: 0
+    min-width: auto
+    max-width: none
+
+.q-drawer--mini.app-sidebar,
+.q-drawer--design-mini.app-sidebar
+  padding-left: var(--space-2)
+  padding-right: var(--space-2)

@@ -1,0 +1,1093 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// HUD Console — 监控控制台共享设计层（IT 监控域统一视觉语言，可复用于其他专业监控域）
+//
+// 设计取向：把「看设备数字」升级为「读指挥台仪表」。
+//   · 亮色：Apple 精密风——纯净玻璃面 + 发丝线 + 四角刻度括号 + 等宽数字
+//   · 暗色：项目既有科幻霓虹 HUD——沿用 --color-neon-cyan / --glass-* / 霓虹光晕
+// 与项目主题的一致性锚点：LoginPage `.sci-fi-hud` 四角、EventPulse `.pulse-hud-frame__corners`、
+// Device3d `.hud-top` —— 本层把这三处零散的 HUD 语言收敛为可复用的单一来源。
+//
+// 用法：全局类（已由 app-theme.sass 引入），模板直接写 class="hud-panel" 等。
+// 约定：所有颜色走主题 token，禁止写死 hex（暗色由 body.body--dark 段增强）。
+// 无障碍：状态不得只靠颜色表达（组件须同时给出文字/图标）；动效全部受
+//        prefers-reduced-motion 约束；可点区域给 :focus-visible 环。
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ═══ 页壳 ═══
+.hud-page
+  padding: 10px 14px
+  display: flex
+  flex-direction: column
+  gap: 8px
+  animation: hudRise 0.32s ease both
+
+// 页头（区段标题 + 右侧动作）沿用 .sec-heading 作为单一来源，此处只补间距语义
+.hud-page > .sec-heading
+  margin-bottom: 0
+
+// 响应式栅格：按最小宽度自动换列，避免各页手写 col-*
+.hud-grid
+  display: grid
+  gap: 8px
+
+  &--metrics
+    grid-template-columns: repeat(auto-fit, minmax(118px, 1fr))
+
+  &--metrics-lg
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))
+
+  &--halves
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr))
+
+  &--tiles
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr))
+
+.hud-hstack
+  display: flex
+  align-items: center
+  gap: 8px
+
+// ═══ 面板（HUD 仪表框）═══
+// 四角刻度括号用 8 条 background-gradient 绘制，零额外 DOM、不影响语义树。
+.hud-panel
+  --hud-corner: color-mix(in srgb, var(--color-accent) 42%, transparent)
+  position: relative
+  display: flex
+  flex-direction: column
+  min-width: 0
+  border-radius: 12px
+  border: 1px solid var(--glass-border)
+  background-color: var(--glass-elevated)
+  background-image: linear-gradient(var(--hud-corner), var(--hud-corner)), linear-gradient(var(--hud-corner), var(--hud-corner)), linear-gradient(var(--hud-corner), var(--hud-corner)), linear-gradient(var(--hud-corner), var(--hud-corner)), linear-gradient(var(--hud-corner), var(--hud-corner)), linear-gradient(var(--hud-corner), var(--hud-corner)), linear-gradient(var(--hud-corner), var(--hud-corner)), linear-gradient(var(--hud-corner), var(--hud-corner))
+  background-repeat: no-repeat
+  background-size: 12px 1px, 1px 12px, 12px 1px, 1px 12px, 12px 1px, 1px 12px, 12px 1px, 1px 12px
+  background-position: left 7px top 7px, left 7px top 7px, right 7px top 7px, right 7px top 7px, left 7px bottom 7px, left 7px bottom 7px, right 7px bottom 7px, right 7px bottom 7px
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+  box-shadow: var(--glass-inner-highlight), 0 8px 24px rgba(0, 0, 0, 0.05)
+  overflow: hidden
+
+  // 顶部科技感发丝线（与 dash-card / ChartPanel 同款，保持全站同肤）
+  &::before
+    content: ''
+    position: absolute
+    top: 0
+    left: 16px
+    right: 16px
+    height: 1px
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-accent) 38%, transparent), transparent)
+    pointer-events: none
+
+  &__head
+    display: flex
+    align-items: center
+    gap: 6px
+    padding: 8px 12px 6px
+    min-height: 32px
+
+  &__icon
+    display: inline-flex
+    align-items: center
+    justify-content: center
+    width: 22px
+    height: 22px
+    flex: none
+    border-radius: 7px
+    color: var(--color-accent)
+    background: var(--color-accent-soft)
+    font-size: 14px
+
+  &__title
+    font-size: 13px
+    font-weight: 650
+    letter-spacing: 0.01em
+    color: var(--color-text-heading)
+    white-space: nowrap
+
+  &__sub
+    font-size: 11px
+    color: var(--color-text-tertiary)
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
+
+  &__actions
+    margin-left: auto
+    display: flex
+    align-items: center
+    gap: 4px
+    flex: none
+
+  &__body
+    flex: 1
+    min-width: 0
+    padding: 0 12px 10px
+
+  // 表格/图等自带内边距的内容，用 flush 去掉面板内衬
+  &--flush > &__body
+    padding: 0
+
+  &--flush > &__head
+    padding: 8px 12px 6px
+
+  // 可点面板：抬升 + 边框转强调色
+  &--clickable
+    cursor: pointer
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease
+    &:hover
+      transform: translateY(-2px)
+      border-color: color-mix(in srgb, var(--color-accent) 38%, var(--glass-border))
+      box-shadow: var(--glass-inner-highlight), 0 10px 26px rgba(0, 0, 0, 0.09)
+    &:focus-visible
+      outline: none
+      box-shadow: var(--shadow-accent-focus)
+
+// hero 面板：加一道缓慢掠过的扫描线（仅暗色，且尊重减动效）
+.hud-panel--sweep
+  &::after
+    content: ''
+    position: absolute
+    left: 0
+    right: 0
+    top: 0
+    height: 42%
+    pointer-events: none
+    opacity: 0
+    background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent)
+
+// ═══ 指标卡 ═══
+.hud-metric
+  position: relative
+  display: flex
+  flex-direction: column
+  justify-content: space-between
+  gap: 6px
+  min-width: 0
+  padding: 8px 10px 7px
+  border-radius: 12px
+  border: 1px solid var(--glass-border)
+  background-color: var(--glass-elevated)
+  background-image: var(--hud-metric-corner, none)
+  box-shadow: var(--glass-inner-highlight), 0 6px 18px rgba(0, 0, 0, 0.04)
+  overflow: hidden
+  transition: border-color 0.18s ease, transform 0.18s ease
+
+  // 左侧色标：用 inset box-shadow 画，避免额外 DOM
+  &::before
+    content: ''
+    position: absolute
+    left: 0
+    top: 10px
+    bottom: 10px
+    width: 3px
+    border-radius: 0 2px 2px 0
+    background: var(--hud-tone, var(--color-text-tertiary))
+    box-shadow: 0 0 8px color-mix(in srgb, var(--hud-tone, var(--color-text-tertiary)) 55%, transparent)
+
+  &--clickable
+    cursor: pointer
+    &:hover
+      transform: translateY(-1px)
+      border-color: color-mix(in srgb, var(--hud-tone, var(--color-accent)) 42%, var(--glass-border))
+    &:focus-visible
+      outline: none
+      box-shadow: var(--shadow-accent-focus)
+
+  // 选中态：整卡描边转语义色 + 淡底，用于「点击即筛选」的卡组
+  &--active
+    border-color: var(--hud-tone, var(--color-accent))
+    background-color: color-mix(in srgb, var(--hud-tone, var(--color-accent)) 8%, var(--glass-elevated))
+
+    .hud-metric__label
+      color: var(--color-text-heading)
+
+  &__label
+    display: flex
+    align-items: center
+    gap: 6px
+    font-size: 12px
+    color: var(--color-text-secondary)
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
+
+  &__value
+    display: flex
+    align-items: baseline
+    gap: 3px
+    font-size: 22px
+    font-weight: 700
+    line-height: 1.05
+    letter-spacing: -0.01em
+    color: var(--hud-tone, var(--color-text-heading))
+    font-variant-numeric: tabular-nums
+
+  &__unit
+    font-size: 12px
+    font-weight: 500
+    color: var(--color-text-tertiary)
+
+  &__sub
+    font-size: 11px
+    color: var(--color-text-tertiary)
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
+
+  // 底部分布条（占比可视化，取代纯文字百分比）
+  &__band
+    position: relative
+    height: 3px
+    margin-top: 2px
+    border-radius: 2px
+    background: color-mix(in srgb, var(--color-text-tertiary) 18%, transparent)
+    overflow: hidden
+
+  &__fill
+    display: block
+    height: 100%
+    border-radius: 2px
+    background: var(--hud-tone, var(--color-accent))
+    transition: width 0.4s ease
+
+  // 语义色调
+  &--accent
+    --hud-tone: var(--color-accent)
+  &--success
+    --hud-tone: var(--color-success)
+  &--danger
+    --hud-tone: var(--color-danger)
+  &--warning
+    --hud-tone: var(--color-warning)
+  &--info
+    --hud-tone: var(--color-info)
+  &--neutral
+    --hud-tone: var(--color-text-tertiary)
+
+// ═══ 状态点（四态）═══
+.hud-dot
+  position: relative
+  display: inline-block
+  width: 8px
+  height: 8px
+  flex: none
+  border-radius: 50%
+  background: var(--color-text-tertiary)
+
+  &--online
+    background: var(--color-success)
+  &--offline
+    background: var(--color-danger)
+  &--alarm
+    background: var(--color-warning)
+  &--unknown
+    background: var(--color-text-tertiary)
+
+  // 实时态：外扩呼吸环
+  &.is-live::after
+    content: ''
+    position: absolute
+    inset: -3px
+    border-radius: 50%
+    border: 1px solid currentColor
+    color: inherit
+    opacity: 0.5
+    animation: hudPing 2s ease-out infinite
+
+// ═══ 分级 / 状态徽标 ═══
+.hud-badge
+  display: inline-flex
+  align-items: center
+  gap: 3px
+  height: 18px
+  padding: 0 7px
+  border-radius: 9px
+  font-size: 11px
+  line-height: 1
+  white-space: nowrap
+  color: #fff
+  background: var(--color-text-tertiary)
+
+  &--emergency
+    background: var(--color-danger)
+  &--critical
+    background: color-mix(in srgb, var(--color-danger) 60%, var(--color-warning))
+  &--warning
+    background: var(--color-warning)
+  &--info
+    background: var(--color-info)
+  &--success
+    background: var(--color-success)
+  &--neutral
+    background: color-mix(in srgb, var(--color-text-tertiary) 26%, transparent)
+    color: var(--color-text-secondary)
+
+  // 描边型（浅底深字，适合密集列表，避免大片实色块）
+  &--soft
+    background: color-mix(in srgb, var(--hud-badge-tone, var(--color-accent)) 13%, transparent)
+    color: var(--hud-badge-tone, var(--color-accent))
+  &--soft#{&}--emergency
+    --hud-badge-tone: var(--color-danger)
+  &--soft#{&}--critical
+    --hud-badge-tone: var(--color-danger)
+  &--soft#{&}--warning
+    --hud-badge-tone: var(--color-warning)
+  &--soft#{&}--info
+    --hud-badge-tone: var(--color-info)
+  &--soft#{&}--success
+    --hud-badge-tone: var(--color-success)
+
+// 老化分级（告警持续时间）
+.hud-aging
+  display: inline-flex
+  align-items: center
+  gap: 3px
+  font-size: 11px
+  font-variant-numeric: tabular-nums
+  color: var(--color-text-secondary)
+
+  &.is-warm
+    color: var(--color-warning)
+  &.is-hot
+    color: var(--color-danger)
+    font-weight: 600
+
+// ═══ 键值对 ═══
+.hud-kv
+  display: flex
+  align-items: baseline
+  gap: 6px
+  font-size: 12px
+
+  &__k
+    color: var(--color-text-tertiary)
+
+  &__v
+    color: var(--color-text-heading)
+    font-variant-numeric: tabular-nums
+
+// ═══ 可点行（列表下钻）═══
+.hud-rowlink
+  position: relative
+  display: flex
+  align-items: center
+  gap: 8px
+  width: 100%
+  padding: 7px 10px
+  border: none
+  border-radius: 9px
+  background: transparent
+  text-align: left
+  font-size: 12px
+  color: inherit
+  cursor: pointer
+  transition: background 0.15s ease
+
+  &::after
+    content: ''
+    position: absolute
+    left: 10px
+    right: 10px
+    bottom: 0
+    height: 1px
+    background: var(--glass-border)
+
+  &:last-child::after
+    display: none
+
+  &:hover
+    background: color-mix(in srgb, var(--color-accent) 7%, transparent)
+  &:focus-visible
+    outline: none
+    box-shadow: var(--shadow-accent-focus)
+
+  &__name
+    flex: 1
+    min-width: 0
+    color: var(--color-text-heading)
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
+
+  &__meta
+    font-size: 11px
+    color: var(--color-text-tertiary)
+    flex: none
+
+  &__val
+    flex: none
+    font-variant-numeric: tabular-nums
+    color: var(--color-text-secondary)
+
+// 排行奖牌
+.hud-rank
+  display: inline-flex
+  align-items: center
+  justify-content: center
+  width: 20px
+  height: 20px
+  flex: none
+  border-radius: 6px
+  font-size: 11px
+  font-weight: 600
+  font-variant-numeric: tabular-nums
+  color: var(--color-text-tertiary)
+  background: color-mix(in srgb, var(--color-text-tertiary) 14%, transparent)
+
+  &.is-top1
+    color: #fff
+    background: var(--color-danger)
+  &.is-top2
+    color: #fff
+    background: var(--color-warning)
+  &.is-top3
+    color: #fff
+    background: color-mix(in srgb, var(--color-warning) 55%, var(--color-text-tertiary))
+
+// ═══ 内联量条（排行相对量级）═══
+.hud-meter
+  position: relative
+  flex: none
+  width: 64px
+  height: 4px
+  border-radius: 2px
+  background: color-mix(in srgb, var(--color-text-tertiary) 16%, transparent)
+  overflow: hidden
+
+  &__fill
+    display: block
+    height: 100%
+    border-radius: 2px
+    background: var(--hud-meter-tone, var(--color-accent))
+
+  &--danger
+    --hud-meter-tone: var(--color-danger)
+  &--warning
+    --hud-meter-tone: var(--color-warning)
+  &--success
+    --hud-meter-tone: var(--color-success)
+
+// ═══ 五段轨道（采集体检紧凑态）═══
+.hud-track
+  display: inline-flex
+  align-items: center
+  gap: 3px
+
+  &__seg
+    width: 16px
+    height: 6px
+    border-radius: 3px
+    border: 1px solid transparent
+    background: color-mix(in srgb, var(--color-text-tertiary) 22%, transparent)
+
+    &.is-ok
+      background: color-mix(in srgb, var(--color-success) 78%, transparent)
+    &.is-fail
+      background: color-mix(in srgb, var(--color-danger) 78%, transparent)
+      border-color: color-mix(in srgb, var(--color-danger) 45%, transparent)
+
+// ═══ 堆叠分布条 ═══
+.hud-dist
+  display: flex
+  width: 100%
+  height: 10px
+  border-radius: 5px
+  overflow: hidden
+  background: color-mix(in srgb, var(--color-text-tertiary) 14%, transparent)
+
+  &__seg
+    height: 100%
+    min-width: 0
+    transition: width 0.4s ease
+    background: var(--color-text-tertiary)
+
+    &--emergency
+      background: var(--color-danger)
+    &--critical
+      background: color-mix(in srgb, var(--color-danger) 60%, var(--color-warning))
+    &--warning
+      background: var(--color-warning)
+    &--info
+      background: var(--color-info)
+    &--success
+      background: var(--color-success)
+
+  // 图例项（可点过滤）
+  &__legend
+    display: inline-flex
+    align-items: center
+    gap: 5px
+    padding: 2px 7px
+    border: 1px solid transparent
+    border-radius: 8px
+    font-size: 11px
+    color: var(--color-text-secondary)
+    background: transparent
+    cursor: pointer
+    transition: background 0.15s ease, border-color 0.15s ease
+
+    &:hover
+      background: color-mix(in srgb, var(--color-accent) 7%, transparent)
+    &:focus-visible
+      outline: none
+      box-shadow: var(--shadow-accent-focus)
+
+    &.is-active
+      border-color: color-mix(in srgb, var(--color-accent) 32%, transparent)
+      background: var(--color-accent-soft)
+      color: var(--color-text-heading)
+
+  &__swatch
+    width: 8px
+    height: 8px
+    border-radius: 2px
+    flex: none
+
+  &__num
+    font-variant-numeric: tabular-nums
+    color: var(--color-text-heading)
+
+// ═══ 统一状态块（空 / 错 / 载入）═══
+.hud-state
+  display: flex
+  flex-direction: column
+  align-items: center
+  justify-content: center
+  gap: 8px
+  padding: 30px 16px
+  text-align: center
+  color: var(--color-text-tertiary)
+  font-size: 12px
+
+  &__icon
+    font-size: 26px
+    color: color-mix(in srgb, var(--color-accent) 45%, var(--color-text-tertiary))
+
+  &--inline
+    flex-direction: row
+    justify-content: flex-start
+    padding: 12px 16px
+    text-align: left
+
+  &--error
+    .hud-state__icon
+      color: var(--color-danger)
+
+  &__retry
+    margin-left: auto
+
+// ═══ 骨架屏 ═══
+.hud-skel
+  position: relative
+  height: 12px
+  border-radius: 6px
+  background: color-mix(in srgb, var(--color-text-tertiary) 14%, transparent)
+  overflow: hidden
+
+  &::after
+    content: ''
+    position: absolute
+    inset: 0
+    transform: translateX(-100%)
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-accent) 12%, transparent), transparent)
+    animation: hudShimmer 1.4s ease-in-out infinite
+
+// ═══ 工具条（筛选区）═══
+.hud-toolbar
+  display: flex
+  flex-wrap: wrap
+  align-items: center
+  gap: 8px
+  padding: 0 0 2px
+
+  &__spacer
+    margin-left: auto
+
+// ═══ 数字与实时标识 ═══
+.hud-num
+  font-variant-numeric: tabular-nums
+  letter-spacing: -0.01em
+
+.hud-live
+  display: inline-flex
+  align-items: center
+  gap: 5px
+  height: 20px
+  padding: 0 8px
+  border-radius: 10px
+  font-size: 11px
+  color: var(--color-text-secondary)
+  background: color-mix(in srgb, var(--color-text-tertiary) 12%, transparent)
+
+// 关键值强调（大号等宽）
+.hud-strong
+  font-variant-numeric: tabular-nums
+  font-weight: 700
+  color: var(--color-text-heading)
+
+// ═══ 体检闸门链（采集五段等「多道独立闸门」场景）═══
+// 业务语义：五段是**各自独立**的通过计数，不是层层收窄的漏斗（管理IP 与 任务 可不同步），
+// 故不做「流失量」连线，而是并排展示各闸门通过率 + 标出瓶颈闸门。
+.hud-gatechain
+  display: flex
+  align-items: stretch
+  gap: 0
+  overflow-x: auto
+
+  &__link
+    display: flex
+    align-items: center
+    flex: none
+    padding: 0 2px
+    color: var(--color-text-tertiary)
+
+.hud-gate
+  position: relative
+  display: flex
+  flex-direction: column
+  gap: 5px
+  flex: 1 1 0
+  min-width: 132px
+  padding: 10px 12px 11px
+  border: 1px solid var(--glass-border)
+  border-radius: 12px
+  background: var(--glass-surface)
+  text-align: left
+  font-family: inherit
+  color: inherit
+  cursor: pointer
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease
+
+  &:hover
+    transform: translateY(-1px)
+    border-color: color-mix(in srgb, var(--hud-gate-tone, var(--color-accent)) 45%, var(--glass-border))
+
+  &:focus-visible
+    outline: none
+    box-shadow: var(--shadow-accent-focus)
+
+  &.is-active
+    border-color: var(--hud-gate-tone, var(--color-accent))
+    background: color-mix(in srgb, var(--hud-gate-tone, var(--color-accent)) 8%, var(--glass-surface))
+
+  // 瓶颈闸门：加一道左侧加粗刻度 + 角标，明示「先修这里」
+  &.is-bottleneck
+    border-color: color-mix(in srgb, var(--color-danger) 42%, var(--glass-border))
+
+  &__idx
+    display: inline-flex
+    align-items: center
+    justify-content: center
+    width: 15px
+    height: 15px
+    flex: none
+    border-radius: 5px
+    font-size: 10px
+    font-weight: 700
+    color: var(--hud-gate-tone, var(--color-accent))
+    background: color-mix(in srgb, var(--hud-gate-tone, var(--color-accent)) 14%, transparent)
+
+  &__label
+    display: flex
+    align-items: center
+    gap: 6px
+    font-size: 12px
+    color: var(--color-text-secondary)
+    white-space: nowrap
+
+  &__rate
+    font-size: 22px
+    font-weight: 700
+    line-height: 1.05
+    font-variant-numeric: tabular-nums
+    color: var(--hud-gate-tone, var(--color-text-heading))
+
+  &__count
+    font-size: 11px
+    color: var(--color-text-tertiary)
+    font-variant-numeric: tabular-nums
+
+  &__band
+    height: 4px
+    border-radius: 2px
+    background: color-mix(in srgb, var(--color-text-tertiary) 18%, transparent)
+    overflow: hidden
+
+  &__fill
+    display: block
+    height: 100%
+    border-radius: 2px
+    background: var(--hud-gate-tone, var(--color-accent))
+    transition: width 0.45s ease
+
+  &__flag
+    position: absolute
+    top: -1px
+    right: 10px
+    padding: 0 6px
+    height: 15px
+    font-size: 10px
+    line-height: 15px
+    border-radius: 0 0 5px 5px
+    color: #fff
+    background: var(--color-danger)
+
+  // 通过率色调
+  &--ok
+    --hud-gate-tone: var(--color-success)
+  &--warn
+    --hud-gate-tone: var(--color-warning)
+  &--bad
+    --hud-gate-tone: var(--color-danger)
+  &--idle
+    --hud-gate-tone: var(--color-text-tertiary)
+
+// ═══ 分类状态矩阵瓷贴 ═══
+.hud-matrix
+  display: grid
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr))
+  gap: 6px
+
+.hud-tile
+  position: relative
+  display: flex
+  flex-direction: column
+  gap: 3px
+  padding: 7px 9px 8px
+  border: 1px solid var(--glass-border)
+  border-radius: 9px
+  background: var(--glass-surface)
+  text-align: left
+  font-family: inherit
+  color: inherit
+  cursor: pointer
+  transition: border-color 0.18s ease, transform 0.18s ease
+  overflow: hidden
+
+  // 严重度：左侧色标 + 整卡描边
+  &::before
+    content: ''
+    position: absolute
+    left: 0
+    top: 8px
+    bottom: 8px
+    width: 3px
+    border-radius: 0 2px 2px 0
+    background: var(--hud-tile-tone, var(--color-text-tertiary))
+
+  &:hover
+    transform: translateY(-1px)
+    border-color: color-mix(in srgb, var(--hud-tile-tone, var(--color-accent)) 45%, var(--glass-border))
+
+  &:focus-visible
+    outline: none
+    box-shadow: var(--shadow-accent-focus)
+
+  &.is-offline
+    --hud-tile-tone: var(--color-danger)
+  &.is-alarm
+    --hud-tile-tone: var(--color-warning)
+  &.is-online
+    --hud-tile-tone: var(--color-success)
+  &.is-unknown
+    --hud-tile-tone: var(--color-text-tertiary)
+
+  &__name
+    font-size: 12px
+    color: var(--color-text-secondary)
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
+
+  &__num
+    display: flex
+    align-items: baseline
+    gap: 4px
+    font-size: 17px
+    font-weight: 700
+    line-height: 1.05
+    color: var(--color-text-heading)
+    font-variant-numeric: tabular-nums
+
+  &__unit
+    font-size: 10px
+    font-weight: 400
+    color: var(--color-text-tertiary)
+
+  &__band
+    height: 3px
+    border-radius: 2px
+    background: color-mix(in srgb, var(--color-text-tertiary) 18%, transparent)
+    overflow: hidden
+
+  &__fill
+    display: block
+    height: 100%
+    border-radius: 2px
+    background: var(--hud-tile-tone, var(--color-success))
+
+  &__foot
+    display: flex
+    flex-wrap: wrap
+    align-items: center
+    gap: 4px
+    min-height: 16px
+
+  &__ok
+    font-size: 10px
+    color: var(--color-success)
+
+  &__chip
+    display: inline-flex
+    align-items: center
+    gap: 3px
+    height: 16px
+    padding: 0 6px
+    border-radius: 8px
+    font-size: 10px
+    font-variant-numeric: tabular-nums
+
+    &--down
+      color: var(--color-danger)
+      background: color-mix(in srgb, var(--color-danger) 13%, transparent)
+    &--alarm
+      color: var(--color-warning)
+      background: color-mix(in srgb, var(--color-warning) 15%, transparent)
+
+// ═══ 环形量表（健康度 / 覆盖率等单一比例指标）═══
+.hud-ring
+  position: relative
+  display: inline-flex
+  align-items: center
+  justify-content: center
+  flex: none
+
+  &__svg
+    transform: rotate(-90deg)
+    display: block
+
+  &__track
+    fill: none
+    stroke: color-mix(in srgb, var(--color-text-tertiary) 20%, transparent)
+
+  &__bar
+    fill: none
+    stroke: var(--hud-ring-tone, var(--color-accent))
+    stroke-linecap: round
+    transition: stroke-dashoffset 0.6s ease
+
+  &__core
+    position: absolute
+    inset: 0
+    display: flex
+    flex-direction: column
+    align-items: center
+    justify-content: center
+    line-height: 1
+
+  &__num
+    font-size: 20px
+    font-weight: 700
+    font-variant-numeric: tabular-nums
+    color: var(--hud-ring-tone, var(--color-text-heading))
+
+  &__cap
+    margin-top: 2px
+    font-size: 9px
+    letter-spacing: 0.06em
+    text-transform: uppercase
+    color: var(--color-text-tertiary)
+
+  // 语义色
+  &--ok
+    --hud-ring-tone: var(--color-success)
+  &--warn
+    --hud-ring-tone: var(--color-warning)
+  &--bad
+    --hud-ring-tone: var(--color-danger)
+  &--idle
+    --hud-ring-tone: var(--color-text-tertiary)
+
+// ═══ 迷你量条（hero 内并排的小型指标）═══
+.hud-gauge
+  display: flex
+  flex-direction: column
+  gap: 4px
+  min-width: 96px
+
+  &__label
+    font-size: 11px
+    color: var(--color-text-tertiary)
+    white-space: nowrap
+
+  &__value
+    font-size: 17px
+    font-weight: 700
+    font-variant-numeric: tabular-nums
+    color: var(--hud-gauge-tone, var(--color-text-heading))
+
+  &__band
+    height: 3px
+    border-radius: 2px
+    background: color-mix(in srgb, var(--color-text-tertiary) 18%, transparent)
+    overflow: hidden
+
+  &__fill
+    display: block
+    height: 100%
+    border-radius: 2px
+    background: var(--hud-gauge-tone, var(--color-accent))
+    transition: width 0.5s ease
+
+  &--ok
+    --hud-gauge-tone: var(--color-success)
+  &--warn
+    --hud-gauge-tone: var(--color-warning)
+  &--bad
+    --hud-gauge-tone: var(--color-danger)
+  &--accent
+    --hud-gauge-tone: var(--color-accent)
+
+// ═══ 判读句（自动生成的结论 + 主行动）═══
+.hud-verdict
+  display: flex
+  align-items: center
+  gap: 8px
+  padding: 6px 10px
+  border-radius: 8px
+  border: 1px solid color-mix(in srgb, var(--hud-verdict-tone, var(--color-accent)) 26%, transparent)
+  background: color-mix(in srgb, var(--hud-verdict-tone, var(--color-accent)) 7%, transparent)
+  font-size: 12px
+  color: var(--color-text-secondary)
+
+  &__icon
+    color: var(--hud-verdict-tone, var(--color-accent))
+
+  &__text
+    flex: 1
+    min-width: 0
+
+  &--ok
+    --hud-verdict-tone: var(--color-success)
+  &--warn
+    --hud-verdict-tone: var(--color-warning)
+  &--bad
+    --hud-verdict-tone: var(--color-danger)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 暗色增强：霓虹光晕 + 拾取既有 neon token
+// ─────────────────────────────────────────────────────────────────────────────
+body.body--dark
+  .hud-panel
+    --hud-corner: color-mix(in srgb, var(--color-neon-cyan) 55%, transparent)
+    background-color: var(--glass-elevated)
+    box-shadow: var(--glass-inner-highlight), 0 12px 32px rgba(0, 0, 0, 0.35), 0 0 20px color-mix(in srgb, var(--color-accent) 7%, transparent)
+
+    &::before
+      background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-neon-cyan) 62%, transparent), transparent)
+
+  .hud-panel__icon
+    box-shadow: 0 0 10px color-mix(in srgb, var(--color-neon-cyan) 22%, transparent)
+
+  .hud-metric
+    box-shadow: var(--glass-inner-highlight), 0 8px 22px rgba(0, 0, 0, 0.3)
+
+    &__value
+      text-shadow: 0 0 14px color-mix(in srgb, var(--hud-tone, var(--color-accent)) 32%, transparent)
+
+    &::before
+      box-shadow: 0 0 10px color-mix(in srgb, var(--hud-tone, var(--color-neon-cyan)) 70%, transparent)
+
+  .hud-rank.is-top1,
+  .hud-rank.is-top2,
+  .hud-rank.is-top3
+    box-shadow: 0 0 10px color-mix(in srgb, var(--color-neon-cyan) 26%, transparent)
+
+  .hud-dist__seg
+    box-shadow: 0 0 6px color-mix(in srgb, var(--color-neon-cyan) 18%, transparent)
+
+  .hud-panel--sweep::after
+    opacity: 1
+    animation: hudSweep 7s linear infinite
+
+  .hud-gate
+    background: var(--glass-elevated)
+    box-shadow: var(--glass-inner-highlight), 0 6px 18px rgba(0, 0, 0, 0.26)
+
+    &__rate
+      text-shadow: 0 0 12px color-mix(in srgb, var(--hud-gate-tone, var(--color-neon-cyan)) 30%, transparent)
+
+  .hud-tile
+    background: var(--glass-elevated)
+    box-shadow: var(--glass-inner-highlight), 0 5px 16px rgba(0, 0, 0, 0.24)
+
+    &::before
+      box-shadow: 0 0 8px color-mix(in srgb, var(--hud-tile-tone, var(--color-neon-cyan)) 65%, transparent)
+
+    &__fill
+      box-shadow: 0 0 6px color-mix(in srgb, var(--hud-tile-tone, var(--color-neon-cyan)) 55%, transparent)
+
+  .hud-ring
+    &__bar
+      filter: drop-shadow(0 0 6px color-mix(in srgb, var(--hud-ring-tone, var(--color-neon-cyan)) 55%, transparent))
+
+    &__num
+      text-shadow: 0 0 12px color-mix(in srgb, var(--hud-ring-tone, var(--color-neon-cyan)) 35%, transparent)
+
+  .hud-gauge__value
+    text-shadow: 0 0 10px color-mix(in srgb, var(--hud-gauge-tone, var(--color-neon-cyan)) 30%, transparent)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 动效关键帧
+// ─────────────────────────────────────────────────────────────────────────────
+@keyframes hudRise
+  from
+    opacity: 0
+    transform: translateY(6px)
+  to
+    opacity: 1
+    transform: none
+
+@keyframes hudPing
+  0%
+    transform: scale(0.9)
+    opacity: 0.55
+  70%
+    transform: scale(1.9)
+    opacity: 0
+  100%
+    transform: scale(1.9)
+    opacity: 0
+
+@keyframes hudShimmer
+  100%
+    transform: translateX(100%)
+
+@keyframes hudSweep
+  0%
+    transform: translateY(-60%)
+  100%
+    transform: translateY(260%)
+
+// 减动效：全部动画降级为静态（无障碍硬要求）
+@media (prefers-reduced-motion: reduce)
+  .hud-page,
+  .hud-dot.is-live::after,
+  .hud-skel::after,
+  .hud-panel--sweep::after
+    animation: none !important
+
+  .hud-skel::after
+    opacity: 0
+
+  .hud-metric__fill,
+  .hud-dist__seg
+    transition: none
+
+// 移动端：收内衬，指标字降一档
+@media (max-width: 599px)
+  .hud-page
+    padding: 8px 10px
+
+  .hud-metric__value
+    font-size: 20px

@@ -1,0 +1,9 @@
+# 许可证配置（详细设计 §2.6.0 签名模型与密钥管理）
+# 私钥由厂商离线持有，系统仅持公钥验签；服务启动时加载公钥，文件缺失或解析失败将 fail-fast。
+license:
+  # 厂商公钥路径（PEM 格式 RSA-2048 公钥）。
+  # 留空时回退为 <storage.root>/license/vendor_public_key.pem（见 data/license_security.go），推荐保持留空。
+  # 若显式配置，相对路径以进程工作目录为基准解析；容器部署挂载对应目录即可（或改为容器内绝对路径）。
+  public_key_path: ""
+  # 许可证到期检查 cron 表达式（每日执行，默认每日 02:00）
+  check_expiring_cron: "0 2 * * *"

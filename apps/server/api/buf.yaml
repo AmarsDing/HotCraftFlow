@@ -1,0 +1,17 @@
+version: v2
+modules:
+  - path: .
+    lint:
+      use:
+        - STANDARD
+deps:
+  - 'buf.build/googleapis/googleapis'
+  - 'buf.build/kratos/apis'
+  - 'buf.build/gnostic/gnostic'
+  - 'buf.build/tx7do/pagination'
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT

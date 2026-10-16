@@ -1,0 +1,288 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+
+import "pagination/v1/pagination.proto";
+
+// 后台登录限制管理服务
+service AdminLoginRestrictionService {
+  // 查询后台登录限制列表
+  rpc List (pagination.PagingRequest) returns (ListAdminLoginRestrictionResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/login-restrictions"
+    };
+  }
+
+  // 查询后台登录限制详情
+  rpc Get (GetAdminLoginRestrictionRequest) returns (AdminLoginRestriction) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/login-restrictions/{id}"
+    };
+  }
+
+  // 创建后台登录限制
+  rpc Create (CreateAdminLoginRestrictionRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/login-restrictions"
+      body: "*"
+    };
+  }
+
+  // 更新后台登录限制
+  rpc Update (UpdateAdminLoginRestrictionRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/api/v1/monitor/login-restrictions/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除后台登录限制
+  rpc Delete (DeleteAdminLoginRestrictionRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/api/v1/monitor/login-restrictions/{id}"
+    };
+  }
+
+  // 预演后台登录限制变更：不落库，返回变更后的影响报告（操作者自锁判定/受影响在线会话/规则冲突）
+  rpc Simulate (SimulateAdminLoginRestrictionRequest) returns (SimulateAdminLoginRestrictionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/login-restrictions:simulate"
+      body: "*"
+    };
+  }
+}
+
+// 登录限制目标类型
+// 仅保留登录流程可校验的目标类型，避免无法落地的枚举值。
+enum AdminLoginRestrictionTargetType {
+  LOGIN_RESTRICTION_TARGET_TYPE_UNSPECIFIED = 0; // 未知
+  IP = 1;   // IP 地址：登录时按客户端 IP 校验
+  USER = 2; // 用户：登录时按用户名校验
+}
+
+// 登录限制动作
+// BLOCK=阻断（命中即拒绝）；ALLOW=放行（白名单语义：该目标类型存在 ALLOW 规则时，未命中 ALLOW 的请求默认拒绝）
+enum AdminLoginRestrictionAction {
+  LOGIN_RESTRICTION_ACTION_UNSPECIFIED = 0; // 未知
+  BLOCK = 1; // 阻断
+  ALLOW = 2; // 放行
+}
+
+// 预演变更类型
+enum AdminLoginRestrictionChangeType {
+  ADMIN_LOGIN_RESTRICTION_CHANGE_TYPE_UNSPECIFIED = 0; // 未知
+  CHANGE_TYPE_CREATE = 1; // 新增
+  CHANGE_TYPE_UPDATE = 2; // 更新
+  CHANGE_TYPE_DELETE = 3; // 删除
+}
+
+// 操作者自锁判定结论
+enum AdminLoginRestrictionVerdict {
+  ADMIN_LOGIN_RESTRICTION_VERDICT_UNSPECIFIED = 0; // 未知
+  VERDICT_NO_RULE = 1;        // 无生效规则，默认放行
+  VERDICT_ALLOW_MATCH = 2;    // 命中放行规则
+  VERDICT_BLOCK_MATCH = 3;    // 命中阻断规则（拒绝）
+  VERDICT_WHITELIST_MISS = 4; // 白名单模式下未命中任何放行规则（拒绝）
+}
+
+// 后台登录限制
+message AdminLoginRestriction {
+  optional uint32 id = 1 [
+    json_name = "id",
+    (google.api.field_behavior) = OPTIONAL,
+    (gnostic.openapi.v3.property) = {
+      description: "后台登录限制ID"
+    }
+  ]; // 后台登录限制ID
+
+  optional AdminLoginRestrictionTargetType target_type = 10 [
+    json_name = "targetType",
+    (gnostic.openapi.v3.property) = {
+      description: "限制目标类型（IP/USER）"
+    }
+  ]; // 限制目标类型
+
+  optional string target_value = 11 [
+    json_name = "targetValue",
+    (gnostic.openapi.v3.property) = {
+      description: "限制目标值（IP地址或用户名，按 target_type 解释）"
+    }
+  ]; // 限制目标值
+
+  optional AdminLoginRestrictionAction action = 12 [
+    json_name = "action",
+    (gnostic.openapi.v3.property) = {
+      description: "动作（BLOCK阻断/ALLOW放行）"
+    }
+  ]; // 动作
+
+  optional string reason = 13 [
+    json_name = "reason",
+    (gnostic.openapi.v3.property) = { description: "限制原因" }
+  ]; // 限制原因
+
+  optional string status = 14 [
+    json_name = "status",
+    (gnostic.openapi.v3.property) = { description: "启停状态（ON启用/OFF禁用），缺省 ON；禁用规则不参与登录判定" }
+  ]; // 启停状态
+
+  optional google.protobuf.Timestamp expire_time = 15 [
+    json_name = "expireTime",
+    (gnostic.openapi.v3.property) = { description: "过期时间（可空=永久有效）；过期规则不参与登录判定" }
+  ]; // 过期时间
+
+  optional uint64 hit_count = 16 [
+    json_name = "hitCount",
+    (gnostic.openapi.v3.property) = { description: "命中次数（登录判定命中时异步累加，统计用途）" }
+  ]; // 命中次数
+
+  optional google.protobuf.Timestamp last_hit_time = 17 [
+    json_name = "lastHitTime",
+    (gnostic.openapi.v3.property) = { description: "最近命中时间" }
+  ]; // 最近命中时间
+
+  optional uint32 create_by = 100 [json_name = "createBy", (gnostic.openapi.v3.property) = {description: "创建者ID"}]; // 创建者ID
+  optional uint32 update_by = 101 [json_name = "updateBy", (gnostic.openapi.v3.property) = {description: "更新者ID"}]; // 更新者ID
+
+  optional google.protobuf.Timestamp create_time = 200 [json_name = "createTime", (gnostic.openapi.v3.property) = {description: "创建时间"}];// 创建时间
+  optional google.protobuf.Timestamp update_time = 201 [json_name = "updateTime", (gnostic.openapi.v3.property) = {description: "更新时间"}];// 更新时间
+  optional google.protobuf.Timestamp delete_time = 202 [json_name = "deleteTime", (gnostic.openapi.v3.property) = {description: "删除时间"}];// 删除时间
+}
+
+// 查询后台登录限制列表 - 回应
+message ListAdminLoginRestrictionResponse {
+  repeated AdminLoginRestriction items = 1;
+  uint32 total = 2;
+}
+
+// 查询后台登录限制详情 - 请求
+message GetAdminLoginRestrictionRequest {
+  uint32 id = 1;
+}
+
+// 创建后台登录限制 - 请求
+message CreateAdminLoginRestrictionRequest {
+  AdminLoginRestriction data = 1;
+
+  optional bool force = 2 [
+    (gnostic.openapi.v3.property) = {description: "跳过自锁护栏强制保存"},
+    json_name = "force"
+  ]; // 跳过自锁护栏强制保存
+}
+
+// 更新后台登录限制 - 请求
+message UpdateAdminLoginRestrictionRequest {
+  AdminLoginRestriction data = 1;
+
+  google.protobuf.FieldMask update_mask = 2 [
+    (gnostic.openapi.v3.property) = {
+      description: "要更新的字段列表",
+      example: {yaml : "id,targetType,targetValue,action,reason"}
+    },
+    json_name = "updateMask"
+  ]; // 要更新的字段列表
+
+  optional bool allow_missing = 3 [
+    (gnostic.openapi.v3.property) = {description: "如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。"},
+    json_name = "allowMissing"
+  ]; // 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
+
+  uint32 id = 4 [json_name = "id", (gnostic.openapi.v3.property) = {description: "要更新的登录限制ID（URL 路径参数）"}]; // 要更新的登录限制ID
+
+  optional bool force = 5 [
+    (gnostic.openapi.v3.property) = {description: "跳过自锁护栏强制保存"},
+    json_name = "force"
+  ]; // 跳过自锁护栏强制保存
+}
+
+// 删除后台登录限制 - 请求
+message DeleteAdminLoginRestrictionRequest {
+  uint32 id = 1;
+
+  optional bool force = 2 [
+    (gnostic.openapi.v3.property) = {description: "跳过自锁护栏强制删除（query 参数）"},
+    json_name = "force"
+  ]; // 跳过自锁护栏强制删除
+}
+
+// 预演后台登录限制变更 - 请求
+message SimulateAdminLoginRestrictionRequest {
+  AdminLoginRestriction data = 1 [
+    (gnostic.openapi.v3.property) = {description: "拟变更后的规则内容（DELETE 时仅需 id）"}
+  ]; // 拟变更后的规则内容
+
+  optional AdminLoginRestrictionChangeType change_type = 2 [
+    json_name = "changeType",
+    (gnostic.openapi.v3.property) = {description: "变更类型（CREATE/UPDATE/DELETE）"}
+  ]; // 变更类型
+}
+
+// 登录限制规则冲突
+message AdminLoginRestrictionConflict {
+  optional string type = 1 [
+    json_name = "type",
+    (gnostic.openapi.v3.property) = {description: "冲突类型（DUPLICATE同值重复/CIDR_COVER网段互相包含/DENY_OVERRIDES放行被阻断压制）"}
+  ]; // 冲突类型
+
+  optional uint32 with_rule_id = 2 [
+    json_name = "withRuleId",
+    (gnostic.openapi.v3.property) = {description: "冲突的另一条规则ID"}
+  ]; // 冲突的另一条规则ID
+
+  optional string detail = 3 [
+    json_name = "detail",
+    (gnostic.openapi.v3.property) = {description: "冲突描述"}
+  ]; // 冲突描述
+}
+
+// 预演后台登录限制变更 - 回应
+message SimulateAdminLoginRestrictionResponse {
+  optional bool operator_allowed = 1 [
+    json_name = "operatorAllowed",
+    (gnostic.openapi.v3.property) = {description: "变更生效后当前操作者是否仍可登录"}
+  ]; // 变更生效后当前操作者是否仍可登录
+
+  optional AdminLoginRestrictionVerdict operator_verdict = 2 [
+    json_name = "operatorVerdict",
+    (gnostic.openapi.v3.property) = {description: "操作者判定结论（NO_RULE/ALLOW_MATCH/BLOCK_MATCH/WHITELIST_MISS）"}
+  ]; // 操作者判定结论
+
+  optional uint32 matched_rule_id = 3 [
+    json_name = "matchedRuleId",
+    (gnostic.openapi.v3.property) = {description: "操作者判定命中的规则ID（未命中为0）"}
+  ]; // 操作者判定命中的规则ID
+
+  optional string operator_ip = 4 [
+    json_name = "operatorIp",
+    (gnostic.openapi.v3.property) = {description: "判定所用的操作者来源IP"}
+  ]; // 判定所用的操作者来源IP
+
+  optional string operator_username = 5 [
+    json_name = "operatorUsername",
+    (gnostic.openapi.v3.property) = {description: "判定所用的操作者用户名"}
+  ]; // 判定所用的操作者用户名
+
+  repeated uint32 affected_user_ids = 6 [
+    json_name = "affectedUserIds",
+    (gnostic.openapi.v3.property) = {description: "变更生效后将被拒绝的在线用户ID（去重）"}
+  ]; // 变更生效后将被拒绝的在线用户ID
+
+  optional uint32 affected_online_sessions = 7 [
+    json_name = "affectedOnlineSessions",
+    (gnostic.openapi.v3.property) = {description: "变更生效后将被拒绝的在线会话数"}
+  ]; // 变更生效后将被拒绝的在线会话数
+
+  repeated AdminLoginRestrictionConflict conflicts = 8 [
+    json_name = "conflicts",
+    (gnostic.openapi.v3.property) = {description: "拟变更规则与现存规则的冲突列表"}
+  ]; // 规则冲突列表
+}

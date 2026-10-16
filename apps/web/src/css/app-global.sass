@@ -1,0 +1,3423 @@
+@import ./app-theme
+
+// ── 文件内私有色值（无全局 token 等值项；颜色 token 门禁 EP-FE-03 收敛落点）──
+$ag-preview-dark-mid: #0c1220
+$ag-preview-dark-end: #151b28
+$ag-chat-link: #8B5A2B
+$ag-chat-link-hover: #6B4226
+$ag-alert-info: #2196F3
+$ag-alert-info-text: #1565C0
+$ag-alert-warn: #FF9800
+$ag-alert-warn-text: #E65100
+$ag-alert-info-dark: #00E5FF
+$ag-alert-info-dark-text: #80F0FF
+$ag-alert-warn-dark-text: #FFD180
+$ag-stat-cyan-end: #06B6D4
+$ag-stat-amber-start: #D97706
+$ag-stat-green-start: #059669
+$ag-stat-red-start: #DC2626
+$ag-stat-violet-start: #7C3AED
+$ag-stat-cyan-dark-end: #67E8F9
+$ag-stat-green-dark: #34D399
+$ag-stat-green-dark-end: #6EE7B7
+$ag-stat-red-dark: #F87171
+$ag-stat-red-dark-end: #FCA5A5
+$ag-stat-violet-dark-end: #DDD6FE
+
+// 全局布局、Shell、按昼夜分叉的页面局部样式（分支与 Quasar 一致：body:not(.body--dark) / body.body--dark）
+
+body
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif
+
+body:not(.body--dark)
+  color-scheme: light
+  background: $cream-page
+  color: $cream-text
+  -webkit-font-smoothing: antialiased
+
+  // 避免纯黑链接/默认灰破坏柔和感
+  a.q-link
+    color: $cream-text-light
+
+  .text-cream-text
+    color: $cream-text
+
+  .text-cream-muted
+    color: $cream-text-light
+
+  // 主内容区与概览大容器
+  .app-page-cream
+    min-height: 100%
+    color: $cream-text
+    // 与参考图一致的暖色渐变底
+    background: linear-gradient(160deg, $cream-page 0%, $cream-page 40%, $cream-page-alt 100%)
+
+  .app-page-container
+    // 仅保留水平内边距：垂直 padding 会与 Quasar 计算的 q-page
+    // min-height(=视口-头部) 叠加，使文档恒高出一截，产生常驻外滚动条
+    padding: 0
+    @media (min-width: 1024px)
+      padding: 0 1.25rem
+
+  // 外框大玻璃 + 内层卡片
+  .dashboard-glass-shell
+    border-radius: 24px
+    background: var(--glass-surface)
+    border: 1px solid var(--glass-border)
+    box-shadow: var(--glass-inner-highlight)
+    backdrop-filter: blur(var(--glass-blur-default))
+    -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+  .dashboard-glass-card
+    min-height: 0
+    border-radius: 20px !important
+    background: var(--glass-elevated) !important
+    border: 1px solid var(--glass-border) !important
+    box-shadow: var(--glass-inner-highlight) !important
+
+  .dashboard-glass-card--fill
+    display: flex
+    flex-direction: column
+    height: 100%
+
+  .q-separator.cream-sep
+    background: var(--glass-border)
+    min-height: 1px
+    color: var(--glass-border)
+
+  // 页面内卡片：玻璃材质 + 大圆角 + 内高光；与 Dialog 同系 token
+  .q-card
+    background: var(--glass-surface)
+    border: 1px solid var(--glass-border)
+    border-radius: 16px
+    box-shadow: var(--glass-inner-highlight)
+    backdrop-filter: blur(var(--glass-blur-default))
+    -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+  .q-separator
+    background: var(--glass-border)
+
+  // 表头/工具条上的次级文字
+  .text-grey-7
+    color: $cream-text-muted !important
+
+// 主布局：顶栏（白昼 — 贴边直角液体玻璃条，与侧栏玻璃卡同系）
+.cream-header
+  background: transparent !important
+  color: $cream-text !important
+  box-shadow: none !important
+  border-bottom: none
+
+  .q-toolbar
+    margin: 0
+    min-height: 52px
+    border-radius: 0
+    position: relative
+    overflow: hidden
+    background: var(--liquid-header-bg)
+    border-bottom: 1px solid var(--glass-border)
+    box-shadow: var(--liquid-header-shadow)
+    backdrop-filter: blur(var(--liquid-blur)) saturate(var(--liquid-saturate))
+    -webkit-backdrop-filter: blur(var(--liquid-blur)) saturate(var(--liquid-saturate))
+    color: $cream-text
+
+    // 液体高光：斜向柔光扫过玻璃表面
+    &::before
+      content: ""
+      position: absolute
+      inset: 0
+      pointer-events: none
+      background: var(--liquid-header-sheen)
+
+  .q-btn
+    color: $cream-text-light
+    border-radius: 10px
+
+    &:hover
+      color: var(--color-accent)
+      background: var(--color-accent-hover-bg)
+
+  .q-select .q-field__control
+    color: $cream-text
+
+// --- App Shell（昼夜布局壳；UX.md §5.4 / §7）---
+.app-layout-root
+  background: var(--canvas-base)
+
+body.body--dark .app-layout-root
+  background: var(--gradient-page)
+
+.app-toolbar-title
+  font-size: var(--text-md)
+  letter-spacing: -0.02em
+
+.app-header-actions .app-header-icon-btn
+  color: var(--color-icon-muted)
+
+.app-header-avatar
+  background: var(--color-accent) !important
+  color: var(--color-on-accent) !important
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 32%, transparent), 0 2px 8px color-mix(in srgb, var(--color-accent) 28%, transparent)
+
+body:not(.body--dark) .cream-header
+  .app-header-icon-btn
+    color: $cream-text-light
+
+  .app-header-locale .q-field__control
+    color: $cream-text
+
+body.body--dark
+  color-scheme: dark
+  background: var(--canvas-base)
+  color: var(--color-text-primary)
+  -webkit-font-smoothing: antialiased
+
+  .app-page-container
+    background: var(--gradient-page)
+    color: var(--color-text-primary)
+    // 同亮色主题：垂直 padding 会导致常驻外滚动条，仅保留水平间距
+    padding: 0
+    @media (min-width: 1024px)
+      padding: 0 var(--space-5)
+
+  .text-grey-7,
+  .text-grey-6,
+  .app-text-secondary
+    color: var(--color-text-secondary) !important
+
+  .app-text-tertiary
+    color: var(--color-text-tertiary) !important
+
+  .q-card:not(.q-card--dark)
+    background: var(--glass-surface) !important
+    border: 1px solid var(--glass-border) !important
+    box-shadow: var(--glass-inner-highlight) !important
+    backdrop-filter: blur(var(--glass-blur-default))
+    -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+  .q-separator
+    background: var(--glass-border) !important
+
+  // q-badge 暗色模式对比度修正：warning/grey 实心底在深色背景上字迹不清
+  .q-badge.bg-warning
+    background: var(--color-warning-soft) !important
+    color: var(--color-accent-amber) !important
+  .q-badge.bg-grey
+    background: color-mix(in srgb, var(--color-text-secondary) 18%, transparent) !important
+    color: var(--color-text-secondary) !important
+
+  // q-chip 暗色模式：bg-grey 默认色在深色背景上对比度差，改为半透明玻璃质感
+  .q-chip.bg-grey
+    background: color-mix(in srgb, var(--color-text-secondary) 16%, transparent) !important
+    color: var(--color-text-secondary) !important
+    border: 1px solid color-mix(in srgb, var(--color-text-secondary) 22%, transparent)
+
+// 主布局：顶栏（夜间 — 贴边直角液体玻璃条，青霓虹描边 + 微光晕）
+.dark-header
+  background: transparent !important
+  color: var(--color-text-primary) !important
+  box-shadow: none !important
+  border-bottom: none
+
+  .q-toolbar
+    margin: 0
+    min-height: 52px
+    border-radius: 0
+    position: relative
+    overflow: hidden
+    background: var(--liquid-header-bg)
+    border-bottom: 1px solid var(--glass-border)
+    box-shadow: var(--liquid-header-shadow)
+    backdrop-filter: blur(var(--liquid-blur)) saturate(var(--liquid-saturate))
+    -webkit-backdrop-filter: blur(var(--liquid-blur)) saturate(var(--liquid-saturate))
+    color: var(--color-text-primary)
+
+    // 液体高光：斜向柔光扫过玻璃表面
+    &::before
+      content: ""
+      position: absolute
+      inset: 0
+      pointer-events: none
+      background: var(--liquid-header-sheen)
+
+  // 标题：冷蓝白 → 青霓虹渐变字
+  .q-toolbar__title
+    background: linear-gradient(90deg, var(--tech-text-bright) 0%, var(--color-accent) 100%)
+    -webkit-background-clip: text
+    background-clip: text
+    -webkit-text-fill-color: transparent
+
+  .q-btn
+    color: var(--color-text-secondary)
+    border-radius: 10px
+
+    &:hover
+      color: var(--color-accent)
+      background: color-mix(in srgb, var(--color-accent) 12%, transparent)
+
+  .app-header-icon-btn
+    color: var(--color-text-secondary)
+
+    &:hover
+      color: var(--color-accent)
+
+  .app-header-locale .q-field__control
+    color: var(--color-text-primary)
+
+// --- 顶栏右侧操作簇：HUD 芯片化（铃铛/主题/语言；时钟壳见 HeaderDutyClock.vue；头像不纳入） ---
+// 尺寸口径=全站 dense 控件 34px（_component-density.sass），宽度补 min-width 压过 q-btn dense 2.4em 下限
+.q-header .q-btn.app-header-icon-btn
+  width: 34px
+  min-width: 34px
+  height: 34px
+  min-height: 34px
+  padding: 0
+  border-radius: 6px
+  border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent)
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent)
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease
+
+  .q-icon
+    transition: color 0.2s ease, filter 0.2s ease
+
+  &:active
+    transform: scale(0.92)
+
+  .q-badge--floating
+    border-radius: 4px
+    font-weight: 700
+
+@media (hover: hover) and (pointer: fine)
+  .q-header .q-btn.app-header-icon-btn:hover
+    border-color: color-mix(in srgb, var(--color-accent) 48%, transparent)
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent)
+    box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent)
+
+    .q-icon
+      filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-accent) 65%, transparent))
+
+// 语言切换：HUD 芯片化（borderless 控件补描边玻璃壳；§4.10 伪元素红线仅限 outlined，borderless 无伪元素框；
+// 高度不写死，沿用 _component-density.sass dense 34px 口径与邻芯片对齐）
+.q-header .app-header-locale
+  .q-field__control
+    padding: 0 2px 0 10px
+    border-radius: 6px
+    border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent)
+    background: color-mix(in srgb, var(--color-accent) 6%, transparent)
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease
+
+  .q-field__native
+    font-size: 12px
+    font-weight: 600
+    letter-spacing: 0.08em
+
+@media (hover: hover) and (pointer: fine)
+  .q-header .app-header-locale:hover .q-field__control
+    border-color: color-mix(in srgb, var(--color-accent) 48%, transparent)
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent)
+    box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent)
+
+// 夜间：铃铛未读角标霓虹光晕
+body.body--dark .q-header .q-btn.app-header-icon-btn .q-badge--floating
+  box-shadow: 0 0 8px color-mix(in srgb, var(--q-negative) 55%, transparent)
+
+// Quasar 组件默认色 → design token（全站）
+body:not(.body--dark)
+  .q-btn.bg-primary:not(.q-btn--outline):not(.q-btn--flat)
+    background: var(--color-accent) !important
+    color: var(--color-on-accent) !important
+
+    &:hover
+      background: var(--color-accent-hover) !important
+
+  .q-btn--outline.text-primary,
+  .q-btn--flat.text-primary
+    color: var(--color-accent) !important
+
+  .text-primary
+    color: var(--color-accent) !important
+
+  .bg-primary
+    background: var(--color-accent) !important
+
+  .q-chip.bg-primary
+    background: var(--color-accent) !important
+    color: var(--color-on-accent) !important
+
+  .q-chip--outline.text-primary
+    border-color: color-mix(in srgb, var(--color-accent) 55%, transparent)
+    color: var(--color-accent)
+
+  .q-toggle__track
+    background: var(--toggle-track-off) !important
+
+  .q-toggle__inner--truthy
+    color: var(--toggle-track-on) !important
+
+  .q-toggle__thumb--truthy
+    color: var(--toggle-thumb-on) !important
+
+  .q-toggle__label
+    color: var(--toggle-label-color)
+
+body.body--dark
+  .q-btn.bg-primary:not(.q-btn--outline):not(.q-btn--flat)
+    background: color-mix(in srgb, var(--color-accent) 28%, transparent) !important
+    color: var(--color-accent) !important
+    border: 1px solid color-mix(in srgb, var(--color-accent) 50%, transparent) !important
+    box-shadow: 0 0 12px rgba(77, 216, 232, 0.18)
+
+    &:hover
+      background: color-mix(in srgb, var(--color-accent) 38%, transparent) !important
+      box-shadow: 0 0 18px rgba(77, 216, 232, 0.28)
+
+  .q-btn--outline.text-primary,
+  .q-btn--flat.text-primary
+    color: var(--color-accent) !important
+
+  .text-primary
+    color: var(--color-accent) !important
+
+  .bg-primary
+    background: color-mix(in srgb, var(--color-accent) 22%, transparent) !important
+    color: var(--color-accent) !important
+
+  .q-chip.bg-primary
+    background: color-mix(in srgb, var(--color-accent) 22%, transparent) !important
+    color: var(--color-accent) !important
+    border: 1px solid color-mix(in srgb, var(--color-accent) 35%, transparent)
+
+  .q-chip--outline.text-primary
+    border-color: color-mix(in srgb, var(--color-accent) 40%, transparent)
+    color: var(--color-accent)
+
+  .q-toggle__track
+    background: var(--toggle-track-off) !important
+
+  .q-toggle__inner--truthy
+    color: var(--toggle-track-on) !important
+
+  .q-toggle__thumb--truthy
+    color: var(--toggle-thumb-on) !important
+
+  .q-toggle__label
+    color: var(--toggle-label-color)
+
+  .q-field--focused .q-field__control
+    border-color: var(--color-accent) !important
+
+// ── QSelect / QMenu 下拉面板全局主题 ──
+body:not(.body--dark)
+  .q-menu
+    background: rgba(255, 253, 248, 0.92) !important
+    border-radius: 14px !important
+    box-shadow: 0 0 0 1px var(--glass-border), 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04) !important
+    backdrop-filter: blur(var(--glass-blur-default))
+    -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+  .q-menu .q-list
+    padding: 4px
+
+  .q-menu .q-item
+    border-radius: 8px
+    margin: 1px 2px
+    padding: 8px 12px
+    min-height: 36px
+    color: var(--color-text-primary)
+    transition: background 0.15s ease
+
+  .q-menu .q-item:hover,
+  .q-menu .q-item.q-manual-focusable--focused
+    background: var(--interaction-surface-hover) !important
+    color: var(--color-text-primary)
+
+  .q-menu .q-item.q-item--active,
+  .q-menu .q-item.q-item--selected
+    background: color-mix(in srgb, var(--color-accent) 12%, var(--glass-surface)) !important
+    color: var(--color-accent) !important
+
+  .q-menu .q-separator
+    background: var(--glass-border)
+    margin: 4px 8px
+
+  .q-select__dropdown-icon
+    color: var(--color-icon-muted)
+
+  .q-field--outlined .q-field__control::before
+    border-color: var(--glass-border)
+
+  .q-field--outlined .q-field__control:hover::before
+    border-color: color-mix(in srgb, var(--color-accent) 35%, var(--glass-border))
+
+  .q-field--outlined .q-field__control::after,
+  .q-field--outlined.q-field--focused .q-field__control::after,
+  .q-field--outlined.q-field--highlighted .q-field__control::after
+    border-width: 1px
+    border-color: transparent
+
+  .q-field--outlined.q-field--focused .q-field__control::after,
+  .q-field--outlined.q-field--highlighted .q-field__control::after
+    border-color: var(--color-accent)
+
+  .q-field__native,
+  .q-field__input
+    color: var(--color-text-primary)
+
+  .q-field__label
+    color: var(--color-text-secondary)
+
+  .q-field--focused .q-field__label,
+  .q-field--highlighted .q-field__label
+    color: var(--color-accent)
+
+body.body--dark
+  .q-menu
+    background: color-mix(in srgb, var(--glass-surface) 94%, transparent) !important
+    border-radius: 14px !important
+    box-shadow: 0 0 0 1px var(--glass-border), 0 8px 32px rgba(0, 0, 0, 0.32), 0 2px 8px rgba(0, 0, 0, 0.18) !important
+    backdrop-filter: blur(var(--glass-blur-elevated))
+    -webkit-backdrop-filter: blur(var(--glass-blur-elevated))
+
+  .q-menu .q-list
+    padding: 4px
+
+  .q-menu .q-item
+    border-radius: 8px
+    margin: 1px 2px
+    padding: 8px 12px
+    min-height: 36px
+    color: var(--color-text-primary)
+    transition: background 0.15s ease
+
+  .q-menu .q-item:hover,
+  .q-menu .q-item.q-manual-focusable--focused
+    background: var(--glass-surface-hover) !important
+    color: var(--color-text-primary)
+
+  .q-menu .q-item.q-item--active,
+  .q-menu .q-item.q-item--selected
+    background: color-mix(in srgb, var(--color-accent) 14%, var(--glass-surface)) !important
+    color: var(--color-accent) !important
+
+  .q-menu .q-separator
+    background: var(--glass-border)
+    margin: 4px 8px
+
+  .q-select__dropdown-icon
+    color: var(--color-icon-muted)
+
+  .q-field--outlined .q-field__control::before
+    border-color: var(--glass-border)
+
+  .q-field--outlined .q-field__control:hover::before
+    border-color: color-mix(in srgb, var(--color-accent) 35%, var(--glass-border))
+
+  .q-field--outlined .q-field__control::after,
+  .q-field--outlined.q-field--focused .q-field__control::after,
+  .q-field--outlined.q-field--highlighted .q-field__control::after
+    border-width: 1px
+    border-color: transparent
+
+  .q-field--outlined.q-field--focused .q-field__control::after,
+  .q-field--outlined.q-field--highlighted .q-field__control::after
+    border-color: var(--color-accent)
+
+  .q-field--dark .q-field__native,
+  .q-field--dark .q-field__input,
+  .q-field__native,
+  .q-field__input
+    color: var(--color-text-primary)
+
+  .q-field--dark .q-field__label,
+  .q-field__label
+    color: var(--color-text-secondary)
+
+  .q-field--focused .q-field__label,
+  .q-field--highlighted .q-field__label
+    color: var(--color-accent)
+
+// ── QTooltip 悬浮提示全局主题（与 QMenu 玻璃面板同一视觉语言）──
+body:not(.body--dark)
+  .q-tooltip
+    background: rgba(255, 253, 248, 0.96)
+    border: 1px solid var(--glass-border)
+    border-radius: 8px
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10), 0 1px 4px rgba(0, 0, 0, 0.06)
+    backdrop-filter: blur(var(--glass-blur-default))
+    -webkit-backdrop-filter: blur(var(--glass-blur-default))
+    color: var(--color-text-primary)
+    font-size: 12px
+    font-weight: 500
+    line-height: 1.45
+    padding: 5px 10px
+
+body.body--dark
+  .q-tooltip
+    background: color-mix(in srgb, var(--glass-elevated) 94%, transparent)
+    border: 1px solid var(--glass-border)
+    border-radius: 8px
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.36), 0 1px 4px rgba(0, 0, 0, 0.22), var(--glass-inner-highlight)
+    backdrop-filter: blur(var(--glass-blur-elevated))
+    -webkit-backdrop-filter: blur(var(--glass-blur-elevated))
+    color: var(--color-text-primary)
+    font-size: 12px
+    font-weight: 500
+    line-height: 1.45
+    padding: 5px 10px
+
+// ── outlined 控件 ::after 盒高对齐（修复全站下拉框"底部双线"，昼夜通用）──
+// Quasar outlined 的 ::after 用 height: inherit，会拾取 _component-density.sass 的 height:34px，
+// 而控件实际高度受 Quasar min-height / auto-height 影响仍为 40px；错位的透明边框在
+// backdrop-filter 合成层上会渲染出第二条底边线。强制 height:auto 让伪元素随 top/bottom:0
+// 始终贴合控件盒，聚焦环也同时回到正确位置。
+.q-field--outlined .q-field__control::after
+  height: auto
+
+// ── 滚动条已由 theme/_scrollbars.sass 全局统一（含 .q-menu / .q-table__middle）──
+
+// ── q-table 列总宽超容器时允许横向滚动（Quasar 默认 .q-table__middle 无 overflow，宽表会溢出卡片）──
+.q-table__middle
+  overflow-x: auto
+  // 解除 Quasar table max-width:100% 限制：配合 utils/table-columns 的列兜底宽度（fixed 布局下列宽由表头 width 决定），
+  // 让宽表横向滚动而非压缩折行
+  .q-table
+    max-width: none
+
+// 与旧类名兼容
+.panel-scroll
+  overflow-y: auto
+  height: calc(100vh - 110px)
+
+// 概览交易面板：多/空切换（空侧陶土感，与 positive 的 sage 对称）
+body:not(.body--dark) .dashboard-side-toggle .dashboard-sell
+  color: $cream-text
+  &.q-btn--flat
+    background: rgba(255, 59, 48, 0.10) !important
+  &.dashboard-sell--on
+    background: var(--color-danger) !important
+    color: var(--color-on-accent) !important
+
+// --- Theme Preview（dev 验收页）---
+body:not(.body--dark) .theme-preview-page
+  background: linear-gradient(160deg, $cream-page 0%, var(--canvas-base) 42%, $cream-page-alt 100%)
+
+body.body--dark .theme-preview-page
+  background: linear-gradient(165deg, var(--canvas-base) 0%, $ag-preview-dark-mid 48%, $ag-preview-dark-end 100%)
+
+// --- 聊天页：与文档宽度、输入区、工具条一致 ---
+// 组件化后这些类由 ChatEntitySidebar / ChatMessagePanel / ChatSessionSidebar 共享
+.chat-page
+  height: 100%
+  min-height: 0
+  min-width: 0
+  overflow: hidden
+
+.chat-workspace-shell__main
+  min-width: 0
+  width: 100%
+
+.chat-page__row
+  min-height: 0
+  min-width: 0
+  width: 100%
+  height: 100%
+  overflow: hidden
+  gap: 10px
+  align-items: stretch
+
+.chat-workspace-main
+  flex: 1 1 0
+  min-width: 0
+  min-height: 0
+  overflow: hidden
+
+.chat-mid-card
+  flex: 1 1 0
+  min-height: 0
+  min-width: 0
+  max-width: 100%
+  overflow: hidden
+  flex-wrap: nowrap
+
+.chat-composer
+  flex: 0 0 auto
+  position: relative
+  border-radius: 0 0 16px 16px
+  &::before
+    content: ""
+    position: absolute
+    top: -24px
+    left: 0
+    right: 0
+    height: 24px
+    pointer-events: none
+    z-index: 1
+
+.chat-side
+  flex-shrink: 0
+  overflow: hidden
+  border-radius: 18px
+
+.chat-side__header
+  padding: 10px 10px 6px
+
+.chat-side__content
+  padding: 0 10px 10px
+
+.chat-section-label
+  padding: 10px 4px 6px !important
+  font-weight: 700
+  letter-spacing: 0.08em
+
+.chat-side-hint
+  padding: 0 4px 8px
+
+.chat-side--left,
+.chat-side--right
+  position: relative
+  z-index: 2
+  min-width: 0
+  overflow-x: hidden
+  overflow-y: hidden
+  transition: width 0.22s ease, opacity 0.18s ease
+
+.chat-side__toggle
+  position: relative
+  z-index: 3
+  flex: 0 0 var(--chat-side-toggle-width, 32px)
+  width: var(--chat-side-toggle-width, 32px)
+  min-width: var(--chat-side-toggle-width, 32px)
+  overflow: visible
+  pointer-events: none
+
+.chat-side__toggle-btn
+  pointer-events: auto
+  z-index: 1
+  width: 28px
+  height: 28px
+  min-width: 28px
+  min-height: 28px
+  border-radius: 12px !important
+
+.chat-message-header
+  flex: 0 0 auto
+
+.chat-messages
+  flex: 1 1 0
+  min-height: 0
+  height: 0
+  overflow: hidden
+  position: relative
+
+.chat-messages-main
+  flex: 1 1 0
+  min-width: 0
+  min-height: 0
+  display: flex
+  flex-direction: column
+
+.chat-messages__viewport
+  min-height: 0
+  flex: 1 1 0
+  overflow-y: auto
+  overflow-x: hidden
+  overscroll-behavior: contain
+
+.chat-empty-state
+  min-height: 100%
+  text-align: center
+
+.chat-session-header
+  min-height: 44px
+  padding: 12px 14px 8px
+
+.chat-session-list
+  padding: 4px 6px 8px
+  box-sizing: border-box
+  max-width: 100%
+
+.chat-session-actions
+  min-height: 54px
+  padding: 10px
+
+.chat-attachments
+  min-height: 34px
+  align-items: center
+
+.chat-input .q-field__control
+  max-height: 400px
+  overflow: auto
+  border-radius: 14px
+  padding: 8px 12px
+
+.chat-input textarea
+  min-height: 56px
+  max-height: 400px
+
+.chat-toolbar
+  display: flex
+  align-items: center
+  justify-content: space-between
+  gap: var(--space-3)
+  width: 100%
+  min-width: 0
+  min-height: 36px
+
+.chat-toolbar-fields
+  flex: 1 1 auto
+  gap: 6px
+  min-width: 0
+  overflow-x: auto
+  scrollbar-width: none
+  &::-webkit-scrollbar
+    display: none
+
+.chat-toolbar-field
+  flex: 0 0 auto
+  min-width: 0
+
+.chat-toolbar-field--mode
+  width: 130px
+  flex-shrink: 0
+
+.chat-toolbar-field--model
+  width: 180px
+  flex-shrink: 0
+
+.chat-toolbar-field--kb
+  width: 160px
+  max-width: 24vw
+  flex-shrink: 1
+
+@media (max-width: 1100px)
+  .chat-toolbar-field--mode
+    width: 110px
+  .chat-toolbar-field--model
+    width: 150px
+  .chat-toolbar-field--kb
+    width: 130px
+    max-width: 20vw
+
+@media (max-width: 899px)
+  .chat-toolbar
+    flex-direction: column
+    align-items: stretch
+    gap: var(--space-2)
+
+  .chat-toolbar-fields
+    flex-wrap: wrap
+    width: 100%
+    overflow-x: visible
+
+  .chat-toolbar-field--mode,
+  .chat-toolbar-field--model
+    flex: 1 1 calc(50% - var(--space-2))
+    width: auto
+    max-width: none
+
+  .chat-toolbar-field--kb
+    flex: 1 1 100%
+    width: 100%
+    max-width: none
+
+  .chat-toolbar-actions
+    width: 100%
+    margin-left: 0
+
+.chat-toolbar-field .q-field__control
+  min-height: 36px
+  border-radius: 10px
+
+// 聊天页：锁定 layout 视口高度，避免消息列表把整页撑长（须在 .chat-messages 内滚动）
+.app-layout-root:has(.chat-page)
+  height: 100vh
+  max-height: 100dvh
+  overflow: hidden
+
+.app-page-container:has(.chat-page)
+  display: flex
+  flex-direction: column
+  flex: 1 1 auto
+  min-height: 0
+  height: 100%
+  max-height: 100%
+  overflow: hidden
+  box-sizing: border-box
+  // 仅清零右/下装饰内边距；不可 padding:0 —— 会覆盖 Quasar 为 q-drawer 注入的 padding-left
+  // 亦不可清零 padding-top —— Quasar 用其为 fixed q-header 留白，否则聊天区顶部被顶栏遮挡
+  padding-right: 0 !important
+  padding-bottom: 0 !important
+
+  .chat-page
+    flex: 1 1 0
+    min-height: 0 !important
+    overflow: hidden
+
+.chat-composer-toolbar-slot
+  display: contents
+
+.chat-toolbar-actions
+  flex: 0 0 auto
+  margin-left: auto
+  justify-content: flex-end
+  align-items: center
+  gap: 4px
+  min-height: 36px
+
+.chat-toolbar-btn
+  width: 36px !important
+  height: 36px !important
+  min-width: 36px !important
+  min-height: 36px !important
+  padding: 0 !important
+  border-radius: 10px !important
+  flex-shrink: 0
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease
+  &:hover
+    transform: translateY(-1px)
+  &:active
+    transform: translateY(0) scale(0.96)
+
+.chat-toolbar-btn--outline
+  background: color-mix(in srgb, var(--glass-surface) 88%, transparent) !important
+
+.chat-toolbar-btn--filled .q-icon
+  color: var(--color-on-accent)
+
+.chat-context-pill
+  min-height: 42px
+  padding: 4px 10px 4px 12px
+  border-radius: 999px
+
+.chat-icon-btn
+  width: 40px
+  height: 40px
+  border-radius: 12px !important
+
+.chat-action-btn
+  width: 28px
+  height: 28px
+  border-radius: 10px !important
+
+.chat-primary-btn,
+.chat-outline-danger-btn
+  min-height: 36px
+  border-radius: 12px !important
+  font-weight: 600
+
+body:not(.body--dark)
+  .chat-page
+    .chat-mid-card
+      background: rgba(255, 253, 245, 0.82) !important
+      border: 1px solid var(--glass-border)
+      box-shadow: var(--glass-inner-highlight)
+    .chat-messages
+      background: linear-gradient(180deg, rgba(255, 251, 242, 0.65), rgba(254, 253, 245, 0.95))
+    .chat-composer
+      background: linear-gradient(180deg, rgba(255, 251, 242, 0.72), rgba(255, 248, 231, 0.92))
+      backdrop-filter: blur(var(--glass-blur-default))
+      -webkit-backdrop-filter: blur(var(--glass-blur-default))
+      border-top: 1px solid color-mix(in srgb, var(--glass-border) 55%, transparent)
+      &::before
+        background: linear-gradient(180deg, transparent, rgba(255, 251, 242, 0.72))
+    .chat-side
+      background: var(--glass-surface)
+      border: 1px solid var(--glass-border)
+      backdrop-filter: blur(var(--glass-blur-default))
+      -webkit-backdrop-filter: blur(var(--glass-blur-default))
+    .chat-search .q-field__control
+      background: rgba(255, 255, 255, 0.72)
+      border-radius: 14px
+    .chat-input .q-field__control
+      background: rgba(242, 230, 211, 0.72)
+      border: 1px solid rgba(0, 0, 0, 0.08)
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62)
+    .chat-input.q-field--focused .q-field__control
+      border-color: rgba(0, 122, 255, 0.6)
+      box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.7)
+    .chat-toolbar-field .q-field__control
+      background: rgba(255, 255, 255, 0.68)
+      border-color: rgba(0, 0, 0, 0.08)
+    .chat-toolbar-field.q-field--focused .q-field__control
+      border-color: rgba(0, 122, 255, 0.5)
+      box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.2)
+    .chat-context-pill
+      color: $cream-text-light
+      background: rgba(255, 255, 255, 0.58)
+      border: 1px solid rgba(0, 0, 0, 0.06)
+    .chat-side__toggle-btn
+      box-shadow: var(--glass-inner-highlight) !important
+      background: var(--color-accent) !important
+      color: var(--color-on-accent) !important
+      &:hover
+        background: var(--color-accent-hover) !important
+    .chat-icon-btn,
+    .chat-action-btn,
+    .chat-toolbar-btn--outline
+      background: rgba(255, 255, 255, 0.56) !important
+      color: $cream-text-light !important
+      border-color: rgba(0, 0, 0, 0.11) !important
+    .chat-toolbar-btn--filled,
+    .chat-send-btn,
+    .chat-primary-btn
+      background: var(--color-accent) !important
+      color: var(--color-on-accent) !important
+      box-shadow: var(--glass-inner-highlight)
+      &:hover
+        background: var(--color-accent-hover) !important
+    .chat-danger-btn,
+    .chat-outline-danger-btn
+      color: var(--color-danger) !important
+      border-color: rgba(255, 59, 48, 0.30) !important
+      background: rgba(255, 59, 48, 0.08) !important
+    .chat-entity-item,
+    .chat-session-item
+      min-height: 56px
+      background: rgba(255, 255, 255, 0.54)
+      transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease
+      &:hover
+        background: var(--glass-surface-hover)
+        border-color: color-mix(in srgb, var(--color-accent) 22%, $cream-border-soft)
+        box-shadow: var(--glass-inner-highlight)
+        transform: translateY(-1px)
+    .chat-session-item--active
+      background: var(--glass-elevated) !important
+      border-color: color-mix(in srgb, var(--color-accent) 38%, $cream-border-soft) !important
+      box-shadow: var(--glass-inner-highlight), inset 3px 0 0 var(--color-accent) !important
+      color: var(--color-text-primary) !important
+      transform: none
+    .chat-session-actions
+      background: rgba(255, 248, 231, 0.92)
+  .chat-entity-item,
+  .chat-session-item
+    border: 1px solid $cream-border-soft
+
+body.body--dark
+  .chat-page
+    background: var(--chat-page-bg)
+    color: var(--chat-text-primary)
+    .chat-mid-card
+      background: var(--glass-surface) !important
+      border: 1px solid var(--glass-border)
+      box-shadow: var(--glass-inner-highlight)
+      backdrop-filter: blur(var(--glass-blur-default))
+      -webkit-backdrop-filter: blur(var(--glass-blur-default))
+    .chat-messages
+      background: var(--chat-canvas-dark)
+    .chat-composer
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.96))
+      backdrop-filter: blur(var(--glass-blur-default))
+      -webkit-backdrop-filter: blur(var(--glass-blur-default))
+      border-top-color: rgba(148, 163, 184, 0.12)
+      &::before
+        background: linear-gradient(180deg, transparent, rgba(15, 23, 42, 0.72))
+    .chat-side
+      background: var(--glass-surface)
+      border: 1px solid var(--glass-border)
+      backdrop-filter: blur(var(--glass-blur-default))
+      -webkit-backdrop-filter: blur(var(--glass-blur-default))
+    .chat-search .q-field__control,
+    .chat-toolbar-field .q-field__control,
+    .chat-input .q-field__control
+      background: rgba(30, 41, 59, 0.76)
+      border-color: rgba(148, 163, 184, 0.18)
+    .chat-input.q-field--focused .q-field__control
+      border-color: rgba(77, 216, 232, 0.55)
+      box-shadow: 0 0 0 2px rgba(77, 216, 232, 0.22)
+    .chat-toolbar-field .q-field__control
+      background: rgba(30, 41, 59, 0.76)
+      border-color: rgba(148, 163, 184, 0.18)
+    .chat-toolbar-field.q-field--focused .q-field__control
+      border-color: rgba(77, 216, 232, 0.45)
+      box-shadow: 0 0 0 1px rgba(77, 216, 232, 0.18)
+    .text-cream-text
+      color: var(--chat-text-primary) !important
+    .text-cream-muted
+      color: var(--chat-text-muted) !important
+    .chat-context-pill
+      color: var(--chat-text-secondary)
+      background: rgba(30, 41, 59, 0.74)
+      border: 1px solid rgba(148, 163, 184, 0.16)
+    .chat-side__toggle-btn,
+    .chat-toolbar-btn--filled,
+    .chat-send-btn,
+    .chat-primary-btn
+      background: color-mix(in srgb, var(--color-accent) 24%, transparent) !important
+      color: var(--color-accent) !important
+      border: 1px solid color-mix(in srgb, var(--color-accent) 48%, transparent) !important
+      box-shadow: 0 0 12px rgba(77, 216, 232, 0.18)
+      &:hover
+        background: color-mix(in srgb, var(--color-accent) 36%, transparent) !important
+        box-shadow: 0 0 18px rgba(77, 216, 232, 0.26)
+    .chat-icon-btn,
+    .chat-action-btn,
+    .chat-toolbar-btn--outline
+      background: rgba(30, 41, 59, 0.72) !important
+      color: var(--chat-text-secondary) !important
+      border: 1px solid rgba(148, 163, 184, 0.12)
+    .chat-danger-btn,
+    .chat-outline-danger-btn
+      color: var(--color-danger-text) !important
+      border-color: rgba(248, 113, 113, 0.26) !important
+      background: rgba(127, 29, 29, 0.18) !important
+    .chat-entity-item,
+    .chat-session-item
+      min-height: 56px
+      background: var(--chat-idle-surface)
+      border: 1px solid var(--chat-idle-border)
+      transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease
+      &:hover
+        background: var(--chat-idle-surface-hover)
+        border-color: var(--chat-idle-border-hover)
+        transform: translateY(-1px)
+    .chat-session-item--active
+      background: var(--glass-surface-hover) !important
+      border-color: color-mix(in srgb, var(--color-accent) 42%, var(--glass-border)) !important
+      box-shadow: var(--glass-inner-highlight), inset 3px 0 0 color-mix(in srgb, var(--color-accent) 72%, transparent) !important
+      color: var(--chat-text-active) !important
+      transform: none
+
+// --- 聊天消息气泡（UX.md §5.2 玻璃卡片；昼夜仅换 token）---
+$chat-bubble-radius: 16px
+$chat-bubble-pad-y: 14px
+$chat-bubble-pad-x: 18px
+$chat-msg-gap: 16px
+$chat-user-max: 46rem
+
+.chat-page .chat-q-message .q-message-received .q-message-text,
+.chat-page .chat-q-message .q-message-sent .q-message-text,
+.chat-page .chat-q-message .q-message-text--received,
+.chat-page .chat-q-message .q-message-text--sent,
+.chat-page .chat-q-message .q-message-text-content
+  background: transparent !important
+  background-color: transparent !important
+  box-shadow: none !important
+  padding: 0 !important
+  border: none !important
+  outline: none !important
+  color: inherit !important
+
+// Quasar 默认 received 易落到 $positive（鼠尾草绿）— 必须打掉
+.chat-page .chat-q-message .q-message-text.bg-positive,
+.chat-page .chat-q-message .text-positive.q-message-text
+  background: transparent !important
+  color: inherit !important
+
+.chat-page .chat-q-message .q-message-text:before,
+.chat-page .chat-q-message .q-message-text:after
+  display: none !important
+
+.chat-page .chat-messages
+  padding-left: 12px
+  padding-right: 12px
+
+.chat-page .chat-q-message
+  width: 100%
+  max-width: 100%
+
+.chat-page .chat-message-stack
+  display: flex
+  flex-direction: column
+  align-items: flex-start
+  gap: 10px
+  width: 100%
+  max-width: 100%
+  min-width: 0
+
+.chat-page .chat-message-stack--sent
+  align-items: flex-end
+  margin-left: auto
+  width: fit-content
+  max-width: min($chat-user-max, 92%)
+
+.chat-page .chat-message-stack .message-meta-row
+  margin-bottom: 0
+  padding: 0 4px
+  gap: 8px
+
+.chat-page .chat-message-stack--sent .message-meta-row
+  justify-content: flex-end
+
+.chat-page .chat-message-bubble--received
+  width: 100%
+
+.chat-page .chat-message-bubble--sent
+  width: fit-content
+  max-width: 100%
+
+.chat-page .chat-message-bubble
+  border-radius: $chat-bubble-radius
+  padding: $chat-bubble-pad-y $chat-bubble-pad-x
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+  outline: none
+
+// Markdown 正文区（阅读宽度 ~42rem、段落节奏、表格可扫读）
+.chat-page .chat-message-prose
+  font-size: 15px
+  line-height: 1.72
+  color: inherit
+  max-width: 100%
+
+.chat-page .chat-message-prose :is(h1, h2, h3, h4, h5, h6)
+  margin: 0
+  font-weight: 650
+  line-height: 1.35
+  letter-spacing: -0.01em
+  color: var(--color-text-heading)
+
+.chat-page .chat-message-prose :is(h1, h2, h3, h4, h5, h6):not(:first-child)
+  margin-top: 1.35em
+
+.chat-page .chat-message-prose :is(h1, h2, h3, h4, h5, h6) + :is(p, ul, ol, table, blockquote, pre, .code-block)
+  margin-top: 0.5em
+
+.chat-page .chat-message-prose h1
+  font-size: 1.2rem
+.chat-page .chat-message-prose h2
+  font-size: 1.1rem
+  padding-bottom: 0.35em
+  border-bottom: 1px solid var(--glass-border)
+.chat-page .chat-message-prose h3
+  font-size: 1.02rem
+.chat-page .chat-message-prose h4,
+.chat-page .chat-message-prose h5,
+.chat-page .chat-message-prose h6
+  font-size: 0.98rem
+
+.chat-page .chat-message-prose p
+  margin: 0 0 0.9em
+.chat-page .chat-message-prose p:last-child
+  margin-bottom: 0
+
+.chat-page .chat-message-prose :is(ul, ol)
+  margin: 0.35em 0 1em
+  padding-left: 1.4em
+.chat-page .chat-message-prose ul
+  list-style-type: disc
+.chat-page .chat-message-prose ol
+  list-style-type: decimal
+.chat-page .chat-message-prose li
+  padding-left: 0.15em
+.chat-page .chat-message-prose li + li
+  margin-top: 0.45em
+.chat-page .chat-message-prose li > :is(ul, ol)
+  margin-top: 0.35em
+  margin-bottom: 0.25em
+
+.chat-page .chat-message-prose hr
+  margin: 1.15em 0
+  border: 0
+  border-top: 1px solid var(--glass-border)
+
+.chat-page .chat-message-prose table
+  display: block
+  width: 100%
+  max-width: 100%
+  margin: 0.65em 0 0.85em
+  overflow-x: auto
+  border-collapse: collapse
+  border-radius: 12px
+  border: 1px solid var(--glass-border)
+  font-size: 13px
+  line-height: 1.55
+  -webkit-overflow-scrolling: touch
+
+.chat-page .chat-message-prose thead
+  background: color-mix(in srgb, var(--glass-surface) 88%, transparent)
+
+.chat-page .chat-message-prose th,
+.chat-page .chat-message-prose td
+  padding: 12px 16px
+  border: 1px solid var(--glass-border)
+  text-align: left
+  vertical-align: top
+
+.chat-page .chat-message-prose th
+  font-weight: 650
+  color: var(--color-text-secondary)
+  font-size: 12px
+  min-width: 7.5rem
+  width: 32%
+
+.chat-page .chat-message-prose td
+  color: var(--color-text-primary)
+  word-break: break-word
+
+.chat-page .chat-message-prose blockquote
+  margin: 0.75em 0
+  padding: 0.35em 0.85em
+  border-left: 3px solid color-mix(in srgb, var(--color-accent) 55%, transparent)
+  border-radius: 0 8px 8px 0
+  background: color-mix(in srgb, var(--glass-surface) 65%, transparent)
+  color: var(--color-text-secondary)
+
+.chat-page .chat-message-prose code
+  padding: 0.12em 0.4em
+  border-radius: 6px
+  font-size: 0.9em
+  background: color-mix(in srgb, var(--canvas-base) 12%, var(--glass-surface))
+
+body:not(.body--dark) .chat-page
+  .chat-message-bubble--received
+    background: var(--chat-bubble-cream)
+    border: 1px solid var(--chat-bubble-cream-border)
+    box-shadow: var(--glass-inner-highlight)
+    color: var(--chat-bubble-cream-text)
+  .chat-message-bubble--received .message-name
+    color: var(--chat-bubble-cream-text)
+  .chat-message-bubble--received .message-stamp
+    color: var(--chat-bubble-cream-text-muted)
+  .chat-message-bubble--sent
+    background: color-mix(in srgb, var(--color-accent) 14%, var(--glass-elevated))
+    border: 1px solid color-mix(in srgb, var(--color-accent) 38%, var(--glass-border))
+    box-shadow: var(--glass-inner-highlight), 0 0 12px rgba(0, 122, 255, 0.08)
+    color: var(--chat-bubble-cream-text)
+  .chat-message-bubble--sent .message-name,
+  .chat-message-bubble--sent .message-stamp
+    color: var(--chat-bubble-cream-text-muted)
+  .chat-q-message:hover .chat-message-bubble--received
+    background: var(--chat-bubble-cream-hover)
+    border-color: rgba(0, 0, 0, 0.06)
+  .chat-q-message:hover .chat-message-bubble--sent
+    background: color-mix(in srgb, var(--color-accent) 22%, var(--glass-surface-hover))
+    box-shadow: var(--glass-inner-highlight), 0 0 16px rgba(0, 122, 255, 0.12)
+  .message-avatar--user
+    background: var(--color-accent) !important
+    color: var(--color-text-primary) !important
+    border: 1px solid color-mix(in srgb, var(--color-accent) 38%, var(--glass-border))
+  .chat-message-content :is(h1, h2, h3, h4, h5, h6)
+    color: var(--chat-bubble-cream-text)
+  .chat-message-content a
+    color: var(--color-accent)
+    border-bottom-color: rgba(0, 122, 255, 0.45)
+  .chat-message-content a:hover
+    color: var(--color-accent-hover)
+  .chat-message-content th
+    color: var(--chat-bubble-cream-text)
+    background: rgba(0, 122, 255, 0.1)
+  .chat-tool-details__summary-text
+    color: var(--chat-bubble-cream-text)
+  .chat-message-bubble--send-failed,
+  .chat-message-bubble--tool-failed
+    color: var(--chat-bubble-cream-failed-text)
+  .chat-message-bubble--send-failed .chat-message-content,
+  .chat-message-bubble--tool-failed .chat-message-content
+    color: var(--chat-bubble-cream-failed-text)
+  .chat-message-bubble--send-failed .chat-message-content :is(p, li, span),
+  .chat-message-bubble--tool-failed .chat-message-content :is(p, li, span)
+    color: var(--chat-bubble-cream-failed-text)
+  .chat-message-bubble--sent .chat-message-content a
+    color: $ag-chat-link
+    border-bottom-color: rgba(139, 90, 43, 0.35)
+  .chat-message-bubble--sent .chat-message-content a:hover
+    color: $ag-chat-link-hover
+  .chat-message-bubble--sent .chat-message-content th
+    background: rgba(180, 130, 40, 0.12)
+
+body.body--dark .chat-page
+  .chat-message-bubble--received,
+  .chat-message-bubble--dark.chat-message-bubble--received
+    background: var(--glass-surface)
+    border: 1px solid var(--glass-border) !important
+    box-shadow: var(--glass-inner-highlight) !important
+    color: var(--color-text-primary)
+  .chat-message-bubble--received .message-name,
+  .chat-message-bubble--dark.chat-message-bubble--received .message-name
+    color: var(--color-text-primary)
+  .chat-message-bubble--received .message-stamp,
+  .chat-message-bubble--dark.chat-message-bubble--received .message-stamp
+    color: var(--color-text-secondary)
+  .chat-message-bubble--sent,
+  .chat-message-bubble--dark.chat-message-bubble--sent
+    background: color-mix(in srgb, var(--color-accent) 14%, transparent)
+    border: 1px solid color-mix(in srgb, var(--color-accent) 38%, transparent)
+    box-shadow: 0 0 12px rgba(77, 216, 232, 0.1)
+    color: var(--color-text-primary)
+  .chat-message-bubble--sent .message-name,
+  .chat-message-bubble--sent .message-stamp,
+  .chat-message-bubble--dark.chat-message-bubble--sent .message-name,
+  .chat-message-bubble--dark.chat-message-bubble--sent .message-stamp
+    color: var(--color-text-primary)
+  .chat-message-bubble--sent .message-stamp,
+  .chat-message-bubble--dark.chat-message-bubble--sent .message-stamp
+    opacity: 0.72
+  .chat-q-message:hover .chat-message-bubble--received,
+  .chat-q-message:hover .chat-message-bubble--dark.chat-message-bubble--received
+    background: var(--glass-surface-hover)
+    border-color: var(--glass-border-hover)
+    box-shadow: var(--glass-inner-highlight)
+  .chat-q-message:hover .chat-message-bubble--sent,
+  .chat-q-message:hover .chat-message-bubble--dark.chat-message-bubble--sent
+    background: color-mix(in srgb, var(--color-accent) 22%, transparent)
+    box-shadow: 0 0 16px rgba(77, 216, 232, 0.14)
+  .message-avatar--user
+    background: var(--glass-elevated) !important
+    color: var(--color-accent) !important
+    border: 1px solid var(--glass-border)
+    box-shadow: 0 0 12px rgba(77, 216, 232, 0.12)
+  .chat-message-content :is(h1, h2, h3, h4, h5, h6)
+    color: var(--color-text-heading)
+  .chat-message-content--dark :is(h1, h2, h3, h4, h5, h6),
+  .chat-message-bubble--received .chat-message-content :is(h1, h2, h3, h4, h5, h6)
+    color: var(--color-text-heading)
+  .chat-message-content--sent :is(h1, h2, h3, h4, h5, h6),
+  .chat-message-content--sent :is(p, li)
+    color: var(--color-text-primary)
+  .chat-message-content a
+    color: var(--color-link)
+  .chat-message-content th
+    color: var(--color-text-primary)
+    background: rgba(77, 216, 232, 0.1)
+  .chat-tool-details__summary-text
+    color: var(--color-text-primary)
+
+  .chat-message-prose thead
+    background: color-mix(in srgb, var(--glass-surface-hover) 90%, transparent)
+
+  .chat-message-prose blockquote
+    border-left-color: color-mix(in srgb, var(--color-accent) 45%, transparent)
+    background: color-mix(in srgb, var(--glass-surface) 80%, transparent)
+
+// 流式生成：左侧细强调条 + 微脉动，禁止整卡绿色外框
+.chat-page .chat-q-message--streaming .chat-message-bubble--received
+  box-shadow: var(--glass-inner-highlight), inset 3px 0 0 var(--color-accent)
+  animation: chat-stream-pulse 2s ease-in-out infinite
+
+@keyframes chat-stream-pulse
+  0%, 100%
+    box-shadow: var(--glass-inner-highlight), inset 3px 0 0 var(--color-accent)
+  50%
+    box-shadow: var(--glass-inner-highlight), inset 3px 0 0 var(--color-accent), 0 0 8px color-mix(in srgb, var(--color-accent) 15%, transparent)
+
+body.body--dark .chat-page .chat-q-message--streaming .chat-message-bubble--received
+  box-shadow: var(--glass-inner-highlight), inset 3px 0 0 color-mix(in srgb, var(--color-accent) 70%, transparent)
+  animation: chat-stream-pulse-dark 2s ease-in-out infinite
+
+@keyframes chat-stream-pulse-dark
+  0%, 100%
+    box-shadow: var(--glass-inner-highlight), inset 3px 0 0 color-mix(in srgb, var(--color-accent) 70%, transparent)
+  50%
+    box-shadow: var(--glass-inner-highlight), inset 3px 0 0 color-mix(in srgb, var(--color-accent) 70%, transparent), 0 0 12px color-mix(in srgb, var(--color-accent) 20%, transparent)
+
+// ===== 流式视觉反馈（脉动点 + 闪烁光标）=====
+// 通用类，供 ReplyBlock、AgentWorkPanel 等聊天组件使用
+// 参考 aranea-frontend-guide §6.14「左侧 3px inset 强调条或轻脉动，禁止整卡绿色外框」
+.pulse-dot
+  display: inline-block
+  width: 6px
+  height: 6px
+  border-radius: 50%
+  background: var(--color-accent)
+  vertical-align: middle
+  margin-left: 4px
+  flex-shrink: 0
+  animation: chat-pulse-dot 1s ease-in-out infinite
+
+.cursor-blink
+  display: inline-block
+  width: 2px
+  height: 14px
+  background: var(--color-accent)
+  vertical-align: middle
+  margin-left: 2px
+  flex-shrink: 0
+  animation: chat-cursor-blink 0.8s step-end infinite
+
+@keyframes chat-pulse-dot
+  0%, 100%
+    opacity: 1
+  50%
+    opacity: 0.3
+
+@keyframes chat-cursor-blink
+  0%, 100%
+    opacity: 1
+  50%
+    opacity: 0
+
+@media (prefers-reduced-motion: reduce)
+  .pulse-dot
+    animation: none
+    opacity: 0.6
+  .cursor-blink
+    animation: none
+    opacity: 0.6
+
+@media (max-width: 900px)
+  :root
+    --chat-side-left-width: 240px
+    --chat-side-right-width: 320px
+  .chat-toolbar-actions
+    justify-content: flex-start
+
+// Skill 管理页：UX.md §2 玻璃 token + §7 圆角；昼夜仅换变量
+body:not(.body--dark)
+  .skills-page,
+  .skill-runs-page,
+  .sessions-page
+    color: var(--color-text-primary)
+
+    .skill-filter-card,
+    .skill-upload-card,
+    .skill-runs-filter,
+    .skill-table,
+    .skill-runs-table,
+    .skills-empty-card,
+    .sessions-glass-panel,
+    .sessions-summary-card,
+    .sessions-filter-card,
+    .sessions-detail-card,
+    .sessions-table
+      background: var(--glass-surface) !important
+      border: 1px solid var(--glass-border) !important
+      border-radius: 20px !important
+      box-shadow: var(--glass-inner-highlight)
+      backdrop-filter: blur(var(--glass-blur-default))
+      -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+    .skill-filter-card,
+    .skill-upload-card,
+    .skill-runs-filter,
+    .skills-empty-card,
+    .sessions-glass-panel,
+    .sessions-filter-card,
+    .sessions-detail-card
+      transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease
+      &:hover
+        background: var(--glass-surface-hover) !important
+        box-shadow: var(--glass-inner-highlight)
+        backdrop-filter: blur(var(--glass-blur-hover))
+        -webkit-backdrop-filter: blur(var(--glass-blur-hover))
+
+    .sessions-summary-card
+      transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease
+      &:hover
+        background: var(--glass-surface-hover) !important
+        border-color: var(--glass-border)
+        backdrop-filter: blur(var(--glass-blur-hover))
+        -webkit-backdrop-filter: blur(var(--glass-blur-hover))
+
+    .q-table th
+      color: var(--color-text-secondary)
+      font-weight: 700
+      background: var(--glass-surface)
+      backdrop-filter: blur(var(--glass-blur-default))
+      -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+    .q-table tbody tr
+      background: transparent
+
+    .q-table tbody tr:hover
+      background: var(--glass-surface-hover)
+
+    .skill-stat,
+    .metric-pill
+      background: var(--glass-surface)
+      border: 1px solid var(--glass-border)
+      backdrop-filter: blur(var(--glass-blur-default))
+      -webkit-backdrop-filter: blur(var(--glass-blur-default))
+      box-shadow: var(--glass-inner-highlight)
+      padding: 8px 10px
+      border-radius: 12px
+
+    .q-field__control
+      background: color-mix(in srgb, var(--glass-elevated) 82%, transparent)
+      border-radius: 14px
+      backdrop-filter: blur(8px)
+      -webkit-backdrop-filter: blur(8px)
+
+    .app-registry-pagination--card,
+    .sessions-pagination
+      color: var(--color-text-secondary)
+
+    .sessions-muted
+      color: var(--color-text-secondary)
+
+    .sessions-btn-accent
+      background: var(--color-accent) !important
+      color: var(--color-on-accent) !important
+      &:hover
+        background: var(--color-accent-hover) !important
+
+    .sessions-btn-accent-outline
+      color: var(--color-accent) !important
+      border-color: color-mix(in srgb, var(--color-accent) 55%, transparent) !important
+      &:hover
+        background: var(--interaction-surface-hover)
+
+    .sessions-btn-ghost
+      color: var(--color-icon-muted) !important
+      &:hover
+        color: var(--color-accent) !important
+        background: var(--interaction-surface-hover)
+
+    .sessions-icon-btn
+      color: var(--color-icon-muted)
+      &:hover
+        color: var(--color-accent)
+
+    .sessions-sep
+      background: var(--glass-border)
+
+    .sessions-table-action
+      color: var(--color-accent) !important
+
+    .sessions-table-action-muted
+      color: var(--color-icon-muted) !important
+      &:hover
+        color: var(--color-accent) !important
+
+    .sessions-pagination-control .q-btn
+      color: var(--color-accent)
+
+@media (max-width: 720px)
+  body:not(.body--dark) .skills-page .skill-filter-card,
+  body:not(.body--dark) .skills-page .skill-upload-card,
+  body:not(.body--dark) .skill-runs-page .skill-runs-filter,
+  body:not(.body--dark) .sessions-page .sessions-filter-card,
+  body:not(.body--dark) .sessions-page .sessions-glass-panel
+    backdrop-filter: blur(12px)
+    -webkit-backdrop-filter: blur(12px)
+
+  body.body--dark .skills-page .skill-filter-card,
+  body.body--dark .skills-page .skill-upload-card,
+  body.body--dark .skill-runs-page .skill-runs-filter,
+  body.body--dark .sessions-page .sessions-filter-card,
+  body.body--dark .sessions-page .sessions-glass-panel
+    backdrop-filter: blur(12px)
+    -webkit-backdrop-filter: blur(12px)
+
+.skill-ux-dialog-card
+  width: 420px
+  max-width: 92vw
+  border-radius: 22px !important
+  background: var(--glass-elevated) !important
+  border: 1px solid var(--glass-border) !important
+  box-shadow: var(--glass-inner-highlight)
+  backdrop-filter: blur(var(--glass-blur-elevated))
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated))
+
+.skill-ux-subcard
+  border-radius: 18px !important
+  background: var(--glass-surface) !important
+  border: 1px solid var(--glass-border) !important
+  box-shadow: var(--glass-inner-highlight)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+.skill-import-dialog
+  border-radius: 24px !important
+  background: var(--glass-elevated) !important
+  border: 1px solid var(--glass-border) !important
+  box-shadow: var(--glass-inner-highlight)
+  backdrop-filter: blur(var(--glass-blur-elevated))
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated))
+
+.skill-import-dialog .metric-pill
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+  box-shadow: var(--glass-inner-highlight)
+  padding: 8px 10px
+  border-radius: 12px
+
+body.body--dark .skill-import-dialog
+  box-shadow: 0 0 28px color-mix(in srgb, var(--color-accent) 14%, transparent)
+
+// ── Skill filesystem alert banner ──
+.skill-fs-alert--info
+  background: color-mix(in srgb, $ag-alert-info 10%, var(--glass-surface))
+  color: $ag-alert-info-text
+  border: 1px solid color-mix(in srgb, $ag-alert-info 25%, transparent)
+
+.skill-fs-alert--warning
+  background: color-mix(in srgb, $ag-alert-warn 10%, var(--glass-surface))
+  color: $ag-alert-warn-text
+  border: 1px solid color-mix(in srgb, $ag-alert-warn 25%, transparent)
+
+.skill-fs-alert__path
+  color: var(--color-text-secondary)
+
+body.body--dark .skill-fs-alert--info
+  background: color-mix(in srgb, $ag-alert-info-dark 12%, transparent)
+  color: $ag-alert-info-dark-text
+  border-color: color-mix(in srgb, $ag-alert-info-dark 30%, transparent)
+
+body.body--dark .skill-fs-alert--warning
+  background: color-mix(in srgb, var(--color-warning) 14%, transparent)
+  color: $ag-alert-warn-dark-text
+  border-color: color-mix(in srgb, var(--color-warning) 35%, transparent)
+
+body.body--dark .skill-fs-alert__path
+  color: var(--color-text-secondary)
+
+body.body--dark
+  .skills-page,
+  .skill-runs-page,
+  .sessions-page
+    background: linear-gradient(160deg, var(--canvas-base) 0%, var(--color-page-tint-alt) 48%, var(--color-page-tint) 100%)
+    color: var(--color-text-primary)
+
+    .skill-filter-card,
+    .skill-upload-card,
+    .skill-runs-filter,
+    .skill-table,
+    .skill-runs-table,
+    .skills-empty-card,
+    .sessions-glass-panel,
+    .sessions-summary-card,
+    .sessions-filter-card,
+    .sessions-detail-card,
+    .sessions-table
+      background: var(--glass-surface) !important
+      border: 1px solid var(--glass-border) !important
+      border-radius: 20px !important
+      box-shadow: none
+      backdrop-filter: blur(var(--glass-blur-default))
+      -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+    .skill-filter-card,
+    .skill-upload-card,
+    .skill-runs-filter,
+    .skills-empty-card,
+    .sessions-glass-panel,
+    .sessions-filter-card,
+    .sessions-detail-card
+      transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease
+      &:hover
+        background: var(--glass-surface-hover) !important
+        border-color: var(--glass-border-hover)
+        box-shadow: 0 0 20px color-mix(in srgb, var(--color-accent) 12%, transparent)
+
+    .sessions-summary-card
+      transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease
+      &:hover
+        background: var(--glass-surface-hover) !important
+        border-color: var(--glass-border-hover)
+        box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent) 10%, transparent)
+
+    .q-table th
+      background: var(--glass-surface)
+      color: var(--color-text-secondary)
+      backdrop-filter: blur(var(--glass-blur-default))
+      -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+    .q-table tbody tr:hover
+      background: var(--glass-surface-hover)
+
+    .skill-stat,
+    .metric-pill
+      background: var(--glass-surface)
+      border: 1px solid var(--glass-border)
+      backdrop-filter: blur(var(--glass-blur-default))
+      -webkit-backdrop-filter: blur(var(--glass-blur-default))
+      box-shadow: var(--glass-inner-highlight)
+      padding: 8px 10px
+      border-radius: 12px
+
+    .app-registry-pagination--card,
+    .sessions-pagination
+      color: var(--color-text-secondary)
+
+    .sessions-muted
+      color: var(--color-text-secondary)
+
+    .sessions-btn-accent
+      background: color-mix(in srgb, var(--color-accent) 22%, transparent) !important
+      color: var(--color-accent) !important
+      border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent)
+      &:hover
+        background: color-mix(in srgb, var(--color-accent) 32%, transparent) !important
+
+    .sessions-btn-accent-outline
+      color: var(--color-accent) !important
+      border-color: color-mix(in srgb, var(--color-accent) 38%, transparent) !important
+      &:hover
+        background: color-mix(in srgb, var(--color-accent) 8%, transparent)
+
+    .sessions-btn-ghost
+      color: var(--color-text-secondary) !important
+      &:hover
+        color: var(--color-accent) !important
+        background: color-mix(in srgb, var(--color-accent) 6%, transparent)
+
+    .sessions-icon-btn
+      color: var(--color-text-secondary)
+      &:hover
+        color: var(--color-accent)
+
+    .sessions-sep
+      background: var(--glass-border)
+
+    .sessions-table-action
+      color: var(--color-accent) !important
+
+    .sessions-table-action-muted
+      color: var(--color-text-secondary) !important
+      &:hover
+        color: var(--color-accent) !important
+
+    .sessions-pagination-control .q-btn
+      color: var(--color-accent)
+
+  .skill-ux-dialog-card
+    box-shadow: 0 0 24px color-mix(in srgb, var(--color-accent) 12%, transparent)
+
+// Session detail + timeline（UX.md §2 玻璃 token）
+.session-detail-page
+  min-height: 100%
+
+// ── 阅读型消息详情（站内信/通知详情抽屉通用）：元信息行 + 主题标题 + 正文卡片 ──
+.msg-detail
+  &__meta
+    color: var(--color-text-secondary)
+    font-size: 13px
+
+  &__meta-icon
+    color: var(--color-icon-muted)
+
+  &__meta-text
+    letter-spacing: 0.02em
+
+  &__subject
+    margin-top: 12px
+    font-size: 17px
+    font-weight: 700
+    line-height: 1.4
+    color: var(--color-text-heading)
+    word-break: break-all
+
+  &__content
+    margin-top: 12px
+    padding: 14px 16px
+    border-radius: 12px
+    background: var(--glass-surface)
+    border: 1px solid var(--glass-border)
+    box-shadow: var(--glass-inner-highlight)
+    color: var(--color-text-primary)
+    font-size: 14px
+    line-height: 1.7
+    white-space: pre-wrap
+    word-break: break-word
+
+body.body--dark .msg-detail__content
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06)
+
+
+.session-detail-page,
+.session-timeline-dialog
+  .sessions-muted
+    color: var(--color-text-secondary)
+
+  .sessions-icon-btn
+    color: var(--color-icon-muted)
+    &:hover
+      color: var(--color-accent)
+
+  .sessions-sep
+    background: var(--glass-border)
+
+.session-timeline
+  &__toolbar
+    flex-wrap: wrap
+
+  &__filter
+    min-width: 140px
+
+  &__filter--sort
+    min-width: 120px
+
+  &__state
+    display: flex
+    flex-direction: column
+    align-items: center
+    justify-content: center
+    min-height: 200px
+    text-align: center
+    color: var(--color-text-secondary)
+
+  &__state--error
+    color: var(--color-danger)
+
+  &__rail
+    display: flex
+    flex-direction: column
+    gap: 0
+    padding: 4px 0 8px
+
+.session-timeline-stat
+  display: flex
+  align-items: center
+  gap: 12px
+  padding: 14px 16px
+  border-radius: 16px
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+  box-shadow: var(--glass-inner-highlight)
+  transition: background 0.18s ease, border-color 0.18s ease
+
+  &__icon
+    display: flex
+    align-items: center
+    justify-content: center
+    width: 36px
+    height: 36px
+    border-radius: 10px
+    flex-shrink: 0
+    color: var(--color-icon-muted)
+    background: color-mix(in srgb, var(--glass-surface) 60%, var(--color-accent) 8%)
+
+  &__value
+    font-size: 20px
+    font-weight: 850
+    line-height: 1.1
+    color: var(--color-text-primary)
+
+  &__label
+    margin-top: 2px
+    font-size: 11px
+    font-weight: 700
+    letter-spacing: 0.06em
+    text-transform: uppercase
+    color: var(--color-text-secondary)
+
+  &--message .session-timeline-stat__icon
+    color: var(--color-accent)
+
+  &--tool .session-timeline-stat__icon
+    color: var(--color-accent)
+
+  &--skill .session-timeline-stat__icon
+    color: var(--color-warning)
+
+  &--mcp .session-timeline-stat__icon
+    color: var(--color-success)
+
+.session-timeline-entry
+  display: flex
+  gap: 16px
+  align-items: stretch
+
+  &__axis
+    display: flex
+    flex-direction: column
+    align-items: center
+    width: 28px
+    flex-shrink: 0
+    padding-top: 4px
+
+  &__dot
+    display: flex
+    align-items: center
+    justify-content: center
+    width: 28px
+    height: 28px
+    border-radius: 50%
+    border: 2px solid var(--glass-border)
+    background: var(--glass-surface)
+    color: var(--color-icon-muted)
+    z-index: 1
+
+  &__line
+    flex: 1
+    width: 2px
+    min-height: 16px
+    margin-top: 4px
+    background: var(--glass-border)
+    border-radius: 1px
+
+  &:last-child .session-timeline-entry__line
+    display: none
+
+  &__card
+    flex: 1
+    min-width: 0
+    margin-bottom: 16px
+    padding: 14px 16px
+    border-radius: 16px
+    background: var(--glass-surface)
+    border: 1px solid var(--glass-border)
+    backdrop-filter: blur(var(--glass-blur-default))
+    -webkit-backdrop-filter: blur(var(--glass-blur-default))
+    box-shadow: var(--glass-inner-highlight)
+    transition: background 0.18s ease, border-color 0.18s ease
+
+  &--message .session-timeline-entry__card
+    padding: 16px 18px
+
+  &__header
+    margin: 0
+
+  &__title-row
+    display: flex
+    flex-wrap: wrap
+    align-items: center
+    gap: 8px
+
+  &__title
+    margin: 0
+    font-size: 14px
+    font-weight: 750
+    line-height: 1.35
+    color: var(--color-text-primary)
+
+  &--message .session-timeline-entry__title
+    font-size: 15px
+    font-weight: 800
+
+  &__tag
+    display: inline-flex
+    align-items: center
+    padding: 2px 8px
+    border-radius: 999px
+    font-size: 10px
+    font-weight: 700
+    letter-spacing: 0.04em
+    text-transform: uppercase
+    border: 1px solid var(--glass-border)
+    color: var(--color-text-secondary)
+    background: color-mix(in srgb, var(--glass-surface) 70%, transparent)
+
+  &__tag--user
+    color: var(--color-text-secondary)
+
+  &__tag--tool
+    color: var(--color-accent)
+    border-color: color-mix(in srgb, var(--color-accent) 35%, var(--glass-border))
+
+  &__tag--skill
+    color: var(--color-warning)
+    border-color: color-mix(in srgb, var(--color-warning) 35%, var(--glass-border))
+
+  &__tag--mcp
+    color: var(--color-success)
+    border-color: color-mix(in srgb, var(--color-success) 35%, var(--glass-border))
+
+  &__meta
+    margin-top: 6px
+    font-size: 12px
+    color: var(--color-text-secondary)
+
+  &__status
+    color: var(--color-danger)
+
+  &__preview
+    margin: 10px 0 0
+    font-size: 13px
+    line-height: 1.55
+    color: var(--color-text-primary)
+    white-space: pre-wrap
+    overflow-wrap: break-word
+
+  &__expansion
+    margin-top: 10px
+    border-radius: 12px
+    border: 1px solid var(--glass-border)
+    overflow: hidden
+
+  &__expansion-header
+    font-size: 12px
+    font-weight: 650
+    color: var(--color-text-secondary)
+
+  &__meta-row
+    display: flex
+    flex-wrap: wrap
+    gap: 4px 12px
+    padding: 10px 14px 0
+    font-size: 12px
+
+  &__meta-key
+    color: var(--color-text-secondary)
+    font-weight: 700
+    text-transform: uppercase
+    letter-spacing: 0.05em
+
+  &__meta-val
+    color: var(--color-text-primary)
+    font-weight: 650
+
+  &__detail
+    max-height: 320px
+    margin: 10px 14px 14px
+    overflow: auto
+    border-radius: 10px
+    border: 1px solid var(--glass-border)
+    background: color-mix(in srgb, var(--canvas-base) 6%, transparent)
+    color: var(--color-text-primary)
+    padding: 12px
+    white-space: pre-wrap
+    overflow-wrap: break-word
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace
+    font-size: 12px
+    line-height: 1.5
+
+  &__detail--empty
+    color: var(--color-text-secondary)
+    font-family: inherit
+
+  // Accent: user message
+  &--user .session-timeline-entry__dot
+    border-color: color-mix(in srgb, var(--color-icon-muted) 50%, var(--glass-border))
+    color: var(--color-icon-muted)
+
+  &--user .session-timeline-entry__card
+    border-left: 3px solid color-mix(in srgb, var(--color-icon-muted) 45%, transparent)
+
+  // Accent: agent message
+  &--agent .session-timeline-entry__dot
+    border-color: color-mix(in srgb, var(--color-accent) 55%, var(--glass-border))
+    color: var(--color-accent)
+
+  &--agent .session-timeline-entry__card
+    border-left: 3px solid color-mix(in srgb, var(--color-accent) 50%, transparent)
+
+  // Accent: tool
+  &--tool .session-timeline-entry__dot
+    border-color: color-mix(in srgb, var(--color-accent) 45%, var(--glass-border))
+    color: var(--color-accent)
+
+  // Accent: skill (warning/violet — not error red)
+  &--skill .session-timeline-entry__dot
+    border-color: color-mix(in srgb, var(--color-warning) 50%, var(--glass-border))
+    color: var(--color-warning)
+
+  // Accent: mcp
+  &--mcp .session-timeline-entry__dot
+    border-color: color-mix(in srgb, var(--color-success) 50%, var(--glass-border))
+    color: var(--color-success)
+
+  // Accent: error
+  &--error .session-timeline-entry__dot
+    border-color: var(--color-danger)
+    color: var(--color-danger)
+    background: color-mix(in srgb, var(--color-danger) 12%, var(--glass-surface))
+
+  &--error .session-timeline-entry__card
+    border-left: 3px solid var(--color-danger)
+
+body:not(.body--dark)
+  .session-timeline-stat:hover
+    background: var(--glass-surface-hover)
+    border-color: var(--glass-border)
+
+  .session-timeline-entry__card:hover
+    background: var(--glass-surface-hover)
+
+  .session-timeline-entry--skill .session-timeline-entry__dot
+    color: var(--color-warning)
+
+  .session-timeline__filter .q-field__control
+    background: color-mix(in srgb, var(--glass-elevated) 82%, transparent)
+    border-radius: 14px
+    backdrop-filter: blur(8px)
+    -webkit-backdrop-filter: blur(8px)
+
+body.body--dark
+  .session-timeline-stat:hover
+    background: var(--glass-surface-hover)
+    border-color: var(--glass-border-hover)
+
+  .session-timeline-entry__card:hover
+    background: var(--glass-surface-hover)
+    border-color: var(--glass-border-hover)
+
+  .session-timeline-entry--skill .session-timeline-entry__dot
+    border-color: color-mix(in srgb, var(--color-neon-violet) 55%, var(--glass-border))
+    color: var(--color-neon-violet)
+
+  .session-timeline-stat--skill .session-timeline-stat__icon
+    color: var(--color-neon-violet)
+
+  .session-timeline-entry__tag--skill
+    color: var(--color-neon-violet)
+    border-color: color-mix(in srgb, var(--color-neon-violet) 35%, var(--glass-border))
+
+  .session-timeline__filter .q-field__control
+    background: color-mix(in srgb, var(--color-surface-solid) 45%, transparent)
+    border-radius: 14px
+    backdrop-filter: blur(8px)
+    -webkit-backdrop-filter: blur(8px)
+
+  .session-timeline__filter .q-field--focused .q-field__control
+    border-color: var(--color-accent) !important
+
+// 概览：持仓表紧凑、褐色调底纹
+body:not(.body--dark) .dashboard-pos-table
+  font-size: 0.8rem
+  th
+    color: var(--color-text-secondary)
+  tbody tr
+    background: color-mix(in srgb, var(--glass-surface) 55%, transparent) !important
+  tbody tr:hover
+    background: var(--glass-surface-hover) !important
+
+// ----- Monitor：Audit / Events / Traces / Logs（子组件共用 monitor-* 工具类） -----
+.monitor-card
+  border-radius: 18px
+
+.monitor-detail-card
+  border-radius: 18px
+  max-width: 880px
+  width: min(880px, 92vw)
+
+body:not(.body--dark) .monitor-trace-dialog
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+  box-shadow: var(--glass-inner-highlight)
+  backdrop-filter: blur(var(--glass-blur-elevated))
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated))
+
+body.body--dark .monitor-trace-dialog
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+  backdrop-filter: blur(var(--glass-blur-elevated))
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated))
+
+.monitor-json
+  background: color-mix(in srgb, var(--canvas-base) 8%, var(--color-surface-elevated))
+  border-radius: 14px
+  border: 1px solid var(--glass-border)
+  color: color-mix(in srgb, var(--color-success) 65%, var(--color-on-accent))
+  font-size: 12px
+  line-height: 1.6
+  margin: 0
+  max-height: 60vh
+  overflow: auto
+  padding: 14px
+  white-space: pre-wrap
+  word-break: break-word
+
+.monitor-code
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent)
+  border-radius: 6px
+  padding: 2px 6px
+
+.monitor-empty
+  align-items: center
+  color: var(--color-text-secondary)
+  display: grid
+  gap: 8px
+  justify-items: center
+  min-height: 180px
+
+.monitor-event-item
+  border-radius: 14px
+  margin-bottom: 4px
+
+.monitor-log-stream-panel
+  display: flex
+  flex-direction: column
+  flex: 1
+  min-height: 0
+  height: 100%
+
+.monitor-log-stream-tabs
+  flex: 0 0 auto
+
+.monitor-log-stream-panels
+  flex: 1
+  min-height: 0
+  display: flex
+  flex-direction: column
+
+.monitor-log-stream-panels .q-tab-panel
+  flex: 1
+  min-height: 0
+  display: flex
+  flex-direction: column
+
+.app-error-banner,
+.monitor-error-banner
+  background: color-mix(in srgb, var(--color-danger) 88%, transparent)
+  color: var(--color-on-accent)
+  border: 1px solid color-mix(in srgb, var(--color-danger) 55%, transparent)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+.app-error-banner__action,
+.monitor-error-banner__action
+  color: var(--color-on-accent) !important
+
+body.body--dark .app-error-banner,
+body.body--dark .monitor-error-banner
+  background: color-mix(in srgb, var(--color-danger) 28%, transparent)
+  color: var(--color-text-primary)
+  border-color: color-mix(in srgb, var(--color-danger) 45%, transparent)
+
+body.body--dark .app-error-banner__action,
+body.body--dark .monitor-error-banner__action
+  color: var(--color-text-primary) !important
+
+.app-trace-waterfall-track
+  position: relative
+  height: 12px
+  background: var(--color-border-soft)
+  border-radius: 6px
+  overflow: hidden
+
+.app-trace-waterfall-bar
+  height: 100%
+  min-width: 4px
+  background: linear-gradient(90deg, var(--color-info), var(--color-success))
+  border-radius: 6px
+
+.app-flow-trace-panel
+  display: flex
+  flex-direction: column
+  gap: 12px
+  max-height: 420px
+  overflow-y: auto
+  padding: 4px 0
+
+.app-flow-trace-row
+  display: flex
+  gap: 12px
+  align-items: flex-start
+
+.app-flow-trace-marker
+  width: 4px
+  min-height: 48px
+  border-radius: 2px
+  background: var(--color-border-soft)
+  flex-shrink: 0
+
+.app-flow-trace-row--ok .app-flow-trace-marker,
+.app-flow-trace-row--info .app-flow-trace-marker
+  background: var(--color-success)
+
+.app-flow-trace-row--warn .app-flow-trace-marker
+  background: var(--color-warning)
+
+.app-flow-trace-row--error .app-flow-trace-marker,
+.app-flow-trace-row--critical .app-flow-trace-marker
+  background: var(--color-danger)
+
+.app-flow-trace-body
+  flex: 1
+  min-width: 0
+
+body:not(.body--dark) .monitor-log-banner
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+  color: var(--color-text-primary)
+  box-shadow: var(--glass-inner-highlight)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+body.body--dark .monitor-log-banner
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+  color: var(--color-text-primary)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+.monitor-info-banner
+  background: var(--color-status-info-bg-alt)
+  color: var(--color-status-info-text)
+  border: 1px solid var(--glass-border)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+.monitor-info-banner .q-banner__content
+  color: inherit
+
+body:not(.body--dark) .monitor-alert-rule-row
+  background: var(--glass-elevated)
+  border: 1px solid var(--glass-border)
+  box-shadow: var(--glass-inner-highlight)
+
+body.body--dark .monitor-info-banner
+  background: color-mix(in srgb, var(--color-accent-blue) 35%, transparent)
+  color: var(--color-status-info-text-light)
+  border-color: var(--glass-border)
+
+body.body--dark .monitor-alert-rule-row
+  background: color-mix(in srgb, var(--color-surface-solid) 55%, transparent)
+  border: 1px solid var(--glass-border)
+
+body.body--dark .monitor-alert-rules
+  color: var(--color-text-primary)
+
+body.body--dark .monitor-alert-rules .text-h6
+  color: var(--color-text-primary)
+
+body.body--dark .monitor-alert-rules .q-field__control
+  background: color-mix(in srgb, var(--color-surface-solid) 72%, transparent)
+
+body.body--dark .monitor-alert-rules .q-field__native,
+body.body--dark .monitor-alert-rules .q-field__input
+  color: var(--color-text-primary)
+
+body.body--dark .monitor-alert-rules .q-field__label
+  color: var(--color-text-secondary)
+
+.monitor-log-console
+  background: color-mix(in srgb, var(--canvas-base) 6%, var(--color-surface-solid))
+  border-radius: 16px
+  border: 1px solid var(--glass-border)
+  color: var(--color-text-secondary)
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace
+  min-height: 320px
+  overflow: auto
+  padding: 14px
+
+.monitor-log-stream-card
+  display: flex
+  flex-direction: column
+  flex: 1
+  min-height: 0
+  height: 100%
+
+.monitor-log-stream-toolbar
+  flex: 0 0 auto
+  display: flex
+  flex-wrap: wrap
+  align-items: center
+  justify-content: space-between
+  gap: 12px 16px
+
+.monitor-log-stream-toolbar__info
+  flex: 1 1 240px
+  min-width: 0
+
+$monitor-log-control-h: 36px
+
+.monitor-log-toolbar-controls
+  display: flex
+  flex-wrap: wrap
+  align-items: center
+  justify-content: flex-end
+  gap: 8px
+  flex: 1 1 420px
+
+.monitor-log-toolbar-controls > *
+  flex: 0 0 auto
+
+.monitor-log-toolbar-field
+  height: $monitor-log-control-h
+
+.monitor-log-toolbar-field .q-field
+  height: $monitor-log-control-h
+  font-size: 13px
+
+.monitor-log-toolbar-field .q-field__inner
+  height: $monitor-log-control-h
+  min-height: $monitor-log-control-h
+  padding-bottom: 0
+
+.monitor-log-toolbar-field .q-field__control
+  height: $monitor-log-control-h !important
+  min-height: $monitor-log-control-h !important
+
+.monitor-log-toolbar-field .q-field__control-container
+  padding-top: 0 !important
+
+.monitor-log-toolbar-field .q-field__marginal
+  height: $monitor-log-control-h !important
+
+.monitor-log-toolbar-field .q-field__native,
+.monitor-log-toolbar-field .q-field__input
+  min-height: $monitor-log-control-h !important
+  line-height: $monitor-log-control-h !important
+  padding-top: 0 !important
+  padding-bottom: 0 !important
+
+.monitor-log-toolbar-field .q-field__append
+  height: $monitor-log-control-h !important
+
+.monitor-log-toolbar-field--filter
+  width: 176px
+
+.monitor-log-toolbar-field--source
+  width: 140px
+
+.monitor-log-toolbar-btn
+  height: $monitor-log-control-h !important
+  min-height: $monitor-log-control-h !important
+  padding: 0 12px !important
+  font-size: 13px
+
+.monitor-log-toolbar-btn .q-btn__content
+  min-height: $monitor-log-control-h
+  align-items: center
+
+.monitor-log-toolbar-btn .q-icon
+  font-size: 18px
+
+.monitor-log-level-toggle
+  display: inline-flex
+  align-items: center
+  gap: 2px
+  height: $monitor-log-control-h
+  box-sizing: border-box
+  padding: 3px
+  border-radius: 8px
+  border: 1px solid var(--glass-border)
+  background: color-mix(in srgb, var(--canvas-base) 8%, transparent)
+  flex-shrink: 0
+
+.monitor-log-level-toggle__btn
+  border: 1px solid transparent
+  border-radius: 6px
+  height: calc(#{$monitor-log-control-h} - 6px)
+  display: inline-flex
+  align-items: center
+  justify-content: center
+  padding: 0 10px
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace
+  font-size: 11px
+  font-weight: 700
+  letter-spacing: 0.05em
+  line-height: 1
+  cursor: pointer
+  color: var(--color-text-secondary)
+  background: transparent
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease
+
+  &:hover:not(.monitor-log-level-toggle__btn--active)
+    background: color-mix(in srgb, var(--color-text-primary) 6%, transparent)
+    color: var(--color-text-primary)
+
+  &--active
+    box-shadow: 0 1px 4px color-mix(in srgb, var(--canvas-base) 40%, transparent)
+
+  &--active.monitor-log-level-toggle__btn--debug
+    background: color-mix(in srgb, var(--color-text-slate-500) 22%, transparent)
+    border-color: color-mix(in srgb, var(--color-text-slate-600) 45%, transparent)
+    color: var(--color-text-slate-700)
+
+  &--active.monitor-log-level-toggle__btn--info
+    background: color-mix(in srgb, var(--color-accent) 24%, transparent)
+    border-color: color-mix(in srgb, var(--color-accent) 50%, transparent)
+    color: var(--color-accent-hover)
+
+  &--active.monitor-log-level-toggle__btn--warn
+    background: color-mix(in srgb, var(--color-warning) 22%, transparent)
+    border-color: color-mix(in srgb, var(--color-accent-amber) 45%, transparent)
+    color: var(--color-accent-amber-light)
+
+  &--active.monitor-log-level-toggle__btn--error
+    background: color-mix(in srgb, var(--color-danger) 22%, transparent)
+    border-color: color-mix(in srgb, var(--color-danger) 45%, transparent)
+    color: var(--color-danger-text)
+
+body:not(.body--dark) .monitor-log-level-toggle__btn--active.monitor-log-level-toggle__btn--debug
+  color: var(--color-text-slate-600)
+
+body:not(.body--dark) .monitor-log-level-toggle__btn--active.monitor-log-level-toggle__btn--info
+  color: var(--color-accent)
+
+body:not(.body--dark) .monitor-log-level-toggle__btn--active.monitor-log-level-toggle__btn--warn
+  color: var(--color-status-warning-text)
+
+body:not(.body--dark) .monitor-log-level-toggle__btn--active.monitor-log-level-toggle__btn--error
+  color: var(--color-danger-text)
+
+.monitor-log-stream-body
+  flex: 1
+  min-height: 0
+  display: flex
+  flex-direction: column
+
+.monitor-log-console--fill
+  flex: 1
+  min-height: 0
+  height: 100%
+
+.monitor-log-line
+  display: flex
+  gap: 10px
+  line-height: 1.7
+  min-width: max-content
+
+.monitor-log-time
+  color: color-mix(in srgb, var(--color-accent) 75%, var(--color-on-accent))
+
+body:not(.body--dark) .monitor-log-level
+  color: var(--color-accent-hover)
+  font-weight: 700
+
+body.body--dark .monitor-log-level
+  color: color-mix(in srgb, var(--color-neon-violet) 90%, var(--color-on-accent))
+  font-weight: 700
+
+.monitor-log-line--warn .monitor-log-level
+  color: var(--color-warning)
+
+.monitor-log-line--error .monitor-log-level
+  color: var(--color-danger)
+
+.monitor-log-line--flow-ok .monitor-log-title,
+.monitor-log-line--flow-info .monitor-log-title
+  color: var(--color-success)
+
+.monitor-log-line--flow-warn .monitor-log-title
+  color: var(--color-warning)
+
+.monitor-log-line--flow-error .monitor-log-title,
+.monitor-log-line--flow-critical .monitor-log-title
+  color: var(--color-danger)
+
+.monitor-log-line--flow-critical
+  font-weight: 600
+
+.monitor-log-empty
+  color: var(--color-text-secondary)
+  display: grid
+  min-height: 220px
+  place-items: center
+
+body.body--dark
+  .monitor-card.q-card--bordered,
+  .monitor-card
+    background: var(--glass-surface) !important
+    border-color: var(--glass-border) !important
+    backdrop-filter: blur(var(--glass-blur-default))
+    -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+  .monitor-detail-card
+    background: var(--glass-surface) !important
+    border: 1px solid var(--glass-border) !important
+    backdrop-filter: blur(var(--glass-blur-default))
+    -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+  .monitor-json
+    border-color: var(--glass-border)
+
+// ═══════════════════════════════════════════════════════════════
+//  概览页（Usage Overview）— Linear/Vercel 风格干净排版
+// ═══════════════════════════════════════════════════════════════
+
+.overview-page
+  color: var(--color-text-primary)
+
+.overview-page__shell
+  max-width: 1440px
+  margin: 0 auto
+  padding: 8px 16px 40px
+  @media (min-width: 1024px)
+    padding: 12px 28px 48px
+
+// ── 筛选栏 ──
+.overview-filter-bar
+  margin-bottom: 24px
+
+.overview-filter-bar__inner
+  display: flex
+  flex-wrap: wrap
+  gap: 10px
+  align-items: flex-end
+  padding: 12px 16px
+  border-radius: 12px
+  background: var(--overview-neutral-bg-alt)
+  border: 1px solid var(--overview-neutral-border-alt)
+
+body.body--dark .overview-filter-bar__inner
+  background: var(--overview-neutral-bg-alt)
+  border-color: var(--overview-neutral-border-alt)
+
+.overview-filter-field
+  min-width: 128px
+  flex: 1 1 140px
+  max-width: 192px
+
+// ── 内容区 ──
+.overview-content
+  position: relative
+  min-height: 160px
+  display: flex
+  flex-direction: column
+  gap: 28px
+
+.overview-content--loading
+  opacity: 0.45
+  pointer-events: none
+
+.overview-error
+  margin-bottom: 8px
+
+.overview-section
+  margin-top: 4px
+
+.overview-section-group
+  margin-top: 24px
+
+.overview-section-group--alert
+  margin-top: 20px
+
+.overview-metrics-row
+  margin-bottom: 4px
+
+.overview-section-title
+  color: var(--color-text-primary)
+  font-weight: 600
+  font-size: 0.92rem
+  letter-spacing: -0.01em
+
+.overview-section-caption,
+.overview-section-label,
+.overview-item-caption
+  color: var(--color-text-secondary) !important
+  font-size: 0.76rem
+
+// ── 通用面板 ──
+.overview-panel,
+.overview-metric-card
+  border-radius: 14px !important
+  background: var(--overview-neutral-bg) !important
+  border: 1px solid var(--overview-neutral-border) !important
+  box-shadow: none !important
+  transition: border-color 0.18s ease, background 0.18s ease
+
+body.body--dark .overview-panel,
+body.body--dark .overview-metric-card
+  background: var(--overview-neutral-bg) !important
+  border-color: var(--overview-neutral-border) !important
+
+.overview-panel:hover,
+.overview-metric-card:hover
+  border-color: var(--overview-neutral-border-hover) !important
+
+body.body--dark .overview-panel:hover,
+body.body--dark .overview-metric-card:hover
+  border-color: var(--overview-neutral-border-hover) !important
+
+// ── 警示面板 ──
+.overview-panel--warning
+  border-left: 3px solid var(--color-warning) !important
+
+body.body--dark .overview-panel--warning
+  border-left-color: var(--overview-warning-border) !important
+
+.overview-panel--danger
+  border-left: 3px solid var(--color-danger) !important
+
+body.body--dark .overview-panel--danger
+  border-left-color: var(--overview-danger-border) !important
+
+.overview-panel__alert-icon
+  font-size: 20px
+  color: var(--color-warning)
+  opacity: 0.85
+
+.overview-panel__alert-icon--danger
+  color: var(--color-danger)
+
+// ═══════════════════════════════════════════════════════════════
+//  Stats Row — 4 卡等宽网格
+// ═══════════════════════════════════════════════════════════════
+
+.overview-stats-row
+  display: grid
+  gap: 16px
+  grid-template-columns: repeat(4, minmax(0, 1fr))
+
+  @media (width <= 1023px)
+    grid-template-columns: repeat(2, minmax(0, 1fr))
+
+  @media (width <= 479px)
+    grid-template-columns: 1fr
+
+.overview-stat-card
+  border-radius: 14px
+  background: var(--overview-neutral-bg)
+  border: 1px solid var(--overview-neutral-border)
+  padding: 20px 22px
+  display: flex
+  flex-direction: column
+  gap: 6px
+  transition: border-color 0.2s ease, background 0.2s ease
+
+body.body--dark .overview-stat-card
+  background: var(--overview-neutral-bg)
+  border-color: var(--overview-neutral-border)
+
+.overview-stat-card:hover
+  border-color: var(--overview-neutral-border-hover-alt)
+
+body.body--dark .overview-stat-card:hover
+  border-color: var(--overview-neutral-border-hover-alt)
+
+.overview-stat-card--clickable
+  cursor: pointer
+
+.overview-stat-card--clickable:hover
+  border-color: var(--color-accent)
+  transform: translateY(-1px)
+  box-shadow: var(--overview-shadow-clickable)
+
+body.body--dark .overview-stat-card--clickable:hover
+  border-color: var(--color-accent)
+  box-shadow: var(--overview-shadow-clickable)
+
+.overview-stat-card__header
+  display: flex
+  align-items: center
+  gap: 10px
+
+.overview-stat-card__icon-wrap
+  width: 34px
+  height: 34px
+  border-radius: 10px
+  display: flex
+  align-items: center
+  justify-content: center
+  color: var(--color-text-secondary)
+  background: var(--overview-neutral-bg-icon)
+
+body.body--dark .overview-stat-card__icon-wrap
+  background: var(--overview-neutral-bg-icon)
+
+.overview-stat-card__icon-wrap--accent
+  color: var(--color-on-accent)
+  background: var(--color-accent)
+
+body.body--dark .overview-stat-card__icon-wrap--accent
+  color: var(--color-accent)
+  background: var(--overview-accent-icon-bg)
+
+.overview-stat-card__icon-wrap--warn
+  color: var(--color-warning)
+  background: var(--overview-warn-icon-bg)
+
+.overview-stat-card__icon-wrap--danger
+  color: var(--color-danger)
+  background: var(--overview-danger-icon-bg)
+
+.overview-stat-card__icon-wrap--violet
+  color: var(--color-alarm-emergency)
+  background: var(--color-alarm-emergency-soft)
+
+.overview-stat-card__label
+  font-size: 0.78rem
+  font-weight: 500
+  color: var(--color-text-secondary)
+  letter-spacing: -0.01em
+
+.overview-stat-card__body
+  display: flex
+  align-items: baseline
+  justify-content: center
+  gap: 10px
+
+.overview-stat-card__value
+  font-size: 2rem
+  font-weight: 700
+  line-height: 1.15
+  color: var(--color-text-primary)
+  letter-spacing: -0.02em
+  font-variant-numeric: tabular-nums
+
+  &--tech-blue
+    background: linear-gradient(135deg, var(--color-accent-indigo-darker), var(--color-accent-blue))
+    -webkit-background-clip: text
+    -webkit-text-fill-color: transparent
+    background-clip: text
+
+  &--tech-cyan
+    background: linear-gradient(135deg, var(--color-accent-cyan), $ag-stat-cyan-end)
+    -webkit-background-clip: text
+    -webkit-text-fill-color: transparent
+    background-clip: text
+
+  &--tech-amber
+    background: linear-gradient(135deg, $ag-stat-amber-start, var(--color-accent-amber))
+    -webkit-background-clip: text
+    -webkit-text-fill-color: transparent
+    background-clip: text
+
+  &--tech-green
+    background: linear-gradient(135deg, $ag-stat-green-start, var(--color-accent-green-light))
+    -webkit-background-clip: text
+    -webkit-text-fill-color: transparent
+    background-clip: text
+
+  &--tech-red
+    background: linear-gradient(135deg, $ag-stat-red-start, var(--color-danger))
+    -webkit-background-clip: text
+    -webkit-text-fill-color: transparent
+    background-clip: text
+
+  &--tech-violet
+    background: linear-gradient(135deg, $ag-stat-violet-start, var(--color-alarm-emergency))
+    -webkit-background-clip: text
+    -webkit-text-fill-color: transparent
+    background-clip: text
+
+body.body--dark
+  .overview-stat-card__value--tech-blue
+    background: linear-gradient(135deg, var(--color-accent-indigo-light), var(--color-accent-blue))
+    -webkit-background-clip: text
+    -webkit-text-fill-color: transparent
+    background-clip: text
+
+  .overview-stat-card__value--tech-cyan
+    background: linear-gradient(135deg, var(--color-accent-cyan), $ag-stat-cyan-dark-end)
+    -webkit-background-clip: text
+    -webkit-text-fill-color: transparent
+    background-clip: text
+
+  .overview-stat-card__value--tech-amber
+    background: linear-gradient(135deg, var(--color-accent-amber), var(--color-accent-amber-dark))
+    -webkit-background-clip: text
+    -webkit-text-fill-color: transparent
+    background-clip: text
+
+  .overview-stat-card__value--tech-green
+    background: linear-gradient(135deg, $ag-stat-green-dark, $ag-stat-green-dark-end)
+    -webkit-background-clip: text
+    -webkit-text-fill-color: transparent
+    background-clip: text
+
+  .overview-stat-card__value--tech-red
+    background: linear-gradient(135deg, $ag-stat-red-dark, $ag-stat-red-dark-end)
+    -webkit-background-clip: text
+    -webkit-text-fill-color: transparent
+    background-clip: text
+
+  .overview-stat-card__value--tech-violet
+    background: linear-gradient(135deg, var(--color-alarm-emergency), $ag-stat-violet-dark-end)
+    -webkit-background-clip: text
+    -webkit-text-fill-color: transparent
+    background-clip: text
+
+.overview-stat-card__bottom
+  display: flex
+  align-items: center
+  justify-content: space-between
+  gap: 8px
+  font-size: 0.74rem
+  line-height: 1.3
+  margin-top: auto
+
+.overview-stat-card__bottom-left
+  color: var(--color-text-secondary)
+  flex-shrink: 1
+  min-width: 0
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+
+  &--tech
+    background: linear-gradient(135deg, var(--color-accent-indigo-darker), var(--color-accent-blue))
+    -webkit-background-clip: text
+    -webkit-text-fill-color: transparent
+    background-clip: text
+    font-weight: 600
+
+body.body--dark
+  .overview-stat-card__bottom-left--tech
+    background: linear-gradient(135deg, var(--color-accent-indigo-light), var(--color-accent-cyan))
+    -webkit-background-clip: text
+    -webkit-text-fill-color: transparent
+    background-clip: text
+
+.overview-stat-card__bottom-right
+  color: var(--color-text-secondary)
+  flex-shrink: 0
+  text-align: right
+
+.overview-stat-card__delta
+  font-size: 0.74rem
+  font-weight: 600
+  padding: 2px 8px
+  border-radius: 5px
+  letter-spacing: -0.01em
+
+.overview-stat-card__delta--up
+  color: var(--color-success)
+  background: var(--color-success-soft)
+
+.overview-stat-card__delta--down
+  color: var(--color-danger)
+  background: var(--color-danger-soft)
+
+.overview-stat-card__footer
+  font-size: 0.73rem
+  color: var(--color-text-secondary)
+  line-height: 1.45
+  display: flex
+  flex-direction: column
+  gap: 8px
+  margin-top: auto
+
+// ── 进度条 ──
+.overview-stat-card__bar
+  height: 6px
+  border-radius: 999px
+  background: var(--overview-neutral-bg-bar)
+  overflow: hidden
+
+body.body--dark .overview-stat-card__bar
+  background: var(--overview-neutral-bg-bar)
+
+.overview-stat-card__bar-fill
+  height: 100%
+  border-radius: 999px
+  transition: width 0.6s cubic-bezier(0.22, 0.61, 0.36, 1)
+
+.overview-stat-card__bar-fill--ok
+  background: var(--color-success)
+
+.overview-stat-card__bar-fill--warn
+  background: var(--color-warning)
+
+.overview-stat-card__bar-fill--danger
+  background: var(--color-danger)
+
+// ── 预测行 ──
+.overview-stat-card__forecast
+  display: inline-flex
+  align-items: center
+  gap: 5px
+  font-size: 0.71rem
+  color: var(--color-text-secondary)
+
+.overview-stat-card__forecast--danger
+  color: var(--color-danger)
+
+// ═══════════════════════════════════════════════════════════════
+//  数据查询模块（历史/告警历史/导出）共享展示元素
+// ═══════════════════════════════════════════════════════════════
+
+// 面板卡片标题：图标 + 标题（图表/表格卡片头部通用）
+.panel-card-title
+  display: flex
+  align-items: center
+  gap: 8px
+  font-size: 0.92rem
+  font-weight: 600
+  letter-spacing: -0.01em
+  color: var(--color-text-heading)
+
+  .q-icon
+    color: var(--color-accent)
+    font-size: 20px
+
+// 次级 Tab 分段控件（页内 列表/统计 切换）：胶囊轨道 + 选中填充
+.seg-tabs
+  display: inline-flex
+  width: auto
+  padding: 3px
+  border-radius: 999px
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+  .q-tabs__content
+    gap: 2px
+
+  .q-tab
+    min-height: 30px
+    padding: 0 18px
+    border-radius: 999px
+    color: var(--color-text-secondary)
+    font-weight: 500
+    transition: color 0.18s ease, background 0.18s ease
+
+  .q-tab--active
+    color: var(--color-on-accent)
+    background: var(--color-accent)
+    font-weight: 600
+
+    .q-tab__label
+      color: var(--color-on-accent)
+
+  .q-tabs__indicator
+    opacity: 0
+
+body.body--dark .seg-tabs .q-tab--active
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 35%, transparent)
+
+// KPI 摘要胶囊（图表卡片头部右侧：指标数/数据点等）
+.kpi-chip
+  display: inline-flex
+  align-items: center
+  gap: 6px
+  padding: 4px 12px
+  border-radius: 999px
+  font-size: 12px
+  font-weight: 500
+  font-variant-numeric: tabular-nums
+  color: var(--color-text-secondary)
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent)
+  border: 1px solid color-mix(in srgb, var(--color-accent) 22%, transparent)
+
+  .q-icon
+    color: var(--color-accent)
+    font-size: 16px
+
+  &--accent
+    color: var(--color-accent)
+    font-weight: 600
+
+  // 警示变体：截断/降级提示（琥珀色系，昼夜通用 token）
+  &--warn
+    color: var(--color-warning)
+    background: color-mix(in srgb, var(--color-warning) 10%, transparent)
+    border-color: color-mix(in srgb, var(--color-warning) 28%, transparent)
+
+    .q-icon
+      color: var(--color-warning)
+
+// ═══════════════════════════════════════════════════════════════
+//  布局分栏
+// ═══════════════════════════════════════════════════════════════
+
+// 趋势图 + 区间摘要
+.overview-chart-row
+  display: grid
+  gap: 20px
+  grid-template-columns: 1fr
+
+  @media (min-width: 900px)
+    grid-template-columns: 2fr 1fr
+
+.overview-chart-row__main
+  min-width: 0
+
+.overview-chart-row__side
+  min-width: 0
+
+// 饼图 + Provider 健康
+.overview-mid-row
+  display: grid
+  gap: 20px
+  grid-template-columns: 1fr
+  align-items: stretch
+
+  @media (min-width: 900px)
+    grid-template-columns: 1fr 1fr 1fr
+
+  > *
+    min-width: 0
+
+// Top 模型 + Top Agent
+.overview-ranks
+  display: grid
+  gap: 20px
+  grid-template-columns: 1fr
+
+  @media (min-width: 900px)
+    grid-template-columns: 1fr 1fr
+
+// ═══════════════════════════════════════════════════════════════
+//  区间摘要
+// ═══════════════════════════════════════════════════════════════
+
+.overview-summary-panel
+  height: 100%
+
+.overview-summary-grid
+  display: grid
+  grid-template-columns: 1fr 1fr
+  gap: 14px 18px
+
+.overview-summary-item
+  padding: 6px 0
+
+.overview-summary-item__label
+  font-size: 0.72rem
+  font-weight: 500
+  color: var(--color-text-secondary)
+  margin-bottom: 3px
+
+.overview-summary-item__value
+  font-size: 1.05rem
+  font-weight: 700
+  color: var(--color-text-primary)
+  font-variant-numeric: tabular-nums
+
+.overview-summary-item__value--accent
+  color: var(--color-accent)
+
+.overview-summary-list .q-item
+  min-height: 40px
+
+.overview-summary-label
+  color: var(--color-text-secondary)
+
+.overview-summary-value
+  font-weight: 700
+  color: var(--color-text-primary)
+
+// ═══════════════════════════════════════════════════════════════
+//  通用工具类
+// ═══════════════════════════════════════════════════════════════
+
+.overview-separator
+  background: var(--overview-neutral-border) !important
+
+body.body--dark .overview-separator
+  background: var(--overview-neutral-border) !important
+
+.overview-chip
+  color: var(--color-accent) !important
+  border: 1px solid var(--overview-neutral-border-chip) !important
+  background: var(--color-info-soft) !important
+
+// 主按钮
+.overview-primary-btn
+  background: var(--color-accent) !important
+  color: var(--color-on-accent) !important
+  border-radius: 10px
+  font-weight: 600
+  font-size: 0.82rem
+
+body:not(.body--dark) .overview-primary-btn:hover
+  background: var(--color-accent-hover) !important
+
+body.body--dark .overview-primary-btn
+  border: 1px solid var(--color-accent) !important
+  background: var(--overview-accent-glow) !important
+  color: var(--color-accent) !important
+
+// ── 空状态 ──
+.overview-empty
+  min-height: 180px
+  display: grid
+  place-items: center
+  color: var(--color-text-secondary)
+  font-size: 0.85rem
+
+.overview-empty--compact
+  min-height: 80px
+
+.overview-empty-inline
+  color: var(--color-text-secondary)
+
+// ═══════════════════════════════════════════════════════════════
+//  排行列表
+// ═══════════════════════════════════════════════════════════════
+
+.overview-rank-value
+  font-weight: 700
+  color: var(--color-text-primary)
+
+.overview-rank-index
+  min-width: 28px !important
+  padding-right: 0 !important
+
+.overview-rank-badge
+  display: inline-flex
+  align-items: center
+  justify-content: center
+  width: 24px
+  height: 24px
+  border-radius: 7px
+  font-size: 0.7rem
+  font-weight: 700
+  color: var(--color-text-secondary)
+  background: var(--overview-neutral-bg-icon)
+
+body.body--dark .overview-rank-badge
+  background: var(--overview-neutral-bg-icon)
+
+.overview-rank-badge--top
+  color: var(--color-on-accent)
+  background: var(--color-accent)
+
+body.body--dark .overview-rank-badge--top
+  color: var(--canvas-base)
+  background: var(--color-accent)
+
+// ── Agent 头像 ──
+.overview-agent-avatar
+  background: var(--color-info-soft) !important
+  color: var(--color-accent) !important
+
+body.body--dark .overview-agent-avatar
+  border: 1px solid var(--overview-neutral-border-chip)
+
+// ═══════════════════════════════════════════════════════════════
+//  异常表格
+// ═══════════════════════════════════════════════════════════════
+
+.overview-anomaly-table
+  background: transparent !important
+
+.overview-anomaly-table thead th
+  color: var(--color-text-secondary)
+  font-weight: 600
+  font-size: 0.73rem
+  border-bottom: 1px solid var(--overview-neutral-border)
+
+body.body--dark .overview-anomaly-table thead th
+  border-bottom-color: var(--overview-neutral-border)
+
+.overview-anomaly-table tbody td
+  color: var(--color-text-primary)
+  font-size: 0.82rem
+  border-bottom: 1px solid var(--overview-neutral-border-table)
+
+body.body--dark .overview-anomaly-table tbody td
+  border-bottom-color: var(--overview-neutral-border-table)
+
+.overview-anomaly-error
+  max-width: 280px
+  color: var(--color-text-secondary)
+
+.overview-status-badge--error
+  color: var(--color-danger) !important
+  border-color: var(--overview-danger-border) !important
+  background: var(--color-danger-soft) !important
+
+.overview-flag-chip
+  color: var(--color-warning) !important
+  border-color: var(--overview-warning-border) !important
+  background: var(--color-warning-soft) !important
+
+// ═══════════════════════════════════════════════════════════════
+//  筛选栏输入框样式
+// ═══════════════════════════════════════════════════════════════
+
+body:not(.body--dark) .overview-page .q-field--outlined .q-field__control
+  background: var(--overview-field-bg)
+
+body.body--dark .overview-page .q-field--outlined .q-field__control
+  background: var(--overview-field-bg)
+  border-color: var(--overview-neutral-border-alt) !important
+
+body.body--dark .overview-page .q-field--focused .q-field__control
+  border-color: var(--color-accent) !important
+  box-shadow: var(--overview-accent-focus-ring)
+
+// ═══════════════════════════════════════════════════════════════
+//  警示区堆叠
+// ═══════════════════════════════════════════════════════════════
+
+.overview-alert-stack
+  display: flex
+  flex-direction: column
+  gap: 20px
+
+.overview-alert-stack__row
+  display: grid
+  gap: 20px
+  grid-template-columns: 1fr
+
+  @media (min-width: 900px)
+    grid-template-columns: 1fr 1fr
+
+  > *
+    min-width: 0
+
+// ═══════════════════════════════════════════════════════════════
+//  Token 构成图
+// ═══════════════════════════════════════════════════════════════
+
+.overview-token-comp
+  min-height: 120px
+
+.overview-token-comp__chart
+  width: 100%
+  height: 140px
+
+// ═══════════════════════════════════════════════════════════════
+//  Provider 健康卡
+// ═══════════════════════════════════════════════════════════════
+
+.overview-provider-health__icon
+  font-size: 20px
+
+.overview-provider-health__icon--ok
+  color: var(--color-success)
+
+.overview-provider-health__icon--warn
+  color: var(--color-warning)
+
+.overview-provider-health__stats
+  display: flex
+  gap: 24px
+  align-items: center
+
+.overview-provider-health__stat
+  display: flex
+  align-items: center
+  gap: 6px
+
+.overview-provider-health__label
+  font-size: 0.78rem
+  color: var(--color-text-secondary)
+
+.overview-provider-health__value
+  font-size: 1.05rem
+  font-weight: 700
+  color: var(--color-text-primary)
+
+.overview-provider-health__value--danger
+  color: var(--color-danger) !important
+
+.overview-provider-health__degraded-list
+  margin-top: 8px
+  display: flex
+  flex-direction: column
+  gap: 4px
+
+.overview-provider-health__degraded-item
+  display: flex
+  align-items: center
+  gap: 6px
+  font-size: 0.76rem
+  color: var(--color-text-secondary)
+
+// ── 健康状态圆点（完整定义见 theme/_page-patterns.sass） ──
+
+// ═══════════════════════════════════════════════════════════════
+//  趋势条形图（旧版保留 — 当 ECharts 不可用时回退）
+// ═══════════════════════════════════════════════════════════════
+
+.overview-trend-grid
+  align-items: end
+  display: grid
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr))
+  gap: 10px
+  min-height: 200px
+  padding-top: 8px
+
+.overview-trend-bar
+  display: flex
+  flex-direction: column
+  align-items: center
+  gap: 6px
+  min-width: 0
+
+.overview-trend-bar__track
+  width: 100%
+  max-width: 48px
+  height: 160px
+  display: flex
+  align-items: flex-end
+  border-radius: 999px
+  background: var(--color-info-soft)
+  overflow: hidden
+
+.overview-trend-bar__fill
+  width: 100%
+  border-radius: 999px 999px 4px 4px
+  min-height: 4px
+
+body:not(.body--dark) .overview-trend-bar__fill
+  background: var(--color-accent)
+
+body.body--dark .overview-trend-bar__fill
+  background: var(--color-accent)
+
+.overview-trend-bar__label
+  color: var(--color-text-secondary)
+  font-size: 0.7rem
+
+// ── 大屏模式（IT 监控 06 方案 §4.4，MainLayout 按 ?screen=1 挂载本类）──
+// 2 米外可辨读：页容器整体放大 1.25 倍；侧栏由 MainLayout 收起，此处不重复隐藏。
+// 配色不覆写 token——亮/暗主题各自语义色已具对比度，仅放大与拉开字距。
+.app-screen-mode
+  .q-page-container
+    zoom: 1.25
+  .sec-heading__title
+    letter-spacing: 0.02em

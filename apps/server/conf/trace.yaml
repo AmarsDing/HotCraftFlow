@@ -1,0 +1,4 @@
+﻿trace:
+  # OTLP HTTP endpoint; empty causes nil TracerProvider panic in kratos tracing middleware.
+  # Without Jaeger running, exporter still initializes; spans may drop locally.
+  endpoint: http://localhost:4318

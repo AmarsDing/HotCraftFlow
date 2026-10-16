@@ -1,0 +1,329 @@
+// 机场大屏地理分组设备面板样式（2026-09-28 五域独立面板 wave-4）：
+//   原内联于 AtGeoDevicePanel.vue <style lang="sass"> 全局块（未 scoped），
+//   五域各自独立面板落地后该壳组件已删，样式上提全局 partial 供
+//   AtAwosPanel/AtEnvPanel/AtRadarPanel/AtCommnavPanel/AtItPanel 共用。
+// 视觉语言：科技卡片（四角括号）+ 状态方框（左色条 + 机型缩写）+ 告警列表（级别色左边条）。
+
+.at-geo__modeltip
+  display: flex
+  align-items: center
+  gap: 6px
+  margin: 0 10px 8px
+  padding: 5px 8px
+  border-radius: 5px
+  border-left: 2px solid var(--screen-major)
+  background: color-mix(in srgb, var(--screen-major) 10%, transparent)
+  font-size: 11px
+  line-height: 1.4
+  color: var(--glass-text-dim)
+  .q-icon
+    color: var(--screen-major)
+    flex: none
+
+.at-geo__groups
+  display: flex
+  flex-direction: column
+  gap: 12px
+  padding: 2px 10px 12px
+
+.at-geo__group
+  display: flex
+  flex-direction: column
+  gap: 8px
+
+.at-geo__ghead
+  display: flex
+  align-items: center
+  gap: 6px
+  width: 100%
+  padding: 5px 8px
+  border: 1px solid color-mix(in srgb, var(--screen-primary) 18%, transparent)
+  border-radius: 6px
+  background: color-mix(in srgb, var(--screen-primary) 6%, transparent)
+  color: var(--glass-text)
+  font-size: 12px
+  cursor: pointer
+  text-align: left
+  transition: background 0.18s var(--screen-ease-enter), border-color 0.18s var(--screen-ease-enter)
+  &:hover
+    background: color-mix(in srgb, var(--screen-primary) 12%, transparent)
+    border-color: color-mix(in srgb, var(--screen-primary) 36%, transparent)
+    .at-geo__gfly
+      color: var(--screen-primary)
+  &.is-static
+    cursor: default
+    &:hover
+      background: color-mix(in srgb, var(--screen-primary) 6%, transparent)
+      border-color: color-mix(in srgb, var(--screen-primary) 18%, transparent)
+      .at-geo__gfly
+        color: var(--glass-text-dim)
+
+.at-geo__gfly
+  color: var(--glass-text-dim)
+  flex: none
+  transition: color 0.18s var(--screen-ease-enter)
+
+.at-geo__glabel
+  font-weight: 600
+  white-space: nowrap
+  letter-spacing: 0.02em
+
+.at-geo__gsub
+  flex: 1
+  min-width: 0
+  font-size: 11px
+  color: var(--glass-text-dim)
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
+
+.at-geo__gcount
+  flex: none
+  font-size: 11px
+  color: var(--glass-text-dim)
+
+.at-geo__gabn
+  font-style: normal
+  color: var(--screen-critical)
+  margin-right: 4px
+
+.at-geo__cards
+  display: flex
+  flex-direction: column
+  gap: 8px
+  padding-left: 2px
+
+.at-geo__card
+  position: relative
+  padding: 8px 8px 10px
+  border-radius: 8px
+  border: 1px solid color-mix(in srgb, var(--glass-border, #3a5a6e) 70%, transparent)
+  background: linear-gradient(135deg, color-mix(in srgb, var(--screen-primary) 8%, transparent) 0%, transparent 42%), color-mix(in srgb, #061018 72%, transparent)
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 6%, transparent)
+  &::before
+    content: ''
+    position: absolute
+    top: 6px
+    left: 6px
+    width: 8px
+    height: 8px
+    border-top: 1px solid color-mix(in srgb, var(--screen-primary) 55%, transparent)
+    border-left: 1px solid color-mix(in srgb, var(--screen-primary) 55%, transparent)
+    pointer-events: none
+  &::after
+    content: ''
+    position: absolute
+    right: 6px
+    bottom: 6px
+    width: 8px
+    height: 8px
+    border-right: 1px solid color-mix(in srgb, var(--screen-primary) 40%, transparent)
+    border-bottom: 1px solid color-mix(in srgb, var(--screen-primary) 40%, transparent)
+    pointer-events: none
+
+.at-geo__card-head
+  display: flex
+  align-items: center
+  gap: 6px
+  margin-bottom: 8px
+  padding: 0 2px
+
+.at-geo__card-mark
+  width: 3px
+  height: 12px
+  border-radius: 1px
+  background: var(--screen-primary)
+  box-shadow: 0 0 6px color-mix(in srgb, var(--screen-primary) 50%, transparent)
+  flex: none
+
+.at-geo__card-title
+  flex: 1
+  min-width: 0
+  font-size: 11px
+  font-weight: 600
+  letter-spacing: 0.06em
+  color: var(--glass-text)
+
+.at-geo__card-count
+  flex: none
+  font-size: 10px
+  color: var(--glass-text-dim)
+
+.at-geo__tiles
+  display: flex
+  flex-wrap: wrap
+  gap: 6px
+
+.at-geo__tile
+  position: relative
+  display: inline-flex
+  align-items: center
+  gap: 5px
+  min-width: 36px
+  height: 28px
+  padding: 0 8px 0 10px
+  border-radius: 4px
+  border: 1px solid color-mix(in srgb, var(--glass-text-dim) 28%, transparent)
+  background: color-mix(in srgb, #0a1620 88%, transparent)
+  color: var(--glass-text)
+  font-size: 11px
+  font-weight: 600
+  line-height: 1
+  white-space: nowrap
+  cursor: pointer
+  overflow: hidden
+  transition: border-color 0.15s var(--screen-ease-enter), box-shadow 0.15s var(--screen-ease-enter), background 0.15s var(--screen-ease-enter), transform 0.15s var(--screen-ease-enter)
+  &:hover
+    transform: translateY(-1px)
+    border-color: color-mix(in srgb, var(--screen-primary) 55%, transparent)
+    box-shadow: 0 0 10px color-mix(in srgb, var(--screen-primary) 22%, transparent)
+  &.is-wide
+    min-width: 0
+    max-width: 100%
+
+.at-geo__tile-accent
+  position: absolute
+  left: 0
+  top: 0
+  bottom: 0
+  width: 3px
+  background: var(--screen-success)
+
+.at-geo__tile-char
+  position: relative
+  z-index: 1
+  letter-spacing: 0.02em
+
+.at-geo__tile-name
+  position: relative
+  z-index: 1
+  font-size: 10px
+  font-weight: 500
+  color: var(--glass-text-dim)
+  max-width: 72px
+  overflow: hidden
+  text-overflow: ellipsis
+
+.at-geo__tile.is-online
+  .at-geo__tile-accent
+    background: var(--screen-success)
+    box-shadow: 0 0 6px color-mix(in srgb, var(--screen-success) 55%, transparent)
+  .at-geo__tile-char
+    color: var(--screen-success)
+
+.at-geo__tile.is-warning
+  border-color: color-mix(in srgb, var(--screen-major) 45%, transparent)
+  .at-geo__tile-accent
+    background: var(--screen-major)
+  .at-geo__tile-char
+    color: var(--screen-major)
+
+.at-geo__tile.is-alarm
+  border-color: color-mix(in srgb, var(--screen-critical) 55%, transparent)
+  animation: at-geo-tilepulse 1.4s ease-in-out infinite
+  .at-geo__tile-accent
+    background: var(--screen-critical)
+  .at-geo__tile-char
+    color: var(--screen-critical)
+
+.at-geo__tile.is-offline
+  border-style: dashed
+  opacity: 0.72
+  .at-geo__tile-accent
+    background: var(--glass-text-dim)
+  .at-geo__tile-char
+    color: var(--glass-text-dim)
+
+.at-geo__tile.is-nomodel
+  border-bottom-style: dashed
+
+.at-geo__tile.is-selected
+  border-color: var(--screen-primary)
+  background: color-mix(in srgb, var(--screen-primary) 16%, #0a1620)
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--screen-primary) 40%, transparent), 0 0 14px color-mix(in srgb, var(--screen-primary) 35%, transparent)
+  .at-geo__tile-char
+    color: #eafcff
+
+@keyframes at-geo-tilepulse
+  0%, 100%
+    box-shadow: 0 0 0 rgba(226, 25, 59, 0)
+  50%
+    box-shadow: 0 0 10px rgba(226, 25, 59, 0.55)
+
+.at-geo__alarms
+  display: flex
+  flex-direction: column
+  padding: 0 8px 8px
+
+.at-geo__alarm
+  position: relative
+  display: flex
+  align-items: center
+  gap: 8px
+  padding: 6px 6px 6px 10px
+  border-radius: 6px
+  cursor: pointer
+  transition: background 0.18s var(--screen-ease-enter)
+  &:hover
+    background: color-mix(in srgb, var(--screen-primary) 8%, transparent)
+
+.at-geo__alarm-bar
+  position: absolute
+  left: 0
+  top: 6px
+  bottom: 6px
+  width: 3px
+  border-radius: 2px
+  background: var(--glass-text-dim)
+  .at-geo__alarm.lv-critical &
+    background: var(--screen-critical)
+  .at-geo__alarm.lv-emergency &
+    background: var(--screen-critical)
+  .at-geo__alarm.lv-warning &
+    background: var(--screen-major)
+  .at-geo__alarm.lv-info &
+    background: var(--screen-primary)
+
+.at-geo__alarm-main
+  flex: 1
+  min-width: 0
+
+.at-geo__alarm-top
+  display: flex
+  align-items: baseline
+  gap: 8px
+
+.at-geo__alarm-name
+  flex: 1
+  min-width: 0
+  font-size: 12px
+  color: var(--glass-text)
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
+
+.at-geo__alarm-time
+  flex: none
+  font-size: 11px
+  color: var(--glass-text-dim)
+
+.at-geo__alarm-summary
+  font-size: 11px
+  color: var(--glass-text-dim)
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
+
+.at-geo__alarm-ops
+  flex: none
+  display: flex
+  gap: 2px
+  color: var(--glass-text-dim)
+
+.at-geo__empty
+  display: flex
+  align-items: center
+  gap: 8px
+  padding: 4px 14px 14px
+  font-size: 12px
+  color: var(--glass-text-dim)

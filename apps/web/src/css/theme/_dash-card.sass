@@ -1,0 +1,99 @@
+// 仪表盘共享卡片：对齐全站统计看板语言（_charts.sass · ChartPanel）——
+// 顶部渐变发丝线 + HUD 左侧刻度条标题 + accent 图标 + 夜间霓虹，信息卡与图表卡同肤。
+// 用法：各 section 组件 scoped 样式首行 `@use '../../../css/theme/dash-card' as *`（导入规则随组件作用域生效）。
+.dash-card
+  position: relative
+  display: flex
+  flex-direction: column
+  height: 100%
+  border-radius: 16px
+  background: var(--glass-elevated)
+  border: 1px solid var(--glass-border)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+  box-shadow: var(--glass-inner-highlight), 0 8px 24px rgba(0, 0, 0, 0.05)
+  overflow: hidden
+  // 顶部科技感渐变描边线（与 ChartPanel 一致）
+  &::before
+    content: ''
+    position: absolute
+    top: 0
+    left: 16px
+    right: 16px
+    height: 1px
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-accent) 35%, transparent), transparent)
+    pointer-events: none
+
+  // 头部节奏与 ChartPanel 一致（14/16/6），信息卡无 caption 故下限略收
+  &__header
+    display: flex
+    align-items: center
+    justify-content: space-between
+    gap: 12px
+    padding: 16px 18px 12px
+
+  // HUD 标题：左侧刻度条 + accent 图标（与 ChartPanel 同款）
+  &__title
+    position: relative
+    display: flex
+    align-items: center
+    gap: 8px
+    padding-left: 11px
+    color: var(--color-text-heading)
+    font-size: 14px
+    font-weight: 650
+    letter-spacing: 0.01em
+    &::after
+      content: ''
+      position: absolute
+      left: 0
+      top: 3px
+      width: 3px
+      height: 14px
+      border-radius: 2px
+      background: var(--color-accent)
+    > .q-icon
+      color: var(--color-accent)
+      font-size: 18px
+
+  // 分隔线：渐变光线（accent 系，与顶部发丝线呼应）
+  > .q-separator
+    background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 40%, transparent), color-mix(in srgb, var(--color-accent) 8%, transparent) 60%, transparent)
+
+  // 列表：行距疏朗 + 行间发丝线 + 悬停滑入
+  &__list
+    flex: 1
+    overflow: auto
+    padding: 8px 0
+    .q-item
+      border-radius: 10px
+      margin: 4px 14px
+      padding: 12px 14px
+      min-height: 56px
+      transition: background 0.15s ease
+      &:hover
+        background: color-mix(in srgb, var(--color-accent) 8%, transparent)
+    .q-item + .q-item
+      box-shadow: 0 -1px 0 color-mix(in srgb, var(--color-accent) 9%, transparent)
+
+  &__empty
+    flex: 1
+    display: flex
+    flex-direction: column
+    align-items: center
+    justify-content: center
+    gap: 8px
+    padding: 40px 0
+    color: var(--color-text-tertiary)
+    font-size: 13px
+    .q-icon
+      color: color-mix(in srgb, var(--color-accent) 40%, var(--color-text-tertiary))
+
+// 夜间霓虹增强（与 _charts.sass 的 chart-panel 暗色待遇一致）
+body.body--dark
+  .dash-card
+    box-shadow: var(--glass-inner-highlight), 0 12px 32px rgba(0, 0, 0, 0.35), 0 0 20px color-mix(in srgb, var(--color-accent) 6%, transparent)
+    &::before
+      background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-accent) 65%, transparent), transparent)
+  .dash-card__title::after
+    box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 80%, transparent)

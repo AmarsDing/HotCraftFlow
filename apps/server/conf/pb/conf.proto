@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package framework.conf.v1;
+
+option go_package = "framework/conf/pb;pb";
+
+import "google/protobuf/duration.proto";
+
+// 公共配置结构（多微服务共享）。
+// 这些结构既被 admin 服务使用，也被 pkg/ 公共包使用（pkg/nats、pkg/log 等），
+// 因此必须定义在根 conf 包，避免 Go internal 包规则限制。
+//
+// 目录职责：
+//   - conf/pb/：本 proto 定义 + 生成的 Go 代码（framework/conf/pb 包）
+//   - conf/：公共配置 YAML（data.yaml/nats.yaml/registry.yaml/trace.yaml）
+//   - Log 结构虽在此定义（供 pkg/log 使用），但 logger.yaml 由各服务私有（app/admin/config/）
+
+// ---------- Data ----------
+
+message Data {
+  message Database {
+    string driver = 1;          // postgres
+    string source = 2;          // 连接字符串
+    bool migrate = 3;
+    bool debug = 4;
+    bool enable_trace = 5;
+    bool enable_metrics = 6;
+    int32 max_idle_connections = 7;
+    int32 max_open_connections = 8;
+    google.protobuf.Duration connection_max_lifetime = 9;
+  }
+
+  message Redis {
+    string network = 1;
+    string addr = 2;
+    string password = 3;
+    int32 db = 4;
+    google.protobuf.Duration dial_timeout = 5;
+    google.protobuf.Duration read_timeout = 6;
+    google.protobuf.Duration write_timeout = 7;
+  }
+
+  Database database = 1;
+  Database log_database = 2;     // 日志库（framework_log），独立 ent client
+  Redis redis = 3;
+}
+
+// ---------- Nats ----------
+
+message Nats {
+  string url = 1;
+}
+
+// ---------- Discovery ----------
+// 服务注册与发现配置（bilibili discovery 基座自动注册工具，
+// 规范见 docs/开发文档/00-总体方案/04-服务注册与发现规范.md）。
+// 替代早前 etcd 方向（Registry/etcd 已移除，不再演进）。
+
+message Discovery {
+  repeated string nodes = 1;    // discovery server 节点（host:port）；为空 = 不注册（本地开发豁免）
+  string env = 2;               // 部署环境：dev/pre/prod
+  string region = 3;            // 区域
+  string zone = 4;              // 可用区
+  string host = 5;              // 主机标识
+  string weight = 6;            // 实例权重（写入实例元数据，供 pkg/weight 权重选择器）
+}
+
+// ---------- Trace ----------
+
+message Trace {
+  string endpoint = 1;          // Jaeger OTLP endpoint
+}
+
+// ---------- Log ----------
+// 结构为公共（供 pkg/log 使用），配置文件由各服务私有（logger.yaml）。
+
+message Log {
+  message Logger {
+    int64 level = 1;            // -1 debug, 0 info, 1 warn, 2 error
+    int64 stackLevel = 2;
+    bool caller = 3;
+    int64 callerSkip = 4;
+    bool development = 5;
+  }
+
+  message File {
+    string filename = 1;
+    int64 maxSize = 2;          // MB
+    int64 maxBackups = 3;
+    int64 maxAge = 4;           // 天
+    bool compress = 5;
+  }
+
+  Logger logger = 1;
+  File file = 2;
+}

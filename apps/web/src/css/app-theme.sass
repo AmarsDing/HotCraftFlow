@@ -1,0 +1,42 @@
+// 设计 token 聚合入口。体量变大时在 `theme/` 下新增 partial 并在此 @import；不要新增第二套全局 CSS 入口。
+// 昼夜与 Quasar Dark（body.body--dark）分工见 aranea-frontend-guide SKILL §6.3
+@import ./theme/cream-constants
+@import ./theme/color-palette
+@import ./theme/css-vars-light
+@import ./theme/css-vars-dark
+@import ./theme/controls
+@import ./theme/page-patterns
+@import ./theme/crud-tables
+@import ./theme/time-range-picker
+@import ./theme/stat-cards
+@import ./theme/entity-pages
+@import ./theme/glass-dialog
+@import ./theme/form-layout
+@import ./theme/settings-panels
+@import ./theme/registry-page
+@import ./theme/aiops-pages
+@import ./theme/usage-charts
+@import ./theme/charts
+@import ./theme/sidebar
+@import ./theme/tech-night
+@import ./theme/chat-message-panel
+@import ./theme/graph-pages
+@import ./theme/team-orchestrate
+@import ./theme/component-density
+@import ./theme/scrollbars
+@import ./theme/visual-twin
+@import ./theme/alarm
+@import ./theme/topo-canvas
+@import ./theme/screen-glass
+@import ./theme/metar
+@import ./theme/video
+@import ./theme/linemonitor
+// 机场大屏地理分组设备面板样式（2026-09-28 五域独立面板：原内联于 AtGeoDevicePanel 全局块，
+//  五域面板共用故上提 partial；壳组件删除后视觉语言不丢）
+@import ./theme/at-geo
+// 可点击容器统一悬停语言（.hoverable / .hoverable-row）——态势总览等页共用
+@import ./theme/hoverable
+// HUD 控制台共享设计层（IT 监控域统一视觉语言；面板四角括号/指标卡/状态点/分布条等）
+@import ./theme/hud-console
+// iop 扁平化覆写层必须压轴：等权重选择器需靠后加载才能覆盖 _screen-glass（原为页面内非 scoped @import，§4.8 归位 theme）
+@import ./theme/iop-flat

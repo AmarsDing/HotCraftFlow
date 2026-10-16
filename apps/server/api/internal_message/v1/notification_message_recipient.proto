@@ -1,0 +1,153 @@
+syntax = "proto3";
+
+package internal_message.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+
+import "pagination/v1/pagination.proto";
+
+import "internal_message/v1/message_status.proto";
+
+// 通知消息接收者服务
+service NotificationMessageRecipientService {
+  // 查询通知消息接收者列表
+  rpc List (pagination.PagingRequest) returns (ListNotificationMessageRecipientResponse) {}
+
+  // 查询通知消息接收者详情
+  rpc Get (GetNotificationMessageRecipientRequest) returns (NotificationMessageRecipient) {}
+
+  // 创建通知消息接收者
+  rpc Create (CreateNotificationMessageRecipientRequest) returns (google.protobuf.Empty) {}
+
+  // 更新通知消息接收者
+  rpc Update (UpdateNotificationMessageRecipientRequest) returns (google.protobuf.Empty) {}
+
+  // 删除通知消息接收者
+  rpc Delete (DeleteNotificationMessageRecipientRequest) returns (google.protobuf.Empty) {}
+
+  // 查询当前登录用户的通知收件箱（收件记录并联消息标题/内容）
+  rpc ListMy (ListMyNotificationRequest) returns (ListMyNotificationResponse) {}
+
+  // 查询当前登录用户未读通知数
+  rpc CountMyUnread (google.protobuf.Empty) returns (CountMyUnreadResponse) {}
+
+  // 标记当前登录用户通知已读（recipient_ids 为空表示全部已读）
+  rpc MarkMyRead (MarkMyNotificationReadRequest) returns (google.protobuf.Empty) {}
+}
+
+// 我的通知收件箱条目（收件记录 + 消息内容联查）
+message MyNotification {
+  optional uint32 recipient_id = 1 [json_name = "recipientId", (gnostic.openapi.v3.property) = { description: "收件记录ID（标记已读用）" }]; // 收件记录ID
+  optional uint32 message_id = 2 [json_name = "messageId", (gnostic.openapi.v3.property) = { description: "消息ID" }]; // 消息ID
+  optional string subject = 3 [json_name = "subject", (gnostic.openapi.v3.property) = { description: "主题" }]; // 主题
+  optional string content = 4 [json_name = "content", (gnostic.openapi.v3.property) = { description: "内容" }]; // 内容
+  optional MessageStatus status = 5 [json_name = "status", (gnostic.openapi.v3.property) = { description: "收件状态：RECEIVED=未读 READ=已读" }]; // 收件状态
+  optional google.protobuf.Timestamp create_time = 200 [json_name = "createTime", (gnostic.openapi.v3.property) = {description: "接收时间"}]; // 接收时间
+}
+
+// 查询我的通知收件箱 - 请求
+message ListMyNotificationRequest {
+  optional bool only_unread = 1 [json_name = "onlyUnread", (gnostic.openapi.v3.property) = { description: "仅看未读" }]; // 仅看未读
+  optional uint32 page = 2 [json_name = "page", (gnostic.openapi.v3.property) = { description: "页码，从 1 开始" }]; // 页码
+  optional uint32 page_size = 3 [json_name = "pageSize", (gnostic.openapi.v3.property) = { description: "每页条数" }]; // 每页条数
+}
+
+// 查询我的通知收件箱 - 回应
+message ListMyNotificationResponse {
+  repeated MyNotification items = 1;
+  uint32 total = 2;
+  uint32 unread_count = 3 [json_name = "unreadCount"]; // 未读总数（与分页无关）
+}
+
+// 查询我的未读通知数 - 回应
+message CountMyUnreadResponse {
+  uint32 count = 1;
+}
+
+// 标记我的通知已读 - 请求
+message MarkMyNotificationReadRequest {
+  repeated uint32 recipient_ids = 1 [json_name = "recipientIds", (gnostic.openapi.v3.property) = { description: "收件记录ID列表，为空表示全部已读" }]; // 收件记录ID列表
+}
+
+// 通知消息接收者
+message NotificationMessageRecipient {
+  optional uint32 id = 1 [
+    json_name = "id",
+    (google.api.field_behavior) = OPTIONAL,
+    (gnostic.openapi.v3.property) = { description: "记录ID" }
+  ]; // 记录ID
+
+  optional uint32 message_id = 2 [
+    json_name = "messageId",
+    (google.api.field_behavior) = OPTIONAL,
+    (gnostic.openapi.v3.property) = { description: "群发消息ID" }
+  ]; // 群发消息ID
+
+  optional uint32 recipient_id = 3 [
+    json_name = "recipientId",
+    (google.api.field_behavior) = OPTIONAL,
+    (gnostic.openapi.v3.property) = { description: "接收者用户ID" }
+  ]; // 接收者用户ID
+
+  optional MessageStatus status = 4 [
+    json_name = "status",
+    (gnostic.openapi.v3.property) = {
+      description: "消息状态"
+    }
+  ]; // 消息状态
+
+  optional uint32 create_by = 100 [json_name = "createBy", (gnostic.openapi.v3.property) = {description: "创建者ID"}]; // 创建者ID
+  optional uint32 update_by = 101 [json_name = "updateBy", (gnostic.openapi.v3.property) = {description: "更新者ID"}]; // 更新者ID
+
+  optional google.protobuf.Timestamp create_time = 200 [json_name = "createTime", (gnostic.openapi.v3.property) = {description: "创建时间"}];// 创建时间
+  optional google.protobuf.Timestamp update_time = 201 [json_name = "updateTime", (gnostic.openapi.v3.property) = {description: "更新时间"}];// 更新时间
+  optional google.protobuf.Timestamp delete_time = 202 [json_name = "deleteTime", (gnostic.openapi.v3.property) = {description: "删除时间"}];// 删除时间
+}
+
+// 查询通知消息接收者列表 - 回应
+message ListNotificationMessageRecipientResponse {
+  repeated NotificationMessageRecipient items = 1;
+  uint32 total = 2;
+}
+
+// 查询通知消息接收者详情 - 请求
+message GetNotificationMessageRecipientRequest {
+  uint32 id = 1;
+}
+
+// 创建通知消息接收者 - 请求
+message CreateNotificationMessageRecipientRequest {
+  NotificationMessageRecipient data = 1;
+}
+
+// 更新通知消息接收者 - 请求
+message UpdateNotificationMessageRecipientRequest {
+  NotificationMessageRecipient data = 1;
+
+  google.protobuf.FieldMask update_mask = 2 [
+    (gnostic.openapi.v3.property) = {
+      description: "要更新的字段列表",
+      example: {yaml : "id,realname,username"}
+    },
+    json_name = "updateMask"
+  ]; // 要更新的字段列表
+
+  optional bool allow_missing = 3 [
+    (gnostic.openapi.v3.property) = {description: "如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。"},
+    json_name = "allowMissing"
+  ]; // 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
+
+  uint32 id = 4 [json_name = "id", (gnostic.openapi.v3.property) = {description: "要更新的通知接收人ID（URL 路径参数）"}]; // 要更新的通知接收人ID
+}
+
+// 删除通知消息接收者 - 请求
+message DeleteNotificationMessageRecipientRequest {
+  uint32 id = 1;
+}

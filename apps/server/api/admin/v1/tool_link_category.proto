@@ -1,0 +1,147 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+
+import "pagination/v1/pagination.proto";
+
+// 工具链接分类服务
+service ToolLinkCategoryService {
+  // 查询工具链接分类列表
+  rpc List (pagination.PagingRequest) returns (ListToolLinkCategoryResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/tool-link-categories"
+    };
+  }
+
+  // 查询工具链接分类详情
+  rpc Get (GetToolLinkCategoryRequest) returns (ToolLinkCategory) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/tool-link-categories/{id}"
+    };
+  }
+
+  // 创建工具链接分类
+  rpc Create (CreateToolLinkCategoryRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/tool-link-categories"
+      body: "*"
+    };
+  }
+
+  // 更新工具链接分类
+  rpc Update (UpdateToolLinkCategoryRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/api/v1/monitor/tool-link-categories/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除工具链接分类
+  rpc Delete (DeleteToolLinkCategoryRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/api/v1/monitor/tool-link-categories/{id}"
+    };
+  }
+}
+
+// 工具链接分类
+message ToolLinkCategory {
+  optional uint32 id = 1 [
+    json_name = "id",
+    (google.api.field_behavior) = OPTIONAL,
+    (gnostic.openapi.v3.property) = {
+      description: "分类ID"
+    }
+  ]; // 分类ID
+
+  optional string name = 10 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = {
+      description: "分类名称（唯一，如 监控/日志/文档）"
+    }
+  ]; // 分类名称
+
+  optional string icon = 11 [
+    json_name = "icon",
+    (gnostic.openapi.v3.property) = {
+      description: "Lucide 图标名（如 wrench）"
+    }
+  ]; // Lucide 图标名
+
+  optional string description = 12 [
+    json_name = "description",
+    (gnostic.openapi.v3.property) = { description: "描述" }
+  ]; // 描述
+
+  optional int32 sort = 13 [
+    json_name = "sort",
+    (gnostic.openapi.v3.property) = {
+      description: "排序号，越小越靠前"
+    }
+  ]; // 排序号
+
+  optional string status = 18 [
+    json_name = "status",
+    (gnostic.openapi.v3.property) = {
+      description: "状态",
+      enum: [{yaml: "ON"}, {yaml: "OFF"}]
+    }
+  ]; // 状态（ON=启用/OFF=禁用）
+
+  optional uint32 create_by = 100 [json_name = "createBy", (gnostic.openapi.v3.property) = {description: "创建者ID"}]; // 创建者ID
+  optional uint32 update_by = 101 [json_name = "updateBy", (gnostic.openapi.v3.property) = {description: "更新者ID"}]; // 更新者ID
+
+  optional google.protobuf.Timestamp create_time = 200 [json_name = "createTime", (gnostic.openapi.v3.property) = {description: "创建时间"}];// 创建时间
+  optional google.protobuf.Timestamp update_time = 201 [json_name = "updateTime", (gnostic.openapi.v3.property) = {description: "更新时间"}];// 更新时间
+  optional google.protobuf.Timestamp delete_time = 202 [json_name = "deleteTime", (gnostic.openapi.v3.property) = {description: "删除时间"}];// 删除时间
+}
+
+// 查询工具链接分类列表 - 回应
+message ListToolLinkCategoryResponse {
+  repeated ToolLinkCategory items = 1;
+  uint32 total = 2;
+}
+
+// 查询工具链接分类详情 - 请求
+message GetToolLinkCategoryRequest {
+  uint32 id = 1;
+}
+
+// 创建工具链接分类 - 请求
+message CreateToolLinkCategoryRequest {
+  ToolLinkCategory data = 1;
+}
+
+// 更新工具链接分类 - 请求
+message UpdateToolLinkCategoryRequest {
+  ToolLinkCategory data = 1;
+
+  google.protobuf.FieldMask update_mask = 2 [
+    (gnostic.openapi.v3.property) = {
+      description: "要更新的字段列表",
+      example: {yaml : "id,name,icon,description,sort,status"}
+    },
+    json_name = "updateMask"
+  ]; // 要更新的字段列表
+
+  optional bool allow_missing = 3 [
+    (gnostic.openapi.v3.property) = {description: "如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。"},
+    json_name = "allowMissing"
+  ]; // 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
+
+  uint32 id = 4 [json_name = "id", (gnostic.openapi.v3.property) = {description: "要更新的分类ID（URL 路径参数）"}]; // 要更新的分类ID
+}
+
+// 删除工具链接分类 - 请求
+message DeleteToolLinkCategoryRequest {
+  uint32 id = 1;
+}

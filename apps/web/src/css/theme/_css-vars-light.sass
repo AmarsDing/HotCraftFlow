@@ -1,0 +1,437 @@
+// 白昼 CSS 变量（:root）— Apple Design 风格
+// 纯净白底、中性灰阶、Apple Blue 强调色、克制阴影、iOS 毛玻璃材质
+// stylelint-disable color-no-hex -- 主题变量定义文件，必须使用 hex 值
+\:root
+  --q-primary: #007AFF
+  --q-secondary: #5856D6
+  --q-accent: var(--color-accent)
+  // Quasar 品牌色（编译期常量会被本表按主题覆盖；缺失会在暗色下残留浅色值）
+  --q-positive: #34C759
+  --q-negative: #FF3B30
+  --q-info: #5AC8FA
+  --q-warning: #FF9500
+  --q-dark: #1D1D1F
+  // Quasar 静态 Material 调色板映射（deep-purple/teal/cyan/amber 等静态类 → 主题 token）
+  --color-q-deep-purple: #5856D6
+  --color-q-purple: #AF52DE
+  --color-q-teal: #30B0C7
+  --color-q-cyan: #32ADE6
+  --color-q-amber: #FFCC00
+  --color-q-orange: #FF9500
+  --color-q-deep-orange: #C93400
+  --canvas-base: #FFFFFF
+  --glass-surface: rgba(255, 255, 255, 0.72)
+  --glass-surface-hover: rgba(255, 255, 255, 0.80)
+  --glass-blur-default: 20px
+  --glass-blur-hover: 24px
+  --glass-border: rgba(0, 0, 0, 0.06)
+  --glass-elevated: rgba(255, 255, 255, 0.80)
+  --glass-blur-elevated: 28px
+  --color-accent: #007AFF
+  --color-accent-hover: #0051D5
+  --color-accent-soft: rgba(0, 122, 255, 0.12)
+  --color-accent-border: rgba(0, 122, 255, 0.30)
+  --color-accent-hover-bg: rgba(0, 122, 255, 0.08)
+  --shadow-accent-focus: 0 0 0 3px rgba(0, 122, 255, 0.15)
+  --shadow-warm: 0 8px 24px rgba(0, 0, 0, 0.06)
+  --color-text-primary: #1D1D1F
+  --color-text-secondary: #86868B
+  --color-icon-muted: #C7C7CC
+  --focus-ring-light: 2px solid rgba(0, 122, 255, 0.4)
+  --interaction-surface-hover: #F5F5F7
+  --glass-inner-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.5)
+  // 数据密度与时效口径（2026-09-22 气象雷达监控页方案 §5 新增，亮暗同值）
+  --row-band-h: 22px
+  --stale-minutes: 5
+  --stale-critical-minutes: 15
+  --color-success: #34C759
+  --color-warning: #FF9500
+  --color-danger: #FF3B30
+  // ── 孪生设备状态色（浅色主题，白底可读性增强版）──
+  --twin-status-normal: #28A745
+  --twin-status-warning: #E68900
+  --twin-status-critical: #DC3545
+  --twin-status-offline: #6C757D
+  --twin-status-info: #007AFF
+  --twin-status-stale: #B8860B
+  --twin-status-unknown: #6C757D
+  --twin-status-emergency: #C2185B
+  // ── 告警级别色（alarm level: info/warning/critical/emergency）──
+  --color-alarm-info: #5AC8FA
+  --color-alarm-warning: #FF9500
+  --color-alarm-critical: #FF3B30
+  --color-alarm-emergency: #AF52DE
+  --color-alarm-info-soft: rgba(90, 200, 250, 0.12)
+  --color-alarm-warning-soft: rgba(255, 149, 0, 0.12)
+  --color-alarm-critical-soft: rgba(255, 59, 48, 0.12)
+  --color-alarm-emergency-soft: rgba(175, 82, 222, 0.12)
+  --nav-bg-light: rgba(255, 255, 255, 0.72)
+  --nav-blur: 20px
+  --text-xs: 12px
+  --text-sm: 13px
+  --text-base: 14px
+  --text-md: 16px
+  --text-lg: 20px
+  --text-xl: 25px
+  --space-1: 4px
+  --space-2: 8px
+  --space-3: 12px
+  --space-4: 16px
+  --space-5: 20px
+  --space-6: 24px
+  --space-8: 32px
+  --space-12: 48px
+  --space-16: 64px
+  --layout-max-width: 1440px
+  --sidebar-width: 232px
+  --sidebar-mini-width: 64px
+  --sidebar-inset-x: 12px
+  --sidebar-inset-y: 12px
+  --sidebar-radius: 20px
+  --sidebar-bg: rgba(255, 255, 255, 0.72)
+  --sidebar-blur: 20px
+  --sidebar-saturate: 1.08
+  --sidebar-border: rgba(0, 0, 0, 0.06)
+  --sidebar-shadow: var(--glass-inner-highlight), 0 12px 40px rgba(0, 0, 0, 0.06)
+  --sidebar-overlay: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, transparent 50%)
+  --sidebar-padding-x: 10px
+  --sidebar-padding-y: 8px
+  --sidebar-mini-padding-x: 8px
+  --sidebar-item-indent: 16px
+  --sidebar-section-padding: 12px 10px 6px
+  --sidebar-section-color: var(--color-text-tertiary)
+  --sidebar-item-padding-x: 12px
+  --sidebar-item-padding-y: 7px
+  --sidebar-item-gap: 3px
+  --sidebar-item-radius: 10px
+  --sidebar-item-min-height: 40px
+  --sidebar-item-font-size: 14px
+  --sidebar-section-font-size: 12px
+  --sidebar-item-color: var(--color-text-primary)
+  --sidebar-item-hover-bg: rgba(0, 0, 0, 0.04)
+  --sidebar-item-hover-color: var(--color-text-primary)
+  --sidebar-item-active-bg: rgba(0, 122, 255, 0.10)
+  --sidebar-item-active-color: var(--color-accent)
+  --sidebar-item-active-shadow: inset 3px 0 0 var(--color-accent), var(--glass-inner-highlight)
+  --sidebar-icon-size: 20px
+  --sidebar-icon-gap: 12px
+  --sidebar-icon-color: var(--color-icon-muted)
+  --sidebar-icon-opacity: 1
+  --sidebar-icon-active-color: var(--color-accent)
+  --color-code-block-bg: rgba(0, 0, 0, 0.03)
+  --color-json-key: #881391
+  --color-json-string: #1a7f37
+  --color-json-number: #0550ae
+  --color-json-boolean: #cf222e
+  --color-json-null: #6e7781
+  --shadow-login: 0 22px 50px rgba(0, 0, 0, 0.08)
+  --color-on-accent: #FFFFFF
+  --color-surface-solid: #FFFFFF
+  --color-surface-soft: #F5F5F7
+  --color-surface-elevated: #FFFFFF
+  --color-border-soft: rgba(0, 0, 0, 0.06)
+  --color-warm-muted-surface: rgba(0, 0, 0, 0.04)
+  --color-link: #007AFF
+  --color-info: #5AC8FA
+  --color-info-soft: rgba(0, 122, 255, 0.08)
+  --color-success-soft: rgba(52, 199, 89, 0.10)
+  --color-danger-soft: rgba(255, 59, 48, 0.08)
+  --color-danger-surface: rgba(255, 59, 48, 0.10)
+  --color-warning-soft: rgba(255, 149, 0, 0.08)
+  --color-text-dark: #1D1D1F
+  --color-text-tertiary: #AEAEB2
+  --color-text-heading: #1D1D1F
+  --color-accent-blue: #007AFF
+  --color-accent-blue-soft: rgba(0, 122, 255, 0.08)
+  --color-accent-green: #34C759
+  --color-accent-green-soft: rgba(52, 199, 89, 0.10)
+  --gradient-page: linear-gradient(180deg, #FFFFFF 0%, #F5F5F7 100%)
+  --gradient-page-accent: linear-gradient(180deg, #FFFFFF, #F5F5F7)
+  --color-page-tint: #FFFFFF
+  --color-page-tint-alt: #F5F5F7
+  --color-page-tint-blue: #F5F5F7
+  --color-page-tint-cool: #F5F5F7
+  --color-page-tint-warm: #F5F5F7
+  --color-status-info-bg: rgba(0, 122, 255, 0.06)
+  --color-status-success-bg: rgba(52, 199, 89, 0.08)
+  --color-status-warning-bg: rgba(255, 149, 0, 0.08)
+  --color-status-danger-bg: rgba(255, 59, 48, 0.06)
+  --color-status-warning-text: #C93400
+  --color-status-warning-text-dark: #A02800
+  --color-status-info-text: #0040A0
+  --color-status-info-text-light: #0051D5
+  --color-status-warning-bg-alt: rgba(255, 149, 0, 0.06)
+  --color-status-warning-bg-warm: rgba(255, 149, 0, 0.06)
+  --color-status-info-bg-alt: rgba(0, 122, 255, 0.06)
+  --color-status-blue-bg: rgba(0, 122, 255, 0.04)
+  --color-text-slate-700: #48484A
+  --color-text-slate-600: #636366
+  --color-text-slate-500: #8E8E93
+  --color-text-slate-400: #AEAEB2
+  --color-text-slate-300: #C7C7CC
+  --color-text-gray-700: #48484A
+  --color-text-gray-600: #636366
+  --color-text-gray-500: #8E8E93
+  --color-text-gray-400: #AEAEB2
+  --color-text-gray-300: #C7C7CC
+  --color-text-gray-800: #1D1D1F
+  --color-text-gray-600-alt: #48484A
+  --color-accent-indigo: #5856D6
+  --color-accent-indigo-light: #7B7AE0
+  --color-accent-indigo-lighter: #9D9CE8
+  --color-accent-indigo-dark: #4240B8
+  --color-accent-indigo-darker: #3634A0
+  --color-accent-cyan: #32ADE6
+  --color-accent-cyan-soft: rgba(50, 173, 230, 0.12)
+  --color-accent-amber: #FF9500
+  --color-accent-amber-light: #FFB340
+  --color-accent-amber-dark: #C76800
+  --color-accent-orange-light: #FFB340
+  --color-accent-orange-bg: rgba(255, 179, 64, 0.12)
+  --color-accent-green-light: #30D158
+  --color-accent-green-bright: rgba(48, 209, 88, 0.16)
+  --color-accent-blue-light: #64B5F6
+  --color-accent-blue-bright: rgba(100, 181, 246, 0.16)
+  --color-bubble-accent: #5856D6
+  --color-bubble-accent-dark: #4240B8
+  --color-bubble-gradient: linear-gradient(135deg, #007AFF 0%, #5856D6 50%, #7B7AE0 100%)
+  --color-bubble-gradient-dark: linear-gradient(135deg, #0051D5 0%, #4240B8 55%, #5856D6 100%)
+  --color-quasar-positive: #34C759
+  --color-quasar-negative: #FF3B30
+  --color-quasar-warning: #FF9500
+  --color-quasar-grey: #8E8E93
+  --color-cream-text: #1D1D1F
+  --color-cream-text-muted: #86868B
+  --color-cream-text-light: #AEAEB2
+  --color-cream-accent: #007AFF
+  --color-cream-accent-dark: #0051D5
+  --color-danger-text: #C00020
+  --color-gradient-blue-soft: linear-gradient(180deg, rgba(0, 122, 255, 0.04), rgba(0, 122, 255, 0.02))
+  --color-gradient-red-soft: linear-gradient(180deg, rgba(255, 59, 48, 0.04), rgba(255, 59, 48, 0.02))
+  --color-gradient-warm: linear-gradient(135deg, #FFFFFF, #F5F5F7)
+  --color-gradient-warm-alt: linear-gradient(180deg, #FFFFFF, #F5F5F7)
+  --color-interaction-surface-alt: #F5F5F7
+  --gradient-entity-page-light: radial-gradient(circle at 86% 0%, rgba(0, 122, 255, 0.06), transparent 28%), linear-gradient(180deg, var(--color-page-tint) 0%, var(--color-page-tint-alt) 46%, var(--color-on-accent) 100%)
+  --gradient-entity-page-light-warm: radial-gradient(circle at 86% 0%, rgba(0, 122, 255, 0.06), transparent 28%), radial-gradient(circle at 10% 16%, rgba(255, 149, 0, 0.04), transparent 24%), linear-gradient(180deg, var(--color-page-tint) 0%, var(--color-page-tint-alt) 46%, var(--color-on-accent) 100%)
+  --shadow-entity-panel: 0 18px 48px rgba(0, 0, 0, 0.04)
+  --shadow-entity-panel-dark: 0 14px 38px rgba(0, 0, 0, 0.32)
+  --gradient-entity-panel-header-dark: linear-gradient(180deg, rgba(17, 24, 39, 0.96), rgba(15, 23, 42, 0.9)), radial-gradient(circle at top right, rgba(59, 130, 246, 0.14), transparent 34%)
+  --chat-bubble-radius: 16px
+  --chat-bubble-radius-sm: 6px
+  --chat-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.04)
+  --chat-shadow-md: 0 4px 14px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)
+  --chat-shadow-dark: 0 2px 8px rgba(0, 0, 0, 0.32), 0 8px 24px rgba(0, 0, 0, 0.18)
+  --chat-shadow-sent: 0 6px 18px rgba(0, 122, 255, 0.20), 0 1px 3px rgba(0, 122, 255, 0.16)
+  --chat-user-max-width: 46rem
+  --chat-opposite-gutter: 0px
+  --chat-edge-gutter: 12px
+  --chat-block-gap: 24px
+  --chat-continued-gap: 10px
+  --chat-canvas-light: linear-gradient(180deg, var(--chat-canvas-tint-top) 0%, transparent 320px)
+  --chat-canvas-dark: linear-gradient(180deg, var(--chat-surface-dark-45) 0%, transparent 320px)
+  --chat-canvas-tint-top: rgba(245, 245, 247, 0.55)
+  --chat-canvas-fade-to: rgba(255, 255, 255, 0.92)
+  --chat-shadow-4: rgba(0, 0, 0, 0.04)
+  --chat-shadow-6: rgba(0, 0, 0, 0.06)
+  --chat-shadow-8: rgba(0, 0, 0, 0.08)
+  --chat-surface-dark-35: rgba(15, 23, 42, 0.35)
+  --chat-surface-dark-45: rgba(15, 23, 42, 0.45)
+  --chat-surface-dark-62: rgba(15, 23, 42, 0.62)
+  --chat-surface-dark-78: rgba(15, 23, 42, 0.78)
+  --chat-surface-dark-92: rgba(15, 23, 42, 0.92)
+  --chat-surface-muted-60: rgba(30, 41, 59, 0.6)
+  --chat-surface-muted-76: rgba(30, 41, 59, 0.76)
+  --chat-surface-muted-82: rgba(30, 41, 59, 0.82)
+  --chat-surface-muted-94: rgba(30, 41, 59, 0.94)
+  --chat-text-muted: rgba(142, 142, 147, 0.78)
+  --chat-text-muted-strong: rgba(142, 142, 147, 0.92)
+  --chat-scrollbar-thumb: rgba(142, 142, 147, 0.28)
+  --chat-scrollbar-thumb-hover: rgba(142, 142, 147, 0.55)
+  --chat-scrollbar-thumb-dark: rgba(148, 163, 184, 0.22)
+  --chat-scrollbar-thumb-hover-dark: rgba(148, 163, 184, 0.45)
+  --chat-border-muted: rgba(0, 0, 0, 0.06)
+  --chat-border-subtle: rgba(0, 0, 0, 0.04)
+  --chat-accent-soft: rgba(0, 122, 255, 0.10)
+  --chat-accent-border: rgba(0, 122, 255, 0.30)
+  --chat-indigo-soft: rgba(88, 86, 214, 0.12)
+  --chat-indigo-border: rgba(88, 86, 214, 0.22)
+  --chat-indigo-faint: rgba(88, 86, 214, 0.04)
+  --chat-indigo-border-strong: rgba(88, 86, 214, 0.35)
+  --chat-file-tile-bg: rgba(255, 255, 255, 0.78)
+  --chat-header-bg-top: rgba(255, 255, 255, 0.65)
+  --chat-header-bg-bottom: rgba(255, 255, 255, 0.32)
+  --chat-pending-item-bg: rgba(255, 255, 255, 0.55)
+  --chat-bubble-cream: rgba(255, 255, 255, 0.72)
+  --chat-bubble-cream-sent: rgba(0, 122, 255, 0.08)
+  --chat-bubble-cream-border: rgba(0, 0, 0, 0.06)
+  --chat-bubble-cream-sent-border: rgba(0, 122, 255, 0.20)
+  --chat-bubble-cream-hover: rgba(255, 255, 255, 0.85)
+  --chat-bubble-cream-sent-hover: rgba(0, 122, 255, 0.12)
+  --chat-bubble-cream-text: #1D1D1F
+  --chat-bubble-cream-text-muted: #86868B
+  --chat-bubble-cream-failed-text: #FF3B30
+  --chat-bubble-highlight: rgba(255, 255, 255, 0.14)
+  --chat-border-light: rgba(255, 255, 255, 0.45)
+  --chat-border-light-strong: rgba(255, 255, 255, 0.28)
+  --chat-text-on-accent: rgba(255, 255, 255, 0.92)
+  --chat-text-on-accent-soft: rgba(255, 255, 255, 0.82)
+  --chat-surface-light-18: rgba(255, 255, 255, 0.18)
+  --chat-surface-light-10: rgba(255, 255, 255, 0.1)
+  --chat-surface-light-4: rgba(255, 255, 255, 0.04)
+  --chat-shadow-dark-a: rgba(0, 0, 0, 0.32)
+  --chat-shadow-dark-b: rgba(0, 0, 0, 0.18)
+  --chat-shadow-overlay: rgba(0, 0, 0, 0.5)
+  --chat-warning-border: rgba(255, 149, 0, 0.22)
+  --chat-info-faint: rgba(90, 200, 250, 0.04)
+  --chat-info-border: rgba(90, 200, 250, 0.42)
+  --chat-info-soft: rgba(90, 200, 250, 0.18)
+  --chat-info-border-dark: rgba(56, 189, 248, 0.36)
+  --chat-info-soft-dark: rgba(56, 189, 248, 0.1)
+  --chat-danger-faint: rgba(255, 59, 48, 0.04)
+  --chat-danger-border: rgba(255, 59, 48, 0.46)
+  --chat-danger-soft: rgba(255, 59, 48, 0.18)
+  --chat-danger-border-dark: rgba(248, 113, 113, 0.42)
+  --chat-success-border: rgba(52, 199, 89, 0.5)
+  --chat-info-border-strong: rgba(100, 181, 246, 0.85)
+  --chat-side-toggle-width: 32px
+  --chat-side-left-width: 280px
+  --chat-side-right-width: 360px
+  --chat-header-bg-bottom-dark: rgba(15, 23, 42, 0.32)
+  --chart-color-system-prompt: #FF9500
+  --chart-color-skills: #5856D6
+  --chart-color-memory: #32ADE6
+  --chart-color-intent-pass: #FFB340
+  --chart-color-session-summary: #34C759
+  --chart-color-tool-results: #FF3B30
+  --chart-color-history: #8E8E93
+  --chart-color-user-message: #FF2D55
+  --chat-danger-faint-bg: rgba(255, 59, 48, 0.06)
+  --chat-status-danger-bg: rgba(255, 59, 48, 0.08)
+  --chat-status-warning-bg: rgba(255, 149, 0, 0.10)
+  --chat-status-warning-border: rgba(255, 149, 0, 0.3)
+  --chat-status-success-bg: rgba(52, 199, 89, 0.10)
+  --chat-status-accent-bg: rgba(0, 122, 255, 0.10)
+  --chat-accent-bg-strong: rgba(0, 122, 255, 0.12)
+  --chat-accent-border-strong: rgba(0, 122, 255, 0.3)
+  --chat-indigo-shadow: rgba(88, 86, 214, 0.25)
+  --chat-info-soft-bg: rgba(90, 200, 250, 0.09)
+  --chat-surface-muted-92: rgba(30, 41, 59, 0.92)
+  --chat-avatar-ring: rgba(255, 255, 255, 0.95)
+  --chat-avatar-shadow: rgba(0, 0, 0, 0.12)
+  --chat-table-border: rgba(0, 0, 0, 0.08)
+  --chat-scroll-shadow: rgba(0, 0, 0, 0.12)
+  --chat-text-slate-95: rgba(142, 142, 147, 0.95)
+  --chat-text-slate-92: rgba(142, 142, 147, 0.92)
+  --chat-border-slate-28: rgba(142, 142, 147, 0.28)
+  --chat-text-copy-btn: rgba(72, 72, 74, 0.82)
+  --color-diff-removed: #FF3B30
+  --color-diff-removed-bg: rgba(255, 59, 48, 0.08)
+  --color-diff-added: #34C759
+  --color-diff-added-bg: rgba(52, 199, 89, 0.08)
+  --table-scrollbar-thumb: rgba(0, 0, 0, 0.12)
+  --table-scrollbar-thumb-hover: rgba(0, 0, 0, 0.25)
+  // 全局统一滚动条（webkit + q-scroll-area 共用）
+  --app-scrollbar-thumb: rgba(0, 0, 0, 0.14)
+  --app-scrollbar-thumb-hover: rgba(0, 0, 0, 0.28)
+  --toggle-track-off: rgba(0, 0, 0, 0.08)
+  --toggle-track-on: color-mix(in srgb, var(--color-accent) 68%, var(--glass-surface))
+  --toggle-thumb-on: var(--color-accent)
+  --toggle-label-color: var(--color-text-primary)
+  // ── Overview / Monitor 中性色 token ──
+  --overview-neutral-bg: rgba(0, 0, 0, 0.02)
+  --overview-neutral-bg-alt: rgba(0, 0, 0, 0.03)
+  --overview-neutral-border: rgba(0, 0, 0, 0.04)
+  --overview-neutral-border-alt: rgba(0, 0, 0, 0.05)
+  --overview-neutral-border-hover: rgba(0, 0, 0, 0.08)
+  --overview-neutral-border-hover-alt: rgba(0, 0, 0, 0.10)
+  --overview-neutral-bg-icon: rgba(0, 0, 0, 0.05)
+  --overview-neutral-bg-bar: rgba(0, 0, 0, 0.05)
+  --overview-neutral-border-chip: rgba(0, 0, 0, 0.06)
+  --overview-neutral-border-table: rgba(0, 0, 0, 0.03)
+  --overview-danger-border: rgba(255, 59, 48, 0.35)
+  --overview-warning-border: rgba(255, 149, 0, 0.30)
+  --overview-warn-icon-bg: rgba(255, 149, 0, 0.10)
+  --overview-danger-icon-bg: rgba(255, 59, 48, 0.08)
+  --overview-field-bg: rgba(255, 255, 255, 0.50)
+  --overview-shadow-clickable: 0 4px 12px rgba(0, 0, 0, 0.06)
+  // ── Agent avatar palette ──
+  --avatar-color-1: #007AFF
+  --avatar-color-2: #5856D6
+  --avatar-color-3: #FF9500
+  --avatar-color-4: #34C759
+  --avatar-color-5: #FF3B30
+  --avatar-color-6: #AF52DE
+  // ── ECharts 统一图表 token（chartTheme.ts 读取，全站图表强制走此色板）──
+  --chart-series-1: #007AFF
+  --chart-series-2: #5856D6
+  --chart-series-3: #34C759
+  --chart-series-4: #FF9500
+  --chart-series-5: #FF3B30
+  --chart-series-6: #5AC8FA
+  --chart-series-7: #AF52DE
+  --chart-series-8: #FF8F00
+  --chart-axis-label: #86868B
+  --chart-axis-line: rgba(0, 0, 0, 0.12)
+  --chart-splitline: rgba(0, 0, 0, 0.06)
+  --chart-tooltip-bg: rgba(255, 255, 255, 0.96)
+  --chart-tooltip-border: rgba(0, 0, 0, 0.08)
+  --chart-axis-pointer: #007AFF
+  --chart-pie-border: #FFFFFF
+  --chart-glow: rgba(0, 122, 255, 0)
+  // ── 拓扑画布 token（TopologyGraph 编辑器/查看页/大屏共用）──
+  --topo-grid-dot: rgba(15, 23, 42, 0.13)
+  --topo-link: #7A90AB
+  --topo-link-label: #5B6B82
+  // 拓扑大屏画布（dark 模式恒深，与昼夜主题无关；浅色系统嵌深色大屏时同样生效）
+  --topo-canvas-stage: radial-gradient(ellipse 120% 100% at 50% 30%, rgba(23, 38, 64, 0.55), rgba(6, 12, 24, 0.72) 75%)
+  --topo-grid-dot-stage: rgba(77, 216, 232, 0.16)
+  // ── 场景树节点类型色（3D场景管理左侧场景树图标徽章，白昼 Apple 色板）──
+  --scene-tree-all: #007AFF
+  --scene-tree-airport: #007AFF
+  --scene-tree-server-room: #FF9500
+  --scene-tree-radar: #AF52DE
+  --scene-tree-terminal: #32ADE6
+  --scene-tree-outdoor: #34C759
+  --scene-tree-topology: #5856D6
+  --scene-tree-default: #86868B
+  // ── InsightCard 语义 token（EP-FE-03 收口）──
+  --insight-critical-bar: linear-gradient(180deg, #FF6B6B, #E03131)
+  --insight-warning-bar: linear-gradient(180deg, #FFD43B, #F08C00)
+  --insight-info-bar: linear-gradient(180deg, #74C0FC, #1971C2)
+  --insight-critical-icon: #FF8787
+  --insight-warning-icon: #FFD43B
+  --insight-info-icon: #74C0FC
+  --insight-critical-icon-bg: rgba(224, 49, 49, 0.14)
+  --insight-warning-icon-bg: rgba(240, 140, 0, 0.14)
+  --insight-info-icon-bg: rgba(25, 113, 194, 0.14)
+  --insight-pattern-text: #B197FC
+  --insight-pattern-bg: rgba(151, 117, 250, 0.10)
+  --insight-pattern-border: rgba(151, 117, 250, 0.35)
+  --insight-critical-suggestion-bg: rgba(224, 49, 49, 0.08)
+  --insight-critical-suggestion-border: rgba(224, 49, 49, 0.55)
+  --insight-warning-suggestion-bg: rgba(240, 140, 0, 0.08)
+  --insight-warning-suggestion-border: rgba(240, 140, 0, 0.55)
+  --insight-info-suggestion-bg: rgba(25, 113, 194, 0.08)
+  --insight-info-suggestion-border: rgba(25, 113, 194, 0.55)
+  // ── Liquid Glass 液体玻璃材质（顶栏/侧栏增强，2026-08 新增；仅新增不改既有 token）──
+  --liquid-blur: 24px
+  --liquid-saturate: 1.6
+  --liquid-header-bg: linear-gradient(120deg, rgba(255, 255, 255, 0.70) 0%, rgba(250, 250, 252, 0.48) 55%, rgba(255, 255, 255, 0.62) 100%)
+  --liquid-header-border: rgba(255, 255, 255, 0.65)
+  --liquid-header-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 12px 32px rgba(0, 0, 0, 0.07), 0 2px 6px rgba(0, 0, 0, 0.04)
+  --liquid-header-sheen: linear-gradient(105deg, transparent 34%, rgba(255, 255, 255, 0.50) 48%, transparent 64%)
+  --liquid-sidebar-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.64) 0%, rgba(248, 249, 252, 0.46) 52%, rgba(255, 255, 255, 0.56) 100%)
+  --liquid-sidebar-border: rgba(255, 255, 255, 0.60)
+  --liquid-sidebar-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68), 0 16px 44px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)
+  --liquid-sidebar-sheen: linear-gradient(150deg, rgba(255, 255, 255, 0.45) 0%, transparent 36%), radial-gradient(ellipse 130% 55% at 0% 0%, rgba(0, 122, 255, 0.05) 0%, transparent 60%)
+  --liquid-item-hover-bg: linear-gradient(120deg, rgba(255, 255, 255, 0.55), rgba(0, 122, 255, 0.07))
+  --liquid-item-hover-color: var(--color-accent-hover)
+  --liquid-item-hover-border: rgba(255, 255, 255, 0.55)
+  --liquid-item-active-bg: linear-gradient(120deg, rgba(0, 122, 255, 0.17) 0%, rgba(0, 122, 255, 0.08) 100%)
+  --liquid-item-active-border: rgba(0, 122, 255, 0.30)
+  --liquid-item-active-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62), inset 3px 0 0 var(--color-accent), 0 6px 18px rgba(0, 122, 255, 0.16)
+  --liquid-divider: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.10), transparent)
+  --liquid-idle-text: var(--color-text-primary)
+  --liquid-idle-icon: var(--sidebar-icon-color)
+  --liquid-active-text-glow: none
+  --liquid-icon-glow: none

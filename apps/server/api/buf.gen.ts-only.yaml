@@ -1,0 +1,14 @@
+version: v2
+clean: true
+managed:
+  enabled: true
+  disable:
+    - module: buf.build/googleapis/googleapis
+    - module: 'buf.build/envoyproxy/protoc-gen-validate'
+    - module: 'buf.build/kratos/apis'
+    - module: 'buf.build/gnostic/gnostic'
+    - module: 'buf.build/gogo/protobuf'
+plugins:
+  # 仅生成前端 TypeScript HTTP 客户端（Go 侧产物未损坏，不重复生成）
+  - local: protoc-gen-typescript-http
+    out: ../../web/src/services/kratos

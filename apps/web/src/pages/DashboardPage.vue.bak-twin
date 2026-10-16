@@ -1,0 +1,649 @@
+<template>
+  <q-page class="dashboard-page q-pa-lg">
+    <!-- A 区 · 关键指标（区段标题统一页面层级：与卡片头同款 accent 刻度条语言，右侧承载区段操作） -->
+    <div class="sec-heading">
+      <span class="sec-heading__bar" />
+      <span class="sec-heading__title">{{ t('dashboard.secKpi') }}</span>
+      <span class="sec-heading__sub">{{ t('dashboard.secKpiSub') }}</span>
+    </div>
+    <!-- KPI 总览条（8 卡一行：自观/动环/气象雷达/通导/IT 五类设备域 + 业务数据 + 网络监控 + 视频监控；
+         点击跳转对应专业页面） -->
+    <div class="app-stat-strip dashboard-page__kpi-strip q-mb-lg">
+      <div
+        v-for="card in kpiCards"
+        :key="card.key"
+        class="app-stat-card dashboard-page__kpi"
+        :class="card.tone ? `app-stat-card--${card.tone}` : ''"
+        @click="go(card.to)"
+      >
+        <div class="app-stat-card__icon"><q-icon :name="card.icon" size="22px" /></div>
+        <div class="app-stat-card__body">
+          <div class="app-stat-card__value">{{ card.value }}</div>
+          <div class="app-stat-card__label">{{ card.label }}</div>
+          <div v-if="card.sub" class="app-stat-card__sub">{{ card.sub }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 当前值班横幅（高科技大视觉：大头像 + 电话 + 实时时钟 + 交班倒计时） -->
+    <DashboardDutyHero class="q-mb-lg" />
+
+    <!-- B 区 · 设备域作战网格（区段二）：标题行右侧承载「恢复默认排版」，
+         消除原来独占一行的空工具条（页面竖向节奏：区段标题 → 内容） -->
+    <div class="sec-heading">
+      <span class="sec-heading__bar" />
+      <span class="sec-heading__title">{{ t('dashboard.secDeviceGrid') }}</span>
+      <span class="sec-heading__sub">{{ t('dashboard.secDeviceGridSub') }}</span>
+      <div class="dashboard-page__sec-actions">
+        <q-btn
+          flat
+          dense
+          no-caps
+          size="sm"
+          icon="restart_alt"
+          :label="t('dashboard.resetLayout')"
+          :disable="isDefaultOrder"
+          @click="onResetLayout"
+        >
+          <q-tooltip>{{ t('dashboard.resetLayoutHint') }}</q-tooltip>
+        </q-btn>
+      </div>
+    </div>
+
+    <!-- 设备域网格（11 卡可拖拽排序：卡片右上角拖拽把手，顺序持久化到服务端 userDashboard） -->
+    <div class="dashboard-page__grid dashboard-page__grid--quad q-mb-lg">
+      <div
+        v-for="key in orderedKeys"
+        :key="key"
+        class="dashboard-page__cell"
+        :class="[
+          spanClass(key),
+          {
+            'is-drop-before': dropTarget?.key === key && dropTarget.before,
+            'is-drop-after': dropTarget?.key === key && !dropTarget.before,
+            'is-drag-over': dropTarget?.key === key,
+          },
+        ]"
+        @dragover="onCellDragover($event, key)"
+        @dragleave="onCellDragleave(key)"
+        @drop.prevent="onCellDrop(key)"
+      >
+        <component
+          :is="CARD_COMPONENTS[key as DashboardCardKey]"
+          :dragging="draggedKey === key"
+          @drag-start="onDragStart(key)"
+          @drag-end="onDragEnd"
+        />
+      </div>
+    </div>
+
+    <!-- 问题簇卡（同源告警自动聚合 · 一个故事一张卡；置底=处置终点；首屏限 6 张，完整列表去告警台） -->
+    <DashboardProblemClusterSection
+      :max-display="6"
+      @open-device="goDeviceOps"
+      @expand="goClusterAlarms"
+      @goto-alarms="goClusterAlarms"
+      @confirm-all="onClusterConfirmAll"
+      @ai-diagnose="openClusterAi"
+      @goto-ops-center="go('/alarm/events')"
+    />
+
+    <!-- 簇级 AI 诊断弹框（原位排故，不跳 AI 巡检页；深链专业控制台在弹框头部） -->
+    <OpsAiOpsDialog v-model="aiDialogOpen" :device="aiDialogDevice" :unhandled-alarms="aiDialogAlarms" />
+  </q-page>
+</template>
+
+<script setup lang="ts">
+// 首页态势总览：值班作战室定位（跨域聚合 + 跳转分发），全部真实接口数据。
+// A 区 KPI 卡口径见各 service；设备域网格由 11 张域卡组成（组件内自取数，30s 轮询），
+// 卡片顺序经 useDashboardLayout 拖拽持久化（服务端 userDashboard '__home_layout__' 记录 + localStorage 降级）。
+import { computed, defineAsyncComponent, onMounted, ref, type Component } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
+import {
+  alarmEventService,
+  arrivalMonitorService,
+  deviceCategoryService,
+  deviceStatusService,
+  lineStatusService,
+  monitorAssetService,
+  monitorDeviceService,
+  type ArrivalOverviewEntity,
+  type DeviceCategoryEntity,
+} from '../services';
+import type { Device360Ref } from '../components/device-360/Device360Drawer.vue';
+import DashboardDutyHero from './dashboard/components/DashboardDutyHero.vue';
+import DashboardProblemClusterSection from './dashboard/components/DashboardProblemClusterSection.vue';
+import DashboardAlarmPulseCard from './dashboard/components/cards/DashboardAlarmPulseCard.vue';
+import DashboardArrivalCard from './dashboard/components/cards/DashboardArrivalCard.vue';
+import DashboardCollectCard from './dashboard/components/cards/DashboardCollectCard.vue';
+import DashboardAmosCard from './dashboard/components/cards/DashboardAmosCard.vue';
+import DashboardEnvCard from './dashboard/components/cards/DashboardEnvCard.vue';
+import DashboardCommnavCard from './dashboard/components/cards/DashboardCommnavCard.vue';
+import DashboardMetRadarCard from './dashboard/components/cards/DashboardMetRadarCard.vue';
+import DashboardItCard from './dashboard/components/cards/DashboardItCard.vue';
+import DashboardVideoCard from './dashboard/components/cards/DashboardVideoCard.vue';
+import DashboardLineCard from './dashboard/components/cards/DashboardLineCard.vue';
+import DashboardInfraCard from './dashboard/components/cards/DashboardInfraCard.vue';
+import { useDashboardLayout, DEFAULT_CARD_ORDER, type DashboardCardKey } from './dashboard/composables/useDashboardLayout';
+import type { ProblemCluster } from '../components/device-360/relationTypes';
+import { useProblemClusters } from './ops-center/useProblemClusters';
+import { Notify } from 'quasar';
+import { useAuthStore } from '../stores';
+
+const { t } = useI18n();
+const router = useRouter();
+
+// ── 卡片注册表（key 必须与 useDashboardLayout.DEFAULT_CARD_ORDER 一致） ──
+const CARD_COMPONENTS: Record<DashboardCardKey, Component> = {
+  'alarm-pulse': DashboardAlarmPulseCard,
+  arrival: DashboardArrivalCard,
+  collect: DashboardCollectCard,
+  amos: DashboardAmosCard,
+  env: DashboardEnvCard,
+  commnav: DashboardCommnavCard,
+  metradar: DashboardMetRadarCard,
+  it: DashboardItCard,
+  video: DashboardVideoCard,
+  line: DashboardLineCard,
+  infra: DashboardInfraCard,
+};
+
+// ── 跨列排版（与 useDashboardLayout.DEFAULT_CARD_ORDER 成套设计）──
+// 用户指定排版：
+//   Row1 告警态势 | 业务数据 | 采集健康 | 网络监控（各 1 列）
+//   Row2 自观设备 | 通信导航 | 气象雷达 | 动环设备（各 1 列）
+//   Row3 IT 设备监控(2 列) | 视频监控(1 列) | 容器与中间件(1 列)
+// 注意：改动此处必须与 DEFAULT_CARD_ORDER 成对维护，否则会出现半行空洞。
+const CARD_SPAN: Record<DashboardCardKey, 1 | 2 | 'full'> = {
+  'alarm-pulse': 1,
+  arrival: 1,
+  collect: 1,
+  line: 1,
+  amos: 1,
+  commnav: 1,
+  metradar: 1,
+  env: 1,
+  it: 2,
+  video: 1,
+  infra: 1,
+};
+
+function spanClass(key: string): string {
+  const span = CARD_SPAN[key as DashboardCardKey] ?? 1;
+  if (span === 'full') return 'is-span-full';
+  if (span === 2) return 'is-span-2';
+  return '';
+}
+
+// ── 拖拽排序（HTML5 原生 Drag API：把手 dragstart → 单元格 dragover 定插入位 → drop 落序） ──
+const {
+  orderedKeys,
+  load: loadLayout,
+  move: moveCard,
+  reset: resetLayout,
+} = useDashboardLayout();
+
+// 顺序与默认一致时禁用「恢复默认排版」；拖拽过的用户可一键回到 4 列等宽动线
+const isDefaultOrder = computed(
+  () => orderedKeys.value.join(',') === (DEFAULT_CARD_ORDER as readonly string[]).join(','),
+);
+
+function onResetLayout() {
+  resetLayout();
+}
+const draggedKey = ref<string | null>(null);
+const dropTarget = ref<{ key: string; before: boolean } | null>(null);
+
+function onDragStart(key: string) {
+  draggedKey.value = key;
+}
+
+function onDragEnd() {
+  draggedKey.value = null;
+  dropTarget.value = null;
+}
+
+// dragover：以单元格水平中线划分「插到目标前/后」，实时给出落点指示
+function onCellDragover(ev: DragEvent, key: string) {
+  const dragged = draggedKey.value;
+  if (!dragged || dragged === key) return;
+  ev.preventDefault();
+  if (ev.dataTransfer) ev.dataTransfer.dropEffect = 'move';
+  const cell = ev.currentTarget as HTMLElement;
+  const rect = cell.getBoundingClientRect();
+  const before = ev.clientX < rect.left + rect.width / 2;
+  const cur = dropTarget.value;
+  if (!cur || cur.key !== key || cur.before !== before) dropTarget.value = { key, before };
+}
+
+function onCellDragleave(key: string) {
+  if (dropTarget.value?.key === key) dropTarget.value = null;
+}
+
+function onCellDrop(key: string) {
+  const dragged = draggedKey.value;
+  if (dragged && dragged !== key) {
+    moveCard(dragged, key, dropTarget.value?.key === key ? dropTarget.value.before : true);
+  }
+  dropTarget.value = null;
+}
+
+interface KpiCard {
+  key: string;
+  label: string;
+  value: string;
+  sub?: string;
+  icon: string;
+  tone?: 'success' | 'danger' | 'warning' | 'info' | 'violet';
+  to: string;
+}
+
+const lineOnline = ref<number>();
+const lineTotal = ref<number>();
+const lineDegraded = ref<number>();
+const lineEvents = ref<number>();
+const arrival = ref<ArrivalOverviewEntity>({});
+
+// 设备域口径：资产分类叶子上卷至 L1 域（code 与分类骨架一致：SENSE/ENV/METR/COMM-NAV/DC-NET/video；
+// 雷达卡=气象雷达 METR，通导下属二次/场监/一次雷达归通导 COMM-NAV，与业务划分一致）
+interface DomainStat {
+  total: number;
+  online: number;
+  offline: number;
+}
+const domainStats = ref<Record<string, DomainStat>>({});
+const domainsLoaded = ref(false);
+
+function domainTotal(code: string): string {
+  if (!domainsLoaded.value) return '—';
+  return String(domainStats.value[code]?.total ?? 0);
+}
+
+function domainSub(code: string): string | undefined {
+  if (!domainsLoaded.value) return undefined;
+  const s = domainStats.value[code];
+  return t('dashboard.kpiDevicesSub', { online: s?.online ?? 0, offline: s?.offline ?? 0 });
+}
+
+function domainTone(code: string): KpiCard['tone'] {
+  return (domainStats.value[code]?.offline ?? 0) > 0 ? 'warning' : undefined;
+}
+
+// 业务数据卡色调：以今日准时率分档（同数据到达监控卡 95/80 阈值口径）
+function bizDataTone(): KpiCard['tone'] {
+  const rate = arrival.value.todayOnTimeRate;
+  if (rate === undefined) return undefined;
+  if (rate >= 95) return 'success';
+  if (rate >= 80) return 'warning';
+  return 'danger';
+}
+
+const kpiCards = computed<KpiCard[]>(() => [
+  {
+    key: 'sense',
+    label: t('dashboard.kpiSenseDevices'),
+    value: domainTotal('SENSE'),
+    sub: domainSub('SENSE'),
+    icon: 'sensors',
+    tone: domainTone('SENSE'),
+    to: '/visualization/amos',
+  },
+  {
+    key: 'env',
+    label: t('dashboard.kpiEnvDevices'),
+    value: domainTotal('ENV'),
+    sub: domainSub('ENV'),
+    icon: 'power',
+    tone: domainTone('ENV'),
+    to: '/env-monitor',
+  },
+  {
+    key: 'radar',
+    label: t('dashboard.kpiRadarDevices'),
+    value: domainTotal('METR'),
+    sub: domainSub('METR'),
+    icon: 'radar',
+    tone: domainTone('METR'),
+    to: '/metradar',
+  },
+  {
+    key: 'commnav',
+    label: t('dashboard.kpiCommnavDevices'),
+    value: domainTotal('COMM-NAV'),
+    sub: domainSub('COMM-NAV'),
+    icon: 'cell_tower',
+    tone: domainTone('COMM-NAV'),
+    to: '/commnav',
+  },
+  {
+    key: 'it',
+    label: t('dashboard.kpiItDevices'),
+    value: domainTotal('DC-NET'),
+    sub: domainSub('DC-NET'),
+    icon: 'dns',
+    tone: domainTone('DC-NET'),
+    to: '/it-monitor',
+  },
+  {
+    key: 'bizData',
+    label: t('dashboard.kpiBizData'),
+    value: arrival.value.todayOnTimeRate === undefined ? '—' : arrival.value.todayOnTimeRate.toFixed(1) + '%',
+    sub:
+      arrival.value.normalCount === undefined
+        ? undefined
+        : t('dashboard.kpiBizDataSub', {
+            normal: arrival.value.normalCount ?? 0,
+            late: arrival.value.lateCount ?? 0,
+            missing: arrival.value.missingCount ?? 0,
+          }),
+    icon: 'cloud_download',
+    tone: bizDataTone(),
+    to: '/arrival/monitor',
+  },
+  {
+    key: 'lines',
+    label: t('dashboard.kpiNetwork'),
+    value: lineOnline.value === undefined ? '—' : `${lineOnline.value}/${lineTotal.value ?? 0}`,
+    sub: t('dashboard.kpiNetworkSub', { degraded: lineDegraded.value ?? 0, events: lineEvents.value ?? 0 }),
+    icon: 'cable',
+    tone: (lineDegraded.value ?? 0) > 0 || (lineEvents.value ?? 0) > 0 ? 'warning' : 'success',
+    to: '/linemonitor/workbench',
+  },
+  {
+    key: 'video',
+    label: t('dashboard.kpiVideoDevices'),
+    value: domainTotal('video'),
+    sub: domainSub('video'),
+    icon: 'videocam',
+    tone: domainTone('video'),
+    to: '/video/live',
+  },
+]);
+
+function go(to: string) {
+  void router.push(to);
+}
+
+// ── P3 问题簇操作 ──
+const authStore = useAuthStore();
+
+// 打开根因设备：深链 OpsCenter 并自动打开 360 抽屉（query 直达）
+function goDeviceOps(deviceId?: number) {
+  if (deviceId == null) {
+    go('/ops-center');
+    return;
+  }
+  void router.push({ path: '/ops-center', query: { deviceId: String(deviceId) } });
+}
+
+// 去告警台：带设备过滤
+function goClusterAlarms(cluster: ProblemCluster) {
+  if (cluster.rootDeviceId != null) {
+    void router.push({ path: '/alarm/events', query: { deviceId: String(cluster.rootDeviceId) } });
+  } else {
+    go('/alarm/events');
+  }
+}
+
+// AI 诊断：弹框原位排故（复用运维中心 OpsAiOpsDialog：经验修复/场景执行/RCA 诊断 + 历史），
+// 不再跳 AI 巡检页。簇只带 rootDeviceId（monitor_devices.id），弹框三模式均以 assetId 为
+// 上下文键，故先解析 device → asset → 分类再开框；未定位根因设备/未关联资产时提示不阻断。
+const OpsAiOpsDialog = defineAsyncComponent(() => import('./ops-center/components/OpsAiOpsDialog.vue'));
+const aiDialogOpen = ref(false);
+const aiDialogDevice = ref<Device360Ref | null>(null);
+const aiDialogAlarms = ref<number | null>(null);
+let aiResolving = false;
+
+async function openClusterAi(cluster: ProblemCluster) {
+  if (aiResolving) return; // 解析期间防连点
+  if (cluster.rootDeviceId == null) {
+    Notify.create({ type: 'warning', message: t('opsCenter.cluster.aiNoDevice') });
+    return;
+  }
+  aiResolving = true;
+  try {
+    const dev = await monitorDeviceService.get(cluster.rootDeviceId);
+    if (dev?.assetId == null) {
+      Notify.create({ type: 'warning', message: t('opsCenter.cluster.aiNoAsset') });
+      return;
+    }
+    const asset = await monitorAssetService.get(dev.assetId);
+    const cat =
+      asset?.deviceCategoryId != null
+        ? await deviceCategoryService.get(asset.deviceCategoryId).catch(() => null)
+        : null;
+    aiDialogDevice.value = {
+      deviceId: cluster.rootDeviceId,
+      assetId: Number(dev.assetId),
+      name: asset?.name || cluster.rootDeviceName,
+      assetCode: asset?.assetCode,
+      location: asset?.location ?? cluster.rootLocation,
+      categoryName: cat?.name,
+    };
+    // 簇由未处理告警聚合而成，簇内告警数即未处理告警数
+    aiDialogAlarms.value = cluster.alarms.length;
+    aiDialogOpen.value = true;
+  } catch {
+    Notify.create({ type: 'negative', message: t('opsCenter.aiCreateFail') });
+  } finally {
+    aiResolving = false;
+  }
+}
+
+// 全部确认：簇内告警逐条确认（原位闭环）；确认后强制刷新簇列表
+const { refresh: refreshClusters } = useProblemClusters();
+async function onClusterConfirmAll(cluster: ProblemCluster) {
+  const rows = cluster.alarms.filter((a) => a.alarmId);
+  if (rows.length === 0) return;
+  let ok = 0;
+  for (const a of rows) {
+    try {
+      await alarmEventService.confirmEvent(a.alarmId!, {
+        userId: Number(authStore.user?.id) || undefined,
+        userName: authStore.user?.name,
+      });
+      ok++;
+    } catch {
+      /* 单条失败不阻断 */
+    }
+  }
+  Notify.create({
+    type: ok === rows.length ? 'positive' : 'warning',
+    message: t('opsCenter.cluster.confirmAll') + `: ${ok}/${rows.length}`,
+  });
+  if (ok > 0) await refreshClusters(true);
+}
+
+async function loadKpis() {
+  // 各口径独立取数，单域失败不影响其余卡片
+  void loadDomainDevices();
+  void lineStatusService
+    .dashboard()
+    .then((d) => {
+      lineOnline.value = d.online ?? 0;
+      lineTotal.value = d.total ?? 0;
+      lineDegraded.value = d.degraded ?? 0;
+      lineEvents.value = d.activeEvents ?? 0;
+    })
+    .catch(() => undefined);
+  void arrivalMonitorService
+    .getOverview()
+    .then((o) => (arrival.value = o || {}))
+    .catch(() => undefined);
+}
+
+// 设备域卡取数：资产全量 + 分类全量一次拉取，叶子分类沿 parentId 上卷至 L1 域归桶；
+// 在线/离线同「采集与设备」卡口径（deviceStatusService.batchGetDeviceStatus）；
+// 分类表查询失败退化为空桶（各域卡显示 0），不阻塞其余卡片
+async function loadDomainDevices() {
+  try {
+    const [assets, cats] = await Promise.all([
+      monitorAssetService.list({ noPaging: true }),
+      deviceCategoryService.list({ noPaging: true }).catch(() => ({ items: [] as DeviceCategoryEntity[], total: 0 })),
+    ]);
+    const catById = new Map((cats.items || []).map((c) => [Number(c.id), c]));
+
+    // 叶分类 → L1 域 code 解析（带缓存；防卫深度上限防脏数据成环）
+    const rootCodeCache = new Map<number, string | undefined>();
+    const rootCodeOf = (catId: number): string | undefined => {
+      if (rootCodeCache.has(catId)) return rootCodeCache.get(catId);
+      let cur = catById.get(catId);
+      let guard = 0;
+      while (cur && Number(cur.parentId ?? 0) > 0 && guard++ < 8) {
+        const parent = catById.get(Number(cur.parentId));
+        if (!parent) break;
+        cur = parent;
+      }
+      const code = cur?.code || undefined;
+      rootCodeCache.set(catId, code);
+      return code;
+    };
+
+    const acc: Record<string, DomainStat> = {};
+    const codeByAssetId = new Map<number, string>();
+    const ids: number[] = [];
+    for (const a of assets.items || []) {
+      const id = Number(a.id);
+      if (!Number.isFinite(id)) continue;
+      const code = rootCodeOf(Number(a.deviceCategoryId ?? 0));
+      if (!code) continue;
+      const cur = acc[code] ?? { total: 0, online: 0, offline: 0 };
+      cur.total += 1;
+      acc[code] = cur;
+      codeByAssetId.set(id, code);
+      ids.push(id);
+    }
+    if (ids.length > 0) {
+      const status = await deviceStatusService.batchGetDeviceStatus(ids);
+      for (const s of status.items || []) {
+        const code = codeByAssetId.get(Number(s.deviceId));
+        const cur = code ? acc[code] : undefined;
+        if (!cur) continue;
+        if (s.onlineStatus === 1) cur.online += 1;
+        else if (s.onlineStatus === 0) cur.offline += 1;
+      }
+    }
+    domainStats.value = acc;
+    domainsLoaded.value = true;
+  } catch {
+    /* 拦截器已提示 */
+  }
+}
+
+onMounted(() => {
+  loadKpis();
+  void loadLayout(Number(authStore.user?.id) || undefined);
+});
+</script>
+
+<style lang="sass">
+@use '../css/theme/sec-heading' as *
+
+.dashboard-page
+  // 阴影混合基底（恒黑，昼夜同值）
+  --dash-mix-black: #000
+  // 页面纵深：顶部两侧主色/强调色微光，衬托卡片边界
+  background: radial-gradient(1200px 480px at 12% -6%, color-mix(in srgb, var(--color-primary) 9%, transparent), transparent 60%), radial-gradient(900px 420px at 88% -4%, color-mix(in srgb, var(--color-accent, var(--color-primary)) 7%, transparent), transparent 55%)
+
+  // 区段标题：统一走 `_sec-heading.sass` 的 `.sec-heading`（单一来源，见模板）。
+  // 此处仅保留态势总览特有的修饰：与下方卡片的 10px 节奏。
+  .sec-heading
+    margin-bottom: 10px
+
+  &__sec-actions
+    margin-left: auto
+    align-self: center
+    display: flex
+    align-items: center
+    gap: 8px
+    .q-btn
+      color: var(--color-text-secondary)
+      &:hover
+        color: var(--color-accent)
+
+  // KPI 条：8 卡一行（卡宽 ≥150px 自适应等分，更窄视口才允许换行）
+  &__kpi-strip
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr))
+    gap: 10px
+
+  // KPI 卡：清晰描边 + 悬停抬升光晕；9 卡一行紧凑化（小图标/小数值/紧 padding）
+  &__kpi
+    cursor: pointer
+    padding: 10px 12px
+    gap: 10px
+    border: 1px solid color-mix(in srgb, var(--color-primary) 26%, var(--glass-border))
+    box-shadow: 0 2px 12px color-mix(in srgb, var(--dash-mix-black) 18%, transparent)
+    transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease
+    .app-stat-card__icon
+      width: 34px
+      height: 34px
+      border-radius: 10px
+    .app-stat-card__value
+      font-size: 20px
+    &:hover
+      transform: translateY(-2px)
+      border-color: color-mix(in srgb, var(--color-primary) 48%, var(--glass-border))
+      box-shadow: 0 8px 24px color-mix(in srgb, var(--color-primary) 18%, transparent)
+
+  // 设备域作战网格：严格 4 列等宽（宽屏 4 列 / 中屏 2 列 / 窄屏单列），单元格承载拖落点指示
+  &__grid
+    display: grid
+    gap: 16px
+    align-items: stretch
+    > *
+      min-width: 0
+    &--quad
+      grid-template-columns: repeat(4, minmax(0, 1fr))
+
+  // 跨列：内容密度高的卡占 2 列，IT 设备卡独占整行（分类灯阵需横向铺开）
+  // 拖拽单元格：相对定位承载前/后插入指示条（不落订单元格无视觉变化）
+  // 跨列：内容密度高的卡占 2 列，IT 设备卡独占整行（分类灯阵需横向铺开）
+  &__cell
+    position: relative
+    display: flex
+    min-width: 0
+    > *
+      flex: 1
+      min-width: 0
+    &.is-span-2
+      grid-column: span 2
+    &.is-span-full
+      grid-column: 1 / -1
+    &::before,
+    &::after
+      content: ''
+      position: absolute
+      top: 6px
+      bottom: 6px
+      width: 3px
+      border-radius: 2px
+      background: var(--color-primary)
+      box-shadow: 0 0 10px color-mix(in srgb, var(--color-primary) 70%, transparent)
+      opacity: 0
+      pointer-events: none
+      transition: opacity 0.12s ease
+      z-index: 2
+    &::before
+      left: -14px
+    &::after
+      right: -14px
+    &.is-drop-before::before
+      opacity: 1
+    &.is-drop-after::after
+      opacity: 1
+
+// 2 列档（中屏/分屏值班）：跨 2 列即整行，4 列语义降级为 2 列，仍保证行行填满
+@media (max-width: 1279px)
+  .dashboard-page__grid--quad
+    grid-template-columns: repeat(2, minmax(0, 1fr))
+  .dashboard-page__cell.is-span-2
+    grid-column: span 2
+
+// 单列档（窄屏/平板）：全部整行，跨列类失效避免破坏单列流式
+@media (max-width: 767px)
+  .dashboard-page__grid--quad
+    grid-template-columns: minmax(0, 1fr)
+  .dashboard-page__cell.is-span-2
+    grid-column: auto
+</style>

@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+// 会话管理服务：在线用户查询、强制下线
+service SessionService {
+  // 查询在线用户列表（access token 未撤销且未过期）
+  rpc ListOnline (google.protobuf.Empty) returns (ListOnlineUserResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/sessions/online"
+    };
+  }
+
+  // 强制下线：撤销指定用户的所有 access token
+  rpc ForceOffline (ForceOfflineRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/api/v1/monitor/sessions/{user_id}"
+    };
+  }
+}
+
+// 在线用户信息
+message OnlineUser {
+  optional uint32 user_id = 1 [
+    json_name = "userId",
+    (gnostic.openapi.v3.property) = {description: "用户ID"}
+  ]; // 用户ID
+
+  optional string username = 2 [
+    json_name = "username",
+    (gnostic.openapi.v3.property) = {description: "登录名"}
+  ]; // 登录名
+
+  optional string nickname = 3 [
+    json_name = "nickname",
+    (gnostic.openapi.v3.property) = {description: "昵称"}
+  ]; // 昵称
+
+  optional uint32 dept_id = 4 [
+    json_name = "deptId",
+    (gnostic.openapi.v3.property) = {description: "部门ID"}
+  ]; // 部门ID
+
+  optional string token = 10 [
+    json_name = "token",
+    (gnostic.openapi.v3.property) = {description: "访问令牌（脱敏显示）"}
+  ]; // 访问令牌
+
+  optional string client_id = 11 [
+    json_name = "clientId",
+    (gnostic.openapi.v3.property) = {description: "客户端标识"}
+  ]; // 客户端标识
+
+  optional string login_ip = 12 [
+    json_name = "loginIp",
+    (gnostic.openapi.v3.property) = {description: "登录IP"}
+  ]; // 登录IP
+
+  optional string login_location = 13 [
+    json_name = "loginLocation",
+    (gnostic.openapi.v3.property) = {description: "登录地点"}
+  ]; // 登录地点
+
+  optional string user_agent = 14 [
+    json_name = "userAgent",
+    (gnostic.openapi.v3.property) = {description: "浏览器User-Agent"}
+  ]; // User-Agent
+
+  optional google.protobuf.Timestamp login_time = 20 [
+    json_name = "loginTime",
+    (gnostic.openapi.v3.property) = {description: "登录时间"}
+  ]; // 登录时间
+
+  optional google.protobuf.Timestamp expires_at = 21 [
+    json_name = "expiresAt",
+    (gnostic.openapi.v3.property) = {description: "令牌过期时间"}
+  ]; // 令牌过期时间
+}
+
+// 查询在线用户 - 回应
+message ListOnlineUserResponse {
+  repeated OnlineUser items = 1;
+  uint32 total = 2;
+}
+
+// 强制下线 - 请求
+message ForceOfflineRequest {
+  uint32 user_id = 1 [
+    json_name = "userId",
+    (google.api.field_behavior) = REQUIRED,
+    (gnostic.openapi.v3.property) = {description: "目标用户ID"}
+  ]; // 目标用户ID
+}

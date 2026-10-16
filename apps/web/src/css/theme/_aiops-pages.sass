@@ -1,0 +1,25 @@
+// AI 智能运维（13 模块 aiops）列表页共享样式。
+// 玻璃实体卡：AgentsPage / RcaPage / ScenariosPage 卡片同款（原三页各写一份，P2-9 收敛）。
+// 用法：<q-card flat class="aiops-entity-card cursor-pointer">；标题 slot 用 .aiops-entity-card__title。
+
+.aiops-entity-card
+  height: 100%
+  background: var(--glass-elevated)
+  border: 1px solid var(--glass-border)
+  border-radius: 16px
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s
+
+  &:hover
+    transform: translateY(-2px)
+    border-color: color-mix(in srgb, var(--color-accent) 32%, var(--glass-border))
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12)
+
+.aiops-entity-card__title
+  color: var(--color-text-heading)
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+
+// 暗色 hover 以霓虹微光替代投影（原仅 RcaPage 有，收敛后三页一致）
+body.body--dark .aiops-entity-card:hover
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent) 20%, transparent)

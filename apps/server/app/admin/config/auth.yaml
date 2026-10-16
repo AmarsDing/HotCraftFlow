@@ -1,0 +1,21 @@
+﻿auth:
+  authn:
+    type: "jwt" # jwt, oidc, preshared_key
+
+    jwt:
+      method: "HS256" # HS256, HS384, HS512, RS256, RS384, RS512, ES256, ES384, ES512, Ed25519
+      # 本地 dev 约定的占位密钥，投产前必须收敛（替换为强随机密钥并走密钥管理/环境注入）。
+      key: "CHANGE_ME_DEV_JWT_SECRET"  # placeholder; replace before production
+
+    oidc:
+      issuer_url: "https://example.com"
+      audience: "your_audience"
+      method: "HS256"
+
+    preshared_key:
+      valid_keys:
+        - "key1"
+        - "key2"
+
+  authz:
+    type: "opa" # casbin, opa, zanzibar, noop

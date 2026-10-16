@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package radar.service.v1;
+
+// go_package 由 buf managed (go_package_prefix: framework/api/gen/go) 注入，勿手写。
+
+import "google/api/annotations.proto";
+
+message RepoItem {
+  string id = 1;
+  string full_name = 2;
+  string description = 3;
+  string language = 4;
+  repeated string topics = 5;
+  int64 stars = 6;
+  int64 forks = 7;
+  int32 rank = 8;
+  int64 stars_delta = 9;
+  bool is_new = 10;
+  string html_url = 11;
+  repeated int64 sparkline = 12;
+}
+
+message ListTrendingRequest {
+  string since = 1; // today | week
+  string language = 2;
+  string topic = 3;
+  bool only_new = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+
+message ListTrendingResponse {
+  repeated RepoItem items = 1;
+  bool stale = 2;
+  string stale_reason = 3;
+  string refreshed_at = 4;
+  map<string, int32> language_top = 5;
+  int32 rising_count = 6;
+  int32 new_count = 7;
+}
+
+message SearchRisingRequest {
+  string query = 1;
+  string language = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message SearchRisingResponse {
+  repeated RepoItem items = 1;
+  bool stale = 2;
+  string stale_reason = 3;
+  string refreshed_at = 4;
+}
+
+// TrendingService 热门 / 新星榜
+service TrendingService {
+  rpc ListTrending(ListTrendingRequest) returns (ListTrendingResponse) {
+    option (google.api.http) = { get: "/api/v1/radar/trending" };
+  }
+  rpc SearchRising(SearchRisingRequest) returns (SearchRisingResponse) {
+    option (google.api.http) = { get: "/api/v1/radar/rising" };
+  }
+}

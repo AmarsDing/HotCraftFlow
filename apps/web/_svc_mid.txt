@@ -1,0 +1,400 @@
+﻿// ===================== 类型定义（与后端 proto json_name 对齐） =====================
+// 保留手写类型以保证 stores/pages 的兼容性；生成的客户端返回值会被 cast 到这些类型。
+export interface LoginRequest {
+  grant_type: string;
+  username: string;
+  password: string;
+  refresh_token?: string;
+  mfaCode?: string;
+}
+export interface LoginResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in?: number;
+  mfaToken?: string;
+  mfaRequired?: boolean;
+}
+export interface UserProfile {
+  id: string;
+  username: string;
+  nickname: string;
+  realname?: string;
+  avatar?: string;
+  email?: string;
+  mobile?: string;
+  telephone?: string;
+  gender?: string;
+  address?: string;
+  region?: string;
+  description?: string;
+  authority?: string;
+  tenantId?: string;
+  orgId?: string;
+  positionId?: string;
+  workId?: string;
+  status?: string;
+  lastLoginTime?: string;
+  lastLoginIp?: string;
+  mfaEnabled?: boolean; // MFA 启用状态（B7：User DTO 下发 mfa_enabled）
+  roles?: string[]; // 角色码列表（super/gly/xx/yb/gc/jw），getMe 返回时后端已填充
+}
+
+export interface CrudEntity {
+  id?: string | number;
+  createTime?: string;
+  updateTime?: string;
+  createBy?: string;
+  updateBy?: string;
+}
+
+// ===================== 通用 CRUD 适配器 =====================
+// 将生成的 PascalCase 客户端适配为 stores 期望的 lowercase 方法签名。
+// 修复旧代码 bug：stores/modules.ts 的 makeCrudStore 调用 service.delete(id)，
+// 但旧 makeCrudService 返回的是 remove()，导致删除功能不可用。此处统一为 delete。
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface CrudClient {
+  List: (req: any) => Promise<any>;
+  Get: (req: any) => Promise<any>;
+  Create: (req: any) => Promise<any>;
+  Update: (req: any) => Promise<any>;
+  Delete: (req: any) => Promise<any>;
+}
+
+function makeCrudServiceFromClient<T extends CrudEntity>(client: CrudClient) {
+  return {
+    list(opts: PagingRequest & { formValues?: Record<string, unknown> } = {}) {
+      const params = buildQueryParams(opts.formValues, opts);
+      // C6：`or` 查询参数已由生成客户端承载（pagination_PagingRequest.or，proto or_query json_name="or"），不再绕行 axios。
+      return client.List({
+        page: params.page ? Number(params.page) : undefined,
+        pageSize: params.pageSize ? Number(params.pageSize) : undefined,
+        noPaging: params.noPaging === 'true' ? true : undefined,
+        query: params.query,
+        or: opts.orQuery,
+        orderBy: params.orderBy,
+        fieldMask: params.fieldMask,
+      }) as Promise<ListResponse<T>>;
+    },
+    get(id: string | number) {
+      return client.Get({ id: Number(id) }) as Promise<T>;
+    },
+    create(data: Partial<T>) {
+      return client.Create({ data }) as Promise<unknown>;
+    },
+    update(id: string | number, data: Partial<T>) {
+      // id 作为顶层字段（URL 路径参数 {id}），不再注入 data，避免与 body 中的 data.id 冲突。
+      const updateMask = buildUpdateMask(data as Record<string, unknown>);
+      return client.Update({ id: Number(id), data: data as never, updateMask }) as Promise<unknown>;
+    },
+    delete(id: string | number) {
+      return client.Delete({ id: Number(id) }) as Promise<unknown>;
+    },
+  };
+}
+
+// 无 Get rpc 的服务客户端（如 AssetTagService/KnowledgeTagService）专用变体
+interface ListWriteClient {
+  List: (req: any) => Promise<any>;
+  Create: (req: any) => Promise<any>;
+  Update: (req: any) => Promise<any>;
+  Delete: (req: any) => Promise<any>;
+}
+
+function makeListWriteServiceFromClient<T extends CrudEntity>(client: ListWriteClient) {
+  return {
+    list(opts: PagingRequest & { formValues?: Record<string, unknown> } = {}) {
+      const params = buildQueryParams(opts.formValues, opts);
+      return client.List({
+        page: params.page ? Number(params.page) : undefined,
+        pageSize: params.pageSize ? Number(params.pageSize) : undefined,
+        noPaging: params.noPaging === 'true' ? true : undefined,
+        query: params.query,
+        orderBy: params.orderBy,
+        fieldMask: params.fieldMask,
+      }) as Promise<ListResponse<T>>;
+    },
+    create(data: Partial<T>) {
+      return client.Create({ data }) as Promise<unknown>;
+    },
+    update(id: string | number, data: Partial<T>) {
+      const updateMask = buildUpdateMask(data as Record<string, unknown>);
+      return client.Update({ id: Number(id), data: data as never, updateMask }) as Promise<unknown>;
+    },
+    delete(id: string | number) {
+      return client.Delete({ id: Number(id) }) as Promise<unknown>;
+    },
+  };
+}
+
+// ===================== 实例化生成的客户端 =====================
+const authClient = createAuthenticationServiceClient(requestHandler);
+const userProfileClient = createUserProfileServiceClient(requestHandler);
+const userClient = createUserServiceClient(requestHandler);
+const roleClient = createRoleServiceClient(requestHandler);
+const menuClient = createMenuServiceClient(requestHandler);
+const organizationClient = createOrganizationServiceClient(requestHandler);
+const departmentClient = createDepartmentServiceClient(requestHandler);
+const positionClient = createPositionServiceClient(requestHandler);
+const dictClient = createDictServiceClient(requestHandler);
+const tenantClient = createTenantServiceClient(requestHandler);
+const taskClient = createTaskServiceClient(requestHandler);
+const apiResourceClient = createApiResourceServiceClient(requestHandler);
+const adminLoginLogClient = createAdminLoginLogServiceClient(requestHandler);
+const adminOperationLogClient = createAdminOperationLogServiceClient(requestHandler);
+const adminLoginRestrictionClient = createAdminLoginRestrictionServiceClient(requestHandler);
+const notificationMessageClient = createNotificationMessageServiceClient(requestHandler);
+const notificationMessageCategoryClient = createNotificationMessageCategoryServiceClient(requestHandler);
+const notificationMessageRecipientClient = createNotificationMessageRecipientServiceClient(requestHandler);
+const privateMessageClient = createPrivateMessageServiceClient(requestHandler);
+const fileClient = createFileServiceClient(requestHandler);
+const routerClient = createRouterServiceClient(requestHandler);
+const airportClient = createAirportServiceClient(requestHandler);
+const airportPostClient = createAirportPostServiceClient(requestHandler);
+const airportRunwayClient = createAirportRunwayServiceClient(requestHandler);
+const airportRunwayEndClient = createAirportRunwayEndServiceClient(requestHandler);
+const runwayEndDeviceBindingClient = createRunwayEndDeviceBindingServiceClient(requestHandler);
+const awosSensorDeviceClient = createAwosSensorDeviceServiceClient(requestHandler);
+const systemConfigClient = createSystemConfigServiceClient(requestHandler);
+const sessionClient = createSessionServiceClient(requestHandler);
+const dataPermissionClient = createDataPermissionServiceClient(requestHandler);
+const roleDeptClient = createRoleDeptServiceClient(requestHandler);
+const toolLinkClient = createToolLinkServiceClient(requestHandler);
+const toolLinkCategoryClient = createToolLinkCategoryServiceClient(requestHandler);
+
+// Asset module clients
+const monitorAssetClient = createMonitorAssetServiceClient(requestHandler);
+const monitorDeviceClient = createMonitorDeviceServiceClient(requestHandler);
+const assetExtendClient = createAssetExtendServiceClient(requestHandler);
+// 资产状态变更履历（2026-09-23 事件脉冲域化升级接线：设备上下线事件源）
+const assetStatusHistoryClient = createAssetStatusHistoryServiceClient(requestHandler);
+const assetDependencyRelationClient = createAssetDependencyRelationServiceClient(requestHandler);
+const deviceCategoryClient = createDeviceCategoryServiceClient(requestHandler);
+const deviceManufacturerClient = createDeviceManufacturerServiceClient(requestHandler);
+const deviceModelClient = createDeviceModelServiceClient(requestHandler);
+const device3dModelClient = createDevice3dModelServiceClient(requestHandler);
+const snmpConfigClient = createSnmpConfigServiceClient(requestHandler);
+const icmpConfigClient = createIcmpConfigServiceClient(requestHandler);
+const sshConfigClient = createSshConfigServiceClient(requestHandler);
+const modbusConfigClient = createModbusConfigServiceClient(requestHandler);
+const icdConfigClient = createIcdConfigServiceClient(requestHandler);
+const opcConfigClient = createOpcConfigServiceClient(requestHandler);
+const bacnetConfigClient = createBacnetConfigServiceClient(requestHandler);
+const deviceExtComputerClient = createDeviceExtComputerServiceClient(requestHandler);
+const deviceExtSwitchClient = createDeviceExtSwitchServiceClient(requestHandler);
+const deviceExtUpsClient = createDeviceExtUpsServiceClient(requestHandler);
+const deviceExtHumitureClient = createDeviceExtHumitureServiceClient(requestHandler);
+const deviceExtCameraClient = createDeviceExtCameraServiceClient(requestHandler);
+const deviceProtocolBindingClient = createDeviceProtocolBindingServiceClient(requestHandler);
+const deviceQrCodeClient = createDeviceQrCodeServiceClient(requestHandler);
+const protocolTemplateClient = createProtocolTemplateServiceClient(requestHandler);
+const credentialClient = createCredentialServiceClient(requestHandler);
+
+// Inventory module clients (09 part/inventory 子服务，admin 聚合)
+const partClient = createPartServiceClient(requestHandler);
+const partCategoryClient = createPartCategoryServiceClient(requestHandler);
+const supplierClient = createSupplierServiceClient(requestHandler);
+const warehouseClient = createWarehouseServiceClient(requestHandler);
+const inventoryStockClient = createInventoryStockServiceClient(requestHandler);
+const inventoryAlertClient = createInventoryAlertServiceClient(requestHandler);
+// 09 批次 A：资产分类 / 资产生命周期（维护/报废/检定）/ 资产出入库
+const assetCategoryClient = createAssetCategoryServiceClient(requestHandler);
+const assetLifecycleClient = createAssetLifecycleServiceClient(requestHandler);
+const assetStockClient = createAssetStockServiceClient(requestHandler);
+// 09 批次 B：库存统计 / 库存盘点
+const inventoryStatisticsClient = createInventoryStatisticsServiceClient(requestHandler);
+const inventoryCheckClient = createInventoryCheckServiceClient(requestHandler);
+// 09 批次 C：库房设备 / 库房环境
+const warehouseDeviceClient = createWarehouseDeviceServiceClient(requestHandler);
+const warehouseEnvironmentClient = createWarehouseEnvironmentServiceClient(requestHandler);
+
+// 设备分组与标签 clients（02 v2.0，3.2）
+const assetGroupClient = createAssetGroupServiceClient(requestHandler);
+const assetTagClient = createAssetTagServiceClient(requestHandler);
+// 资源组 client（只读：数据权限/分析任务 target_type=resource_group 候选）
+const resourceGroupClient = createResourceGroupServiceClient(requestHandler);
+
+// 数据中心物理资产 clients（02 模块 v2.0，详细设计 §2.19）
+const dcRoomClient = createDcRoomServiceClient(requestHandler);
+const dcRoomItemClient = createDcRoomItemServiceClient(requestHandler);
+const dcRackClient = createDcRackServiceClient(requestHandler);
+const dcRackSlotClient = createDcRackSlotServiceClient(requestHandler);
+const dcPduDeviceClient = createDcPduDeviceServiceClient(requestHandler);
+const dcPowerCabinetClient = createDcPowerCabinetServiceClient(requestHandler);
+const dcPowerLineClient = createDcPowerLineServiceClient(requestHandler);
+const dcCableClient = createDcCableServiceClient(requestHandler);
+const dcLifecycleLogClient = createDcLifecycleLogServiceClient(requestHandler);
+const dcIOClient = createDcIOServiceClient(requestHandler);
+
+// 排班管理 clients（3.4，10-schedule 子服务）
+const scheduleClassClient = createScheduleClassServiceClient(requestHandler);
+const scheduleRuleClient = createScheduleRuleServiceClient(requestHandler);
+const scheduleClient = createScheduleServiceClient(requestHandler);
+const scheduleLeaveClient = createScheduleLeaveServiceClient(requestHandler);
+const scheduleAttendanceClient = createScheduleAttendanceServiceClient(requestHandler);
+const scheduleAbsenteeismClient = createScheduleAbsenteeismServiceClient(requestHandler);
+const shiftHandoverClient = createShiftHandoverServiceClient(requestHandler);
+
+// 工单+知识库 clients（3.5，10-business 子服务）
+const ticketClient = createTicketServiceClient(requestHandler);
+const changeClient = createChangeServiceClient(requestHandler);
+const incidentClient = createIncidentServiceClient(requestHandler);
+const knowledgeBaseClient = createKnowledgeBaseServiceClient(requestHandler);
+const knowledgeTagClient = createKnowledgeTagServiceClient(requestHandler);
+
+// Collector module clients (collector-snmp-ssh service, port 8021)
+const collectionTaskClient = createCollectionTaskServiceClient(requestHandler);
+const deviceStatusClient = createDeviceStatusServiceClient(requestHandler);
+const deviceDataClient = createDeviceDataServiceClient(requestHandler);
+const failureClient = createFailureServiceClient(requestHandler);
+const snmpProfileClient = createSnmpProfileServiceClient(requestHandler);
+const trapClient = createTrapServiceClient(requestHandler);
+const batchCollectClient = createBatchCollectServiceClient(requestHandler);
+const qualityClient = createQualityServiceClient(requestHandler);
+
+// Alarm module clients (monitoralarm service, port 8030)
+const alarmEventClient = createAlarmEventServiceClient(requestHandler);
+const alarmLevelClient = createAlarmLevelServiceClient(requestHandler);
+const alarmNoticeProfileClient = createAlarmNoticeProfileServiceClient(requestHandler);
+const alarmDeviceTemplateClient = createAlarmDeviceTemplateServiceClient(requestHandler);
+const alarmDeviceTemplateItemClient = createAlarmDeviceTemplateItemServiceClient(requestHandler);
+const alarmTicketClient = createAlarmTicketServiceClient(requestHandler);
+const alarmDevItemClient = createAlarmDevItemServiceClient(requestHandler);
+const apAlarmRuleClient = createApAlarmRuleServiceClient(requestHandler);
+const alarmRuleTemplateClient = createAlarmRuleTemplateServiceClient(requestHandler);
+const alarmAlertStrategyClient = createAlarmAlertStrategyServiceClient(requestHandler);
+const alarmSuppressionRuleClient = createAlarmSuppressionRuleServiceClient(requestHandler);
+const alarmMaintenanceWindowClient = createAlarmMaintenanceWindowServiceClient(requestHandler);
+// v2.0：外部告警源 / 告警映射 / 告警降噪
+const alertSourceClient = createAlertSourceServiceClient(requestHandler);
+const alertMappingClient = createAlertMappingServiceClient(requestHandler);
+const alertDenoiseClient = createAlertDenoiseServiceClient(requestHandler);
+const alarmMetricCatalogClient = createAlarmMetricCatalogServiceClient(requestHandler);
+// 告警通知渠道（雷达监控增强 Phase 3）
+const alarmNotifyClient = createMonitorAlarmNotifyServiceClient(requestHandler);
+// 数据到达监控（23-气象综合业务平台 P0：时次槽判定 + 任务态 + 热力矩阵）
+const dataArrivalClient = createDataArrivalServiceClient(requestHandler);
+// 问题簇（同源告警服务端聚簇只读视图；前端保留客户端聚合作降级路径）
+const problemClusterClient = createDataProblemClusterServiceClient(requestHandler);
+
+// Notice module clients (moniternotice service, port 2010)
+const noticeConfigClient = createNoticeConfigServiceClient(requestHandler);
+const noticeTemplateClient = createNoticeTemplateServiceClient(requestHandler);
+const alarmNoticeUserClient = createAlarmUserServiceClient(requestHandler);
+const alarmNoticeGroupClient = createAlarmUserGroupServiceClient(requestHandler);
+const noticeRecordClient = createNoticeRecordServiceClient(requestHandler);
+const noticeStatisticsClient = createNoticeStatisticsServiceClient(requestHandler);
+const noticeSubscriptionClient = createNoticeSubscriptionServiceClient(requestHandler);
+// 我的通知收件箱（admin 服务站内信收件人接口：ListMy/CountMyUnread/MarkMyRead）
+const notificationRecipientClient = createNotificationMessageRecipientServiceClient(requestHandler);
+
+// Query module client (monitorquery service, port 8050)
+const monitorQueryClient = createMonitorQueryServiceClient(requestHandler);
+
+// Remediation module client (remediation service, port 8110；14 自动修复与自愈)
+const remediationClient = createRemediationServiceClient(requestHandler);
+
+// OpsTools module clients (opstools service, port 8130；16 运维工具)
+const opstoolsCommandClient = createCommandServiceClient(requestHandler);
+const opstoolsCommandTemplateClient = createCommandTemplateServiceClient(requestHandler);
+const opstoolsComplianceClient = createComplianceServiceClient(requestHandler);
+const opstoolsDangerRuleClient = createDangerRuleServiceClient(requestHandler);
+const opstoolsDeviceGroupClient = createDeviceGroupServiceClient(requestHandler);
+const opstoolsDbConnectionClient = createDbConnectionServiceClient(requestHandler);
+const opstoolsDiagnoseClient = createDiagnoseServiceClient(requestHandler);
+const opstoolsDiscoveryClient = createDiscoveryServiceClient(requestHandler);
+const opstoolsInspectionClient = createInspectionServiceClient(requestHandler);
+const opstoolsIpamClient = createIpamServiceClient(requestHandler);
+const opstoolsSessionClient = createOpsSessionServiceClient(requestHandler);
+const opstoolsTerminalClient = createTerminalServiceClient(requestHandler);
+const opstoolsVncClient = createVncServiceClient(requestHandler);
+// 13-AI 智能运维场景模板 client（策略编辑器「关联场景模板」下拉数据源）
+const aiScenarioClient = createScenarioServiceClient(requestHandler);
+// 13-AI 智能运维治理面 clients（aiops 服务 HTTP:8100）
+const aiopsAraneaClient = createAraneaServiceClient(requestHandler);
+const aiopsAgentClient = createAiAgentServiceClient(requestHandler);
+const aiopsTaskClient = createAiTaskServiceClient(requestHandler);
+const aiopsApprovalClient = createAiApprovalServiceClient(requestHandler);
+const aiopsApprovalCenterClient = createAiApprovalCenterServiceClient(requestHandler);
+const aiopsScheduledJobClient = createAiScheduledJobServiceClient(requestHandler);
+const aiopsScriptClient = createAiScriptServiceClient(requestHandler);
+const aiopsConfigTemplateClient = createAiConfigTemplateServiceClient(requestHandler);
+const aiopsMcpClient = createMcpServiceClient(requestHandler);
+const aiopsRcaClient = createAiRcaServiceClient(requestHandler);
+const aiopsAutoAnalysisClient = createAiAutoAnalysisServiceClient(requestHandler);
+const aiopsInsightClient = createAiInsightServiceClient(requestHandler);
+// RCA 触发门控（13-AI智能运维 FR-2；洞察看板「门控降噪」卡片数据源）
+const aiopsRcaGateClient = createRcaGateServiceClient(requestHandler);
+
+// Report module client (report service, port 8051)
+const monitorReportClient = createMonitorReportServiceClient(requestHandler);
+
+// Analysis module client (analysis service, port 8052；06-analysis 子服务)
+const analysisClient = createAnalysisServiceClient(requestHandler);
+
+// Linemonitor module client (linemonitor service, port 8070)
+const lineMonitorClient = createLineMonitorServiceClient(requestHandler);
+// Linemonitor discovery client（08-linemonitor 发现域，详设 §2.17-§2.20）
+const lineDiscoveryClient = createLineDiscoveryServiceClient(requestHandler);
+// Linemonitor P3 clients（流量分析/路由监控/配置备份，详设 §2.12-§2.14）
+const lineFlowClient = createLineFlowServiceClient(requestHandler);
+const lineRouteClient = createLineRouteServiceClient(requestHandler);
+const lineConfigBackupClient = createLineConfigBackupServiceClient(requestHandler);
+// 连线盘点 client（31-连线盘点 P0：以交换机为入口的端口级连线自动盘点）
+const lineInventoryClient = createLineInventoryServiceClient(requestHandler);
+
+// Radar module client (radar service, port 8150)
+const radarClient = createMonitorRadarServiceClient(requestHandler);
+// Radar timeline client（雷达监控增强 Phase 1：时效性时间轴/看板/延迟文件）
+const radarTimelineClient = createMonitorRadarTimelineServiceClient(requestHandler);
+// Radar Phase 4 clients（组网拼图/风暴追踪/预警区域，雷达数据整合平台 T45-T47）
+const radarMosaicClient = createMonitorRadarMosaicServiceClient(requestHandler);
+const radarStormClient = createMonitorRadarStormServiceClient(requestHandler);
+const radarAlertRegionClient = createMonitorRadarAlertRegionServiceClient(requestHandler);
+// Radar Phase 5 client（产品自定义，雷达数据整合平台 T63）
+const radarCustomProductClient = createMonitorRadarCustomProductServiceClient(requestHandler);
+
+// WindField module client (windfield service, port 8160)
+const windfieldClient = createWindFieldServiceClient(requestHandler);
+
+// Metar module client (metar service, port 8190)
+const metarClient = createMetarServiceClient(requestHandler);
+
+// Satellite module client (satellite service, port 8180)
+const satelliteClient = createSatelliteServiceClient(requestHandler);
+
+// Visualization module clients (visualization service, port 8060)
+const sceneClient = createSceneServiceClient(requestHandler);
+const sceneLayoutClient = createSceneLayoutServiceClient(requestHandler);
+const topologyClient = createTopologyServiceClient(requestHandler);
+const dashboardClient = createDashboardServiceClient(requestHandler);
+const dataSourceClient = createDataSourceServiceClient(requestHandler);
+const componentTemplateClient = createComponentTemplateServiceClient(requestHandler);
+const userDashboardClient = createUserDashboardServiceClient(requestHandler);
+const amosDeviceClient = createAmosDeviceServiceClient(requestHandler);
+const alarmVisualConfigClient = createAlarmVisualConfigServiceClient(requestHandler);
+const panelTemplateClient = createPanelTemplateServiceClient(requestHandler);
+const deviceDetailClient = createDeviceDetailServiceClient(requestHandler);
+const deviceManualClient = createDeviceManualServiceClient(requestHandler);
+const deviceWebLinkClient = createDeviceWebLinkServiceClient(requestHandler);
+const deviceSparePartClient = createDeviceSparePartServiceClient(requestHandler);
+const deviceTroubleshootingClient = createDeviceTroubleshootingServiceClient(requestHandler);
+
+// ===================== Auth =====================
+export const authService = {
+  login: (data: LoginRequest) =>
+    authClient.Login({
+      grant_type: data.grant_type,
+      username: data.username,
+      password: data.password,
+      refresh_token: data.refresh_token,
+      mfaCode: data.mfaCode,
+    }) as Promise<LoginResponse>,
+  logout: () => authClient.Logout({}) as Promise<unknown>,
+  refreshToken: (refresh_token: string) =>
+    authClient.RefreshToken({ grant_type: 'refresh_token', refresh_token }) as Promise<LoginResponse>,
+  changePassword: (data: { oldPassword?: string; newPassword: string; userId?: number }) =>
+    authClient.ChangePassword({
+      username: undefined,
+      oldPassword: data.oldPassword,
+      newPassword: data.newPassword,

@@ -1,0 +1,546 @@
+// ── 全局 Dialog 毛玻璃（UX §5.2a；Channel 编辑弹窗定稿参数）──
+// 两层体系：
+//   1) 全局默认层（本文件顶部）：所有 q-dialog 自动获得统一玻璃外观，无需加 class
+//   2) 显式精调层：q-card 加 app-dialog-card（宽度修饰符可选）+ 分区布局加 app-glass-dialog
+// 注意：Quasar 暗色模式会给所有 q-card 自动加 q-card--dark，全局层选择器不得用
+// :not(.q-card--dark) 排除（否则暗色主题整体失效），昼夜分叉一律用 body.body--dark。
+
+=app-dialog-fixed-width($px, $viewport: 94vw)
+  width: $px !important
+  min-width: min($px, $viewport) !important
+  max-width: min($px, $viewport) !important
+
+// 磨砂玻璃口径（2026-08-31 用户裁定）：玻璃色与实色面混合，有效不透明度提升到 0.85~0.92，
+// 保留大模糊 backdrop-filter，避免"看得太穿"
+body:not(.body--dark)
+  --app-dialog-shell-bg: color-mix(in srgb, var(--glass-elevated) 60%, var(--color-surface-solid))
+  --app-dialog-chrome-bg: color-mix(in srgb, var(--glass-elevated) 45%, var(--color-surface-solid))
+  --app-dialog-body-bg: color-mix(in srgb, var(--glass-elevated) 70%, var(--color-surface-solid))
+
+body.body--dark
+  --app-dialog-shell-bg: color-mix(in srgb, var(--glass-surface) 45%, var(--color-surface-solid))
+  --app-dialog-chrome-bg: color-mix(in srgb, var(--glass-elevated) 35%, var(--color-surface-solid))
+  --app-dialog-body-bg: color-mix(in srgb, var(--glass-surface) 55%, var(--color-surface-solid))
+
+// ══════════════════════════════════════════════════════════════
+// 全局默认层：所有弹框统一视觉（2026-08 全站规范化）
+// 覆盖：遮罩 / 标准居中弹窗 / 左右抽屉 / 全屏弹窗 / 标题 / 底栏 / 表单控件
+// ══════════════════════════════════════════════════════════════
+
+// ── 遮罩：统一压暗 + 背景模糊，弹框才有浮层透视感 ──
+body:not(.body--dark) .q-dialog__backdrop
+  background: rgba(29, 29, 31, 0.28)
+  backdrop-filter: blur(8px)
+  -webkit-backdrop-filter: blur(8px)
+
+body.body--dark .q-dialog__backdrop
+  background: rgba(2, 6, 14, 0.58)
+  backdrop-filter: blur(10px)
+  -webkit-backdrop-filter: blur(10px)
+
+// ── 标准居中弹窗：玻璃外壳 + 大圆角 + 悬浮投影 ──
+.q-dialog .q-dialog__inner--standard > .q-card
+  display: flex
+  flex-direction: column
+  max-width: 94vw
+  max-height: min(92vh, 920px)
+  overflow: hidden
+  border: 1px solid var(--glass-border) !important
+  border-radius: 24px
+  background: var(--app-dialog-shell-bg) !important
+  box-shadow: var(--glass-inner-highlight), 0 24px 64px rgba(0, 0, 0, 0.12) !important
+  backdrop-filter: blur(var(--glass-blur-elevated)) saturate(1.08) !important
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(1.08) !important
+
+body.body--dark .q-dialog .q-dialog__inner--standard > .q-card
+  box-shadow: var(--glass-inner-highlight), 0 24px 64px rgba(0, 0, 0, 0.55), 0 0 40px rgba(77, 216, 232, 0.07) !important
+
+// 强制暗色画布域（.screen-theme-dark，综合业务平台/机场大屏等）内的弹框卡片：
+// q-dialog portal 到 body 后继承亮色 --app-dialog-shell-*（rgba 255 系浅色玻璃），
+// 这里按 body.body--dark 同公式重算为暗色值（数值源 _css-vars-dark.sass --glass-surface/--glass-elevated）
+.q-dialog .q-card.screen-theme-dark
+  --app-dialog-shell-bg: rgba(16, 24, 41, 0.88)
+  --app-dialog-chrome-bg: rgba(17, 25, 41, 0.93)
+  --app-dialog-body-bg: rgba(17, 25, 41, 0.84)
+
+// 布局：直接子块默认不收缩；内容区（紧邻操作栏 / 末尾 section、滚动区、标签页、表单）弹性滚动
+.q-dialog .q-dialog__inner--standard > .q-card > *
+  flex-shrink: 0
+
+.q-dialog .q-dialog__inner--standard > .q-card > .q-card__section:has(+ .q-card__actions),
+.q-dialog .q-dialog__inner--standard > .q-card > .q-card__section:last-child,
+.q-dialog .q-dialog__inner--standard > .q-card > .q-scroll-area,
+.q-dialog .q-dialog__inner--standard > .q-card > .q-tab-panels,
+.q-dialog .q-dialog__inner--standard > .q-card > .q-form
+  flex: 1 1 auto
+  min-height: 0
+  overflow-y: auto
+
+// 标题栏：首 section 后还有内容区时，视为窗口标题栏（chrome 底 + 细分隔线）
+.q-dialog .q-dialog__inner--standard > .q-card > .q-card__section:first-child:has(+ .q-card__section),
+.q-dialog .q-dialog__inner--standard > .q-card > .q-card__section:first-child:has(+ .q-scroll-area),
+.q-dialog .q-dialog__inner--standard > .q-card > .q-card__section:first-child:has(+ .q-tab-panels)
+  background: var(--app-dialog-chrome-bg)
+  border-bottom: 1px solid var(--glass-border)
+  backdrop-filter: blur(var(--glass-blur-default)) saturate(1.05)
+  -webkit-backdrop-filter: blur(var(--glass-blur-default)) saturate(1.05)
+
+// 标题排版统一（与 app-glass-dialog__title 同参数）
+.q-dialog .q-card .text-h6
+  color: var(--color-text-heading)
+  font-size: 17px
+  font-weight: 600
+  line-height: 1.35
+
+// 底栏操作区：chrome 底 + 顶部分隔线
+.q-dialog .q-dialog__inner--standard > .q-card > .q-card__actions
+  padding: 12px 20px
+  border-top: 1px solid var(--glass-border)
+  background: var(--app-dialog-chrome-bg)
+  backdrop-filter: blur(var(--glass-blur-default)) saturate(1.05)
+  -webkit-backdrop-filter: blur(var(--glass-blur-default)) saturate(1.05)
+
+// 弹框内分隔线统一玻璃描边色
+.q-dialog .q-card > .q-separator
+  flex-shrink: 0
+  background: var(--glass-border)
+
+// 弹框内表单控件：半透明玻璃底，避免实色白底刺眼
+.q-dialog .q-dialog__inner--standard > .q-card .q-field__control,
+.q-dialog .q-dialog__inner--right > .q-card .q-field__control,
+.q-dialog .q-dialog__inner--left > .q-card .q-field__control
+  background: color-mix(in srgb, var(--glass-elevated) 82%, transparent)
+
+body.body--dark .q-dialog .q-dialog__inner--standard > .q-card .q-field__control,
+body.body--dark .q-dialog .q-dialog__inner--right > .q-card .q-field__control,
+body.body--dark .q-dialog .q-dialog__inner--left > .q-card .q-field__control
+  background: color-mix(in srgb, var(--glass-elevated) 55%, transparent)
+
+// ── 左右抽屉：全高玻璃侧栏，仅游离边圆角（与 FormDrawer 同参数）──
+.q-dialog .q-dialog__inner--right > .q-card
+  border: none !important
+  border-left: 1px solid var(--glass-border) !important
+  border-radius: 20px 0 0 20px
+  background: color-mix(in srgb, var(--glass-elevated) 50%, var(--color-surface-solid)) !important
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.14) !important
+  backdrop-filter: blur(var(--glass-blur-elevated)) saturate(1.08) !important
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(1.08) !important
+
+.q-dialog .q-dialog__inner--left > .q-card
+  border: none !important
+  border-right: 1px solid var(--glass-border) !important
+  border-radius: 0 20px 20px 0
+  background: color-mix(in srgb, var(--glass-elevated) 50%, var(--color-surface-solid)) !important
+  box-shadow: 12px 0 40px rgba(0, 0, 0, 0.14) !important
+  backdrop-filter: blur(var(--glass-blur-elevated)) saturate(1.08) !important
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(1.08) !important
+
+body.body--dark .q-dialog .q-dialog__inner--right > .q-card
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45), 0 0 24px rgba(77, 216, 232, 0.08) !important
+
+body.body--dark .q-dialog .q-dialog__inner--left > .q-card
+  box-shadow: 12px 0 40px rgba(0, 0, 0, 0.45), 0 0 24px rgba(77, 216, 232, 0.08) !important
+
+// ── 全屏弹窗：贴边直角、无投影，按页面画布处理 ──
+.q-dialog .q-dialog__inner--maximized > .q-card
+  border: none !important
+  border-radius: 0 !important
+  box-shadow: none !important
+
+// 压过 app-global 页面内 .q-card 实色底（仅 Dialog 内）
+body:not(.body--dark) .q-dialog .q-card.app-dialog-card,
+body:not(.body--dark) .q-dialog .q-card.app-glass-dialog
+  background: var(--app-dialog-shell-bg) !important
+  backdrop-filter: blur(var(--glass-blur-elevated)) saturate(1.08) !important
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(1.08) !important
+
+body.body--dark .q-dialog .q-card.app-dialog-card,
+body.body--dark .q-dialog .q-card.app-glass-dialog
+  background: var(--app-dialog-shell-bg) !important
+  backdrop-filter: blur(var(--glass-blur-elevated)) saturate(1.08) !important
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(1.08) !important
+
+// 外壳：圆角、边框、单层 blur（所有 app-dialog-card）
+.q-dialog .q-card.app-dialog-card,
+.q-dialog .q-card.app-glass-dialog
+  display: flex
+  flex-direction: column
+  max-height: min(92vh, 920px)
+  border-radius: 24px
+  border: 1px solid var(--glass-border) !important
+  box-shadow: var(--glass-inner-highlight)
+
+// 遮罩模糊页面，弹窗才有透视感
+body:not(.body--dark) .q-dialog:has(.app-dialog-card) > .q-dialog__backdrop,
+body:not(.body--dark) .q-dialog:has(.app-glass-dialog) > .q-dialog__backdrop
+  backdrop-filter: blur(10px)
+  -webkit-backdrop-filter: blur(10px)
+
+// ── 宽度阶梯（与业务修饰符叠加）──
+.app-dialog-card
+  width: 860px
+  max-width: min(860px, 94vw)
+
+.app-dialog-card--sm
+  width: 640px
+  max-width: min(640px, 94vw)
+
+.app-dialog-card--md
+  width: 720px
+  max-width: min(720px, 94vw)
+
+.app-dialog-card--lg
+  width: 880px
+  max-width: min(880px, 94vw)
+
+.app-dialog-card--xl
+  width: 980px
+  max-width: min(980px, 94vw)
+
+.app-dialog-card--2xl
+  width: 1180px !important
+  min-width: min(1180px, 94vw) !important
+  max-width: min(1180px, 94vw) !important
+
+// 900px：须在 .q-dialog 内声明，防止 q-card 随内容收缩
+.q-dialog .q-card.app-dialog-card--900
+  +app-dialog-fixed-width(900px, 96vw)
+
+// ── Glass dialog 内表单控件背景对齐 ──
+// 避免实色白底刺眼：所有 app-dialog-card 内的 q-field__control 统一半透明玻璃底
+.q-dialog .q-card.app-dialog-card:not(.app-maximized-dialog) .q-field__control
+  background: color-mix(in srgb, var(--glass-elevated) 90%, transparent)
+  border-color: var(--glass-border)
+
+body.body--dark .q-dialog .q-card.app-dialog-card:not(.app-maximized-dialog) .q-field__control
+  background: color-mix(in srgb, var(--glass-elevated) 72%, transparent)
+  border-color: var(--glass-border)
+
+// 保留 canvas 风格控件的原有背景（cron-field 等）
+.q-dialog .q-card.app-dialog-card:not(.app-maximized-dialog) .cron-field .q-field__control,
+.q-dialog .q-card.app-dialog-card:not(.app-maximized-dialog) .app-glass-control--canvas .q-field__control
+  background: color-mix(in srgb, var(--canvas-base) 55%, transparent)
+
+body.body--dark .q-dialog .q-card.app-dialog-card:not(.app-maximized-dialog) .cron-field .q-field__control,
+body.body--dark .q-dialog .q-card.app-dialog-card:not(.app-maximized-dialog) .app-glass-control--canvas .q-field__control
+  background: rgb(22 28 40 / 45%)
+
+// ── 分区布局（头 / 滚动区 / 底栏）──
+.app-glass-dialog .q-card__section,
+.app-glass-dialog .q-separator
+  background: transparent !important
+
+.app-glass-dialog__head
+  flex-shrink: 0
+  padding: 16px 18px 14px
+  background: var(--app-dialog-chrome-bg) !important
+  backdrop-filter: blur(var(--glass-blur-default)) saturate(1.05)
+  -webkit-backdrop-filter: blur(var(--glass-blur-default)) saturate(1.05)
+
+.app-glass-dialog__title
+  color: var(--color-text-heading)
+  font-size: 17px
+  font-weight: 600
+  line-height: 1.35
+
+.app-glass-dialog__subtitle
+  margin-top: 4px
+  color: var(--color-text-secondary)
+  font-size: 13px
+  line-height: 1.45
+
+.app-glass-dialog__scroll
+  flex: 1
+  min-height: 0
+  overflow-y: auto
+  scrollbar-width: none
+  background: var(--app-dialog-body-bg) !important
+  backdrop-filter: blur(var(--glass-blur-default)) saturate(1.04)
+  -webkit-backdrop-filter: blur(var(--glass-blur-default)) saturate(1.04)
+
+  &::-webkit-scrollbar
+    display: none
+
+.app-glass-dialog .q-scrollarea.app-glass-dialog__body-scroll
+  flex: 1
+  min-height: 0
+
+.app-glass-dialog__body
+  background: transparent !important
+
+.q-dialog .q-card.app-dialog-card .q-card__actions,
+.q-dialog .q-card.app-glass-dialog .q-card__actions
+  flex-shrink: 0
+  padding: 12px 26px
+  border-top: 1px solid var(--glass-border) !important
+  background: var(--app-dialog-chrome-bg) !important
+  backdrop-filter: blur(var(--glass-blur-default)) saturate(1.05)
+  -webkit-backdrop-filter: blur(var(--glass-blur-default)) saturate(1.05)
+
+// 无独立底栏 class 时仍用 chrome 底（简单 Dialog）
+.q-dialog .q-card.app-dialog-card:not(.app-glass-dialog) .q-card__actions:not(.app-glass-dialog__actions)
+  padding: var(--space-3) var(--space-5) var(--space-5)
+
+.app-dialog-body
+  padding: var(--space-4) var(--space-5)
+
+.app-dialog-section
+  padding: var(--space-4)
+  margin-bottom: var(--space-4)
+  border: 1px solid var(--glass-border)
+  border-radius: 18px
+  background: color-mix(in srgb, var(--glass-surface) 42%, transparent)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+  &:last-child
+    margin-bottom: 0
+
+// 业务挂钩：Provider 向导滚动区沿用 dialog body 底
+.app-glass-dialog .provider-wizard-scroll
+  background: var(--app-dialog-body-bg) !important
+
+// ── 全屏双栏编辑器（SkillEditorDialog 等）──
+.q-dialog .q-card.app-maximized-dialog
+  min-height: 100vh
+  max-height: none
+  border-radius: 0 !important
+  background: var(--glass-elevated) !important
+  border: none !important
+  box-shadow: var(--glass-inner-highlight)
+  backdrop-filter: blur(var(--glass-blur-elevated))
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated))
+
+body.body--dark .q-dialog .q-card.app-maximized-dialog
+  box-shadow: 0 0 32px rgba(77, 216, 232, 0.1)
+
+.app-dual-column-editor
+  display: grid
+  grid-template-columns: minmax(260px, 360px) 1fr
+  gap: 16px
+  height: calc(100vh - 82px)
+
+.app-dual-column-editor__sidebar,
+.app-dual-column-editor__main
+  overflow: auto
+
+.app-dual-column-editor__toolbar
+  position: sticky
+  top: 0
+  z-index: 2
+  border-bottom: 1px solid var(--glass-border)
+  background: var(--glass-surface-hover)
+  box-shadow: var(--glass-inner-highlight)
+  backdrop-filter: blur(var(--glass-blur-hover))
+  -webkit-backdrop-filter: blur(var(--glass-blur-hover))
+
+.app-dual-column-editor__textarea
+  min-height: calc(100vh - 190px)
+  padding: 16px
+  font-family: Consolas, "Courier New", monospace
+  font-size: 13px
+  line-height: 1.6
+  color: var(--color-text-primary)
+
+.app-dual-column-editor__textarea textarea::placeholder
+  color: var(--color-text-secondary)
+
+.app-dual-column-editor__sidebar .q-item--active
+  background: var(--interaction-surface-hover)
+
+.app-dual-column-editor__sidebar .q-separator,
+.app-dual-column-editor__main .q-separator
+  background: var(--glass-border)
+
+@media (width <= 720px)
+  .app-dual-column-editor
+    grid-template-columns: 1fr
+    height: auto
+
+  .app-dual-column-editor__sidebar,
+  .app-dual-column-editor__main
+    backdrop-filter: blur(12px)
+    -webkit-backdrop-filter: blur(12px)
+
+// Dialog 内通用控件（Cron / Tool 覆盖等小表单弹窗）
+.app-dialog-subtitle
+  color: var(--color-text-secondary)
+
+.app-dialog-sep
+  opacity: 55%
+
+.app-dialog-icon-btn
+  color: var(--color-icon-muted)
+
+  &:hover
+    color: var(--color-accent)
+
+.app-dialog-muted-btn
+  color: var(--color-text-secondary)
+
+.app-dialog-accent-btn
+  background: var(--color-accent) !important
+  color: var(--color-on-accent) !important
+
+  &:hover
+    background: var(--color-accent-hover) !important
+
+// Agent 头像选择 Dialog
+.avatar-picker-card
+  display: flex
+  flex-direction: column
+  width: min(560px, 94vw)
+  max-height: min(88vh, 720px)
+  overflow: hidden
+
+.avatar-picker-card__header
+  flex-shrink: 0
+  display: flex
+  align-items: center
+  justify-content: space-between
+  gap: 16px
+  padding: 22px 24px
+  background: var(--glass-elevated)
+  box-shadow: var(--glass-inner-highlight)
+
+.avatar-picker-card__header .text-h6
+  color: var(--color-text-primary)
+
+.avatar-tabs
+  flex-shrink: 0
+  padding: 0 16px
+  background: var(--glass-surface)
+
+.avatar-tabs .q-tab
+  font-weight: 700
+  color: var(--color-text-secondary)
+
+.avatar-tabs .q-tab--active
+  color: var(--color-text-primary)
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent)
+
+.avatar-tabs .q-tab__indicator
+  height: 3px
+  border-radius: 2px
+  background: var(--color-accent)
+
+.avatar-picker-scroll
+  flex: 1
+  min-height: 0
+  overflow-x: hidden
+  overflow-y: auto
+  padding: 16px 20px
+  scrollbar-width: none
+
+.avatar-picker-scroll::-webkit-scrollbar
+  display: none
+
+.avatar-grid
+  display: grid
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr))
+  gap: 14px
+  min-height: 188px
+
+.avatar-group
+  & + &
+    margin-top: 8px
+
+.avatar-group__label
+  padding: 0 4px 6px
+  color: var(--color-text-secondary)
+  font-size: 13px
+  font-weight: 700
+  letter-spacing: 0.02em
+
+.avatar-option
+  position: relative
+  display: grid
+  justify-items: center
+  gap: 8px
+  padding: 12px 8px
+  border: 1px solid var(--glass-border)
+  border-radius: 18px
+  background: var(--glass-elevated)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+  box-shadow: var(--glass-inner-highlight)
+  color: var(--color-text-primary)
+  cursor: pointer
+  font: inherit
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease
+
+.avatar-option:hover,
+.avatar-option.is-selected
+  transform: translateY(-2px)
+  border-color: var(--glass-border-hover, var(--glass-border))
+  background: var(--glass-surface-hover)
+
+.avatar-option.is-selected
+  box-shadow: var(--glass-inner-highlight), 0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent)
+
+.avatar-option span
+  max-width: 100%
+  overflow: hidden
+  font-size: 12px
+  font-weight: 700
+  text-overflow: ellipsis
+  white-space: nowrap
+  color: var(--color-text-secondary)
+
+.avatar-option__check
+  position: absolute
+  top: 8px
+  right: 8px
+  color: var(--color-accent)
+  background: var(--glass-surface)
+  border-radius: 999px
+
+.avatar-picker-empty-banner
+  border: 1px solid var(--glass-border)
+  background: var(--glass-elevated)
+  color: var(--color-text-primary)
+
+.avatar-upload-row
+  flex-shrink: 0
+  display: flex
+  align-items: center
+  gap: 12px
+  flex-wrap: wrap
+  background: var(--glass-surface)
+
+.avatar-upload-row .q-btn
+  min-height: 40px
+  font-weight: 700
+
+.avatar-picker-card .q-card__actions
+  flex-shrink: 0
+  padding: 14px 22px 20px
+  background: var(--glass-elevated)
+  border-top: 1px solid var(--glass-border)
+
+.avatar-picker-card .q-card__actions .q-btn
+  min-height: 40px
+  padding: 0 18px
+  font-weight: 700
+
+.avatar-picker-card .text-grey-7
+  color: var(--color-text-secondary) !important
+
+.hidden-input
+  display: none
+
+body.body--dark .avatar-picker-card
+  border-color: var(--glass-border)
+  background: var(--glass-surface)
+
+body.body--dark .avatar-picker-card__header
+  background: var(--glass-elevated)
+
+body.body--dark .avatar-tabs .q-tab--active
+  background: color-mix(in srgb, var(--color-accent) 22%, transparent)
+
+body.body--dark .avatar-option.is-selected
+  box-shadow: var(--glass-inner-highlight), 0 0 0 1px color-mix(in srgb, var(--color-accent) 42%, transparent)
+
+body.body--dark .avatar-option__check
+  background: color-mix(in srgb, var(--glass-surface) 92%, transparent)

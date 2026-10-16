@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+import "pagination/v1/pagination.proto";
+
+// 角色部门数据权限关联服务
+// 用于 scope=custom 时为角色绑定可访问的部门列表（ap_org_role_dept 表）。
+service RoleDeptService {
+  // 查询角色绑定的部门列表
+  rpc ListByRole (ListRoleDeptByRoleRequest) returns (ListRoleDeptResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/roles/{role_id}/depts"
+    };
+  }
+
+  // 批量绑定部门到角色（先清空旧绑定再插入新绑定，幂等）
+  rpc BatchBind (BatchBindRoleDeptRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/roles/{role_id}/depts"
+      body: "*"
+    };
+  }
+
+  // 解绑角色的所有部门
+  rpc UnbindByRole (UnbindRoleDeptRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/api/v1/monitor/roles/{role_id}/depts"
+    };
+  }
+}
+
+// 角色部门关联
+message RoleDept {
+  optional uint32 id = 1 [
+    json_name = "id",
+    (google.api.field_behavior) = OPTIONAL,
+    (gnostic.openapi.v3.property) = {
+      description: "主键ID"
+    }
+  ]; // 主键ID
+
+  optional uint32 role_id = 2 [
+    json_name = "roleId",
+    (google.api.field_behavior) = REQUIRED,
+    (gnostic.openapi.v3.property) = {
+      description: "角色ID"
+    }
+  ]; // 角色ID
+
+  optional uint32 dept_id = 3 [
+    json_name = "deptId",
+    (google.api.field_behavior) = REQUIRED,
+    (gnostic.openapi.v3.property) = {
+      description: "部门ID"
+    }
+  ]; // 部门ID
+
+  optional uint32 tenant_id = 4 [json_name = "tenantId", (gnostic.openapi.v3.property) = {description: "租户ID"}]; // 租户ID
+
+  optional google.protobuf.Timestamp create_time = 200 [json_name = "createTime", (gnostic.openapi.v3.property) = {description: "创建时间"}];// 创建时间
+}
+
+// 查询角色绑定的部门列表 - 请求
+message ListRoleDeptByRoleRequest {
+  uint32 role_id = 1 [json_name = "roleId", (google.api.field_behavior) = REQUIRED, (gnostic.openapi.v3.property) = {description: "角色ID（URL 路径参数）"}];
+}
+
+// 查询角色绑定的部门列表 - 回应
+message ListRoleDeptResponse {
+  repeated RoleDept items = 1;
+  uint32 total = 2;
+}
+
+// 批量绑定部门到角色 - 请求
+message BatchBindRoleDeptRequest {
+  uint32 role_id = 1 [json_name = "roleId", (google.api.field_behavior) = REQUIRED, (gnostic.openapi.v3.property) = {description: "角色ID（URL 路径参数）"}];
+
+  repeated uint32 dept_ids = 2 [
+    json_name = "deptIds",
+    (google.api.field_behavior) = REQUIRED,
+    (gnostic.openapi.v3.property) = {description: "部门ID列表"}
+  ]; // 部门ID列表
+}
+
+// 解绑角色的所有部门 - 请求
+message UnbindRoleDeptRequest {
+  uint32 role_id = 1 [json_name = "roleId", (google.api.field_behavior) = REQUIRED, (gnostic.openapi.v3.property) = {description: "角色ID（URL 路径参数）"}];
+}

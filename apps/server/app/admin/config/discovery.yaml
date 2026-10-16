@@ -1,0 +1,10 @@
+# 服务注册与发现（bilibili discovery 基座自动注册工具，
+# 规范见 docs/开发文档/00-总体方案/04-服务注册与发现规范.md）。
+# nodes 为空 = 不向 discovery 注册（本地开发豁免）；部署环境填入 discovery server 地址即自动注册。
+discovery:
+  nodes: []              # discovery server 节点，例：["192.168.1.10:7171"]
+  env: dev               # 部署环境：dev/pre/prod
+  region: sh             # 区域
+  zone: sh001            # 可用区
+  host: ""               # 主机标识（空则用默认值）
+  weight: "100"          # 实例权重（写入注册元数据，供 pkg/weight 权重选择器）

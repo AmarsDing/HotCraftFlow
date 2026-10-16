@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+import "pagination/v1/pagination.proto";
+
+import "internal_message/v1/notification_message_recipient.proto";
+
+// 通知消息接收者管理服务
+service NotificationMessageRecipientService {
+  // 查询通知消息接收者列表
+  rpc List (pagination.PagingRequest) returns (internal_message.service.v1.ListNotificationMessageRecipientResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/notification-recipients"
+    };
+  }
+
+  // 查询通知消息接收者详情
+  rpc Get (internal_message.service.v1.GetNotificationMessageRecipientRequest) returns (internal_message.service.v1.NotificationMessageRecipient) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/notification-recipients/{id}"
+    };
+  }
+
+  // 创建通知消息接收者
+  rpc Create (internal_message.service.v1.CreateNotificationMessageRecipientRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/notification-recipients"
+      body: "*"
+    };
+  }
+
+  // 更新通知消息接收者
+  rpc Update (internal_message.service.v1.UpdateNotificationMessageRecipientRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/api/v1/monitor/notification-recipients/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除通知消息接收者
+  rpc Delete (internal_message.service.v1.DeleteNotificationMessageRecipientRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/api/v1/monitor/notification-recipients/{id}"
+    };
+  }
+
+  // 查询当前登录用户的通知收件箱（独立路径段，避免与 /{id} 路由冲突）
+  rpc ListMy (internal_message.service.v1.ListMyNotificationRequest) returns (internal_message.service.v1.ListMyNotificationResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/my-notifications"
+    };
+  }
+
+  // 查询当前登录用户未读通知数
+  rpc CountMyUnread (google.protobuf.Empty) returns (internal_message.service.v1.CountMyUnreadResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/my-notifications/unread-count"
+    };
+  }
+
+  // 标记当前登录用户通知已读（recipient_ids 为空表示全部已读）
+  rpc MarkMyRead (internal_message.service.v1.MarkMyNotificationReadRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/my-notifications:mark-read"
+      body: "*"
+    };
+  }
+}

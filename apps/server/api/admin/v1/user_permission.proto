@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "google/api/annotations.proto";
+
+// UserPermissionService 用户数据权限范围查询服务。
+// 供跨模块服务（如 06-query 数据查询服务）通过 HTTP 获取指定用户的数据权限范围：
+// 数据权限 scope（all/dept/custom/self）聚合结果 + 可访问资源组 ID 列表。
+// 调用方必须携带用户本人 JWT（非管理员仅允许查询自己的权限范围）。
+service UserPermissionService {
+  // 查询指定用户的数据权限范围
+  rpc GetUserPermissions (GetUserPermissionsRequest) returns (UserPermissions) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/users/{id}/permissions"
+    };
+  }
+}
+
+// 查询用户数据权限范围 - 请求
+message GetUserPermissionsRequest {
+  uint32 id = 1 [json_name = "id"]; // 用户 ID（路径参数）
+}
+
+// 用户数据权限范围
+message UserPermissions {
+  uint32 user_id = 1 [json_name = "userId"];                        // 用户 ID
+  bool unrestricted = 2 [json_name = "unrestricted"];               // 是否无限制（管理员或 scope=all）
+  string scope = 3 [json_name = "scope"];                           // 聚合后的最宽范围：ALL/DEPT/CUSTOM/SELF
+  repeated uint32 dept_ids = 4 [json_name = "deptIds"];             // 可访问部门 ID 列表（unrestricted=true 时为空）
+  repeated uint32 resource_group_ids = 5 [json_name = "resourceGroupIds"]; // 可访问资源组 ID 列表（角色绑定并集）
+}

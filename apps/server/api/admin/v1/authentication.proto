@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+import "user/v1/user.proto";
+import "authentication/v1/authentication.proto";
+
+// 用户后台登录认证服务
+service AuthenticationService {
+  // 登录
+  rpc Login (authentication.service.v1.LoginRequest) returns (authentication.service.v1.LoginResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/auth/login"
+      body: "*"
+    };
+
+    option(gnostic.openapi.v3.operation) = {
+      security: {}
+    };
+  }
+
+  // 登出
+  rpc Logout (google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/auth/logout"
+      body: "*"
+    };
+  }
+
+  // 刷新认证令牌
+  rpc RefreshToken (authentication.service.v1.LoginRequest) returns (authentication.service.v1.LoginResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/auth/refresh"
+      body: "*"
+    };
+  }
+
+  // 修改用户密码
+  rpc ChangePassword(authentication.service.v1.ChangePasswordRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/auth/change-password"
+      body: "*"
+    };
+  }
+
+  // MFA 二步登录
+  rpc VerifyMFA(authentication.service.v1.VerifyMFARequest) returns (authentication.service.v1.LoginResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/auth/mfa/verify"
+      body: "*"
+    };
+    option(gnostic.openapi.v3.operation) = {
+      security: {}
+    };
+  }
+
+  // 启用 MFA（生成 secret + QR）
+  rpc EnableMFA(google.protobuf.Empty) returns (authentication.service.v1.EnableMFAResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/auth/mfa/enable"
+      body: "*"
+    };
+  }
+
+  // 禁用 MFA
+  rpc DisableMFA(authentication.service.v1.DisableMFARequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/auth/mfa/disable"
+      body: "*"
+    };
+  }
+
+  // 确认 MFA 绑定（扫码后校验首个验证码，通过后正式启用）
+  rpc ConfirmMFA(authentication.service.v1.ConfirmMFARequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/auth/mfa/confirm"
+      body: "*"
+    };
+  }
+}

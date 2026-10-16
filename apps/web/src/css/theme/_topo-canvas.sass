@@ -1,0 +1,179 @@
+// ---- 拓扑画布配色变量（M3 科技感色板：L0-L4 五级明度 + 状态语义色 + 分类色相环） ----
+// 单一来源：x6Setup.canvasColors 在构建节点/边时读取计算值；SVG 不解析 var() 的场景都走它。
+// 全局 body 级定义：拓扑编辑器（TopoEditorPage）与监控工作台只读拓扑（WorkbenchTopoView）共用，
+// 保证"拓扑配置即所见"——画布配色在任何宿主页面一致。
+body.body--dark
+  // L0 画布底 / L1 网格 / L2 连线 / L3 节点卡 / L4 选中
+  // 2026-08 配色整改：网格去青绿降为石板灰微光（退为"纸"），连线提亮两档（升为画面第一结构层），
+  // 选中态改琥珀金（与青蓝画布色距≥120°，不再被网格/图标同族色稀释）
+  --topo-canvas-bg: #0B1220
+  --topo-canvas-grid: rgba(148, 163, 184, 0.06)
+  --topo-canvas-grid-major: rgba(148, 163, 184, 0.13)
+  --topo-card-fill: #17263F
+  --topo-card-stroke: rgba(126, 147, 180, 0.32)
+  --topo-card-shadow: rgba(0, 0, 0, 0.5)
+  --topo-selected: #F5B14C
+  --topo-selected-glow: rgba(245, 177, 76, 0.45)
+  --topo-icon-stroke: #7AE5F0
+  --topo-name-text: #E2E8F0
+  --topo-sub-text: #8CA1BD
+  --topo-edge-stroke: rgba(126, 147, 180, 0.75)
+  --topo-edge-label: #9FB6D8
+  // 磁吸保留主题蓝：连线吸附语义与选中琥珀是两种反馈，色距拉开互不混淆
+  --topo-magnet: #60A5FA
+  // 状态语义色（双编码：色相 + 形状，见 x6Setup.applyNodeStatusBadge）
+  // ok 提亮一档：网格去青后与画面彻底分开
+  --topo-st-ok: #4ADE80
+  --topo-st-warn: #F59E0B
+  --topo-st-crit: #EF4444
+  --topo-st-unknown: #64748B
+  // 分类色相环（仅图标主色；同功能域同色族，亮度梯度区分近亲分类）
+  --topo-cat-router: #22D3EE
+  --topo-cat-switch: #60A5FA
+  --topo-cat-l3_switch: #60A5FA
+  --topo-cat-firewall: #FB923C
+  --topo-cat-server: #A78BFA
+  --topo-cat-storage: #A78BFA
+  --topo-cat-pc: #94A3B8
+  --topo-cat-laptop: #94A3B8
+  --topo-cat-ap: #F472B6
+  // 网络域（冷色）
+  --topo-cat-ac: #2DD4BF
+  --topo-cat-wireless_bridge: #38BDF8
+  --topo-cat-converter: #4ADE80
+  --topo-cat-lb: #34D399
+  --topo-cat-odf: #84CC16
+  // 安全域（暖红/琥珀）
+  --topo-cat-gap: #F87171
+  --topo-cat-ips: #FB7185
+  --topo-cat-ids: #FDA4AF
+  --topo-cat-bastion: #E879F9
+  --topo-cat-behavior: #FBBF24
+  --topo-cat-audit: #FDE047
+  --topo-cat-vpn: #A3E635
+  // 终端/办公域
+  --topo-cat-printer: #A8A29E
+  --topo-cat-ip_phone: #C084FC
+  --topo-cat-camera: #7DD3FC
+  --topo-cat-conference: #F0ABFC
+  --topo-cat-intercom: #FDBA74
+  // 基础设施/逻辑域
+  --topo-cat-satellite: #818CF8
+  --topo-cat-internet: #6366F1
+  --topo-cat-cloud: #BAE6FD
+  --topo-cat-pdu: #F59E0B
+  --topo-cat-generic: #9CA3AF
+  // 极淡径向收拢（网格与背景）
+  --topo-vignette: rgba(11, 18, 32, 0.2)
+  // 注释配色
+  --topo-ann-text: #94A3B8
+  --topo-ann-rect-fill: rgba(96, 165, 250, 0.06)
+  --topo-ann-rect-stroke: #60A5FA
+  --topo-ann-sticky-fill: rgba(252, 211, 77, 0.12)
+  --topo-ann-sticky-stroke: #A8934A
+  // 区域框（暗色：L4 蓝极淡底 + 35% 描边 + 柔和蓝标题）
+  --topo-ann-region-fill: rgba(96, 165, 250, 0.05)
+  --topo-ann-region-stroke: rgba(96, 165, 250, 0.35)
+  --topo-ann-region-title: #7FA8E8
+
+body:not(.body--dark)
+  --topo-canvas-bg: #f4f6fa
+  --topo-canvas-grid: rgba(100, 116, 139, 0.12)
+  --topo-canvas-grid-major: rgba(100, 116, 139, 0.22)
+  --topo-card-fill: #ffffff
+  --topo-card-stroke: rgba(100, 116, 139, 0.35)
+  --topo-card-shadow: rgba(31, 45, 61, 0.12)
+  --topo-selected: #B45309
+  --topo-selected-glow: rgba(180, 83, 9, 0.32)
+  --topo-icon-stroke: #31537f
+  --topo-name-text: #1f2d3d
+  --topo-sub-text: #64748B
+  --topo-edge-stroke: rgba(71, 85, 105, 0.75)
+  --topo-edge-label: #475569
+  --topo-magnet: #2f6bff
+  --topo-st-ok: #16A34A
+  --topo-st-warn: #D97706
+  --topo-st-crit: #DC2626
+  --topo-st-unknown: #64748B
+  // 亮色主题色环整体降明度保对比
+  --topo-cat-router: #0891B2
+  --topo-cat-switch: #2563EB
+  --topo-cat-l3_switch: #2563EB
+  --topo-cat-firewall: #EA580C
+  --topo-cat-server: #7C3AED
+  --topo-cat-storage: #7C3AED
+  --topo-cat-pc: #64748B
+  --topo-cat-laptop: #64748B
+  --topo-cat-ap: #DB2777
+  // 网络域（冷色）
+  --topo-cat-ac: #0D9488
+  --topo-cat-wireless_bridge: #0284C7
+  --topo-cat-converter: #16A34A
+  --topo-cat-lb: #059669
+  --topo-cat-odf: #4D7C0F
+  // 安全域（暖红/琥珀）
+  --topo-cat-gap: #DC2626
+  --topo-cat-ips: #E11D48
+  --topo-cat-ids: #F43F5E
+  --topo-cat-bastion: #C026D3
+  --topo-cat-behavior: #D97706
+  --topo-cat-audit: #CA8A04
+  --topo-cat-vpn: #65A30D
+  // 终端/办公域
+  --topo-cat-printer: #78716C
+  --topo-cat-ip_phone: #9333EA
+  --topo-cat-camera: #0EA5E9
+  --topo-cat-conference: #D946EF
+  --topo-cat-intercom: #F97316
+  // 基础设施/逻辑域
+  --topo-cat-satellite: #4F46E5
+  --topo-cat-internet: #4338CA
+  --topo-cat-cloud: #38BDF8
+  --topo-cat-pdu: #B45309
+  --topo-cat-generic: #6B7280
+  --topo-vignette: rgba(15, 23, 42, 0.04)
+  --topo-ann-text: #5c6b82
+  --topo-ann-rect-fill: rgba(47, 107, 255, 0.06)
+  --topo-ann-rect-stroke: #2f6bff
+  --topo-ann-sticky-fill: #fff7d6
+  --topo-ann-sticky-stroke: #e8d48b
+  // 区域框（亮色：主题蓝淡底 + 25% 描边 + 深蓝标题）
+  --topo-ann-region-fill: rgba(47, 107, 255, 0.04)
+  --topo-ann-region-stroke: rgba(47, 107, 255, 0.25)
+  --topo-ann-region-title: #3b5bff
+
+// ── 拓扑场景恒深色 token（discovery-topology / topo 编辑器共用，2026-08 EP-FE-03 收口）──
+// 这些页面为恒深色场景（不随昼夜主题分叉），故挂在 :root 而非 body.body--dark 下。
+:root
+  // 场景底色
+  --topo-bg-deep: #05070D
+  --topo-bg-panel: #0B1020
+  --topo-bg-drawer: #0B1220
+  // 强调/状态
+  --topo-accent: #4DD8E8
+  --topo-accent-title: #7FD8FF
+  --topo-cyan: #22D3EE
+  --topo-sky: #7DD3FC
+  --topo-info: #60A5FA
+  --topo-warning: #FACC15
+  --topo-amber: #F59E0B
+  --topo-orange: #FB923C
+  --topo-danger: #EF4444
+  --topo-lime: #D6EC4E
+  --topo-gold-soft: #FFD98A
+  // 石板/描边
+  --topo-slate: #475569
+  --topo-slate-light: #CBD5E1
+  --topo-border: #AEBDD4
+  --topo-border-light: #D3DCEA
+  // 文字梯队
+  --topo-text-primary: #D5DEEB
+  --topo-text-secondary: #94A5BE
+  --topo-text-tertiary: #6A7D9A
+  --topo-text-muted: #8FA1BB
+  --topo-text-dim: #64748B
+  --topo-text-bright: #A5F3FC
+  --topo-text-alt: #C9D4E5
+  --topo-text-pale: #DBE4F2
+  --topo-text-body: #D0DCE8
+  --topo-text-strong: #E0ECFF

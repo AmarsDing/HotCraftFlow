@@ -1,0 +1,13 @@
+log:
+  logger:
+    level: 0
+    stackLevel: 0
+    caller: true
+    callerSkip: 3
+    development: false
+  file:
+    filename: ./logs/admin.log
+    maxSize: 2
+    maxBackups: 5
+    maxAge: 7
+    compress: false

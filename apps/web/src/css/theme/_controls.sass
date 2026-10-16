@@ -1,0 +1,72 @@
+// 控件统一主题层（按钮 / 徽章 / 标签 / 静态调色板映射）
+//
+// 职责：
+//   1) Quasar 静态 Material 调色板类（deep-purple/purple/teal/cyan/cyan-4/amber/orange/deep-orange）
+//      重映射到主题 token —— 昼夜自动切换，页面模板无需改动
+//   2) 实心控件（unelevated 按钮、实心徽章/标签）在暗色下的霓虹玻璃化处理，
+//      与 app-global.sass 中 bg-primary 的暗色处理同系
+//   3) 按钮基准形态统一（圆角 / 字重 / 过渡 / 焦点环）
+//
+// 品牌色本身（primary/secondary/accent/positive/negative/info/warning/dark）
+// 由 _css-vars-light / _css-vars-dark 的 --q-* 变量按主题切换，本层不重复定义。
+// bg-primary / q-badge.bg-warning / q-badge.bg-grey / q-chip.bg-grey 的昼夜处理
+// 已在 app-global.sass 调优，本层跳过以避免冲突。
+
+// ── 静态调色板 → 主题 token（昼夜自动切换）──
+// 注意：map 键必须加引号 —— purple/teal/cyan/orange 等未加引号的标识符
+// 会被 Sass 解析为 <color> 字面量而非字符串，插值到选择器时 dart-sass 会告警
+//（且压缩模式下颜色可能被序列化为 #hex，生成非法选择器）
+$ctrl-static: ("deep-purple": --color-q-deep-purple, "purple": --color-q-purple, "teal": --color-q-teal, "cyan": --color-q-cyan, "cyan-4": --color-q-cyan, "amber": --color-q-amber, "orange": --color-q-orange, "deep-orange": --color-q-deep-orange)
+
+@each $name, $token in $ctrl-static
+  .text-#{$name}
+    color: var(#{$token}) !important
+  .bg-#{$name}
+    background: var(#{$token}) !important
+
+// ── 暗色实心按钮：霓虹玻璃化（半透明底 + 霓虹描边 + 光晕）──
+=ctrl-btn-solid-dark($token)
+  background: color-mix(in srgb, var(#{$token}) 28%, transparent) !important
+  color: var(#{$token}) !important
+  border: 1px solid color-mix(in srgb, var(#{$token}) 50%, transparent) !important
+  box-shadow: 0 0 12px color-mix(in srgb, var(#{$token}) 18%, transparent)
+
+  &:hover
+    background: color-mix(in srgb, var(#{$token}) 38%, transparent) !important
+    box-shadow: 0 0 18px color-mix(in srgb, var(#{$token}) 28%, transparent)
+
+// ── 暗色实心徽章：软底 + 同色文字（深底上白字低对比的修正）──
+=ctrl-badge-dark($token)
+  background: color-mix(in srgb, var(#{$token}) 20%, transparent) !important
+  color: var(#{$token}) !important
+
+// ── 暗色实心标签：软底 + 同色文字 + 同色描边 ──
+=ctrl-chip-dark($token)
+  background: color-mix(in srgb, var(#{$token}) 22%, transparent) !important
+  color: var(#{$token}) !important
+  border: 1px solid color-mix(in srgb, var(#{$token}) 35%, transparent)
+
+// 品牌色（primary/warning/grey 已由 app-global 处理）+ 静态调色板
+$ctrl-themed: ("secondary": --q-secondary, "accent": --q-accent, "positive": --q-positive, "negative": --q-negative, "info": --q-info, "deep-purple": --color-q-deep-purple, "purple": --color-q-purple, "teal": --color-q-teal, "cyan": --color-q-cyan, "cyan-4": --color-q-cyan, "amber": --color-q-amber, "orange": --color-q-orange, "deep-orange": --color-q-deep-orange)
+
+body.body--dark
+  @each $name, $token in $ctrl-themed
+    .q-btn.bg-#{$name}:not(.q-btn--outline):not(.q-btn--flat)
+      +ctrl-btn-solid-dark($token)
+
+    .q-badge.bg-#{$name}
+      +ctrl-badge-dark($token)
+
+    .q-chip.bg-#{$name}
+      +ctrl-chip-dark($token)
+
+// ── 按钮基准形态统一（round/fab 保持 Quasar 默认）──
+.q-btn:not(.q-btn--round):not(.q-btn--fab)
+  border-radius: 10px
+  font-weight: 600
+  transition: background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, transform 0.12s ease
+
+// 键盘焦点环：昼夜同 token（暗色自动变青霓虹）
+.q-btn:focus-visible
+  outline: 2px solid var(--color-accent)
+  outline-offset: 1px

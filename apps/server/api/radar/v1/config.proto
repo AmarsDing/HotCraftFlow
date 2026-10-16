@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package radar.service.v1;
+
+import "google/api/annotations.proto";
+
+message GetRadarConfigRequest {}
+
+message GetRadarConfigResponse {
+  bool has_github_token = 1;
+  string github_token_masked = 2;
+}
+
+message SetRadarConfigRequest {
+  string github_token = 1;
+}
+
+message SetRadarConfigResponse {
+  bool has_github_token = 1;
+  string github_token_masked = 2;
+}
+
+// RadarConfigService 雷达用户配置（勿与平台 UserService 重名）
+service RadarConfigService {
+  rpc GetConfig(GetRadarConfigRequest) returns (GetRadarConfigResponse) {
+    option (google.api.http) = { get: "/api/v1/radar/config" };
+  }
+  rpc SetConfig(SetRadarConfigRequest) returns (SetRadarConfigResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/radar/config"
+      body: "*"
+    };
+  }
+}

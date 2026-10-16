@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package radar.service.v1;
+
+import "google/api/annotations.proto";
+
+message RadarNotification {
+  string id = 1;
+  string title = 2;
+  string body = 3;
+  string kind = 4; // daily_digest | system
+  string created_at = 5;
+  bool read = 6;
+}
+
+message ListRadarNotificationsRequest {
+  bool unread_only = 1;
+}
+
+message ListRadarNotificationsResponse {
+  repeated RadarNotification items = 1;
+}
+
+message MarkRadarNotificationsReadRequest {
+  repeated string ids = 1;
+}
+
+message MarkRadarNotificationsReadResponse {}
+
+// RadarNotifyService 雷达通知（勿与平台 NotifyService 重名）
+service RadarNotifyService {
+  rpc ListNotifications(ListRadarNotificationsRequest) returns (ListRadarNotificationsResponse) {
+    option (google.api.http) = { get: "/api/v1/radar/notifications" };
+  }
+  rpc MarkNotificationsRead(MarkRadarNotificationsReadRequest) returns (MarkRadarNotificationsReadResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/radar/notifications/read"
+      body: "*"
+    };
+  }
+}

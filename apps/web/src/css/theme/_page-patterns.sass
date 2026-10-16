@@ -1,0 +1,1046 @@
+// 全站页面模式：Hero、奶油/驾驶舱页底、登录、代码块、表格/表单夜间增强
+// 引用 aranea-frontend-guide SKILL §6 token；页面优先用 class，少写 scoped rgb/hex
+
+// ── 文件内私有色值（无全局 token 等值项；颜色 token 门禁 EP-FE-03 收敛落点）──
+$pp-blank-light-end: #E8E8ED
+$pp-blank-dark-start: #0A0E1A
+$pp-blank-dark-mid: #0F1828
+
+body:not(.body--dark)
+  .app-page-cream,
+  .app-standard-page,
+  .system-settings-page,
+  .monitor-page,
+  .memory-page,
+  .resource-manager-page
+    min-height: 100%
+    color: var(--color-text-primary)
+
+body.body--dark
+  .app-page-cream,
+  .app-standard-page,
+  .system-settings-page,
+  .monitor-page,
+  .memory-page,
+  .resource-manager-page
+    min-height: 100%
+    color: var(--color-text-primary)
+    background: var(--gradient-page)
+
+  .q-table
+    background: transparent
+    color: var(--color-text-primary)
+
+  .q-table thead tr th
+    background: var(--glass-surface)
+    color: var(--color-text-secondary)
+    backdrop-filter: blur(var(--glass-blur-default))
+    -webkit-backdrop-filter: blur(var(--glass-blur-default))
+    border-color: var(--glass-border)
+
+  .q-table tbody tr:hover
+    background: var(--glass-surface-hover)
+
+  .q-table tbody td
+    border-color: var(--glass-border)
+
+  .q-field--outlined .q-field__control
+    background: color-mix(in srgb, var(--glass-surface) 88%, transparent)
+    border-color: var(--glass-border)
+
+  .q-field--outlined.q-field--focused .q-field__control
+    border-color: var(--color-accent)
+
+  .q-banner:not(.bg-negative):not(.bg-positive):not(.bg-warning)
+    background: var(--glass-surface)
+    color: var(--color-text-primary)
+    border: 1px solid var(--glass-border)
+
+// --- 标准管理页（Plugin 样板：背景 + 内容区宽度/内边距）---
+.app-standard-page
+  min-height: 100%
+  color: var(--color-text-primary)
+  padding: var(--space-6)
+  max-width: var(--layout-max-width)
+  margin: 0 auto
+  width: 100%
+  box-sizing: border-box
+
+body:not(.body--dark) .app-standard-page
+  background: linear-gradient(160deg, var(--canvas-base) 0%, var(--canvas-base) 40%, color-mix(in srgb, var(--canvas-base) 88%, var(--glass-border)) 100%)
+
+body.body--dark .app-standard-page
+  background: var(--gradient-page)
+
+// --- 页面 Hero（registry / admin 通用）---
+.app-page-hero
+  display: flex
+  flex-wrap: wrap
+  align-items: flex-start
+  justify-content: space-between
+  gap: var(--space-4)
+  margin-bottom: var(--space-4)
+
+.app-page-kicker
+  display: inline-flex
+  font-size: var(--text-xs)
+  font-weight: 700
+  letter-spacing: 0.08em
+  text-transform: uppercase
+  color: var(--color-accent)
+
+.app-page-title
+  margin: var(--space-1) 0
+  font-size: clamp(1.35rem, 2.5vw, 1.75rem)
+  font-weight: 700
+  letter-spacing: -0.03em
+  line-height: 1.15
+  color: var(--color-text-primary)
+
+body.body--dark .app-page-title
+  text-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 12%, transparent)
+
+.app-page-subtitle
+  margin: 0
+  max-width: 42rem
+  font-size: var(--text-base)
+  line-height: 1.55
+  color: var(--color-text-secondary)
+
+// Monitor / Channel 等功能页 Hero（标题略大）
+.app-page-hero--feature
+  margin-bottom: var(--space-5)
+
+  .app-page-kicker
+    letter-spacing: 0.14em
+
+  .app-page-title
+    font-size: clamp(1.75rem, 4vw, 2rem)
+    letter-spacing: -0.02em
+
+  .app-page-subtitle
+    max-width: 52ch
+
+.app-page-shell
+  max-width: var(--layout-max-width)
+  margin: 0 auto
+  padding: var(--space-3) var(--space-4) var(--space-8)
+
+.app-code-block
+  white-space: pre-wrap
+  overflow: auto
+  padding: var(--space-3)
+  border-radius: 12px
+  font-family: "SF Mono", "Fira Code", Consolas, monospace
+  font-size: var(--text-sm)
+  line-height: 1.5
+  background: var(--color-code-block-bg)
+  border: 1px solid var(--glass-border)
+  color: var(--color-text-primary)
+
+.app-code-block--compact
+  max-height: 180px
+
+.app-code-block--scroll
+  max-height: 320px
+  overflow-wrap: break-word
+
+// 交互列表项（Session turns 等）
+.app-interactive-list-item
+  border-radius: 12px
+  margin-bottom: 4px
+
+.app-interactive-list-item__preview
+  max-width: 480px
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+  color: var(--color-text-primary)
+
+// 对话框内预览块（Retention 统计等）
+.app-glass-inset-preview
+  border-radius: 10px
+  border: 1px solid var(--glass-border)
+  background: color-mix(in srgb, var(--canvas-base) 6%, transparent)
+
+// Session 消息列表
+.session-message-list
+  display: flex
+  flex-direction: column
+  gap: 8px
+
+.session-message-row
+  display: flex
+  gap: 12px
+  padding: 12px 16px
+  border-radius: 12px
+  border: 1px solid var(--glass-border)
+  background: var(--glass-elevated)
+
+.session-message-row--user
+  background: color-mix(in srgb, var(--color-primary) 4%, var(--glass-elevated))
+
+.session-message-row--assistant
+  background: color-mix(in srgb, var(--color-success) 4%, var(--glass-elevated))
+
+.session-message-row__avatar
+  flex: 0 0 auto
+  padding-top: 2px
+  color: var(--color-text-tertiary)
+
+.session-message-row__body
+  flex: 1 1 auto
+  min-width: 0
+
+.session-message-row__content
+  margin-top: 6px
+  white-space: pre-wrap
+  overflow-wrap: break-word
+  color: var(--color-text-primary)
+  font-size: 14px
+  line-height: 1.6
+
+body.body--dark
+  .session-message-row
+    background: color-mix(in srgb, var(--glass-surface) 72%, transparent)
+
+  .session-message-row--user
+    background: color-mix(in srgb, var(--color-primary) 8%, var(--glass-surface))
+
+  .session-message-row--assistant
+    background: color-mix(in srgb, var(--color-success) 8%, var(--glass-surface))
+
+// --- KPI / 统计卡网格（避免末行 2 卡被拉宽）---
+.app-metrics-grid
+  display: grid
+  gap: var(--space-4)
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))
+  margin-bottom: var(--space-4)
+
+.app-metrics-grid--4
+  grid-template-columns: repeat(4, minmax(0, 1fr))
+
+  @media (width <= 899px)
+    grid-template-columns: repeat(2, minmax(0, 1fr))
+
+  @media (width <= 479px)
+    grid-template-columns: 1fr
+
+.runner-metrics__grid
+  margin-bottom: 0
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr))
+
+.runner-metrics__body--compact
+  padding-top: 12px
+  padding-bottom: 12px
+
+.app-metrics-grid--5
+  grid-template-columns: repeat(5, minmax(0, 1fr))
+
+  @media (width <= 1279px)
+    grid-template-columns: repeat(3, minmax(0, 1fr))
+
+  @media (width <= 767px)
+    grid-template-columns: repeat(2, minmax(0, 1fr))
+
+  @media (width <= 479px)
+    grid-template-columns: 1fr
+
+.app-metrics-grid__item
+  min-width: 0
+
+// --- 警告 Banner / Notify token 对齐 ---
+.app-banner-warning,
+.q-banner.app-banner-warning
+  background: var(--color-status-warning-bg) !important
+  color: var(--color-status-warning-text-dark) !important
+  border: 1px solid color-mix(in srgb, var(--color-warning) 35%, transparent)
+
+// Quasar notify 警告色与 UX token 对齐
+.q-notification.bg-warning,
+.q-notification.bg-orange
+  background: var(--color-status-warning-bg) !important
+  color: var(--color-status-warning-text-dark) !important
+  border: 1px solid color-mix(in srgb, var(--color-warning) 35%, transparent)
+
+// --- 评估页双栏布局 ---
+.app-split-layout,
+.evaluation-layout
+  display: grid
+  gap: var(--space-4)
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr)
+
+  @media (width <= 1023px)
+    grid-template-columns: 1fr
+
+// Template D — 双栏编辑/列表页（知识库 / 评估 / Memory 等）
+.app-pane-card
+  border: 1px solid var(--glass-border)
+  border-radius: 20px
+  background: var(--glass-surface)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+  box-shadow: var(--glass-inner-highlight)
+  overflow: hidden
+  min-height: 320px
+  display: flex
+  flex-direction: column
+
+.app-pane-card__header
+  padding: var(--space-4) var(--space-5)
+  font-size: var(--text-md)
+  font-weight: 700
+  color: var(--color-text-primary)
+  border-bottom: 1px solid var(--glass-border)
+
+.app-pane-card__body
+  flex: 1
+  min-height: 0
+
+.app-registry-empty--compact
+  min-height: 180px
+  padding: var(--space-6)
+  border: none
+  border-radius: 0
+  background: transparent
+  backdrop-filter: none
+  -webkit-backdrop-filter: none
+
+// --- 登录页 ---
+.login-page
+  min-height: 100vh
+  padding: var(--space-6)
+  background: var(--gradient-page)
+
+.login-card
+  width: 100%
+  max-width: 420px
+  border-radius: 20px !important
+  background: var(--glass-elevated) !important
+  border: 1px solid var(--glass-border) !important
+  box-shadow: var(--shadow-login) !important
+  backdrop-filter: blur(var(--glass-blur-elevated))
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated))
+
+.login-card .text-grey-7
+  color: var(--color-text-secondary) !important
+
+// --- 通用工具 class ---
+.min-width-0
+  min-width: 0
+
+.ellipsis-2-lines
+  display: -webkit-box
+  overflow: hidden
+  -webkit-box-orient: vertical
+  -webkit-line-clamp: 2
+
+.app-accent-btn
+  background: var(--color-accent)
+  color: var(--color-on-accent)
+
+body:not(.body--dark) .app-accent-btn:hover
+  background: var(--color-accent-hover)
+
+.app-outline-btn
+  border-color: color-mix(in srgb, var(--glass-border) 85%, transparent)
+  color: var(--color-text-primary)
+
+body:not(.body--dark) .app-outline-btn:hover
+  background: var(--interaction-surface-hover)
+
+.app-page-error-banner
+  background: color-mix(in srgb, var(--color-danger) 88%, transparent)
+  color: var(--color-on-accent)
+  border: 1px solid color-mix(in srgb, var(--color-on-accent) 25%, transparent)
+
+body.body--dark .app-page-error-banner
+  background: color-mix(in srgb, var(--color-danger) 22%, transparent)
+  color: var(--color-text-primary)
+  border-color: color-mix(in srgb, var(--color-on-accent) 12%, transparent)
+
+.app-empty-state-center
+  display: grid
+  place-items: center center
+  gap: 10px
+  min-height: 280px
+  padding: var(--space-8)
+  text-align: center
+  color: var(--color-text-tertiary)
+
+.app-empty-state-center--sm
+  min-height: 240px
+  gap: 8px
+
+.app-avatar-cover img
+  width: 100%
+  height: 100%
+  object-fit: cover
+
+.resolved-avatar-img
+  width: 100%
+  height: 100%
+  object-fit: cover
+
+.a2a-result
+  margin: 0.5rem 0 0
+  white-space: pre-wrap
+  overflow-wrap: anywhere
+  font-size: 0.85rem
+
+.a2a-invoke-form,
+.a2a-register-form
+  display: flex
+  flex-direction: column
+  gap: 0
+
+// ── A2A Remote tab split layout ──
+.a2a-remote-split
+  display: flex
+  flex-direction: column
+  gap: var(--space-4)
+
+// ── A2A Structured Form Panel（label-control 行布局）──
+.a2a-form-header
+  display: flex
+  align-items: center
+  gap: 10px
+  padding-bottom: var(--space-4)
+  margin-bottom: var(--space-4)
+  border-bottom: 1px solid var(--glass-border)
+
+.a2a-form-header__title
+  font-size: 15px
+  font-weight: 700
+  color: var(--color-text-heading)
+  letter-spacing: -0.01em
+
+.a2a-form-body
+  display: flex
+  flex-direction: column
+  gap: 0
+
+.a2a-form-group
+  display: flex
+  flex-direction: column
+  gap: var(--space-3)
+
+.a2a-form-group + .a2a-form-group
+  padding-top: var(--space-4)
+  margin-top: var(--space-4)
+  border-top: 1px solid color-mix(in srgb, var(--glass-border) 60%, transparent)
+
+.a2a-form-group__title
+  margin: 0 0 var(--space-2)
+  font-size: 11px
+  font-weight: 700
+  letter-spacing: 0.06em
+  text-transform: uppercase
+  color: var(--color-text-tertiary)
+
+.a2a-form-row
+  display: grid
+  grid-template-columns: 148px minmax(0, 1fr)
+  gap: 8px 16px
+  align-items: start
+
+  @media (width <= 767px)
+    grid-template-columns: 1fr
+
+.a2a-form-row--2col-controls
+  grid-template-columns: 148px minmax(0, 1fr) minmax(0, 1fr)
+
+  @media (width <= 767px)
+    grid-template-columns: 1fr
+
+.a2a-form-row__label
+  padding-top: 9px
+  text-align: right
+  font-size: 13px
+  font-weight: 600
+  line-height: 1.4
+  color: var(--color-text-secondary)
+  white-space: nowrap
+
+  @media (width <= 767px)
+    text-align: left
+    padding-top: 0
+
+.a2a-form-row__control
+  min-width: 0
+
+  .q-field
+    margin-bottom: 0
+
+.a2a-form-row__hint
+  grid-column: 2 / -1
+  margin-top: -4px
+  padding-bottom: 2px
+  font-size: 11px
+  line-height: 1.4
+  color: var(--color-text-tertiary)
+
+  @media (width <= 767px)
+    grid-column: 1 / -1
+
+.a2a-form-actions
+  display: flex
+  justify-content: flex-end
+  gap: var(--space-3)
+  padding-top: var(--space-4)
+  margin-top: var(--space-4)
+  border-top: 1px solid color-mix(in srgb, var(--glass-border) 60%, transparent)
+
+.a2a-invoke-result
+  margin-top: var(--space-4)
+  padding-top: var(--space-4)
+  border-top: 1px solid color-mix(in srgb, var(--glass-border) 60%, transparent)
+
+.a2a-invoke-result__meta
+  display: flex
+  flex-wrap: wrap
+  gap: var(--space-3)
+  margin-bottom: var(--space-2)
+  font-size: var(--text-xs)
+  color: var(--color-text-secondary)
+
+.a2a-invoke-result__id
+  font-family: var(--font-mono, ui-monospace, monospace)
+
+.a2a-invoke-result__status
+  font-family: var(--font-mono, ui-monospace, monospace)
+
+.a2a-register-preview
+  margin-top: var(--space-4)
+  padding-top: var(--space-4)
+  border-top: 1px solid color-mix(in srgb, var(--glass-border) 60%, transparent)
+
+.a2a-register-preview__meta
+  display: flex
+  align-items: baseline
+  gap: var(--space-2)
+  margin-bottom: var(--space-2)
+
+.a2a-register-preview__name
+  font-size: var(--text-sm)
+  font-weight: 600
+  color: var(--color-text-primary)
+
+.a2a-register-preview__id
+  font-size: var(--text-xs)
+  font-family: var(--font-mono, ui-monospace, monospace)
+  color: var(--color-text-secondary)
+
+.hook-delivery-detail,
+.plugin-run-detail
+  margin: 8px 0 0
+
+.plugin-run-detail
+  margin: 0
+
+// JSON 代码查看器
+.json-code-viewer
+  border: 1px solid var(--glass-border)
+  border-radius: 8px
+  background: var(--color-code-block-bg)
+  overflow: hidden
+
+.json-code-viewer__toolbar
+  padding: 6px 8px 0
+  border-bottom: 1px solid var(--glass-border)
+
+.json-code-viewer__scroll
+  width: 100%
+
+.json-code-viewer__pre
+  margin: 0
+  padding: 12px
+  font-family: "SF Mono", "Fira Code", Consolas, monospace
+  font-size: 11px
+  line-height: 1.5
+  white-space: pre
+  word-break: normal
+  tab-size: 2
+
+.json-code-viewer .json-code-viewer__key
+  color: var(--color-json-key)
+
+.json-code-viewer .json-code-viewer__string
+  color: var(--color-json-string)
+
+.json-code-viewer .json-code-viewer__number
+  color: var(--color-json-number)
+
+.json-code-viewer .json-code-viewer__boolean
+  color: var(--color-json-boolean)
+
+.json-code-viewer .json-code-viewer__null
+  color: var(--color-json-null)
+
+// MCP 服务器页
+.mcp-toolbar,
+.mcp-list-card
+  border-radius: 18px
+
+.mcp-list-item
+  align-items: flex-start
+  padding-left: 10px
+  padding-right: 10px
+
+.health-dot
+  border-radius: 999px
+  display: inline-block
+  height: 10px
+  margin-top: 22px
+  width: 10px
+
+.health-dot--ok
+  background: var(--color-quasar-positive)
+
+.health-dot--error
+  background: var(--color-quasar-negative)
+
+.health-dot--degraded
+  background: var(--color-quasar-warning)
+
+.health-dot--unknown
+  background: var(--color-quasar-grey)
+
+// Provider logo
+.provider-logo__svg
+  display: flex
+  align-items: center
+  justify-content: center
+  width: 100%
+  height: 100%
+  color: var(--color-text-primary)
+
+.provider-logo__svg svg
+  width: 70%
+  height: 70%
+  display: block
+
+// 系统设置 Catalog Tab — 紧凑状态栏
+.catalog-status-bar
+  display: flex
+  flex-wrap: wrap
+  align-items: baseline
+  gap: 4px 0
+  padding: 8px 12px
+  border: 1px solid var(--glass-border)
+  border-radius: 10px
+  background: var(--glass-elevated)
+  font-size: 13px
+  line-height: 1.6
+
+.catalog-status-bar__item
+  display: inline-flex
+  align-items: baseline
+  gap: 4px
+
+.catalog-status-bar__sep
+  margin: 0 6px
+  color: var(--color-text-secondary)
+  opacity: 0.4
+
+.catalog-status-bar__label
+  font-size: 11px
+  color: var(--color-text-secondary)
+
+.catalog-status-bar__value
+  font-weight: 600
+  color: var(--color-text-primary)
+
+.catalog-status-bar__path
+  width: 100%
+  margin-top: 4px
+  font-size: 11px
+  color: var(--color-text-secondary)
+
+  code
+    font-size: 11px
+    padding: 1px 5px
+    border-radius: 4px
+    background: var(--glass-border)
+
+// Catalog Tab 可折叠面板
+.catalog-section-expansion
+  border: 1px solid var(--glass-border)
+  border-radius: 20px
+  background: var(--glass-elevated)
+  backdrop-filter: blur(12px)
+  -webkit-backdrop-filter: blur(12px)
+  overflow: hidden
+
+  .q-expansion-item__content
+    padding: 0 var(--space-5) var(--space-4)
+
+  .q-item
+    padding: var(--space-3) var(--space-5)
+
+  .q-item__label
+    font-size: var(--text-md)
+    font-weight: 700
+    color: var(--color-text-primary)
+    padding-left: var(--space-3)
+    border-left: 3px solid var(--color-accent)
+
+// Monitor 页
+.monitor-page
+  display: flex
+  flex-direction: column
+  min-height: calc(100dvh - 56px)
+
+  &:not(.app-standard-page)
+    min-height: 100%
+    padding: var(--space-6)
+
+.monitor-page-shell
+  width: 100%
+  max-width: var(--layout-max-width)
+  margin: 0 auto
+  flex: 1
+  min-height: 0
+  display: flex
+  flex-direction: column
+  box-sizing: border-box
+
+.monitor-panels--logs-fill
+  flex: 1
+  min-height: 0
+  display: flex
+  flex-direction: column
+
+.monitor-panels--logs-fill .q-panel
+  flex: 1
+  min-height: 0
+  display: flex
+  flex-direction: column
+
+.monitor-logs-panel
+  flex: 1
+  min-height: 0
+  display: flex
+  flex-direction: column
+
+.monitor-range
+  min-width: 150px
+
+.monitor-tabs-wrap
+  margin-bottom: 12px
+
+.monitor-panels
+  background: transparent
+
+.monitor-panels .q-tab-panel
+  padding: 0
+
+.monitor-tabs .q-tabs__indicator
+  background: var(--color-accent)
+
+.monitor-tabs .q-tab--active
+  color: var(--color-accent)
+
+.monitor-tabs .q-tab:not(.q-tab--active)
+  color: var(--color-text-secondary)
+
+.monitor-tabs .q-tabs__arrow
+  color: var(--color-icon-muted)
+
+.monitor-primary-btn
+  background: var(--color-accent)
+  color: var(--color-on-accent)
+
+body:not(.body--dark) .monitor-primary-btn:hover
+  background: var(--color-accent-hover)
+
+@media (max-width: 720px)
+  .monitor-range
+    min-width: 100%
+
+// --- 登录/空白布局 ---
+.blank-layout-root
+  min-height: 100vh
+  background: linear-gradient(160deg, $cream-page 0%, $cream-page-alt 45%, $pp-blank-light-end 100%)
+
+body.body--dark .blank-layout-root
+  background: linear-gradient(160deg, $pp-blank-dark-start 0%, $pp-blank-dark-mid 50%, var(--canvas-base) 100%)
+
+// --- Memory 页 ---
+.memory-graph-canvas
+  background: var(--color-surface-soft)
+  border: 1px solid var(--glass-border)
+  border-radius: 14px
+  overflow: hidden
+
+.memory-graph-svg
+  display: block
+  width: 100%
+  height: auto
+
+.memory-graph-label
+  fill: var(--color-text-secondary)
+  font-size: 10px
+
+.memory-metric-grid
+  margin-bottom: var(--space-4)
+
+.memory-metric-card__body
+  display: grid
+  grid-template-columns: auto minmax(0, 1fr)
+  align-items: start
+  gap: 12px
+  padding: 14px 16px
+  min-height: 96px
+
+.memory-metric-card__icon
+  display: flex
+  align-items: center
+  justify-content: center
+  width: 36px
+  height: 36px
+  border-radius: 11px
+  flex-shrink: 0
+  background: color-mix(in srgb, var(--color-accent) 14%, var(--glass-surface))
+  color: var(--color-accent)
+
+.memory-metric-card__icon--primary
+  background: color-mix(in srgb, var(--color-accent) 14%, var(--glass-surface))
+  color: var(--color-accent)
+
+.memory-metric-card__icon--positive
+  background: color-mix(in srgb, var(--color-success) 16%, var(--glass-surface))
+  color: var(--color-success)
+
+.memory-metric-card__icon--warning
+  background: color-mix(in srgb, var(--color-warning) 16%, var(--glass-surface))
+  color: var(--color-warning)
+
+.memory-metric-card__icon--negative
+  background: color-mix(in srgb, var(--color-danger) 16%, var(--glass-surface))
+  color: var(--color-danger)
+
+.memory-metric-card__icon--deep-purple
+  background: color-mix(in srgb, var(--color-neon-violet) 18%, var(--glass-surface))
+  color: var(--color-neon-violet)
+
+.memory-metric-card__icon--teal
+  background: color-mix(in srgb, var(--color-accent) 14%, var(--glass-surface))
+  color: var(--color-accent)
+
+.memory-metric-card__icon--blue-grey
+  background: color-mix(in srgb, var(--color-text-secondary) 16%, var(--glass-surface))
+  color: var(--color-text-secondary)
+
+.memory-metric-card__content
+  display: flex
+  flex-direction: column
+  gap: 2px
+  min-width: 0
+
+.memory-metric-card .app-metrics-card__value
+  margin-top: 2px
+  font-size: clamp(22px, 2.2vw, 28px)
+  line-height: 1.15
+
+.memory-metric-card .app-metrics-card__hint
+  margin-top: 4px
+  display: -webkit-box
+  -webkit-line-clamp: 2
+  -webkit-box-orient: vertical
+  overflow: hidden
+
+// --- Artifact ---
+.artifact-preview__text
+  border: 1px solid var(--glass-border)
+  border-radius: 8px
+  overflow: hidden
+
+.artifact-preview__code
+  margin: 0
+  padding: 12px
+  max-height: 480px
+  overflow: auto
+  white-space: pre-wrap
+  overflow-wrap: anywhere
+  font-family: "SF Mono", "Fira Code", Consolas, monospace
+  font-size: 13px
+  line-height: 1.5
+  background: var(--canvas-base)
+  color: var(--color-text-primary)
+
+.artifact-preview__image
+  text-align: center
+
+.artifact-preview__img
+  max-width: 100%
+  max-height: 480px
+  border-radius: 8px
+
+.artifact-preview__pdf
+  width: 100%
+
+.artifact-preview__iframe
+  width: 100%
+  height: 480px
+  border: 1px solid var(--glass-border)
+  border-radius: 8px
+
+.artifact-list__items
+  display: flex
+  flex-direction: column
+  gap: 2px
+
+.artifact-list__item
+  padding: 6px 8px
+  border-radius: 6px
+  cursor: pointer
+  transition: background 0.15s
+
+.artifact-list__item:hover
+  background: color-mix(in srgb, var(--glass-surface-hover) 72%, transparent)
+
+.artifact-list__name
+  font-size: 13px
+  font-weight: 500
+  line-height: 1.3
+
+.artifact-list__meta
+  line-height: 1.2
+
+.app-ellipsis
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+
+// --- Theme Preview（开发页）---
+.theme-preview-page
+  color: var(--color-text-primary)
+  min-height: 100%
+
+.theme-preview-page__shell
+  max-width: var(--layout-max-width)
+  margin: 0 auto
+  padding: var(--space-3) var(--space-3) var(--space-8)
+
+.theme-preview-kicker
+  display: inline-flex
+  padding: 5px 11px
+  border-radius: 999px
+  font-size: var(--text-xs)
+  font-weight: 700
+  letter-spacing: 0.08em
+  text-transform: uppercase
+  border: 1px solid var(--glass-border)
+  background: var(--glass-surface)
+  color: var(--color-text-secondary)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+.theme-preview-title
+  margin: 10px 0 0
+  font-size: var(--text-xl)
+  font-weight: 700
+  letter-spacing: -0.03em
+  line-height: 1.15
+  color: var(--color-text-primary)
+
+body.body--dark .theme-preview-title
+  text-shadow: 0 0 12px color-mix(in srgb, var(--color-neon-cyan) 12%, transparent)
+
+.theme-preview-subtitle
+  margin: var(--space-2) 0 0
+  font-size: var(--text-base)
+  line-height: 1.55
+  color: var(--color-text-secondary)
+
+.theme-preview-section__title
+  margin: 0 0 var(--space-3)
+  font-size: var(--text-lg)
+  font-weight: 600
+  color: var(--color-text-primary)
+
+.theme-preview-card
+  border-radius: 18px !important
+  background: var(--glass-surface) !important
+  border: 1px solid var(--glass-border) !important
+  box-shadow: var(--glass-inner-highlight) !important
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+.theme-swatch
+  min-height: 72px
+  border-radius: 14px
+  border: 1px solid var(--glass-border)
+  display: flex
+  align-items: flex-end
+  padding: var(--space-2)
+
+.theme-swatch__label
+  font-size: var(--text-xs)
+  color: var(--color-text-secondary)
+
+.theme-swatch--canvas
+  background: var(--canvas-base)
+
+.theme-swatch--glass
+  background: var(--glass-surface)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+.theme-swatch--elevated
+  background: var(--glass-elevated)
+  backdrop-filter: blur(var(--glass-blur-elevated))
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated))
+
+.theme-swatch--accent
+  background: var(--color-accent)
+  color: var(--color-on-accent)
+
+.theme-swatch--accent .theme-swatch__label
+  color: var(--color-on-accent)
+
+.theme-type--xl
+  font-size: var(--text-xl)
+  line-height: 1.25
+
+.theme-type--lg
+  font-size: var(--text-lg)
+  line-height: 1.25
+
+.theme-type--md
+  font-size: var(--text-md)
+  line-height: 1.35
+
+.theme-type--base
+  font-size: var(--text-base)
+  line-height: 1.5
+
+.theme-type--sm
+  font-size: var(--text-sm)
+  line-height: 1.5
+
+.theme-type--xs
+  font-size: var(--text-xs)
+  line-height: 1.5
+
+.theme-type--secondary
+  color: var(--color-text-secondary)
+
+.theme-spacing-row
+  display: flex
+  flex-wrap: wrap
+  gap: var(--space-2)
+  align-items: flex-end
+
+.theme-spacing-block
+  height: 32px
+  min-width: 32px
+  border-radius: 8px
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+  display: flex
+  align-items: center
+  justify-content: center
+  font-size: var(--text-xs)
+  color: var(--color-text-secondary)

@@ -1,0 +1,26 @@
+﻿# 公共数据配置（多服务共享）。
+# 所有微服务的 Bootstrap.Data 都从此处继承默认值；
+# 各服务私有 config.yaml 可按需覆盖某个子字段（如调大连接池），但不应整体重写。
+data:
+  database:
+    driver: "postgres"
+    source: "host=localhost port=5434 user=postgres password=CHANGE_ME dbname=framework sslmode=disable"
+    migrate: true
+    debug: false
+    enable_trace: false
+    enable_metrics: false
+    max_idle_connections: 25
+    max_open_connections: 25
+  log_database:
+    driver: "postgres"
+    source: "host=localhost port=5434 user=postgres password=CHANGE_ME dbname=framework_log sslmode=disable"
+    migrate: true
+    debug: false
+    enable_trace: false
+    enable_metrics: false
+    max_idle_connections: 10
+    max_open_connections: 10
+  redis:
+    addr: 127.0.0.1:6380
+    db: 0
+    password: ""

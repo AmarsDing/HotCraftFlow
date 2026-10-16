@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+import "pagination/v1/pagination.proto";
+
+// 资源组只读服务（resource_groups 表）。
+// 资源组是数据权限（角色-资源组绑定）与分析任务 target_type=resource_group 的基础数据，
+// 本服务仅提供列表/详情只读接口，供前端下拉候选与跨模块查询使用；无写接口。
+service ResourceGroupService {
+  // 资源组列表（小表，前端候选场景传 no_paging=true 取全量）
+  rpc List (pagination.PagingRequest) returns (ListResourceGroupResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/resource-groups"
+    };
+  }
+
+  // 资源组详情
+  rpc Get (GetResourceGroupRequest) returns (ResourceGroup) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/resource-groups/{id}"
+    };
+  }
+}
+
+// 资源组（resource_groups，软删记录按 delete_time 过滤不返回）
+message ResourceGroup {
+  optional uint32 id = 1 [json_name = "id"];
+
+  // 资源组名称（唯一）
+  optional string name = 10 [json_name = "name"];
+  // 描述
+  optional string description = 11 [json_name = "description"];
+  // 状态（ON/OFF）
+  optional string status = 12 [json_name = "status"];
+
+  optional google.protobuf.Timestamp create_time = 200 [json_name = "createTime"];
+  optional google.protobuf.Timestamp update_time = 201 [json_name = "updateTime"];
+}
+
+message ListResourceGroupResponse {
+  repeated ResourceGroup items = 1;
+  uint32 total = 2;
+}
+
+message GetResourceGroupRequest {
+  uint32 id = 1;
+}

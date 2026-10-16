@@ -1,0 +1,11 @@
+# 本地文件存储配置（决策 D6：不引入 MinIO/OSS 等第三方对象存储）
+# 大文件（3D 模型、附件、报表、归档）存储于服务器本地文件系统，
+# 数据库仅存相对路径，后端提供鉴权下载接口 /api/v1/monitor/file:download。
+storage:
+  # 存储根目录（绝对路径，或相对路径；启动时自动创建）。
+  # 相对路径以进程工作目录为基准解析（pkg/storage.LocalStorage 内部走 filepath.Abs）：
+  # 本地开发以 apps/server/app/admin/ 为工作目录启动，./storage 即本服务存储目录。
+  # 与 radar 服务共用同一目录（radar configs/config.yaml 的 storage.root 指向同一路径），
+  # 保证 radar 上传的文件可经本服务下载接口访问。
+  # 容器部署挂载对应目录即可（或改为容器内绝对路径）。
+  root: "./storage"

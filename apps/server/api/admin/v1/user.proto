@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+import "pagination/v1/pagination.proto";
+
+import "user/v1/user.proto";
+
+// 用户管理服务
+service UserService {
+  // 获取用户列表
+  rpc List (pagination.PagingRequest) returns (user.service.v1.ListUserResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/users"
+    };
+  }
+
+  // 获取用户数据
+  rpc Get (user.service.v1.GetUserRequest) returns (user.service.v1.User) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/users/{id}"
+    };
+  }
+
+  // 创建用户
+  rpc Create (user.service.v1.CreateUserRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/users"
+      body: "*"
+    };
+  }
+
+  // 更新用户
+  rpc Update (user.service.v1.UpdateUserRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/api/v1/monitor/users/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除用户
+  rpc Delete (user.service.v1.DeleteUserRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/api/v1/monitor/users/{id}"
+    };
+  }
+
+  // SetOperationPassword 设置当前登录用户的独立操作密码（§2.6.6）
+  // 用于密码查看接口的二次鉴权，与登录密码独立。AES-256-GCM 加密存储 6 位数字明文。
+  rpc SetOperationPassword (SetOperationPasswordRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/users/me/operation-password"
+      body: "*"
+    };
+  }
+}
+
+// SetOperationPasswordRequest 设置独立操作密码请求
+message SetOperationPasswordRequest {
+  // 6 位数字操作密码（明文，后端 AES-256-GCM 加密后存储）
+  string operation_password = 1 [json_name = "operationPassword", (gnostic.openapi.v3.property) = {description: "操作密码（6位数字）"}];
+  // 旧操作密码（已设置过时必填，用于校验）
+  optional string old_operation_password = 2 [json_name = "oldOperationPassword", (gnostic.openapi.v3.property) = {description: "旧操作密码（已设置过时必填）"}];
+}

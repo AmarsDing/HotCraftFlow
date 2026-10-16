@@ -1,0 +1,454 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+
+import "pagination/v1/pagination.proto";
+
+// 工具链接门户服务
+service ToolLinkService {
+  // 查询工具链接列表
+  rpc List (pagination.PagingRequest) returns (ListToolLinkResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/tool-links"
+    };
+  }
+
+  // 查询工具链接详情
+  rpc Get (GetToolLinkRequest) returns (ToolLink) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/tool-links/{id}"
+    };
+  }
+
+  // 创建工具链接
+  rpc Create (CreateToolLinkRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/tool-links"
+      body: "*"
+    };
+  }
+
+  // 更新工具链接
+  rpc Update (UpdateToolLinkRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/api/v1/monitor/tool-links/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除工具链接
+  rpc Delete (DeleteToolLinkRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/api/v1/monitor/tool-links/{id}"
+    };
+  }
+
+  // 调整工具链接排序（上移/下移）
+  rpc Move (MoveToolLinkRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/api/v1/monitor/tool-links/{id}/move"
+      body: "*"
+    };
+  }
+
+  // 批量重排（拖拽排序，按 ids 顺序重写 sort）
+  rpc Reorder (ReorderToolLinkRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/api/v1/monitor/tool-links:reorder"
+      body: "*"
+    };
+  }
+
+  // 记录一次点击（点击统计 + 当前用户常用工具）
+  rpc Click (ClickToolLinkRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/tool-links/{id}/click"
+      body: "*"
+    };
+  }
+
+  // 收藏/取消收藏（当前用户）
+  rpc Favorite (FavoriteToolLinkRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/api/v1/monitor/tool-links/{id}/favorite"
+      body: "*"
+    };
+  }
+
+  // 手动触发健康检测（探测目标 URL 可达性）
+  rpc CheckHealth (CheckToolLinkHealthRequest) returns (ToolLink) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/tool-links/{id}/check"
+      body: "*"
+    };
+  }
+
+  // 抓取目标站点 favicon，返回本地存储相对路径
+  rpc FetchIcon (FetchToolLinkIconRequest) returns (FetchToolLinkIconResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/tool-links:fetch-icon"
+      body: "*"
+    };
+  }
+
+  // 导出工具链接（JSON/YAML）
+  rpc Export (ExportToolLinksRequest) returns (ExportToolLinksResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/tool-links:export"
+    };
+  }
+
+  // 导入工具链接（JSON/YAML 导出格式或浏览器书签 HTML）
+  rpc Import (ImportToolLinksRequest) returns (ImportToolLinksResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/tool-links:import"
+      body: "*"
+    };
+  }
+
+  // 签发 SSO 跳转票据（link_type=SSO 的链接点击时调用）
+  rpc IssueSsoTicket (IssueToolLinkSsoTicketRequest) returns (IssueToolLinkSsoTicketResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/tool-links/{id}/sso-ticket"
+      body: "*"
+    };
+  }
+
+  // 校验 SSO 票据（供目标系统/网关回调核验）
+  rpc VerifySsoTicket (VerifyToolLinkSsoTicketRequest) returns (VerifyToolLinkSsoTicketResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/tool-links:verify-sso-ticket"
+      body: "*"
+    };
+  }
+}
+
+// 工具链接图标类型
+enum ToolLinkIconType {
+  TOOL_LINK_ICON_TYPE_UNSPECIFIED = 0; // 未知
+  LUCIDE = 1; // Lucide 图标（icon_value 为图标名，如 wrench）
+  IMAGE = 2;  // 自定义图片（icon_value 为文件相对路径）
+}
+
+// 工具链接排序调整方向
+enum ToolLinkMoveDirection {
+  TOOL_LINK_MOVE_DIRECTION_UNSPECIFIED = 0; // 未知
+  UP = 1;   // 上移
+  DOWN = 2; // 下移
+}
+
+// 工具链接
+message ToolLink {
+  optional uint32 id = 1 [
+    json_name = "id",
+    (google.api.field_behavior) = OPTIONAL,
+    (gnostic.openapi.v3.property) = {
+      description: "工具链接ID"
+    }
+  ]; // 工具链接ID
+
+  optional string name = 10 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = {
+      description: "工具名称"
+    }
+  ]; // 工具名称
+
+  optional string url = 11 [
+    json_name = "url",
+    (gnostic.openapi.v3.property) = {
+      description: "工具链接（http/https）"
+    }
+  ]; // 工具链接
+
+  optional ToolLinkIconType icon_type = 12 [
+    json_name = "iconType",
+    (gnostic.openapi.v3.property) = {
+      description: "图标类型（LUCIDE=Lucide图标/IMAGE=自定义图片）"
+    }
+  ]; // 图标类型
+
+  optional string icon_value = 13 [
+    json_name = "iconValue",
+    (gnostic.openapi.v3.property) = {
+      description: "图标值：LUCIDE 时为图标名；IMAGE 时为文件相对路径"
+    }
+  ]; // 图标值
+
+  optional string category = 14 [
+    json_name = "category",
+    (gnostic.openapi.v3.property) = {
+      description: "分类（自由文本，如 监控/日志/文档）"
+    }
+  ]; // 分类
+
+  optional string description = 15 [
+    json_name = "description",
+    (gnostic.openapi.v3.property) = { description: "描述" }
+  ]; // 描述
+
+  optional int32 sort = 16 [
+    json_name = "sort",
+    (gnostic.openapi.v3.property) = {
+      description: "排序号，越小越靠前"
+    }
+  ]; // 排序号
+
+  optional bool external = 17 [
+    json_name = "external",
+    (gnostic.openapi.v3.property) = {
+      description: "是否外部链接新窗口打开"
+    }
+  ]; // 是否外部链接新窗口打开
+
+  optional string status = 18 [
+    json_name = "status",
+    (gnostic.openapi.v3.property) = {
+      description: "状态",
+      enum: [{yaml: "ON"}, {yaml: "OFF"}]
+    }
+  ]; // 状态（ON=启用/OFF=禁用）
+
+  optional uint32 category_id = 19 [
+    json_name = "categoryId",
+    (gnostic.openapi.v3.property) = {
+      description: "分类ID（引用 tool_link_categories；为空时回退 category 自由文本）"
+    }
+  ]; // 分类ID
+
+  optional string health_status = 20 [
+    json_name = "healthStatus",
+    (gnostic.openapi.v3.property) = {
+      description: "健康状态（UNKNOWN=未检测/UP=可达/DOWN=不可达），由健康检测写回",
+      enum: [{yaml: "UNKNOWN"}, {yaml: "UP"}, {yaml: "DOWN"}]
+    }
+  ]; // 健康状态
+
+  optional google.protobuf.Timestamp last_check_at = 21 [
+    json_name = "lastCheckAt",
+    (gnostic.openapi.v3.property) = { description: "最近一次健康检测时间" }
+  ]; // 最近一次健康检测时间
+
+  optional uint32 click_count = 22 [
+    json_name = "clickCount",
+    (gnostic.openapi.v3.property) = { description: "累计点击次数（全用户）" }
+  ]; // 累计点击次数
+
+  repeated string visible_roles = 23 [
+    json_name = "visibleRoles",
+    (gnostic.openapi.v3.property) = {
+      description: "可见角色码列表（空=全员可见）"
+    }
+  ]; // 可见角色码列表
+
+  optional string link_type = 24 [
+    json_name = "linkType",
+    (gnostic.openapi.v3.property) = {
+      description: "链接类型（NORMAL=普通跳转/SSO=免密跳转签票）",
+      enum: [{yaml: "NORMAL"}, {yaml: "SSO"}]
+    }
+  ]; // 链接类型
+
+  map<string, string> name_i18n = 25 [
+    json_name = "nameI18n",
+    (gnostic.openapi.v3.property) = {
+      description: "名称多语言（locale->名称，如 zh-CN/en-US），缺省回退 name"
+    }
+  ]; // 名称多语言
+
+  map<string, string> description_i18n = 26 [
+    json_name = "descriptionI18n",
+    (gnostic.openapi.v3.property) = {
+      description: "描述多语言（locale->描述），缺省回退 description"
+    }
+  ]; // 描述多语言
+
+  optional bool favorite = 27 [
+    json_name = "favorite",
+    (gnostic.openapi.v3.property) = {
+      description: "当前用户是否已收藏（响应计算字段，写入忽略）"
+    }
+  ]; // 当前用户是否已收藏
+
+  optional uint32 my_click_count = 28 [
+    json_name = "myClickCount",
+    (gnostic.openapi.v3.property) = {
+      description: "当前用户点击次数（响应计算字段，写入忽略）"
+    }
+  ]; // 当前用户点击次数
+
+  optional uint32 create_by = 100 [json_name = "createBy", (gnostic.openapi.v3.property) = {description: "创建者ID"}]; // 创建者ID
+  optional uint32 update_by = 101 [json_name = "updateBy", (gnostic.openapi.v3.property) = {description: "更新者ID"}]; // 更新者ID
+
+  optional google.protobuf.Timestamp create_time = 200 [json_name = "createTime", (gnostic.openapi.v3.property) = {description: "创建时间"}];// 创建时间
+  optional google.protobuf.Timestamp update_time = 201 [json_name = "updateTime", (gnostic.openapi.v3.property) = {description: "更新时间"}];// 更新时间
+  optional google.protobuf.Timestamp delete_time = 202 [json_name = "deleteTime", (gnostic.openapi.v3.property) = {description: "删除时间"}];// 删除时间
+}
+
+// 查询工具链接列表 - 回应
+message ListToolLinkResponse {
+  repeated ToolLink items = 1;
+  uint32 total = 2;
+}
+
+// 查询工具链接详情 - 请求
+message GetToolLinkRequest {
+  uint32 id = 1;
+}
+
+// 创建工具链接 - 请求
+message CreateToolLinkRequest {
+  ToolLink data = 1;
+}
+
+// 更新工具链接 - 请求
+message UpdateToolLinkRequest {
+  ToolLink data = 1;
+
+  google.protobuf.FieldMask update_mask = 2 [
+    (gnostic.openapi.v3.property) = {
+      description: "要更新的字段列表",
+      example: {yaml : "id,name,url,iconType,iconValue,category,description,sort,external,status"}
+    },
+    json_name = "updateMask"
+  ]; // 要更新的字段列表
+
+  optional bool allow_missing = 3 [
+    (gnostic.openapi.v3.property) = {description: "如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。"},
+    json_name = "allowMissing"
+  ]; // 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
+
+  uint32 id = 4 [json_name = "id", (gnostic.openapi.v3.property) = {description: "要更新的工具链接ID（URL 路径参数）"}]; // 要更新的工具链接ID
+}
+
+// 删除工具链接 - 请求
+message DeleteToolLinkRequest {
+  uint32 id = 1;
+}
+
+// 调整工具链接排序 - 请求
+message MoveToolLinkRequest {
+  uint32 id = 1 [json_name = "id", (gnostic.openapi.v3.property) = {description: "要调整的工具链接ID（URL 路径参数）"}]; // 要调整的工具链接ID
+
+  optional ToolLinkMoveDirection direction = 2 [
+    json_name = "direction",
+    (gnostic.openapi.v3.property) = {
+      description: "调整方向（UP=上移/DOWN=下移）"
+    }
+  ]; // 调整方向
+}
+
+// 批量重排 - 请求（ids 按目标展示顺序排列，后端按下标重写 sort）
+message ReorderToolLinkRequest {
+  repeated uint32 ids = 1 [
+    json_name = "ids",
+    (gnostic.openapi.v3.property) = { description: "工具链接ID列表（按目标顺序）" }
+  ]; // 工具链接ID列表
+}
+
+// 点击统计 - 请求
+message ClickToolLinkRequest {
+  uint32 id = 1 [json_name = "id", (gnostic.openapi.v3.property) = {description: "工具链接ID（URL 路径参数）"}]; // 工具链接ID
+}
+
+// 收藏/取消收藏 - 请求
+message FavoriteToolLinkRequest {
+  uint32 id = 1 [json_name = "id", (gnostic.openapi.v3.property) = {description: "工具链接ID（URL 路径参数）"}]; // 工具链接ID
+
+  optional bool favorite = 2 [
+    json_name = "favorite",
+    (gnostic.openapi.v3.property) = { description: "true=收藏 / false=取消收藏" }
+  ]; // 收藏标记
+}
+
+// 手动健康检测 - 请求
+message CheckToolLinkHealthRequest {
+  uint32 id = 1 [json_name = "id", (gnostic.openapi.v3.property) = {description: "工具链接ID（URL 路径参数）"}]; // 工具链接ID
+}
+
+// 抓取 favicon - 请求
+message FetchToolLinkIconRequest {
+  optional string url = 1 [
+    json_name = "url",
+    (gnostic.openapi.v3.property) = { description: "目标站点 URL（http/https）" }
+  ]; // 目标站点 URL
+}
+
+// 抓取 favicon - 回应
+message FetchToolLinkIconResponse {
+  optional string icon_value = 1 [
+    json_name = "iconValue",
+    (gnostic.openapi.v3.property) = { description: "本地存储相对路径（写入 iconValue，iconType=IMAGE）" }
+  ]; // 本地存储相对路径
+}
+
+// 导出工具链接 - 请求
+message ExportToolLinksRequest {
+  optional string format = 1 [
+    json_name = "format",
+    (gnostic.openapi.v3.property) = {
+      description: "导出格式",
+      enum: [{yaml: "json"}, {yaml: "yaml"}]
+    }
+  ]; // 导出格式（json/yaml，缺省 json）
+}
+
+// 导出工具链接 - 回应
+message ExportToolLinksResponse {
+  optional string content = 1 [json_name = "content", (gnostic.openapi.v3.property) = {description: "导出文件内容"}]; // 导出文件内容
+  optional string format = 2 [json_name = "format", (gnostic.openapi.v3.property) = {description: "实际导出格式"}]; // 实际导出格式
+  optional uint32 count = 3 [json_name = "count", (gnostic.openapi.v3.property) = {description: "导出条数"}]; // 导出条数
+}
+
+// 导入工具链接 - 请求
+message ImportToolLinksRequest {
+  optional string format = 1 [
+    json_name = "format",
+    (gnostic.openapi.v3.property) = {
+      description: "导入格式",
+      enum: [{yaml: "json"}, {yaml: "yaml"}, {yaml: "html"}]
+    }
+  ]; // 导入格式（json/yaml=导出格式，html=浏览器书签 Netscape 格式）
+
+  optional string content = 2 [json_name = "content", (gnostic.openapi.v3.property) = {description: "导入文件内容"}]; // 导入文件内容
+}
+
+// 导入工具链接 - 回应
+message ImportToolLinksResponse {
+  optional uint32 created = 1 [json_name = "created", (gnostic.openapi.v3.property) = {description: "新建条数"}]; // 新建条数
+  optional uint32 skipped = 2 [json_name = "skipped", (gnostic.openapi.v3.property) = {description: "跳过条数（URL 已存在）"}]; // 跳过条数
+  optional uint32 failed = 3 [json_name = "failed", (gnostic.openapi.v3.property) = {description: "失败条数（格式非法）"}]; // 失败条数
+}
+
+// 签发 SSO 跳转票据 - 请求
+message IssueToolLinkSsoTicketRequest {
+  uint32 id = 1 [json_name = "id", (gnostic.openapi.v3.property) = {description: "工具链接ID（URL 路径参数）"}]; // 工具链接ID
+}
+
+// 签发 SSO 跳转票据 - 回应
+message IssueToolLinkSsoTicketResponse {
+  optional string ticket = 1 [json_name = "ticket", (gnostic.openapi.v3.property) = {description: "一次性跳转票据"}]; // 一次性跳转票据
+  optional string url = 2 [json_name = "url", (gnostic.openapi.v3.property) = {description: "拼接票据后的最终跳转 URL"}]; // 最终跳转 URL
+  optional google.protobuf.Timestamp expire_at = 3 [json_name = "expireAt", (gnostic.openapi.v3.property) = {description: "票据过期时间"}]; // 票据过期时间
+}
+
+// 校验 SSO 票据 - 请求
+message VerifyToolLinkSsoTicketRequest {
+  optional string ticket = 1 [json_name = "ticket", (gnostic.openapi.v3.property) = {description: "待校验票据"}]; // 待校验票据
+}
+
+// 校验 SSO 票据 - 回应
+message VerifyToolLinkSsoTicketResponse {
+  optional bool valid = 1 [json_name = "valid", (gnostic.openapi.v3.property) = {description: "票据是否有效（未过期且未使用）"}]; // 票据是否有效
+  optional uint32 tool_link_id = 2 [json_name = "toolLinkId", (gnostic.openapi.v3.property) = {description: "关联工具链接ID"}]; // 关联工具链接ID
+  optional uint32 user_id = 3 [json_name = "userId", (gnostic.openapi.v3.property) = {description: "票据签发用户ID"}]; // 票据签发用户ID
+}

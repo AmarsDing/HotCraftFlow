@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package radar.service.v1;
+
+import "google/api/annotations.proto";
+
+message WatchItem {
+  string id = 1;
+  string full_name = 2;
+  int64 stars = 3;
+  int64 stars_delta = 4;
+  int32 unread_count = 5;
+  repeated int64 sparkline = 6;
+  string html_url = 7;
+}
+
+message ListWatchesRequest {}
+
+message ListWatchesResponse {
+  repeated WatchItem items = 1;
+}
+
+message AddWatchRequest {
+  string full_name = 1;
+}
+
+message AddWatchResponse {
+  WatchItem item = 1;
+}
+
+message RemoveWatchRequest {
+  string id = 1;
+}
+
+message RemoveWatchResponse {}
+
+message WatchEvent {
+  string id = 1;
+  string full_name = 2;
+  string kind = 3; // stars | release | description
+  string message = 4;
+  string created_at = 5;
+  bool read = 6;
+}
+
+message ListWatchEventsRequest {
+  bool unread_only = 1;
+}
+
+message ListWatchEventsResponse {
+  repeated WatchEvent items = 1;
+}
+
+message MarkWatchEventsReadRequest {
+  repeated string ids = 1;
+}
+
+message MarkWatchEventsReadResponse {}
+
+// WatchService 盯盘
+service WatchService {
+  rpc ListWatches(ListWatchesRequest) returns (ListWatchesResponse) {
+    option (google.api.http) = { get: "/api/v1/radar/watches" };
+  }
+  rpc AddWatch(AddWatchRequest) returns (AddWatchResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/radar/watches"
+      body: "*"
+    };
+  }
+  rpc RemoveWatch(RemoveWatchRequest) returns (RemoveWatchResponse) {
+    option (google.api.http) = { delete: "/api/v1/radar/watches/{id}" };
+  }
+  rpc ListWatchEvents(ListWatchEventsRequest) returns (ListWatchEventsResponse) {
+    option (google.api.http) = { get: "/api/v1/radar/watch-events" };
+  }
+  rpc MarkWatchEventsRead(MarkWatchEventsReadRequest) returns (MarkWatchEventsReadResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/radar/watch-events/read"
+      body: "*"
+    };
+  }
+}

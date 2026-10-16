@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+import "pagination/v1/pagination.proto";
+
+import "user/v1/role.proto";
+
+// 角色管理服务
+service RoleService {
+  // 查询角色列表
+  rpc List (pagination.PagingRequest) returns (user.service.v1.ListRoleResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/roles"
+    };
+  }
+
+  // 查询角色详情
+  rpc Get (user.service.v1.GetRoleRequest) returns (user.service.v1.Role) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/roles/{id}"
+    };
+  }
+
+  // 创建角色
+  rpc Create (user.service.v1.CreateRoleRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/roles"
+      body: "*"
+    };
+  }
+
+  // 更新角色
+  rpc Update (user.service.v1.UpdateRoleRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/api/v1/monitor/roles/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除角色
+  rpc Delete (user.service.v1.DeleteRoleRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/api/v1/monitor/roles/{id}"
+    };
+  }
+}

@@ -1,0 +1,42 @@
+version: v2
+
+clean: true
+managed:
+  enabled: true
+  disable:
+    - module: buf.build/googleapis/googleapis
+    - module: 'buf.build/envoyproxy/protoc-gen-validate'
+    - module: 'buf.build/kratos/apis'
+    - module: 'buf.build/gnostic/gnostic'
+    - module: 'buf.build/gogo/protobuf'
+  override:
+    - file_option: go_package_prefix
+      value: framework/api/gen/go
+    - module: 'buf.build/tx7do/pagination'
+      file_option: go_package
+      value: github.com/tx7do/kratos-bootstrap/api/gen/go/pagination/v1
+plugins:
+  - local: protoc-gen-go
+    out: gen/go
+    opt: paths=source_relative
+  - local: protoc-gen-go-grpc
+    out: gen/go
+    opt:
+      - paths=source_relative
+  - local: protoc-gen-go-http
+    out: gen/go
+    opt:
+      - paths=source_relative
+  - local: protoc-gen-go-errors
+    out: gen/go
+    opt:
+      - paths=source_relative
+  - local: protoc-gen-validate
+    out: gen/go
+    opt:
+      - paths=source_relative
+      - lang=go
+  # Generate frontend TypeScript HTTP clients into apps/web/src/services/kratos/
+  # Generated files are gitignored; developers must run make api to regenerate
+  - local: protoc-gen-typescript-http
+    out: ../../web/src/services/kratos

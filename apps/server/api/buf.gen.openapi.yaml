@@ -1,0 +1,21 @@
+version: v2
+managed:
+  enabled: true
+  disable:
+    - module: buf.build/googleapis/googleapis
+    - module: 'buf.build/envoyproxy/protoc-gen-validate'
+    - module: 'buf.build/kratos/apis'
+    - module: 'buf.build/gnostic/gnostic'
+    - module: 'buf.build/gogo/protobuf'
+  override:
+    - file_option: go_package_prefix
+      value: framework/api/gen/go
+    - module: 'buf.build/tx7do/pagination'
+      file_option: go_package
+      value: github.com/tx7do/kratos-bootstrap/api/gen/go/pagination/v1
+plugins:
+  # gnostic protoc-gen-openapi 合并模式需一次性拿到全部文件生成单份 openapi.yaml；
+  # 默认 directory 策略会按目录分片并发调用插件，导致多份同名 openapi.yaml 相互覆盖丢弃
+  - local: protoc-gen-openapi
+    out: gen/openapi
+    strategy: all

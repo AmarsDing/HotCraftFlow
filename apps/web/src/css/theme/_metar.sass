@@ -1,0 +1,135 @@
+// METAR 观测报文页共享样式：飞行类别基调、原始报文语法高亮、数据时效中性三色。
+// 配色全部引用主题 token（昼夜双主题自动适配），禁止新增 hex。
+
+// ── 飞行类别基调（航空惯例：VFR 绿 / MVFR 蓝 / IFR 红 / LIFR 紫） ──
+// 以 --metar-cat 自定义属性输出，组件内 badge/色条/卡片描边统一消费
+.metar-cat--vfr
+  --metar-cat: var(--color-success)
+.metar-cat--mvfr
+  --metar-cat: var(--color-accent)
+.metar-cat--ifr
+  --metar-cat: var(--color-danger)
+.metar-cat--lifr
+  --metar-cat: var(--color-q-purple)
+.metar-cat--unknown
+  --metar-cat: var(--color-text-tertiary)
+
+// 类别徽标：软底 + 同色描边（昼夜均保证对比度；solid 变体用于表格飞行类别列的强色块）
+.metar-cat-badge
+  display: inline-flex
+  align-items: center
+  justify-content: center
+  min-width: 52px
+  padding: 2px 8px
+  border-radius: 6px
+  font-size: 12px
+  font-weight: 700
+  letter-spacing: 0.05em
+  line-height: 1.5
+  color: var(--metar-cat)
+  background: color-mix(in srgb, var(--metar-cat) 14%, transparent)
+  border: 1px solid color-mix(in srgb, var(--metar-cat) 42%, transparent)
+
+.metar-cat-badge--solid
+  width: 100%
+  padding: 3px 8px
+  font-weight: 800
+  background: color-mix(in srgb, var(--metar-cat) 24%, transparent)
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--metar-cat) 55%, transparent), 0 0 10px color-mix(in srgb, var(--metar-cat) 22%, transparent)
+
+// 分布计数小芯片（态势条头部 VFR/MVFR/IFR/LIFR 汇总）
+.metar-cat-chip
+  display: inline-flex
+  align-items: center
+  gap: 4px
+  padding: 1px 8px
+  border-radius: 10px
+  font-size: 11px
+  font-weight: 700
+  letter-spacing: 0.03em
+  color: var(--metar-cat)
+  background: color-mix(in srgb, var(--metar-cat) 10%, transparent)
+  border: 1px solid color-mix(in srgb, var(--metar-cat) 30%, transparent)
+  &::before
+    content: ''
+    width: 6px
+    height: 6px
+    border-radius: 50%
+    background: var(--metar-cat)
+    box-shadow: 0 0 6px color-mix(in srgb, var(--metar-cat) 60%, transparent)
+
+// ── 原始报文语法高亮（分组着色：报种/站码/时组/风/能见度/天气/云/温露/气压/备注） ──
+.metar-raw-tokens
+  font-family: monospace
+  .metar-tok + .metar-tok
+    margin-left: 6px
+
+.metar-tok
+  &.metar-tok--type
+    color: var(--color-accent)
+    font-weight: 800
+  &.metar-tok--station
+    color: var(--color-accent)
+    font-weight: 700
+  &.metar-tok--time
+    color: var(--color-text-secondary)
+  &.metar-tok--wind
+    color: var(--color-q-teal)
+    font-weight: 700
+  &.metar-tok--vis
+    color: var(--color-success)
+    font-weight: 700
+  &.metar-tok--wx
+    color: var(--color-warning)
+    font-weight: 700
+  &.metar-tok--cloud
+    color: var(--color-link)
+  &.metar-tok--temp
+    color: var(--color-q-deep-orange)
+    font-weight: 600
+  &.metar-tok--qnh
+    color: var(--color-q-purple)
+    font-weight: 700
+  &.metar-tok--meta
+    color: var(--color-text-tertiary)
+  &.metar-tok--rmk
+    color: var(--color-text-tertiary)
+    font-style: italic
+
+// ── 数据时效中性三色（绿=正常 / 黄=偏旧 / 灰=过期，无红） ──
+.metar-age
+  display: inline-flex
+  align-items: center
+  gap: 4px
+  font-size: 11px
+  line-height: 1.4
+  &::before
+    content: ''
+    width: 6px
+    height: 6px
+    border-radius: 50%
+    background: currentColor
+    box-shadow: 0 0 6px currentColor
+
+.metar-age--fresh
+  color: var(--color-success)
+.metar-age--aging
+  color: var(--color-warning)
+.metar-age--stale
+  color: var(--color-text-tertiary)
+.metar-age--unknown
+  color: var(--color-text-tertiary)
+
+// ── 能见度分级 ──
+.metar-vis--good
+  color: var(--color-success)
+.metar-vis--mod
+  color: var(--color-warning)
+.metar-vis--poor
+  color: var(--color-danger)
+  font-weight: 700
+
+// ── 温露差饱和风险（≤2℃） / 低云 ──
+.metar-warn-text
+  color: var(--color-warning)
+  font-weight: 700

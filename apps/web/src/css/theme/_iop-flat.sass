@@ -1,0 +1,111 @@
+// ── 综合业务平台扁平化样式层（2026-08-14 扁平化专项，对标 Windy 实测）──
+// 设计原则（Windy.com 实测提取）：
+//   1. 按钮/面板纯色平涂，禁渐变填充（数据缩略图除外——色彩留给数据）；
+//   2. 禁彩色发光（box-shadow/drop-shadow/text-shadow 辉光），阴影仅用于层级分离；
+//   3. hover = 提亮（白色叠加），不染色（弃霓虹青浸染）；
+//   4. 激活态 = 亮边/白环/白字，克制不抢地图焦点；
+//   5. 签名色仅两处：扁平红（菜单/播放键）、琥珀（时间语义）。
+// 作用域：.iop-page（屏内）+ iop 弹窗卡（portal 到 body 的 .iop-settings/.iop-share/.iop-action-dialog）。
+// 本层不触碰全局 _screen-glass.sass（机场大屏等其它屏保持液态玻璃语言）。
+
+// ── 扁平按钮 token ──
+.iop-page
+  --iop-btn-bg: rgba(26, 32, 43, 0.88)
+  --iop-btn-bg-hover: rgba(255, 255, 255, 0.12)
+  --iop-btn-bg-active: rgba(255, 255, 255, 0.16)
+  --iop-btn-border: rgba(255, 255, 255, 0.14)
+  --iop-btn-border-hover: rgba(255, 255, 255, 0.34)
+  --iop-red: #d63b33
+  --iop-red-hover: #e2493f
+  --iop-amber: #f0a13c
+  --iop-text: rgba(244, 248, 255, 0.95)
+  --iop-text-dim: rgba(244, 248, 255, 0.62)
+
+// ── 玻璃壳扁平化：去渐变描边/顶部高光/饱和度叠加，保留弱模糊做层级 ──
+.iop-page .glass-panel,
+.iop-settings.glass-panel,
+.iop-share.glass-panel,
+.iop-action-dialog.glass-panel
+  background: var(--glass-bg)
+  backdrop-filter: blur(10px)
+  -webkit-backdrop-filter: blur(10px)
+  border: 1px solid var(--glass-border)
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35)
+  &::before,
+  &::after
+    content: none
+
+// ── 屏内 q-btn 扁平覆写：盖 _screen-glass.sass 科技感 hover（外发光+图标辉光）──
+// 权重说明：.iop-page.screen-canvas（0,3,x）> .screen-canvas（0,2,x），无需 !important。
+.iop-page.screen-canvas,
+.iop-settings.screen-theme-dark,
+.iop-share.screen-theme-dark,
+.iop-action-dialog.screen-theme-dark
+  .q-btn--flat,
+  .q-btn--outline
+    &:active
+      transform: scale(0.92) // 按压即时反馈保留（屏级规范）
+
+@media (hover: hover) and (pointer: fine)
+  .iop-page.screen-canvas,
+  .iop-settings.screen-theme-dark,
+  .iop-share.screen-theme-dark,
+  .iop-action-dialog.screen-theme-dark
+    .q-btn--flat,
+    .q-btn--outline
+      &:hover
+        color: var(--iop-text, rgba(244, 248, 255, 0.95))
+        background: rgba(255, 255, 255, 0.1)
+        box-shadow: none
+        .q-icon
+          filter: none
+      // 同色浸染改白色提亮（盖 Quasar q-hoverable 15% currentColor 白 wash 与屏级 primary 浸染）
+      &.q-hoverable:hover > .q-focus-helper
+        background: rgba(255, 255, 255, 0.95)
+        opacity: 0.08
+
+// ── 屏内 Quasar 控件去霓虹：toggle/slider 轨道拇指去发光，色彩改扁平中性 ──
+.iop-page.screen-canvas,
+.iop-settings.screen-theme-dark
+  .q-toggle
+    &__track
+      box-shadow: none
+      opacity: 0.38
+    &__inner--truthy .q-toggle__track
+      opacity: 0.62
+    &__thumb:after
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4)
+  .q-slider
+    &__track-container
+      box-shadow: none
+    &__thumb
+      box-shadow: none
+      &:before
+        box-shadow: none
+    &__pin
+      text-shadow: none
+    // 激活色：扁平中性蓝灰（弃霓虹青）
+    &__track,
+    &__selection
+      box-shadow: none
+
+// ── 弹窗输入框扁平化：纯色底 + 中性描边，去聚焦染色发光 ──
+.iop-settings.screen-theme-dark,
+.iop-share.screen-theme-dark,
+.iop-action-dialog.screen-theme-dark
+  .q-field--outlined .q-field__control
+    &:before
+      border-color: var(--iop-btn-border, rgba(255, 255, 255, 0.14))
+    &:hover:before
+      border-color: var(--iop-btn-border-hover, rgba(255, 255, 255, 0.34))
+
+// ── 通用去发光兜底：iop 范围内所有控件禁彩色辉光（数据色带/缩略图除外）──
+.iop-page.screen-canvas,
+.iop-settings.screen-theme-dark,
+.iop-share.screen-theme-dark,
+.iop-action-dialog.screen-theme-dark
+  .q-chip,
+  .q-badge,
+  .q-avatar
+    box-shadow: none
+    text-shadow: none

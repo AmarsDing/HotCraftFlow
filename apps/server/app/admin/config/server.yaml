@@ -1,0 +1,45 @@
+﻿server:
+  rest:
+    addr: ":7788"
+    timeout: 10s
+    enable_swagger: true
+    # 本地 dev 约定开启 pprof，投产前必须收敛（关闭或限制访问）。
+    enable_pprof: true
+    cors:
+      headers:
+        - "X-Requested-With"
+        - "Content-Type"
+        - "Authorization"
+      methods:
+        - "GET"
+        - "POST"
+        - "PUT"
+        - "DELETE"
+        - "HEAD"
+        - "OPTIONS"
+      # 本地 dev 约定放行全部来源，投产前必须收敛（改为前端域名白名单）。
+      origins:
+        - "*"
+    middleware:
+      enable_logging: true
+      enable_recovery: true
+      enable_tracing: true
+      enable_validate: true
+      enable_circuit_breaker: true
+      enable_metadata: true
+      auth:
+        method: "HS256"
+        key: "CHANGE_ME_DEV_JWT_SECRET"  # placeholder; replace before production
+        access_token_expires: 7200s
+        refresh_token_expires: 604800s
+        access_token_key_prefix: "uat_"
+        refresh_token_key_prefix: "urt_"
+  # asynq 任务调度服务器（基于 Redis）。
+  # uri 为空时 asynq 不启用：任务 CRUD 仍可用，调度类操作为 no-op；
+  # 填入 Redis 地址（如 "redis://localhost:6379" 或 "localhost:6379"）后启用真实调度。
+  # 与 data.redis 同一实例；admin 专用队列 "admin"，与分析服务队列隔离（见 server/asynq.go）。
+  asynq:
+    uri: "redis://127.0.0.1:6380"
+    enable_gracefully_shutdown: true
+    shutdown_timeout: 10s
+    codec: "json"

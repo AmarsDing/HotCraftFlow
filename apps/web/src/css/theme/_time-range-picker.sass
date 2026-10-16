@@ -1,0 +1,373 @@
+// 联动时间范围选择器（src/components/TimeRangePicker.vue）公共样式
+// 玻璃拟态 + 主题强调色，昼夜 token 自适应；暗色下霓虹描边微光晕
+// 注意：q-field 聚焦环伪元素高度修复在 app-global.sass（§4.10），此处禁动 ::after 高度
+
+// 弹层锚定容器（q-popup-proxy 的锚元素，包裹整个输入框）
+.trp-anchor
+  display: block
+
+  .time-range-picker
+    width: 100%
+
+.time-range-picker
+  cursor: pointer
+
+  .q-field__control
+    cursor: pointer
+
+  .trp-icon
+    color: var(--color-accent)
+    font-size: 18px
+
+  .trp-caret
+    color: var(--color-text-tertiary)
+    font-size: 18px
+    transition: transform 0.2s ease, color 0.2s ease
+
+  .trp-clear
+    color: var(--color-text-tertiary)
+    font-size: 16px
+    transition: color 0.2s ease
+
+    &:hover
+      color: var(--color-accent)
+
+    // 键盘可达配套：focus 可见环（tabindex=0 的图标按钮）
+    &:focus-visible
+      color: var(--color-accent)
+      outline: 2px solid var(--color-accent)
+      outline-offset: 2px
+      border-radius: 2px
+
+  .trp-caret--open
+    transform: rotate(180deg)
+    color: var(--color-accent)
+
+  // 关闭态跨度徽章（状态标识：不收起面板也能看到区间量级）
+  .trp-span
+    align-self: center
+    margin-right: 4px
+    padding: 1px 8px
+    border-radius: 999px
+    font-size: 11px
+    font-weight: 600
+    white-space: nowrap
+    font-variant-numeric: tabular-nums
+    color: var(--color-accent)
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent)
+    border: 1px solid color-mix(in srgb, var(--color-accent) 24%, transparent)
+
+  // hover 描边提亮（只改 border-color，不叠伪元素边框）
+  .q-field__control:hover:before
+    border-color: color-mix(in srgb, var(--color-accent) 45%, transparent)
+
+// 筛选栏内宽度覆盖（_crud-tables.sass 统一 200px；本控件内容自适应，custom 文本较长）
+.app-filter-bar > .trp-anchor
+  width: auto
+  min-width: 230px
+
+// ── 弹层面板（紧凑尺寸：宽度由内容决定，日历区固定小日历宽度，不随视口撑大） ──
+.trp-panel
+  position: relative
+  width: max-content
+  max-width: 96vw
+  max-height: calc(100vh - 32px)
+  overflow-y: auto
+  padding: var(--space-2)
+  border-radius: 14px
+  background: var(--glass-elevated)
+  border: 1px solid color-mix(in srgb, var(--color-accent) 22%, var(--glass-border))
+  backdrop-filter: blur(var(--glass-blur-elevated))
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated))
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.10)
+  // 仅裁横向（滚动容器仍按 border-radius 圆角裁切）：原 overflow: hidden 会覆盖上方
+  // overflow-y: auto，低视口下面板超高无法纵向滚动、「应用」按钮被裁
+  overflow-x: hidden
+
+  // 顶部渐变光条（科技感）
+  &::before
+    content: ''
+    position: absolute
+    top: 0
+    left: 0
+    right: 0
+    height: 2px
+    background: linear-gradient(90deg, transparent, var(--color-accent) 30%, var(--color-accent) 70%, transparent)
+    opacity: 0.85
+    pointer-events: none
+
+// ── 状态横幅：当前生效区间 ──
+.trp-status
+  display: flex
+  align-items: center
+  gap: 8px
+  margin-bottom: var(--space-2)
+  padding: 4px 8px
+  border-radius: 8px
+  font-size: 12px
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent)
+  border: 1px solid color-mix(in srgb, var(--color-accent) 18%, transparent)
+
+  &__icon
+    flex: none
+    color: var(--color-accent)
+    font-size: 16px
+
+  &__label
+    flex: none
+    color: var(--color-text-secondary)
+
+  &__text
+    min-width: 0
+    overflow: hidden
+    text-overflow: ellipsis
+    white-space: nowrap
+    font-weight: 600
+    font-variant-numeric: tabular-nums
+    color: var(--color-text-heading)
+
+  &__span
+    flex: 0 0 auto
+    margin-left: auto
+    padding: 1px 8px
+    border-radius: 999px
+    font-weight: 600
+    font-variant-numeric: tabular-nums
+    color: var(--color-accent)
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent)
+    border: 1px solid color-mix(in srgb, var(--color-accent) 28%, transparent)
+
+// ── 主体：左预设竖排 + 右自定义区 ──
+.trp-body
+  display: flex
+  align-items: stretch
+  gap: var(--space-2)
+
+.trp-rail
+  flex: 0 0 132px
+  padding-right: var(--space-2)
+  border-right: 1px solid color-mix(in srgb, var(--color-accent) 14%, transparent)
+
+  &__title
+    margin-bottom: 6px
+    font-size: 11px
+    font-weight: 600
+    letter-spacing: 0.06em
+    color: var(--color-text-tertiary)
+
+.trp-preset
+  // 原生 button 复位（键盘可达改造 div→button，视觉与原 div 完全一致）
+  appearance: none
+  width: 100%
+  background: none
+  font-family: inherit
+  text-align: left
+  display: flex
+  align-items: center
+  gap: 8px
+  padding: 6px 8px
+  border-radius: 8px
+  font-size: 12.5px
+  cursor: pointer
+  user-select: none
+  color: var(--color-text-secondary)
+  border: 1px solid transparent
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease
+
+  & + .trp-preset
+    margin-top: 2px
+
+  &__icon
+    flex: none
+    font-size: 16px
+    opacity: 0.75
+
+  &__name
+    min-width: 0
+
+  &__check
+    flex: none
+    margin-left: auto
+    font-size: 15px
+    color: var(--color-accent)
+
+  &:hover
+    color: var(--color-accent)
+    background: color-mix(in srgb, var(--color-accent) 8%, transparent)
+
+  // 键盘 focus 可见环（:focus-visible 避免点击残留；参照 InsightCard 模式）
+  &:focus-visible
+    outline: 2px solid var(--color-accent)
+    outline-offset: 2px
+
+.trp-preset--active,
+.trp-preset--active:hover
+  color: var(--color-accent)
+  font-weight: 600
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent)
+  border-color: color-mix(in srgb, var(--color-accent) 32%, transparent)
+
+  .trp-preset__icon
+    opacity: 1
+
+// ── 自定义区（固定小日历宽度：q-date minimal 自然宽 292px，面板整体随之紧凑） ──
+.trp-main
+  display: flex
+  flex-direction: column
+  width: 292px
+  max-width: calc(96vw - 180px)
+
+  &__head
+    display: flex
+    align-items: center
+    gap: 8px
+    margin-bottom: 4px
+
+  &__title
+    display: flex
+    align-items: center
+    gap: 6px
+    font-size: 12px
+    font-weight: 600
+    letter-spacing: 0.04em
+    color: var(--color-accent)
+
+    // 标签前 accent 竖条（科技感）
+    &::before
+      content: ''
+      width: 3px
+      height: 12px
+      border-radius: 2px
+      background: var(--color-accent)
+
+// 草稿状态徽章
+.trp-badge
+  display: inline-flex
+  align-items: center
+  gap: 4px
+  padding: 1px 8px
+  border-radius: 999px
+  font-size: 11px
+  font-weight: 600
+
+  &--dirty
+    color: var(--color-warning)
+    background: color-mix(in srgb, var(--color-warning) 12%, transparent)
+    border: 1px solid color-mix(in srgb, var(--color-warning) 36%, transparent)
+
+  &--invalid
+    color: var(--color-danger)
+    background: color-mix(in srgb, var(--color-danger) 12%, transparent)
+    border: 1px solid color-mix(in srgb, var(--color-danger) 36%, transparent)
+
+.trp-calendar
+  width: 100%
+  box-shadow: none
+  border: 1px solid color-mix(in srgb, var(--color-accent) 14%, transparent)
+  border-radius: 10px
+
+// minute 精度时间输入行：起止并排、等宽数字
+.trp-times
+  display: flex
+  align-items: center
+  gap: 6px
+  margin-top: 6px
+
+  &__sep
+    color: var(--color-text-tertiary)
+    font-size: 16px
+
+.trp-time
+  flex: 1
+  min-width: 0
+  font-variant-numeric: tabular-nums
+
+  .q-field__prepend .q-icon
+    color: var(--color-accent)
+
+// 底部预览 + 操作
+.trp-footer
+  display: flex
+  align-items: center
+  justify-content: space-between
+  gap: var(--space-2)
+  margin-top: var(--space-2)
+  padding-top: var(--space-2)
+  border-top: 1px dashed color-mix(in srgb, var(--color-accent) 20%, transparent)
+
+.trp-preview
+  display: inline-flex
+  align-items: center
+  gap: 6px
+  min-width: 0
+  max-width: 100%
+  font-size: 11.5px
+  color: var(--color-text-secondary)
+  font-variant-numeric: tabular-nums
+
+  .q-icon
+    flex: none
+    color: var(--color-accent)
+    font-size: 15px
+
+.trp-preview__text
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+
+// 跨度徽章
+.trp-preview__span
+  flex: 0 0 auto
+  padding: 1px 8px
+  border-radius: 999px
+  font-weight: 600
+  color: var(--color-accent)
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent)
+  border: 1px solid color-mix(in srgb, var(--color-accent) 26%, transparent)
+
+.trp-footer__actions
+  display: flex
+  align-items: center
+  gap: var(--space-2)
+
+// 草稿未应用时应用按钮脉冲（引导操作的状态标识）
+.trp-apply--pulse
+  animation: trp-pulse 1.6s ease-in-out infinite
+
+@keyframes trp-pulse
+  0%, 100%
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 45%, transparent)
+  50%
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--color-accent) 6%, transparent)
+
+// 减少动态效果偏好：停止无限脉冲（引导状态改由「未应用」徽章承担）
+@media (prefers-reduced-motion: reduce)
+  .trp-apply--pulse
+    animation: none
+
+// 窄屏：预设竖排收为横排置顶
+@media (max-width: 640px)
+  .trp-body
+    flex-direction: column
+
+  .trp-rail
+    flex: none
+    padding-right: 0
+    padding-bottom: var(--space-2)
+    border-right: none
+    border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 14%, transparent)
+
+// ── 暗色：霓虹描边与辉光 ──
+body.body--dark
+  .trp-panel
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 24px color-mix(in srgb, var(--color-accent) 12%, transparent)
+
+  .trp-preset--active
+    box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 30%, transparent)
+
+  .trp-calendar
+    background: color-mix(in srgb, var(--canvas-base) 55%, transparent)
+    border-color: color-mix(in srgb, var(--color-accent) 20%, transparent)
+
+  .time-range-picker .q-field__control:hover:before
+    border-color: color-mix(in srgb, var(--color-accent) 60%, transparent)

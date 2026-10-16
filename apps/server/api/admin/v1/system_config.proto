@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+
+import "pagination/v1/pagination.proto";
+
+// 系统参数配置服务
+service SystemConfigService {
+  // 查询配置列表
+  rpc List (pagination.PagingRequest) returns (ListSystemConfigResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/system_configs"
+    };
+  }
+
+  // 查询配置详情
+  rpc Get (GetSystemConfigRequest) returns (SystemConfig) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/system_configs/{id}"
+    };
+  }
+
+  // 创建配置
+  rpc Create (CreateSystemConfigRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/system_configs"
+      body: "*"
+    };
+  }
+
+  // 更新配置
+  rpc Update (UpdateSystemConfigRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/api/v1/monitor/system_configs/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除配置
+  rpc Delete (DeleteSystemConfigRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/api/v1/monitor/system_configs/{id}"
+    };
+  }
+}
+
+// 系统参数配置
+message SystemConfig {
+  optional uint32 id = 1 [
+    json_name = "id",
+    (google.api.field_behavior) = OPTIONAL,
+    (gnostic.openapi.v3.property) = {
+      description: "配置ID"
+    }
+  ]; // 配置ID
+
+  optional string config_key = 2 [
+    json_name = "configKey",
+    (google.api.field_behavior) = REQUIRED,
+    (gnostic.openapi.v3.property) = {
+      description: "配置键（唯一）"
+    }
+  ]; // 配置键
+
+  optional string config_value = 3 [
+    json_name = "configValue",
+    (google.api.field_behavior) = REQUIRED,
+    (gnostic.openapi.v3.property) = {
+      description: "配置值"
+    }
+  ]; // 配置值
+
+  optional string config_type = 4 [
+    json_name = "configType",
+    (gnostic.openapi.v3.property) = {
+      description: "配置类型：string/number/bool/json"
+      default: {string: "string"}
+      enum: [{yaml: "string"}, {yaml: "number"}, {yaml: "bool"}, {yaml: "json"}]
+    }
+  ]; // 配置类型
+
+  optional string description = 5 [
+    json_name = "description",
+    (gnostic.openapi.v3.property) = {
+      description: "配置说明"
+    }
+  ]; // 配置说明
+
+  optional uint32 create_by = 100 [json_name = "createBy", (gnostic.openapi.v3.property) = {description: "创建者ID"}]; // 创建者ID
+  optional uint32 update_by = 101 [json_name = "updateBy", (gnostic.openapi.v3.property) = {description: "更新者ID"}]; // 更新者ID
+
+  optional google.protobuf.Timestamp create_time = 200 [json_name = "createTime", (gnostic.openapi.v3.property) = {description: "创建时间"}];// 创建时间
+  optional google.protobuf.Timestamp update_time = 201 [json_name = "updateTime", (gnostic.openapi.v3.property) = {description: "更新时间"}];// 更新时间
+}
+
+// 查询配置列表 - 回应
+message ListSystemConfigResponse {
+  repeated SystemConfig items = 1;
+  uint32 total = 2;
+}
+
+// 查询配置详情 - 请求
+message GetSystemConfigRequest {
+  uint32 id = 1;
+}
+
+// 创建配置 - 请求
+message CreateSystemConfigRequest {
+  SystemConfig data = 1;
+}
+
+// 更新配置 - 请求
+message UpdateSystemConfigRequest {
+  SystemConfig data = 1;
+
+  google.protobuf.FieldMask update_mask = 2 [
+    (gnostic.openapi.v3.property) = {
+      description: "要更新的字段列表",
+      example: {yaml : "id,config_key,config_value"}
+    },
+    json_name = "updateMask"
+  ]; // 要更新的字段列表
+
+  optional bool allow_missing = 3 [
+    (gnostic.openapi.v3.property) = {description: "如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。"},
+    json_name = "allowMissing"
+  ]; // 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
+
+  uint32 id = 4 [json_name = "id", (gnostic.openapi.v3.property) = {description: "要更新的配置ID（URL 路径参数）"}]; // 要更新的配置ID
+}
+
+// 删除配置 - 请求
+message DeleteSystemConfigRequest {
+  uint32 id = 1;
+}

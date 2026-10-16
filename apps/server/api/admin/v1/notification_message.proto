@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+import "pagination/v1/pagination.proto";
+
+import "internal_message/v1/notification_message.proto";
+
+// 通知消息管理服务
+service NotificationMessageService {
+  // 查询通知消息列表
+  rpc List (pagination.PagingRequest) returns (internal_message.service.v1.ListNotificationMessageResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/notifications"
+    };
+  }
+
+  // 查询通知消息详情
+  rpc Get (internal_message.service.v1.GetNotificationMessageRequest) returns (internal_message.service.v1.NotificationMessage) {
+    option (google.api.http) = {
+      get: "/api/v1/monitor/notifications/{id}"
+    };
+  }
+
+  // 创建通知消息
+  rpc Create (internal_message.service.v1.CreateNotificationMessageRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/monitor/notifications"
+      body: "*"
+    };
+  }
+
+  // 更新通知消息
+  rpc Update (internal_message.service.v1.UpdateNotificationMessageRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/api/v1/monitor/notifications/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除通知消息
+  rpc Delete (internal_message.service.v1.DeleteNotificationMessageRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/api/v1/monitor/notifications/{id}"
+    };
+  }
+}

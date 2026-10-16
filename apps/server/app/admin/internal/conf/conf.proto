@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package admin.conf.v1;
+
+option go_package = "framework/app/admin/internal/conf;conf";
+
+import "google/protobuf/duration.proto";
+import "conf/pb/conf.proto";
+
+// Bootstrap 是 admin 服务的顶层配置结构。
+// 公共配置结构（Data/Nats/Discovery/Trace/Log）引用自根 conf 包（conf/pb/），
+// 私有配置结构（Server/Auth/Storage）定义于此。
+message Bootstrap {
+  Server server = 1;
+  framework.conf.v1.Data data = 2;
+  Auth auth = 3;
+  framework.conf.v1.Nats nats = 4;
+  framework.conf.v1.Log log = 5;
+  Storage storage = 6;
+  framework.conf.v1.Trace trace = 8;
+  License license = 9;
+  framework.conf.v1.Discovery discovery = 10;
+}
+
+// ---------- Server（私有） ----------
+// 已移除 SSE，后期使用 ws + nats + http 作为通信方式。
+
+message Server {
+  message REST {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+    bool enable_swagger = 4;
+    bool enable_pprof = 5;
+    CORS cors = 6;
+    Middleware middleware = 7;
+  }
+
+  message CORS {
+    repeated string headers = 1;
+    repeated string methods = 2;
+    repeated string origins = 3;
+  }
+
+  message Middleware {
+    bool enable_logging = 1;
+    bool enable_recovery = 2;
+    bool enable_tracing = 3;
+    bool enable_validate = 4;
+    bool enable_circuit_breaker = 5;
+    bool enable_metadata = 6;
+    AuthMiddleware auth = 7;
+  }
+
+  message AuthMiddleware {
+    string method = 1;           // HS256
+    string key = 2;              // JWT 密钥
+    google.protobuf.Duration access_token_expires = 3;
+    google.protobuf.Duration refresh_token_expires = 4;
+    string access_token_key_prefix = 5;   // uat_
+    string refresh_token_key_prefix = 6;  // urt_
+  }
+
+  message Asynq {
+    string uri = 1;
+    bool enable_gracefully_shutdown = 2;
+    google.protobuf.Duration shutdown_timeout = 3;
+    string codec = 4;
+  }
+
+  REST rest = 1;
+  Asynq asynq = 2;
+}
+
+// ---------- Auth（私有） ----------
+
+message Auth {
+  message Authn {
+    string type = 1;            // jwt, oidc, preshared_key
+    JWT jwt = 2;
+    OIDC oidc = 3;
+    PresharedKey preshared_key = 4;
+  }
+
+  message JWT {
+    string method = 1;          // HS256
+    string key = 2;
+  }
+
+  message OIDC {
+    string issuer_url = 1;
+    string audience = 2;
+    string method = 3;
+  }
+
+  message PresharedKey {
+    repeated string valid_keys = 1;
+  }
+
+  message Authz {
+    string type = 1;            // opa, casbin, noop
+  }
+
+  Authn authn = 1;
+  Authz authz = 2;
+}
+
+// ---------- Storage（私有） ----------
+// 本地文件存储配置（决策 D6：不引入 MinIO/OSS 等第三方对象存储，
+// 大文件存服务器本地文件系统，数据库仅存相对路径，后端提供鉴权下载接口）。
+message Storage {
+  // 存储根目录（绝对路径，或相对服务工作目录）
+  string root = 1;
+}
+
+// ---------- License（私有） ----------
+// 许可证配置（详细设计 §2.6.0 签名模型与密钥管理）。
+// 私钥由厂商离线持有，系统仅持公钥验签；服务启动时加载公钥，缺失或解析失败 fail-fast。
+message License {
+  // 厂商公钥路径（PEM 格式 RSA-2048 公钥，默认 <storage.root>/license/vendor_public_key.pem）
+  string public_key_path = 1;
+  // 许可证到期检查 cron 表达式（每日执行，默认 "0 2 * * *" 即每日 02:00）
+  string check_expiring_cron = 2;
+}

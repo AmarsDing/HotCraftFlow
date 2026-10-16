@@ -1,0 +1,634 @@
+// 告警模块共享样式（alarm 模块各页共用）
+// 配色全部引用 --color-alarm-* / --color-* 主题 token，昼夜双主题自动适配
+
+// ── 级别主题容器：按级别注入 --level-color / --level-soft，子元素统一引用 ──
+.alarm-level-themed
+  &.is-info
+    --level-color: var(--color-alarm-info)
+    --level-soft: var(--color-alarm-info-soft)
+  &.is-warning
+    --level-color: var(--color-alarm-warning)
+    --level-soft: var(--color-alarm-warning-soft)
+  &.is-critical
+    --level-color: var(--color-alarm-critical)
+    --level-soft: var(--color-alarm-critical-soft)
+  &.is-emergency
+    --level-color: var(--color-alarm-emergency)
+    --level-soft: var(--color-alarm-emergency-soft)
+
+// ── 工单状态主题容器：按状态注入 --level-color / --level-soft（复用 KPI 卡片/抽屉渐变） ──
+.alarm-status-themed
+  // "全部"页签（实时告警状态过滤）
+  &.is-all
+    --level-color: var(--color-accent)
+    --level-soft: var(--color-accent-soft)
+  // 事件状态（统计看板 KPI 等）
+  &.is-active
+    --level-color: var(--color-danger)
+    --level-soft: var(--color-danger-soft)
+  &.is-confirmed
+    --level-color: var(--color-warning)
+    --level-soft: var(--color-warning-soft)
+  &.is-recovered
+    --level-color: var(--color-success)
+    --level-soft: var(--color-success-soft)
+  // 工单状态
+  &.is-pending
+    --level-color: var(--color-warning)
+    --level-soft: var(--color-warning-soft)
+  &.is-processing
+    --level-color: var(--color-accent)
+    --level-soft: var(--color-accent-soft)
+  &.is-resolved
+    --level-color: var(--color-success)
+    --level-soft: var(--color-success-soft)
+  &.is-closed
+    --level-color: var(--color-text-tertiary)
+    --level-soft: var(--color-warm-muted-surface)
+
+// ── 处理结果主题容器（过程日志 KPI 卡专用）：按结果/触发方式注入 --level-color / --level-soft ──
+// 独立容器而非扩展 .alarm-status-themed：后者与状态过滤页签的选中标记 is-on 同族，扩展会串色
+.alarm-result-themed
+  &.is-success
+    --level-color: var(--color-success)
+    --level-soft: var(--color-success-soft)
+  &.is-failed
+    --level-color: var(--color-danger)
+    --level-soft: var(--color-danger-soft)
+  &.is-pending
+    --level-color: var(--color-warning)
+    --level-soft: var(--color-warning-soft)
+  &.is-manual
+    --level-color: var(--color-accent)
+    --level-soft: var(--color-accent-soft)
+
+// ── 级别徽章（图标 + 文字胶囊，软底） ──
+.alarm-level-chip
+  display: inline-flex
+  align-items: center
+  gap: 4px
+  padding: 2px 10px
+  border-radius: 999px
+  font-size: 12px
+  font-weight: 600
+  line-height: 20px
+  white-space: nowrap
+
+  .q-icon
+    font-size: 14px
+
+  &.is-info
+    color: color-mix(in srgb, var(--color-alarm-info) 75%, var(--color-text-primary))
+    background: var(--color-alarm-info-soft)
+  &.is-warning
+    color: color-mix(in srgb, var(--color-alarm-warning) 75%, var(--color-text-primary))
+    background: var(--color-alarm-warning-soft)
+  &.is-critical
+    color: color-mix(in srgb, var(--color-alarm-critical) 80%, var(--color-text-primary))
+    background: var(--color-alarm-critical-soft)
+  &.is-emergency
+    color: color-mix(in srgb, var(--color-alarm-emergency) 80%, var(--color-text-primary))
+    background: var(--color-alarm-emergency-soft)
+
+// ── 事件/工单状态徽章（圆点 + 文字） ──
+.alarm-status-chip
+  display: inline-flex
+  align-items: center
+  gap: 6px
+  padding: 2px 10px
+  border-radius: 999px
+  font-size: 12px
+  font-weight: 600
+  line-height: 20px
+  white-space: nowrap
+
+  &::before
+    content: ''
+    width: 6px
+    height: 6px
+    border-radius: 50%
+    background: currentColor
+
+  // 事件状态
+  &.is-active
+    color: color-mix(in srgb, var(--color-danger) 80%, var(--color-text-primary))
+    background: var(--color-danger-soft)
+  &.is-confirmed
+    color: color-mix(in srgb, var(--color-warning) 75%, var(--color-text-primary))
+    background: var(--color-warning-soft)
+  &.is-recovered,
+  &.is-resolved
+    color: color-mix(in srgb, var(--color-success) 75%, var(--color-text-primary))
+    background: var(--color-success-soft)
+  &.is-closed
+    color: var(--color-text-secondary)
+    background: var(--color-warm-muted-surface)
+  // 工单状态
+  &.is-pending
+    color: color-mix(in srgb, var(--color-warning) 75%, var(--color-text-primary))
+    background: var(--color-warning-soft)
+  &.is-processing
+    color: color-mix(in srgb, var(--color-accent) 80%, var(--color-text-primary))
+    background: var(--color-accent-soft)
+  // 配置页二元状态（启用/停用、成功/失败）
+  &.is-on
+    color: color-mix(in srgb, var(--color-success) 75%, var(--color-text-primary))
+    background: var(--color-success-soft)
+  &.is-off
+    color: var(--color-text-secondary)
+    background: var(--color-warm-muted-surface)
+  &.is-failed
+    color: color-mix(in srgb, var(--color-danger) 80%, var(--color-text-primary))
+    background: var(--color-danger-soft)
+
+// ── 活跃严重级别呼吸圆点（表格行首） ──
+.alarm-pulse-dot
+  display: inline-block
+  width: 8px
+  height: 8px
+  border-radius: 50%
+  flex: none
+
+  &.is-info
+    background: var(--color-alarm-info)
+  &.is-warning
+    background: var(--color-alarm-warning)
+  &.is-critical
+    background: var(--color-alarm-critical)
+  &.is-emergency
+    background: var(--color-alarm-emergency)
+
+  &.is-pulsing
+    animation: alarm-dot-pulse 1.6s ease-in-out infinite
+
+@keyframes alarm-dot-pulse
+  0%, 100%
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 35%, transparent)
+    opacity: 1
+  50%
+    box-shadow: 0 0 0 5px transparent
+    opacity: 0.72
+
+// ── KPI 统计标签卡片已全站统一：.app-stat-strip / .app-stat-card（见 theme/_stat-cards.sass） ──
+// 告警侧色调桥接：alarm-level/status/result-themed 注入的 --level-color/--level-soft 被 app-stat-card 直接消费
+
+// ── 状态过滤页签（分段控件，科技感：状态色描边 + 图标 + 选中霓虹光晕） ──
+.alarm-filter-tabs
+  display: inline-flex
+  align-items: center
+  gap: 4px
+  padding: 4px
+  border-radius: 12px
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+  max-width: 100%
+  overflow-x: auto
+
+.alarm-filter-tab
+  // 状态色由 .alarm-status-themed 注入（--level-color/--level-soft），未注入时回落强调色
+  --tab-color: var(--level-color, var(--color-accent))
+  --tab-soft: var(--level-soft, var(--color-accent-soft))
+  display: inline-flex
+  align-items: center
+  gap: 6px
+  padding: 6px 14px
+  border: 1px solid transparent
+  border-radius: 9px
+  background: transparent
+  font-size: 13px
+  font-weight: 500
+  color: var(--color-text-secondary)
+  cursor: pointer
+  white-space: nowrap
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease
+
+  .q-icon
+    font-size: 15px
+    color: var(--tab-color)
+    opacity: 0.85
+    transition: opacity 0.18s ease
+
+  &:hover
+    color: var(--color-text-primary)
+    background: color-mix(in srgb, var(--tab-color) 8%, transparent)
+
+    .q-icon
+      opacity: 1
+
+  &.is-on
+    background: var(--tab-soft)
+    border-color: color-mix(in srgb, var(--tab-color) 45%, transparent)
+    color: var(--color-text-heading)
+    font-weight: 600
+    box-shadow: 0 0 8px color-mix(in srgb, var(--tab-color) 18%, transparent), inset 0 0 8px color-mix(in srgb, var(--tab-color) 8%, transparent)
+
+    .q-icon
+      opacity: 1
+
+.alarm-filter-tab__count
+  min-width: 22px
+  padding: 0 6px
+  border-radius: 999px
+  font-size: 11px
+  font-weight: 700
+  text-align: center
+  line-height: 18px
+  font-variant-numeric: tabular-nums
+  color: color-mix(in srgb, var(--tab-color) 80%, var(--color-text-primary))
+  background: color-mix(in srgb, var(--tab-color) 12%, transparent)
+  border: 1px solid color-mix(in srgb, var(--tab-color) 22%, transparent)
+
+  .is-on > &
+    color: var(--tab-color)
+    background: color-mix(in srgb, var(--tab-color) 18%, transparent)
+    border-color: color-mix(in srgb, var(--tab-color) 40%, transparent)
+
+// 夜间模式：霓虹光晕加强（科幻风格）
+body.body--dark
+  .alarm-filter-tab
+    &.is-on
+      box-shadow: 0 0 14px color-mix(in srgb, var(--tab-color) 35%, transparent), inset 0 0 10px color-mix(in srgb, var(--tab-color) 12%, transparent)
+
+  .alarm-filter-tab__count
+    .is-on > &
+      box-shadow: 0 0 8px color-mix(in srgb, var(--tab-color) 30%, transparent)
+
+// ── 实时状态指示 ──
+.alarm-live-indicator
+  display: inline-flex
+  align-items: center
+  gap: 6px
+  font-size: 12px
+  font-weight: 600
+  color: var(--color-text-secondary)
+
+.alarm-live-indicator__dot
+  width: 8px
+  height: 8px
+  border-radius: 50%
+  background: var(--color-text-tertiary)
+
+  &.is-live
+    background: var(--color-success)
+    animation: alarm-live-blink 2s ease-in-out infinite
+
+@keyframes alarm-live-blink
+  0%, 100%
+    opacity: 1
+  50%
+    opacity: 0.45
+
+// ── 新告警行闪烁 ──
+@keyframes alarm-row-flash
+  0%
+    background: color-mix(in srgb, var(--color-accent) 20%, transparent)
+  100%
+    background: transparent
+
+.alarm-event-table,
+.alarm-ticket-table
+  tbody tr.alarm-row-new td
+    animation: alarm-row-flash 2.4s ease-out
+
+  // 行首级别色条（未闭环告警/工单按级别/优先级着色）
+  tbody tr.alarm-row-emergency td:first-child
+    box-shadow: inset 3px 0 0 var(--color-alarm-emergency)
+  tbody tr.alarm-row-critical td:first-child
+    box-shadow: inset 3px 0 0 var(--color-alarm-critical)
+  tbody tr.alarm-row-warning td:first-child
+    box-shadow: inset 3px 0 0 var(--color-alarm-warning)
+  tbody tr.alarm-row-info td:first-child
+    box-shadow: inset 3px 0 0 var(--color-alarm-info)
+
+// ── 详情抽屉 ──
+.alarm-detail-dialog
+  .q-dialog__inner--right
+    padding: 0
+
+// 详情抽屉默认 z-index=6000。处置/诊断/通知是第二个 q-dialog，Quasar 未递增层级时
+// 后开层 backdrop 盖住抽屉底栏，确认/升级/恢复/关闭/一键诊断/添加备注全部点不到。
+.q-dialog.alarm-overlay-dialog
+  z-index: 7100 !important
+
+// 通知弹窗内再开的向导 / FormDrawer，以及弹窗打开期间的下拉菜单
+.q-dialog.alarm-nested-dialog
+  z-index: 7300 !important
+
+// 新建告警抽屉内再开的指标目录，必须盖过 FormDrawer（7300）
+// 监控面板等通用 FormDrawer 内嵌对话框复用同层（form-drawer-child-dialog）
+.q-dialog.alarm-catalog-dialog,
+.q-dialog.form-drawer-child-dialog
+  z-index: 7500 !important
+
+body:has(.q-dialog.alarm-overlay-dialog) .q-menu,
+body:has(.q-dialog.alarm-nested-dialog) .q-menu,
+body:has(.q-dialog.alarm-catalog-dialog) .q-menu,
+body:has(.q-dialog.form-drawer-child-dialog) .q-menu
+  z-index: 7600 !important
+
+.alarm-detail-drawer
+  width: 580px
+  max-width: 94vw
+  height: 100vh
+  display: flex
+  flex-direction: column
+  background: var(--glass-elevated)
+  backdrop-filter: blur(var(--glass-blur-elevated))
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated))
+  border-left: 1px solid var(--glass-border)
+  border-radius: 20px 0 0 20px
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.22)
+
+.alarm-hero-sub
+  color: var(--color-text-secondary)
+
+.alarm-hero-message
+  margin-top: 12px
+  font-size: 13px
+  line-height: 1.6
+  color: var(--color-text-primary)
+
+.alarm-section-title
+  font-size: 14px
+  font-weight: 700
+  color: var(--color-text-heading)
+  margin-bottom: 10px
+
+.alarm-detail-drawer__footer
+  flex-shrink: 0
+  padding: 12px 20px 16px
+  border-top: 1px solid var(--glass-border)
+  background: var(--glass-surface)
+
+.alarm-empty-hint
+  color: var(--color-text-tertiary)
+
+.alarm-pre
+  margin: 0
+  padding: 12px 16px
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+  border-radius: 8px
+  color: var(--color-text-secondary)
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace
+  font-size: 13px
+  line-height: 1.6
+  white-space: pre-wrap
+  word-break: break-all
+  max-height: 240px
+  overflow: auto
+
+body.body--dark
+  .alarm-detail-drawer
+    box-shadow: -12px 0 40px rgba(0, 0, 0, 0.5), 0 0 24px color-mix(in srgb, var(--level-color, var(--color-accent)) 8%, transparent)
+
+.alarm-detail-drawer__hero
+  position: relative
+  padding: 20px 20px 16px
+  background: linear-gradient(160deg, var(--level-soft, var(--color-accent-soft)), transparent 70%)
+  border-bottom: 1px solid var(--glass-border)
+
+.alarm-detail-drawer__metric
+  border-radius: 14px
+  padding: 14px 16px
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+
+// ── 处理时间线 ──
+.alarm-timeline
+  position: relative
+  padding-left: 26px
+
+  &::before
+    content: ''
+    position: absolute
+    left: 8px
+    top: 10px
+    bottom: 10px
+    width: 2px
+    border-radius: 2px
+    background: var(--glass-border)
+
+.alarm-timeline__item
+  position: relative
+  padding-bottom: 18px
+
+  &:last-child
+    padding-bottom: 0
+
+.alarm-timeline__dot
+  position: absolute
+  left: -26px
+  top: 3px
+  display: flex
+  align-items: center
+  justify-content: center
+  width: 18px
+  height: 18px
+  border-radius: 50%
+  background: var(--glass-elevated)
+  border: 2px solid var(--dot-color, var(--color-text-tertiary))
+  color: var(--dot-color, var(--color-text-tertiary))
+  z-index: 1
+
+  .q-icon
+    font-size: 11px
+
+.alarm-timeline__title
+  font-size: 13px
+  font-weight: 600
+  color: var(--color-text-heading)
+  line-height: 1.4
+
+.alarm-timeline__time
+  font-size: 12px
+  color: var(--color-text-tertiary)
+  margin-top: 2px
+
+.alarm-timeline__note
+  margin-top: 6px
+  padding: 8px 12px
+  border-radius: 8px
+  font-size: 12px
+  line-height: 1.6
+  color: var(--color-text-secondary)
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+  white-space: pre-wrap
+  word-break: break-word
+
+// 时间线节点配色
+.alarm-timeline__item.is-triggered
+  --dot-color: var(--level-color, var(--color-danger))
+.alarm-timeline__item.is-confirmed
+  --dot-color: var(--color-warning)
+.alarm-timeline__item.is-escalated
+  --dot-color: var(--color-alarm-emergency)
+.alarm-timeline__item.is-recovered
+  --dot-color: var(--color-success)
+.alarm-timeline__item.is-closed
+  --dot-color: var(--color-text-tertiary)
+.alarm-timeline__item.is-note
+  --dot-color: var(--color-accent)
+.alarm-timeline__item.is-failed
+  --dot-color: var(--color-danger)
+
+// ── 抽屉内信息网格 ──
+.alarm-info-grid
+  display: grid
+  grid-template-columns: repeat(2, minmax(0, 1fr))
+  gap: 12px 20px
+
+.alarm-info-grid__label
+  font-size: 12px
+  color: var(--color-text-tertiary)
+  margin-bottom: 2px
+
+.alarm-info-grid__value
+  font-size: 13px
+  color: var(--color-text-primary)
+  word-break: break-all
+
+  &--link
+    display: inline
+    padding: 0
+    border: 0
+    background: none
+    font: inherit
+    color: var(--color-warning)
+    cursor: pointer
+    text-decoration: underline
+    text-underline-offset: 2px
+
+    &:hover
+      color: var(--color-warning)
+
+// ── 配置页通用：启用状态开关之外的辅助徽章 ──
+.alarm-soft-tag
+  display: inline-flex
+  align-items: center
+  gap: 4px
+  padding: 1px 8px
+  border-radius: 6px
+  font-size: 12px
+  font-weight: 500
+  line-height: 18px
+  color: var(--color-text-secondary)
+  background: var(--color-warm-muted-surface)
+
+  // 强调变体（类型/来源等需要突出的分类标签）
+  &.is-accent
+    color: color-mix(in srgb, var(--color-accent) 80%, var(--color-text-primary))
+    background: var(--color-accent-soft)
+
+// ── 通用玻璃信息盒（抽屉内关联信息卡片等） ──
+.alarm-glass-box
+  border-radius: 14px
+  padding: 14px 16px
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+
+// ── 工单状态流水线（KPI 卡 + 箭头连接，点击过滤） ──
+.alarm-pipeline-strip
+  display: flex
+  align-items: stretch
+  gap: 8px
+
+  .app-stat-card
+    flex: 1
+    min-width: 130px
+
+.alarm-pipeline-arrow
+  align-self: center
+  flex: none
+  font-size: 20px
+  color: var(--color-text-tertiary)
+  opacity: 0.7
+
+@media (max-width: 1100px)
+  .alarm-pipeline-strip
+    flex-wrap: wrap
+
+    .app-stat-card
+      flex: 1 1 40%
+
+  .alarm-pipeline-arrow
+    display: none
+
+@media (max-width: 600px)
+  .alarm-pipeline-strip .app-stat-card
+    flex: 1 1 100%
+
+// ── 抽屉内处理进度步进器 ──
+.alarm-stepper
+  display: flex
+  align-items: flex-start
+
+.alarm-stepper__step
+  position: relative
+  flex: 1
+  min-width: 0
+  display: flex
+  flex-direction: column
+  align-items: center
+  gap: 6px
+  text-align: center
+
+  // 节点间连接线
+  &::before
+    content: ''
+    position: absolute
+    top: 14px
+    left: calc(-50% + 16px)
+    right: calc(50% + 16px)
+    height: 2px
+    background: var(--glass-border)
+
+  &:first-child::before
+    display: none
+
+  &.is-done::before
+    background: color-mix(in srgb, var(--color-success) 55%, var(--glass-border))
+
+.alarm-stepper__dot
+  position: relative
+  z-index: 1
+  display: flex
+  align-items: center
+  justify-content: center
+  width: 28px
+  height: 28px
+  border-radius: 50%
+  background: var(--glass-surface)
+  border: 2px solid var(--glass-border)
+  color: var(--color-text-tertiary)
+
+  .q-icon
+    font-size: 15px
+
+  .is-done &
+    background: var(--color-success-soft)
+    border-color: var(--color-success)
+    color: var(--color-success)
+
+  // 当前节点：颜色由 .alarm-status-themed 注入
+  .is-current &
+    background: var(--level-soft, var(--color-accent-soft))
+    border-color: var(--level-color, var(--color-accent))
+    color: var(--level-color, var(--color-accent))
+    box-shadow: 0 0 0 4px var(--level-soft, var(--color-accent-soft))
+
+.alarm-stepper__label
+  font-size: 12px
+  font-weight: 600
+  color: var(--color-text-secondary)
+  white-space: nowrap
+
+  .is-current &
+    color: var(--color-text-heading)
+
+.alarm-stepper__time
+  font-size: 11px
+  line-height: 1.3
+  color: var(--color-text-tertiary)
+  white-space: nowrap

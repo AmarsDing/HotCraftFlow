@@ -1,0 +1,1681 @@
+// Graph 列表 / 编辑器 / 运行页共享样式（对齐 entity-pages 玻璃体系）
+
+:root
+  --graph-node-function-fill: color-mix(in srgb, #9c27b0 8%, var(--glass-elevated))
+  --graph-node-function-border: color-mix(in srgb, #9c27b0 42%, var(--glass-border))
+  --graph-node-llm-fill: color-mix(in srgb, #1565c0 8%, var(--glass-elevated))
+  --graph-node-llm-border: color-mix(in srgb, #1565c0 38%, var(--glass-border))
+  --graph-node-tool-fill: color-mix(in srgb, #e65100 8%, var(--glass-elevated))
+  --graph-node-tool-border: color-mix(in srgb, #e65100 40%, var(--glass-border))
+  --graph-node-agent-fill: color-mix(in srgb, #2e7d32 8%, var(--glass-elevated))
+  --graph-node-agent-border: color-mix(in srgb, #2e7d32 38%, var(--glass-border))
+  --graph-node-router-fill: color-mix(in srgb, #6a1b9a 8%, var(--glass-elevated))
+  --graph-node-router-border: color-mix(in srgb, #6a1b9a 38%, var(--glass-border))
+  --graph-node-join-fill: color-mix(in srgb, #546e7a 8%, var(--glass-elevated))
+  --graph-node-join-border: color-mix(in srgb, #546e7a 35%, var(--glass-border))
+  --graph-node-hitl-fill: color-mix(in srgb, #f57f17 10%, var(--glass-elevated))
+  --graph-node-hitl-border: color-mix(in srgb, #f57f17 42%, var(--glass-border))
+  --graph-edge-normal: color-mix(in srgb, var(--color-accent) 50%, var(--color-text-secondary))
+  --graph-edge-conditional: #c2185b
+  --graph-edge-transfer: #e65100
+  --graph-edge-dispatch: #2e7d32
+  --graph-status-running: #0277bd
+  --graph-status-completed: #2e7d32
+  --graph-status-failed: #c62828
+  --graph-status-interrupted: #f57f17
+  --graph-progress-from: #2e7d32
+  --graph-progress-to: #0277bd
+  --graph-ctx-bg: rgba(255,253,245,0.95)
+  --graph-ctx-border: rgba(0,0,0,0.08)
+  --graph-ctx-text: #3A322C
+  --graph-ctx-accent: #0277bd
+  --graph-ctx-danger: #c62828
+  --graph-ctx-success: #2e7d32
+  --graph-ctx-glow: rgba(2,119,189,0.4)
+  --graph-ctx-danger-glow: rgba(198,40,40,0.4)
+  --graph-ctx-success-glow: rgba(46,125,50,0.4)
+  --graph-cond-edge-label-stroke: rgba(194,24,91,0.15)
+
+body.body--dark
+  --graph-node-function-fill: color-mix(in srgb, #a78bfa 12%, var(--glass-surface))
+  --graph-node-function-border: #a78bfa
+  --graph-node-llm-fill: color-mix(in srgb, #22d3ee 12%, var(--glass-surface))
+  --graph-node-llm-border: #22d3ee
+  --graph-node-tool-fill: color-mix(in srgb, #fbbf24 12%, var(--glass-surface))
+  --graph-node-tool-border: #fbbf24
+  --graph-node-agent-fill: color-mix(in srgb, #34d399 12%, var(--glass-surface))
+  --graph-node-agent-border: #34d399
+  --graph-node-router-fill: color-mix(in srgb, #f472b6 12%, var(--glass-surface))
+  --graph-node-router-border: #f472b6
+  --graph-node-join-fill: color-mix(in srgb, #94a3b8 12%, var(--glass-surface))
+  --graph-node-join-border: #94a3b8
+  --graph-node-hitl-fill: color-mix(in srgb, #fb923c 12%, var(--glass-surface))
+  --graph-node-hitl-border: #fb923c
+  --graph-status-running: #22d3ee
+  --graph-status-completed: #34d399
+  --graph-status-failed: #f472b6
+  --graph-status-interrupted: #fbbf24
+  --graph-progress-from: #34d399
+  --graph-progress-to: #22d3ee
+  --graph-edge-normal: #22d3ee
+  --graph-edge-conditional: #f472b6
+  --graph-edge-transfer: #fbbf24
+  --graph-edge-dispatch: #34d399
+  --graph-ctx-bg: rgba(3,7,18,0.97)
+  --graph-ctx-border: rgba(34,211,238,0.12)
+  --graph-ctx-text: #a5f3fc
+  --graph-ctx-accent: #22d3ee
+  --graph-ctx-danger: #f472b6
+  --graph-ctx-success: #34d399
+  --graph-ctx-glow: rgba(34,211,238,0.6)
+  --graph-ctx-danger-glow: rgba(244,114,182,0.6)
+  --graph-ctx-success-glow: rgba(52,211,153,0.6)
+  --graph-cond-edge-label-stroke: rgba(244,114,182,0.25)
+
+.graphs-page
+  @extend .app-entity-page
+
+.graphs-filter-bar
+  display: flex
+  align-items: center
+  gap: 8px
+  flex-wrap: wrap
+
+.graphs-filter-bar__search
+  min-width: 200px
+  max-width: 280px
+  flex: 1
+
+.graphs-filter-bar__select
+  min-width: 130px
+
+.graphs-grid
+  display: grid
+  grid-template-columns: repeat(3, 1fr)
+  gap: 14px
+  align-items: stretch
+
+.graph-card
+  cursor: pointer
+  overflow: hidden
+  border: 1px solid var(--glass-border)
+  border-radius: 18px
+  background: var(--glass-surface)
+  box-shadow: var(--shadow-entity-panel)
+  backdrop-filter: blur(16px)
+  -webkit-backdrop-filter: blur(16px)
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease
+  animation: graph-card-in 0.3s ease-out both
+  position: relative
+
+body:not(.body--dark) .graph-card
+  background: rgba(255, 252, 243, 0.88)
+  border-color: rgba(0, 0, 0,0.52)
+  box-shadow: 0 2px 8px rgba(0, 0, 0,0.07), 0 8px 24px rgba(0, 0, 0,0.04)
+
+.graph-card::before
+  content: ""
+  position: absolute
+  top: 0
+  left: 0
+  right: 0
+  height: 3px
+  background: linear-gradient(90deg, var(--graph-node-agent-border), var(--graph-node-llm-border), var(--graph-node-tool-border))
+  opacity: 0.6
+  border-radius: 18px 18px 0 0
+
+body:not(.body--dark) .graph-card::before
+  height: 4px
+  opacity: 0.85
+
+.graph-card:hover
+  transform: translateY(-1px)
+  background: var(--glass-surface-hover)
+  border-color: color-mix(in srgb, var(--color-accent) 28%, var(--glass-border))
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 8%, transparent), var(--shadow-entity-panel)
+
+body:not(.body--dark) .graph-card:hover
+  background: rgba(255, 250, 238, 0.95)
+  border-color: rgba(0, 122, 255,0.45)
+  box-shadow: 0 4px 16px rgba(0, 122, 255,0.12), 0 2px 8px rgba(0, 0, 0,0.06)
+
+.graph-card__inner
+  display: flex
+  flex-direction: column
+  gap: 6px
+  padding: 10px 14px 8px
+
+.graph-card__name
+  margin: 0
+  color: var(--color-text-heading)
+  font-size: 14px
+  font-weight: 900
+  line-height: 1.25
+
+.graph-card__time
+  flex-shrink: 0
+  color: var(--color-text-tertiary)
+  font-size: 10px
+  white-space: nowrap
+
+.graph-card__desc
+  margin: 0
+  color: var(--color-text-secondary)
+  font-size: 11px
+  line-height: 1.4
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
+
+.graph-card__chips
+  display: flex
+  flex-wrap: wrap
+  gap: 4px
+
+.graph-card__chip
+  display: inline-flex
+  align-items: center
+  padding: 1px 6px
+  border: 1px solid var(--glass-border)
+  border-radius: 999px
+  background: color-mix(in srgb, var(--glass-elevated) 60%, transparent)
+  font-size: 10px
+  font-weight: 700
+  line-height: 1.4
+  white-space: nowrap
+
+body:not(.body--dark) .graph-card__chip
+  background: rgba(255, 255, 255, 0.72)
+  border-color: color-mix(in srgb, currentColor 22%, rgba(0, 0, 0,0.4))
+
+.graph-card__summary
+  flex-shrink: 0
+  color: var(--color-text-tertiary)
+  font-size: 10px
+  white-space: nowrap
+
+.graph-card__tags
+  display: flex
+  flex-wrap: wrap
+  gap: 6px
+
+.graph-card__tag
+  display: inline-flex
+  align-items: center
+  padding: 3px 8px
+  border: 1px solid color-mix(in srgb, var(--color-accent) 18%, var(--glass-border))
+  border-radius: 999px
+  background: color-mix(in srgb, var(--color-accent) 6%, var(--glass-elevated))
+  color: var(--color-text-secondary)
+  font-size: 11px
+  font-weight: 700
+  line-height: 1.2
+  white-space: nowrap
+
+body:not(.body--dark) .graph-card__tag
+  background: rgba(0, 122, 255,0.1)
+  border-color: rgba(0, 122, 255,0.32)
+  color: var(--color-accent-hover)
+
+.graph-card__foot
+  display: flex
+  align-items: center
+  justify-content: flex-end
+  gap: 0
+  padding-top: 6px
+  border-top: 1px solid var(--glass-border)
+
+body:not(.body--dark) .graph-card__foot
+  border-top-color: rgba(0, 0, 0,0.35)
+
+.graph-card--add
+  cursor: pointer
+  border: 2px dashed var(--glass-border)
+  background: transparent
+  box-shadow: none
+  backdrop-filter: none
+  -webkit-backdrop-filter: none
+  transition: border-color 160ms ease, background 160ms ease
+
+body:not(.body--dark) .graph-card--add
+  border-color: rgba(0, 0, 0,0.45)
+  background: rgba(255, 252, 243, 0.4)
+
+.graph-card--add:hover
+  border-color: var(--color-accent)
+  background: color-mix(in srgb, var(--color-accent) 4%, var(--glass-elevated))
+
+body:not(.body--dark) .graph-card--add:hover
+  background: rgba(0, 122, 255,0.08)
+  border-color: rgba(0, 122, 255,0.55)
+
+.graph-card--add__label
+  margin-top: 4px
+  color: var(--color-text-tertiary)
+  font-size: 11px
+  font-weight: 700
+
+@keyframes graph-card-in
+  from
+    opacity: 0
+    transform: translateY(8px)
+  to
+    opacity: 1
+    transform: translateY(0)
+
+.graph-card--ghost
+  opacity: 0.4
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--glass-surface))
+  border-color: var(--color-accent)
+  box-shadow: none
+
+.graph-card--chosen
+  border-color: var(--color-accent)
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent) 14%, transparent)
+
+.graph-card--dragging
+  opacity: 0.9
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 0 16px color-mix(in srgb, var(--color-accent) 12%, transparent)
+  transform: rotate(1deg)
+
+.graphs-empty
+  @extend .app-entity-empty
+
+.graph-editor-page__toolbar,
+.graph-run-page__toolbar
+  display: flex
+  align-items: center
+  gap: 8px
+  padding: 8px 16px
+  border-bottom: 1px solid var(--glass-border)
+  background: var(--glass-surface)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+.graph-editor-page__title,
+.graph-run-page__title
+  font-size: 15px
+  font-weight: 700
+  color: var(--color-text-heading)
+
+.graph-flow-node
+  position: relative
+  min-width: 200px
+  max-width: 260px
+  border: 2px solid var(--node-accent, var(--color-accent))
+  border-radius: 16px
+  background: var(--glass-elevated)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+  box-shadow: 0 0 8px color-mix(in srgb, var(--node-accent, var(--color-accent)) 12%, transparent), var(--shadow-entity-panel)
+  overflow: hidden
+  transition: border-color 300ms ease, box-shadow 300ms ease, transform 160ms ease
+
+.graph-flow-node__accent
+  height: 2px
+  background: var(--node-accent, var(--color-accent))
+  box-shadow: 0 0 6px var(--node-accent, var(--color-accent))
+
+.graph-flow-node__body
+  padding: 10px 12px 12px
+
+.graph-flow-node__header
+  display: flex
+  align-items: center
+  gap: 6px
+  margin-bottom: 8px
+
+.graph-flow-node__icon-wrap
+  display: inline-flex
+  align-items: center
+  justify-content: center
+  width: 22px
+  height: 22px
+  border-radius: 8px
+  background: color-mix(in srgb, var(--node-accent, var(--color-accent)) 14%, var(--glass-surface))
+  color: var(--node-accent, var(--color-accent))
+
+.graph-flow-node__type-label
+  flex: 1
+  min-width: 0
+  font-weight: 700
+  text-transform: uppercase
+  font-size: 10px
+  letter-spacing: 0.08em
+  color: var(--color-text-secondary)
+
+.graph-flow-node__status-badge
+  font-size: 10px
+  padding: 2px 6px
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--glass-surface))
+  color: var(--color-text-secondary)
+
+.graph-flow-node__status-badge--running
+  background: color-mix(in srgb, var(--graph-status-running) 12%, var(--glass-surface))
+  color: var(--graph-status-running)
+  border: 1px solid color-mix(in srgb, var(--graph-status-running) 20%, transparent)
+
+.graph-flow-node__status-badge--completed
+  background: color-mix(in srgb, var(--graph-status-completed) 12%, var(--glass-surface))
+  color: var(--graph-status-completed)
+  border: 1px solid color-mix(in srgb, var(--graph-status-completed) 20%, transparent)
+
+.graph-flow-node__status-badge--failed
+  background: color-mix(in srgb, var(--graph-status-failed) 12%, var(--glass-surface))
+  color: var(--graph-status-failed)
+  border: 1px solid color-mix(in srgb, var(--graph-status-failed) 20%, transparent)
+
+.graph-flow-node__status-badge--interrupted
+  background: color-mix(in srgb, var(--graph-status-interrupted) 12%, var(--glass-surface))
+  color: var(--graph-status-interrupted)
+  border: 1px solid color-mix(in srgb, var(--graph-status-interrupted) 20%, transparent)
+
+.graph-flow-node__label
+  font-weight: 700
+  font-size: 13px
+  line-height: 1.35
+  color: var(--color-text-heading)
+  overflow-wrap: anywhere
+
+.graph-flow-node__role
+  margin-top: 4px
+  display: inline-flex
+  padding: 2px 7px
+  border-radius: 999px
+  background: color-mix(in srgb, var(--node-accent, var(--color-accent)) 10%, var(--glass-surface))
+  color: var(--color-text-secondary)
+  font-size: 10px
+  font-weight: 700
+  text-transform: lowercase
+
+.graph-flow-node__agent-key
+  margin-top: 4px
+  font-size: 10px
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace
+  color: var(--color-text-tertiary)
+
+.graph-flow-node__hint
+  margin-top: 6px
+  color: var(--color-text-secondary)
+  font-size: 11px
+  line-height: 1.45
+
+.graph-flow-node__tools
+  display: flex
+  flex-wrap: wrap
+  gap: 3px
+  margin-top: 6px
+
+.graph-flow-node__tool-chip
+  display: inline-flex
+  padding: 1px 5px
+  border-radius: 3px
+  background: color-mix(in srgb, var(--node-accent, var(--color-accent)) 10%, var(--glass-surface))
+  color: var(--node-accent, var(--color-accent))
+  font-size: 9px
+  font-weight: 600
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace
+  line-height: 1.3
+
+.graph-flow-node__io
+  margin-top: 6px
+  padding-top: 6px
+  border-top: 1px dashed color-mix(in srgb, var(--glass-border) 80%, transparent)
+  color: var(--color-text-secondary)
+  font-size: 10px
+  line-height: 1.45
+
+.graph-flow-node__fine-status
+  margin-top: 6px
+  font-size: 10px
+  font-weight: 600
+  color: var(--color-text-tertiary)
+
+.graph-flow-node__handle
+  position: relative
+  width: 12px
+  height: 12px
+  border: 2px solid var(--node-accent, var(--color-accent))
+  background: var(--glass-elevated)
+  box-shadow: 0 0 4px color-mix(in srgb, var(--node-accent, var(--color-accent)) 20%, transparent)
+  transition: transform 0.15s, box-shadow 0.15s
+  // 扩大点击热区
+  &::before
+    content: ''
+    position: absolute
+    top: 50%
+    left: 50%
+    transform: translate(-50%, -50%)
+    width: 24px
+    height: 24px
+    border-radius: 50%
+    pointer-events: all
+  &:hover
+    transform: scale(1.4)
+    box-shadow: 0 0 8px color-mix(in srgb, var(--node-accent, var(--color-accent)) 50%, transparent)
+
+.graph-flow-node--selected
+  border-color: var(--node-accent, var(--color-accent))
+  box-shadow: 0 0 12px color-mix(in srgb, var(--node-accent, var(--color-accent)) 30%, transparent), 0 0 0 1px color-mix(in srgb, var(--node-accent, var(--color-accent)) 20%, transparent), var(--shadow-entity-panel)
+  transform: translateY(-1px)
+
+.graph-flow-node--running
+  animation: graph-node-pulse 1.5s ease-in-out infinite
+  border-color: var(--graph-status-running)
+  box-shadow: 0 0 16px color-mix(in srgb, var(--graph-status-running) 25%, transparent), 0 0 32px color-mix(in srgb, var(--graph-status-running) 10%, transparent)
+
+.graph-flow-node--completed
+  border-color: var(--graph-status-completed)
+  box-shadow: 0 0 8px color-mix(in srgb, var(--graph-status-completed) 20%, transparent)
+
+.graph-flow-node--failed
+  border-color: var(--graph-status-failed)
+  box-shadow: 0 0 8px color-mix(in srgb, var(--graph-status-failed) 20%, transparent)
+
+.graph-flow-node--interrupted
+  border-color: var(--graph-status-interrupted)
+  box-shadow: 0 0 8px color-mix(in srgb, var(--graph-status-interrupted) 20%, transparent)
+
+.graph-flow-diamond
+  width: 100px
+  height: 100px
+  transform: rotate(45deg)
+  border: 2px solid var(--node-border)
+  border-radius: 8px
+  background: var(--node-fill)
+  backdrop-filter: blur(8px)
+  -webkit-backdrop-filter: blur(8px)
+  box-shadow: 0 0 6px color-mix(in srgb, var(--node-border) 15%, transparent)
+  transition: box-shadow 0.2s, border-color 0.2s
+  position: relative
+
+.graph-flow-diamond--selected
+  box-shadow: 0 0 12px color-mix(in srgb, var(--node-border) 30%, transparent), 0 0 0 1px color-mix(in srgb, var(--node-border) 20%, transparent)
+
+.graph-flow-diamond--running
+  animation: graph-diamond-pulse 1.5s ease-in-out infinite
+  border-color: var(--graph-status-running)
+  box-shadow: 0 0 16px color-mix(in srgb, var(--graph-status-running) 25%, transparent)
+
+.graph-flow-diamond--completed
+  border-color: var(--graph-status-completed)
+  box-shadow: 0 0 8px color-mix(in srgb, var(--graph-status-completed) 20%, transparent)
+
+.graph-flow-diamond--failed
+  border-color: var(--graph-status-failed)
+  box-shadow: 0 0 8px color-mix(in srgb, var(--graph-status-failed) 20%, transparent)
+
+.graph-flow-diamond--interrupted
+  border-color: var(--graph-status-interrupted)
+  box-shadow: 0 0 8px color-mix(in srgb, var(--graph-status-interrupted) 20%, transparent)
+
+.graph-flow-diamond__inner
+  transform: rotate(-45deg)
+  display: flex
+  flex-direction: column
+  align-items: center
+  justify-content: center
+  height: 100%
+  gap: 4px
+  padding: 4px
+
+.graph-flow-diamond__label
+  font-size: 10px
+  font-weight: 600
+  text-align: center
+  overflow-wrap: break-word
+  line-height: 1.2
+
+.graph-flow-diamond__status-badge
+  font-size: 8px
+  padding: 1px 4px
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--glass-surface))
+  color: var(--color-text-secondary)
+
+.graph-flow-diamond__status-badge--running
+  background: color-mix(in srgb, var(--graph-status-running) 12%, var(--glass-surface))
+  color: var(--graph-status-running)
+  border: 1px solid color-mix(in srgb, var(--graph-status-running) 20%, transparent)
+
+.graph-flow-diamond__status-badge--completed
+  background: color-mix(in srgb, var(--graph-status-completed) 12%, var(--glass-surface))
+  color: var(--graph-status-completed)
+  border: 1px solid color-mix(in srgb, var(--graph-status-completed) 20%, transparent)
+
+.graph-flow-diamond__status-badge--failed
+  background: color-mix(in srgb, var(--graph-status-failed) 12%, var(--glass-surface))
+  color: var(--graph-status-failed)
+  border: 1px solid color-mix(in srgb, var(--graph-status-failed) 20%, transparent)
+
+.graph-flow-diamond__status-badge--interrupted
+  background: color-mix(in srgb, var(--graph-status-interrupted) 12%, var(--glass-surface))
+  color: var(--graph-status-interrupted)
+  border: 1px solid color-mix(in srgb, var(--graph-status-interrupted) 20%, transparent)
+
+.graph-flow-diamond__branch-label
+  position: absolute
+  font-size: 10px
+  font-weight: 700
+  line-height: 1
+  transform: rotate(-45deg)
+  pointer-events: none
+
+.graph-flow-diamond__branch-label--yes
+  right: -6px
+  top: 50%
+  color: var(--graph-status-completed)
+
+.graph-flow-diamond__branch-label--no
+  left: -6px
+  top: 50%
+  color: var(--graph-status-failed)
+
+@keyframes graph-diamond-pulse
+  0%, 100%
+    box-shadow: 0 0 8px color-mix(in srgb, var(--graph-status-running) 15%, transparent)
+  50%
+    box-shadow: 0 0 20px color-mix(in srgb, var(--graph-status-running) 35%, transparent), 0 0 40px color-mix(in srgb, var(--graph-status-running) 12%, transparent)
+
+.graph-run-sidebar,
+.graph-property-panel,
+.graph-run-inspector
+  border-left: 1px solid var(--glass-border)
+  background: var(--glass-surface)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+.graph-run-sidebar.is-dark,
+.graph-property-panel.is-dark,
+.graph-run-inspector.is-dark
+  border-color: var(--glass-border)
+  background: color-mix(in srgb, var(--glass-surface) 65%, transparent)
+
+.graph-run-sidebar
+  width: 320px
+  padding: 16px
+  overflow-y: auto
+
+.graph-run-sidebar--embedded
+  width: 100%
+  border-left: none
+  background: transparent
+  backdrop-filter: none
+  -webkit-backdrop-filter: none
+
+.graph-run-sidebar__header
+  margin-bottom: 12px
+
+.graph-run-inspector
+  width: 400px
+  display: flex
+  flex-direction: column
+  overflow: hidden
+
+.graph-run-inspector__tabs
+  padding: 0 8px
+
+.graph-run-inspector__panels
+  flex: 1
+  overflow: auto
+
+.graph-property-panel
+  width: 320px
+  padding: 16px 12px
+
+.graph-property-panel__header
+  display: flex
+  align-items: center
+  justify-content: space-between
+  margin-bottom: 8px
+
+.graph-property-panel__body
+  padding-top: 4px
+
+.graph-property-panel__section
+  display: grid
+  gap: 8px
+  padding: 10px 0
+  border-top: 1px solid var(--glass-border)
+
+.graph-property-panel__section-title
+  font-size: 11px
+  font-weight: 800
+  letter-spacing: 0.06em
+  text-transform: uppercase
+  color: var(--color-text-secondary)
+
+.graph-property-panel__group
+  border-left: 3px solid var(--group-accent, var(--node-accent, var(--color-accent)))
+  margin: 4px 0
+  border-radius: 0 8px 8px 0
+  overflow: hidden
+
+.graph-property-panel__group--basic
+  --group-accent: var(--graph-node-llm-border)
+
+.graph-property-panel__group--conditional
+  --group-accent: var(--graph-edge-conditional)
+
+.graph-property-panel__group--model
+  --group-accent: var(--graph-node-agent-border)
+
+.graph-property-panel__group--interrupt
+  --group-accent: var(--graph-node-hitl-border)
+
+.graph-property-panel__group--advanced
+  --group-accent: var(--graph-node-router-border)
+
+.graph-property-panel__group-header
+  font-size: 11px !important
+  font-weight: 800 !important
+  letter-spacing: 0.06em !important
+  text-transform: uppercase !important
+  color: var(--color-text-secondary) !important
+
+.graph-property-panel__group-body
+  padding: 4px 0 8px
+
+.graph-property-panel__empty
+  display: flex
+  flex-direction: column
+  align-items: center
+  justify-content: center
+  height: 200px
+  text-align: center
+
+.graph-property-panel .state-field-row
+  padding: 6px 8px
+  border: 1px solid var(--glass-border)
+  border-radius: 10px
+  background: color-mix(in srgb, var(--glass-elevated) 40%, transparent)
+
+.graph-property-panel.is-dark .state-field-row
+  border-color: var(--glass-border)
+  background: color-mix(in srgb, var(--glass-elevated) 50%, transparent)
+
+.graph-checkpoint-panel__item--active
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent)
+
+.graph-checkpoint-panel__preview
+  border-top: 1px solid var(--glass-border)
+  padding-top: 8px
+
+.graph-checkpoint-panel__preview-title
+  font-size: 11px
+  font-weight: 700
+  text-transform: uppercase
+  letter-spacing: 0.06em
+  color: var(--color-text-secondary)
+
+.graph-checkpoint-panel__json
+  font-family: ui-monospace, 'Cascadia Code', monospace
+  font-size: 11px
+  max-height: 160px
+  overflow: auto
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+  border-radius: 8px
+  padding: 8px
+  white-space: pre-wrap
+  margin-top: 4px
+
+.graph-checkpoint-panel__next
+  font-size: 11px
+
+.graph-validation-panel__title,
+.graph-checkpoint-panel__title,
+.graph-template-picker__title,
+.graph-time-travel-panel__title,
+.graph-run-sidebar__title,
+.graph-property-panel__title
+  font-size: 12px
+  font-weight: 800
+  text-transform: uppercase
+  letter-spacing: 0.08em
+  color: var(--color-text-secondary)
+
+.graph-run-sidebar__mono,
+.graph-checkpoint-panel__mono,
+.graph-time-travel-panel__mono,
+.graph-hitl-dialog__mono
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace
+  font-size: 11px
+  word-break: break-all
+
+.graph-hitl-dialog__mono
+  font-size: inherit
+
+.graph-workbench__dirty-chip
+  background: color-mix(in srgb, var(--color-warning) 16%, var(--glass-surface))
+  color: var(--color-text-secondary)
+
+.graphs-page__create-btn
+  background: var(--color-accent)
+  color: var(--color-on-accent)
+
+.graphs-page__create-btn:hover
+  background: var(--color-accent-hover)
+
+.graph-run-page__body
+  flex: 1
+  min-height: 0
+  overflow: hidden
+
+.graph-run-page__live-badge,
+.team-orchestrate-page__live-badge
+  background: color-mix(in srgb, var(--color-success) 18%, var(--glass-surface))
+  color: var(--color-success)
+
+.graph-run-page__step-counter
+  font-size: 11px
+  font-weight: 700
+  color: var(--color-text-secondary)
+  letter-spacing: 0.02em
+  white-space: nowrap
+
+.graph-run-progress
+  padding: 0 16px 6px
+  background: var(--glass-surface)
+
+.graph-run-progress__bar
+  position: relative
+  height: 2px
+  background: color-mix(in srgb, var(--glass-border) 80%, transparent)
+  border-radius: 1px
+  overflow: visible
+
+.graph-run-progress__fill
+  height: 100%
+  background: linear-gradient(90deg, var(--graph-progress-from), var(--graph-progress-to))
+  border-radius: 1px
+  box-shadow: 0 0 6px color-mix(in srgb, var(--graph-progress-to) 40%, transparent), 0 0 12px color-mix(in srgb, var(--graph-progress-from) 20%, transparent)
+  transition: width 400ms ease
+
+.graph-run-progress__dot
+  position: absolute
+  top: 50%
+  width: 8px
+  height: 8px
+  border-radius: 50%
+  background: var(--graph-progress-to)
+  box-shadow: 0 0 4px var(--graph-progress-to), 0 0 10px color-mix(in srgb, var(--graph-progress-to) 60%, transparent), 0 0 20px color-mix(in srgb, var(--graph-progress-to) 30%, transparent)
+  transform: translate(-50%, -50%)
+  transition: left 400ms ease
+  animation: graph-progress-dot-pulse 2s ease-in-out infinite
+
+@keyframes graph-progress-dot-pulse
+  0%, 100%
+    box-shadow: 0 0 4px var(--graph-progress-to), 0 0 10px color-mix(in srgb, var(--graph-progress-to) 60%, transparent), 0 0 20px color-mix(in srgb, var(--graph-progress-to) 30%, transparent)
+  50%
+    box-shadow: 0 0 6px var(--graph-progress-to), 0 0 16px color-mix(in srgb, var(--graph-progress-to) 80%, transparent), 0 0 32px color-mix(in srgb, var(--graph-progress-to) 40%, transparent)
+
+.graph-run-progress__stats
+  display: flex
+  align-items: center
+  gap: 10px
+  margin-top: 4px
+  font-size: 11px
+  font-weight: 600
+  line-height: 1
+
+.graph-run-progress__stat--completed
+  color: var(--graph-status-completed)
+
+.graph-run-progress__stat--running
+  color: var(--graph-status-running)
+
+.graph-run-progress__stat--waiting
+  color: var(--color-text-tertiary)
+
+.graph-run-progress__stat--duration
+  color: var(--color-text-tertiary)
+  margin-left: auto
+
+@media (max-width: 1024px)
+  .graph-node-palette
+    width: 200px
+    padding: 10px 8px
+
+  .graph-property-panel
+    width: 260px
+    padding: 12px 8px
+
+  .graph-run-inspector
+    width: 320px
+
+@media (max-width: 768px)
+  .graph-node-palette
+    display: none
+
+  .graph-property-panel
+    width: 100%
+    position: fixed
+    bottom: 0
+    left: 0
+    right: 0
+    height: 50vh
+    z-index: 100
+    border-left: none
+    border-top: 1px solid var(--glass-border)
+
+  .graph-run-inspector
+    width: 100%
+    position: fixed
+    bottom: 0
+    left: 0
+    right: 0
+    height: 50vh
+    z-index: 100
+    border-left: none
+    border-top: 1px solid var(--glass-border)
+
+@keyframes graph-node-pulse
+  0%, 100%
+    box-shadow: 0 0 8px color-mix(in srgb, var(--graph-status-running) 15%, transparent), 0 0 24px color-mix(in srgb, var(--graph-status-running) 6%, transparent)
+  50%
+    box-shadow: 0 0 16px color-mix(in srgb, var(--graph-status-running) 35%, transparent), 0 0 48px color-mix(in srgb, var(--graph-status-running) 12%, transparent)
+
+.graph-workbench
+  display: flex
+  flex-direction: column
+  height: 100vh
+  background: var(--canvas-base)
+
+.graph-workbench__body
+  display: flex
+  flex: 1
+  min-height: 0
+  overflow: hidden
+
+.graph-workbench__toolbar-meta
+  display: flex
+  flex-direction: column
+  gap: 2px
+  min-width: 0
+
+.graph-workbench__subtitle
+  font-size: 11px
+  color: var(--color-text-secondary)
+
+.graph-editor-canvas
+  position: relative
+  flex: 1
+  min-width: 0
+  height: 100%
+  background-color: var(--canvas-base)
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 8%, transparent) 1px, transparent 1px), radial-gradient(circle at top, color-mix(in srgb, var(--color-accent) 5%, transparent), transparent 34%)
+  background-size: 24px 24px, 100% 100%
+
+.graph-editor-canvas .vue-flow__edge-path
+  stroke: var(--graph-edge-normal)
+  stroke-width: 1px
+  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--graph-edge-normal) 40%, transparent))
+
+.graph-editor-canvas .vue-flow__edge.selected .vue-flow__edge-path
+  stroke: var(--graph-edge-normal)
+  stroke-width: 1.5px
+  filter: drop-shadow(0 0 4px var(--graph-edge-normal))
+
+.graph-edge--conditional .vue-flow__edge-path
+  stroke: var(--graph-edge-conditional)
+  stroke-dasharray: 6 4
+  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--graph-edge-conditional) 40%, transparent))
+  animation: graph-edge-flow-conditional 1.6s linear infinite
+
+.graph-edge--transfer .vue-flow__edge-path
+  stroke: var(--graph-edge-transfer)
+  stroke-dasharray: 4 3
+  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--graph-edge-transfer) 40%, transparent))
+  animation: graph-edge-flow-transfer 1.8s linear infinite
+
+.graph-edge--dispatch .vue-flow__edge-path
+  stroke: var(--graph-edge-dispatch)
+  stroke-dasharray: 8 6
+  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--graph-edge-dispatch) 40%, transparent))
+  animation: graph-edge-flow-dispatch 1.4s linear infinite
+
+@keyframes graph-edge-flow-normal
+  from
+    stroke-dashoffset: 24
+  to
+    stroke-dashoffset: 0
+
+@keyframes graph-edge-flow-conditional
+  from
+    stroke-dashoffset: 40
+  to
+    stroke-dashoffset: 0
+
+@keyframes graph-edge-flow-transfer
+  from
+    stroke-dashoffset: 28
+  to
+    stroke-dashoffset: 0
+
+@keyframes graph-edge-flow-dispatch
+  from
+    stroke-dashoffset: 56
+  to
+    stroke-dashoffset: 0
+
+.graph-editor-canvas .vue-flow__controls
+  border: 1px solid var(--glass-border)
+  border-radius: 14px
+  overflow: hidden
+  background: var(--glass-surface)
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 6%, transparent), var(--shadow-entity-panel)
+
+.graph-editor-canvas .vue-flow__minimap
+  border: 1px solid var(--glass-border)
+  border-radius: 14px
+  overflow: hidden
+  background: var(--glass-surface)
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 6%, transparent), var(--shadow-entity-panel)
+
+.graph-editor-canvas__zoom-indicator
+  position: absolute
+  bottom: 16px
+  left: 16px
+  display: flex
+  align-items: center
+  gap: 2px
+  padding: 4px 8px
+  border: 1px solid var(--glass-border)
+  border-radius: 10px
+  background: var(--glass-surface)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 6%, transparent), var(--shadow-entity-panel)
+  z-index: 5
+
+.graph-editor-canvas__zoom-text
+  min-width: 42px
+  text-align: center
+  font-size: 11px
+  font-weight: 600
+  font-variant-numeric: tabular-nums
+  color: var(--color-text-secondary)
+  cursor: pointer
+  user-select: none
+
+  &:hover
+    color: var(--color-accent)
+
+.graph-run-step--error
+  .q-timeline__dot
+    animation: graph-step-error-pulse 2s ease-in-out infinite
+
+  .q-timeline__content
+    border-left: 3px solid var(--q-negative)
+    padding-left: 8px
+    border-radius: 4px
+
+.graph-run-step__error
+  color: var(--q-negative)
+  font-size: 12px
+  background: rgba(194, 54, 54, 0.08)
+  border-radius: 6px
+  padding: 4px 8px
+  word-break: break-word
+
+.graph-run-step__status-badge
+  font-size: 10px
+
+.graph-run-step__detail
+  animation: graph-step-expand 0.15s ease-out
+
+.graph-run-step__json
+  font-family: ui-monospace, 'Cascadia Code', monospace
+  font-size: 11px
+  line-height: 1.4
+  max-height: 200px
+  overflow: auto
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+  border-radius: 8px
+  padding: 8px
+  margin: 0
+  white-space: pre-wrap
+  word-break: break-all
+
+@keyframes graph-step-error-pulse
+  0%, 100%
+    opacity: 1
+  50%
+    opacity: 0.5
+
+@keyframes graph-step-expand
+  from
+    opacity: 0
+    max-height: 0
+  to
+    opacity: 1
+    max-height: 500px
+
+.snap-guide-layer
+  position: absolute
+  top: 0
+  left: 0
+  width: 1px
+  height: 1px
+  pointer-events: none
+  z-index: 4
+  overflow: visible
+
+.snap-guide-line
+  stroke: var(--color-accent)
+  stroke-width: 1
+  stroke-dasharray: 4 3
+  opacity: 0.6
+  vector-effect: non-scaling-stroke
+
+.snap-guide-line--horizontal
+  stroke-dasharray: 6 4
+
+.graph-node-palette
+  width: 260px
+  display: flex
+  flex-direction: column
+  gap: 12px
+  height: 100%
+  padding: 14px 12px
+  border-right: 1px solid var(--glass-border)
+  background: color-mix(in srgb, var(--glass-surface) 88%, transparent)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+  overflow-y: auto
+
+.graph-node-palette__head
+  padding: 0 2px
+
+.graph-node-palette__title
+  font-size: 14px
+  font-weight: 800
+  color: var(--color-text-heading)
+
+.graph-node-palette__subtitle
+  margin-top: 2px
+  font-size: 11px
+  color: var(--color-text-secondary)
+
+.graph-node-palette__group-title
+  margin: 0 2px 8px
+  font-size: 11px
+  font-weight: 700
+  letter-spacing: 0.08em
+  text-transform: uppercase
+  color: var(--color-text-tertiary)
+
+.graph-node-palette__list
+  display: flex
+  flex-direction: column
+  gap: 8px
+
+.graph-node-palette__item
+  display: flex
+  align-items: center
+  gap: 10px
+  width: 100%
+  padding: 10px
+  border: 1px solid var(--glass-border)
+  border-radius: 14px
+  background: color-mix(in srgb, var(--glass-elevated) 72%, transparent)
+  cursor: grab
+  text-align: left
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease
+
+  &:hover
+    background: var(--glass-surface-hover)
+    border-color: color-mix(in srgb, var(--color-accent) 22%, var(--glass-border))
+    transform: translateY(-1px)
+    box-shadow: 0 0 8px color-mix(in srgb, var(--node-accent, var(--color-accent)) 12%, transparent)
+
+  &:active
+    cursor: grabbing
+
+.graph-node-palette__icon
+  display: flex
+  align-items: center
+  justify-content: center
+  width: 34px
+  height: 34px
+  border-radius: 10px
+  flex-shrink: 0
+  background: color-mix(in srgb, var(--node-accent, var(--color-accent)) 14%, var(--glass-surface))
+  color: var(--node-accent, var(--color-accent))
+
+.graph-node-palette__info
+  flex: 1
+  min-width: 0
+
+.graph-node-palette__name
+  font-size: 12px
+  font-weight: 700
+  color: var(--color-text-heading)
+
+.graph-node-palette__desc
+  margin-top: 2px
+  font-size: 10px
+  line-height: 1.35
+  color: var(--color-text-secondary)
+
+.graph-kanban-live
+  background: color-mix(in srgb, var(--color-success) 18%, var(--glass-surface))
+  color: var(--color-success)
+
+.graph-task-card
+  border-radius: 14px
+  cursor: grab
+  transition: box-shadow 0.2s
+
+.graph-task-card:active
+  cursor: grabbing
+
+.graph-task-card__drag-handle
+  opacity: 0.35
+  align-self: center
+
+.graph-task-card--selected
+  box-shadow: 0 0 0 2px var(--color-accent, var(--q-primary))
+
+.graph-task-card.is-dark
+  border-color: color-mix(in srgb, var(--color-on-accent) 8%, transparent)
+
+.graph-kanban-empty
+  padding: 12px 14px
+  border-radius: 12px
+  background: color-mix(in srgb, var(--glass-surface) 88%, transparent)
+  border: 1px dashed var(--color-border-subtle, color-mix(in srgb, var(--glass-border) 72%, transparent))
+
+.graph-kanban-draggable
+  min-height: 48px
+
+.graph-kanban-ghost
+  opacity: 0.5
+  background: var(--q-primary)
+
+// Graph 右键上下文菜单 — v7 设计稿对齐（赛博青色系 + 顶部/底部光线条 + 左侧发光条）
+.graph-ctx-menu
+  position: fixed
+  z-index: 9999
+  width: 234px
+  background: var(--graph-ctx-bg)
+  backdrop-filter: blur(28px)
+  -webkit-backdrop-filter: blur(28px)
+  border: 1px solid var(--graph-ctx-border)
+  border-radius: 10px
+  box-shadow: 0 0 32px color-mix(in srgb, var(--graph-ctx-accent) 5%, transparent), 0 12px 48px rgba(0, 0, 0, 0.8)
+  padding: 6px 0
+  overflow: hidden
+  animation: ctx-menu-in 0.12s ease-out
+
+@keyframes ctx-menu-in
+  from
+    opacity: 0
+    transform: scale(0.95) translateY(-4px)
+  to
+    opacity: 1
+    transform: scale(1) translateY(0)
+
+// 顶部 / 底部光线条（v7 规范）
+.graph-ctx-menu__glow-top,
+.graph-ctx-menu__glow-bottom
+  position: absolute
+  left: 0
+  right: 0
+  height: 1px
+  pointer-events: none
+
+.graph-ctx-menu__glow-top
+  top: 0
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--graph-ctx-accent) 50%, transparent), transparent)
+
+.graph-ctx-menu__glow-bottom
+  bottom: 0
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--graph-ctx-accent) 30%, transparent), transparent)
+
+// 菜单项（v7 规范：flex 布局 + 左侧发光条 + 悬停内发光）
+.graph-ctx-menu__item
+  display: flex
+  align-items: center
+  gap: 10px
+  padding: 9px 14px
+  margin: 2px 5px
+  border-radius: 4px
+  cursor: pointer
+  position: relative
+  transition: background 0.1s, transform 0.08s, box-shadow 0.1s
+
+// 左侧发光条（悬停时显示，颜色跟随语义类型）
+.graph-ctx-menu__accent
+  position: absolute
+  left: 0
+  top: 3px
+  bottom: 3px
+  width: 2px
+  border-radius: 0 1px 1px 0
+  background: var(--graph-ctx-accent)
+  opacity: 0
+  transition: opacity 0.12s
+  box-shadow: 0 0 6px var(--graph-ctx-glow), 0 0 14px color-mix(in srgb, var(--graph-ctx-glow) 40%, transparent)
+
+// 悬停态：背景着色 + 内发光 + 左条显现 + 图标投影
+.graph-ctx-menu__item:hover
+  background: color-mix(in srgb, var(--graph-ctx-accent) 6%, transparent)
+  box-shadow: inset 0 0 16px color-mix(in srgb, var(--graph-ctx-accent) 3%, transparent)
+
+.graph-ctx-menu__item:hover .graph-ctx-menu__accent
+  opacity: 1
+
+// 按压态：缩放 + 加深背景
+.graph-ctx-menu__item:active
+  transform: scale(0.97)
+  background: color-mix(in srgb, var(--graph-ctx-accent) 12%, transparent)
+
+// 危险操作项（赛博粉 #f472b6）
+.graph-ctx-menu__item--danger .graph-ctx-menu__accent
+  background: var(--graph-ctx-danger)
+  box-shadow: 0 0 6px var(--graph-ctx-danger-glow), 0 0 14px color-mix(in srgb, var(--graph-ctx-danger-glow) 40%, transparent)
+
+.graph-ctx-menu__item--danger:hover
+  background: color-mix(in srgb, var(--graph-ctx-danger) 6%, transparent)
+  box-shadow: inset 0 0 16px color-mix(in srgb, var(--graph-ctx-danger) 3%, transparent)
+
+.graph-ctx-menu__item--danger:active
+  background: color-mix(in srgb, var(--graph-ctx-danger) 12%, transparent)
+
+// 成功操作项（翡翠绿 #34d399）
+.graph-ctx-menu__item--success .graph-ctx-menu__accent
+  background: var(--graph-ctx-success)
+  box-shadow: 0 0 6px var(--graph-ctx-success-glow), 0 0 14px color-mix(in srgb, var(--graph-ctx-success-glow) 40%, transparent)
+
+.graph-ctx-menu__item--success:hover
+  background: color-mix(in srgb, var(--graph-ctx-success) 6%, transparent)
+  box-shadow: inset 0 0 16px color-mix(in srgb, var(--graph-ctx-success) 3%, transparent)
+
+.graph-ctx-menu__item--success:active
+  background: color-mix(in srgb, var(--graph-ctx-success) 12%, transparent)
+
+// 禁用态
+.graph-ctx-menu__item--disabled
+  opacity: 0.35
+  pointer-events: none
+
+// 图标（等宽 + 悬停投影）
+.graph-ctx-menu__icon
+  width: 18px
+  text-align: center
+  font-size: 13px
+  flex-shrink: 0
+  padding-left: 2px
+  transition: filter 0.12s
+  color: var(--graph-ctx-text)
+
+.graph-ctx-menu__item:hover .graph-ctx-menu__icon
+  filter: drop-shadow(0 0 4px var(--graph-ctx-glow))
+
+.graph-ctx-menu__item--danger:hover .graph-ctx-menu__icon
+  filter: drop-shadow(0 0 4px var(--graph-ctx-danger-glow))
+
+.graph-ctx-menu__item--success:hover .graph-ctx-menu__icon
+  filter: drop-shadow(0 0 4px var(--graph-ctx-success-glow))
+
+// 标签文字
+.graph-ctx-menu__label
+  flex: 1
+  color: var(--graph-ctx-text)
+  font-size: 12px
+  font-weight: 500
+  letter-spacing: 0.03em
+  white-space: nowrap
+
+// 快捷键徽章（等宽字体 + 边框）
+.graph-ctx-menu__shortcut
+  padding: 1px 5px
+  border-radius: 3px
+  background: color-mix(in srgb, var(--graph-ctx-accent) 6%, transparent)
+  color: var(--graph-ctx-accent)
+  font-size: 9px
+  font-weight: 600
+  border: 1px solid color-mix(in srgb, var(--graph-ctx-accent) 12%, transparent)
+  font-family: ui-monospace, monospace
+  flex-shrink: 0
+
+.graph-node-search
+  position: absolute
+  top: 12px
+  left: 50%
+  transform: translateX(-50%)
+  z-index: 10
+  min-width: 320px
+  background: var(--glass-surface)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+  border: 1px solid var(--glass-border)
+  border-radius: 10px
+  padding: 6px 8px
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15)
+
+.graph-node-search__count
+  font-size: 11px
+  font-weight: 600
+  color: var(--color-text-tertiary)
+  margin-right: 4px
+
+.graph-executions-page__list
+  max-width: 720px
+  margin: 0 auto
+  display: flex
+  flex-direction: column
+  gap: 8px
+
+.graph-executions-page__card
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+  border-radius: 14px
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+  cursor: pointer
+  transition: border-color 0.2s, box-shadow 0.2s
+
+  &:hover
+    border-color: var(--color-accent)
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06)
+
+.graph-executions-page__card-id
+  color: var(--color-text-primary)
+
+.graph-executions-page__card-meta
+  color: var(--color-text-secondary)
+
+.graph-executions-page__badge
+  font-size: 11px
+
+.graph-executions-page__empty
+  background: var(--glass-surface)
+  border: 1px solid var(--glass-border)
+  border-radius: 16px
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+
+.graphs-page__body
+  display: flex
+  gap: 0
+  min-height: 0
+  flex: 1
+
+.graphs-page__list
+  flex: 1
+  min-width: 0
+
+.graphs-page__empty
+  display: flex
+  flex-direction: column
+  align-items: center
+  padding: 40px 24px 24px
+
+.graphs-page__empty-head
+  margin-bottom: 8px
+
+.graphs-page__templates-grid
+  display: grid
+  grid-template-columns: repeat(3, 1fr)
+  gap: 14px
+  width: 100%
+  max-width: 800px
+
+.template-example-card
+  overflow: hidden
+  border: 1px solid var(--glass-border)
+  border-radius: 14px
+  background: var(--glass-surface)
+  box-shadow: var(--shadow-entity-panel)
+  backdrop-filter: blur(16px)
+  -webkit-backdrop-filter: blur(16px)
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease
+
+body:not(.body--dark) .template-example-card
+  background: rgba(255, 252, 243, 0.88)
+  border-color: rgba(0, 0, 0,0.52)
+  box-shadow: 0 2px 8px rgba(0, 0, 0,0.07), 0 8px 24px rgba(0, 0, 0,0.04)
+
+.template-example-card:hover
+  transform: translateY(-2px)
+  background: var(--glass-surface-hover)
+  border-color: color-mix(in srgb, var(--color-accent) 28%, var(--glass-border))
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 8%, transparent), var(--shadow-entity-panel)
+
+body:not(.body--dark) .template-example-card:hover
+  background: rgba(255, 250, 238, 0.95)
+  border-color: rgba(0, 122, 255,0.45)
+
+.template-example-card__inner
+  display: flex
+  flex-direction: column
+  gap: 6px
+  padding: 14px 14px 10px
+
+.template-example-card__name
+  font-size: 14px
+  font-weight: 800
+  color: var(--color-text-heading)
+  line-height: 1.25
+
+.template-example-card__desc
+  font-size: 11px
+  line-height: 1.45
+  color: var(--color-text-secondary)
+  display: -webkit-box
+  -webkit-line-clamp: 2
+  -webkit-box-orient: vertical
+  overflow: hidden
+
+.template-example-card__meta
+  display: flex
+  gap: 10px
+  font-size: 10px
+  color: var(--color-text-tertiary)
+  font-weight: 600
+
+.template-example-card__action
+  align-self: flex-start
+  font-size: 11px
+  font-weight: 700
+  padding: 2px 0
+
+.template-card
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease, box-shadow 160ms ease
+
+.template-card:hover
+  transform: translateY(-1px)
+  background: var(--glass-surface-hover)
+  border-color: color-mix(in srgb, var(--color-accent) 28%, var(--glass-border))
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 8%, transparent), var(--shadow-entity-panel)
+
+body:not(.body--dark) .template-card:hover
+  background: rgba(255, 250, 238, 0.95)
+  border-color: rgba(0, 122, 255,0.45)
+
+.template-card--selected
+  border-color: var(--color-accent) !important
+  background: color-mix(in srgb, var(--color-accent) 6%, var(--glass-surface)) !important
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 30%, transparent), 0 0 16px color-mix(in srgb, var(--color-accent) 12%, transparent), var(--shadow-entity-panel) !important
+
+body:not(.body--dark) .template-card--selected
+  border-color: rgba(0, 122, 255,0.7) !important
+  background: rgba(0, 122, 255,0.06) !important
+  box-shadow: 0 0 0 1px rgba(0, 122, 255,0.25), 0 0 16px rgba(0, 122, 255,0.1), 0 2px 8px rgba(0, 0, 0,0.07) !important
+
+.graph-card--selected
+  border-color: var(--color-accent) !important
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 30%, transparent), 0 0 16px color-mix(in srgb, var(--color-accent) 12%, transparent), var(--shadow-entity-panel) !important
+
+body:not(.body--dark) .graph-card--selected
+  border-color: rgba(0, 122, 255,0.7) !important
+  box-shadow: 0 0 0 1px rgba(0, 122, 255,0.25), 0 0 16px rgba(0, 122, 255,0.1), 0 2px 8px rgba(0, 0, 0,0.07) !important
+
+.graph-detail-panel
+  width: 320px
+  flex-shrink: 0
+  border-left: 1px solid var(--glass-border)
+  background: var(--glass-surface)
+  backdrop-filter: blur(var(--glass-blur-default))
+  -webkit-backdrop-filter: blur(var(--glass-blur-default))
+  display: flex
+  flex-direction: column
+  overflow-y: auto
+  transition: width 200ms ease
+
+.graph-detail-panel.is-dark
+  background: color-mix(in srgb, var(--glass-surface) 65%, transparent)
+
+.graph-detail-panel__header
+  display: flex
+  align-items: center
+  justify-content: space-between
+  padding: 14px 14px 10px
+  border-bottom: 1px solid var(--glass-border)
+
+.graph-detail-panel__title
+  font-size: 14px
+  font-weight: 800
+  color: var(--color-text-heading)
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+  min-width: 0
+
+.graph-detail-panel__body
+  padding: 12px 14px
+  display: flex
+  flex-direction: column
+  gap: 4px
+
+.graph-detail-panel__desc
+  color: var(--color-text-secondary)
+  font-size: 12px
+  line-height: 1.5
+  margin-bottom: 4px
+
+.graph-detail-panel__section
+  display: flex
+  flex-direction: column
+  gap: 6px
+  padding: 10px 0
+  border-top: 1px solid var(--glass-border)
+
+.graph-detail-panel__section-title
+  font-size: 11px
+  font-weight: 800
+  letter-spacing: 0.06em
+  text-transform: uppercase
+  color: var(--color-text-secondary)
+
+.graph-detail-panel__field
+  display: flex
+  align-items: baseline
+  justify-content: space-between
+  gap: 8px
+
+.graph-detail-panel__label
+  font-size: 11px
+  color: var(--color-text-tertiary)
+  flex-shrink: 0
+
+.graph-detail-panel__value
+  font-size: 12px
+  color: var(--color-text-primary)
+  text-align: right
+  min-width: 0
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+
+.graph-detail-panel__value--mono
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace
+  font-size: 11px
+
+.graph-detail-panel__stats
+  display: flex
+  flex-wrap: wrap
+  gap: 4px
+
+.graph-detail-panel__stat-chip
+  display: inline-flex
+  align-items: center
+  padding: 2px 7px
+  border: 1px solid var(--glass-border)
+  border-radius: 999px
+  background: color-mix(in srgb, var(--glass-elevated) 60%, transparent)
+  font-size: 10px
+  font-weight: 700
+  line-height: 1.4
+  white-space: nowrap
+
+.graph-detail-panel__state-row
+  display: flex
+  align-items: center
+  gap: 6px
+  padding: 4px 8px
+  border: 1px solid var(--glass-border)
+  border-radius: 8px
+  background: color-mix(in srgb, var(--glass-elevated) 40%, transparent)
+
+.graph-detail-panel__state-name
+  font-size: 11px
+  font-weight: 700
+  color: var(--color-text-primary)
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace
+
+.graph-detail-panel__state-type
+  font-size: 10px
+  color: var(--color-text-tertiary)
+
+.graph-detail-panel__state-reducer
+  font-size: 10px
+  color: var(--color-text-secondary)
+  margin-left: auto
+
+.graph-detail-panel__actions
+  display: flex
+  flex-wrap: wrap
+  gap: 4px
+  padding-top: 10px
+  border-top: 1px solid var(--glass-border)
+
+.graph-detail-panel__action-btn
+  background: var(--color-accent)
+  color: var(--color-on-accent)
+
+.graph-detail-panel__action-btn:hover
+  background: var(--color-accent-hover)
+
+.graph-detail-panel__empty
+  display: flex
+  flex-direction: column
+  align-items: center
+  justify-content: center
+  height: 100%
+  min-height: 240px
+  text-align: center
+  padding: 32px 16px
+  gap: 8px
+
+.graph-detail-panel__empty-text
+  font-size: 13px
+  font-weight: 600
+  color: var(--color-text-secondary)
+
+.graph-detail-panel__empty-hint
+  font-size: 11px
+  color: var(--color-text-tertiary)
+
+@media (max-width: 1024px)
+  .graphs-page__body
+    flex-direction: column
+
+  .graph-detail-panel
+    width: 100%
+    border-left: none
+    border-top: 1px solid var(--glass-border)
+    max-height: 50vh

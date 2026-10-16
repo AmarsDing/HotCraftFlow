@@ -1,0 +1,35 @@
+﻿# Dependencies & build
+node_modules/
+dist/
+.quasar/
+coverage/
+test-results/
+bin/
+*.exe
+vendor/
+
+# Env & secrets
+.env
+.env.*
+*.pem
+
+# Logs & runtime
+logs/
+storage/
+tmp/
+*.log
+
+# OS junk
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Go
+*.test
+*.out

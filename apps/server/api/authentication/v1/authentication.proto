@@ -1,0 +1,412 @@
+syntax = "proto3";
+
+package authentication.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/protobuf/empty.proto";
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+
+import "user/v1/user.proto";
+
+// 用户登录认证服务
+service AuthenticationService {
+  // 用户登录
+  rpc Login (LoginRequest) returns (LoginResponse) {}
+
+  // 用户登出
+  rpc Logout (google.protobuf.Empty) returns (google.protobuf.Empty) {}
+
+  // 注册用户
+  rpc RegisterUser (RegisterUserRequest) returns (RegisterUserResponse) {}
+
+
+  // 刷新认证令牌
+  rpc RefreshToken (LoginRequest) returns (LoginResponse) {}
+
+  // 验证令牌
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse) {}
+
+
+  // 修改用户密码
+  rpc ChangePassword(ChangePasswordRequest) returns (google.protobuf.Empty);
+
+
+  // 获取当前用户身份信息
+  rpc WhoAmI(google.protobuf.Empty) returns (WhoAmIResponse) {}
+
+  // MFA 二步登录：校验 TOTP 验证码并签发令牌
+  rpc VerifyMFA(VerifyMFARequest) returns (LoginResponse) {}
+
+  // 启用 MFA：生成 secret 与 otpauth URL（QR 内容）
+  rpc EnableMFA(google.protobuf.Empty) returns (EnableMFAResponse) {}
+
+  // 禁用 MFA：校验 TOTP 验证码后关闭
+  rpc DisableMFA(DisableMFARequest) returns (google.protobuf.Empty) {}
+}
+
+// 授权类型
+enum GrantType {
+  password = 0; // 密码模式（Resource Owner Password Credentials Grant）
+  client_credentials = 1; // 客户端模式（Client Credentials Grant）
+  authorization_code = 2; // 授权码模式（Authorization Code Grant）
+  refresh_token = 3;  // 刷新令牌 (Refresh Token)
+  implicit = 4;  // 简化模式 (Implicit Grant)
+}
+
+// 令牌类型
+enum TokenType {
+  bearer = 0; //
+  mac = 1; //
+}
+
+// 客户端类型
+enum ClientType {
+  admin = 0; // 管理端
+  app = 1; // APP
+}
+
+// 用户后台登录 - 请求
+message LoginRequest {
+  string grant_type = 1 [
+    json_name = "grant_type",
+    (google.api.field_behavior) = REQUIRED,
+    (gnostic.openapi.v3.property) = {
+      description: "授权类型，此处的值固定为\"password\"，必选项。",
+      default: {string: "password"}
+    }
+  ]; // 授权类型，此处的值固定为"password"，必选项。
+
+  optional string client_id = 2 [
+    json_name = "client_id",
+    (gnostic.openapi.v3.property) = {
+      description: "客户端ID"
+    }
+  ];
+  optional string client_secret = 3 [
+    json_name = "client_secret",
+    (gnostic.openapi.v3.property) = {
+      description: "客户端密钥"
+    }
+  ];
+
+  optional string scope = 4 [
+    json_name = "scope",
+    (gnostic.openapi.v3.property) = {
+      description: "以空格分隔的用户授予范围列表。如果未提供，scope则授权任何范围，默认为空列表。"
+    }
+  ]; // 以空格分隔的范围列表。如果未提供，scope则授权任何范围，默认为空列表。
+
+  optional string redirect_uri = 5 [
+    json_name = "redirect_uri",
+    (gnostic.openapi.v3.property) = {
+      description: "跳转链接"
+    }
+  ]; // 跳转链接
+
+  optional string username = 10 [
+    json_name = "username"
+  ]; // 用户名，必选项。
+
+  optional string password = 11 [
+    json_name = "password"
+  ]; // 用户的密码，必选项。
+
+  optional string refresh_token = 20 [
+    json_name = "refresh_token",
+    (gnostic.openapi.v3.property) = {
+      description: "更新令牌，用来获取下一次的访问令牌，可选项。如果访问令牌将过期，则返回刷新令牌很有用，应用程序可以使用该刷新令牌来获取另一个访问令牌。但是，通过隐式授予颁发的令牌不能颁发刷新令牌。"
+    }
+  ]; // 更新令牌，用来获取下一次的访问令牌，必选项。
+
+  optional string code = 30 [
+    json_name = "code",
+    (gnostic.openapi.v3.property) = {
+      description: "授权请求中收到的一次性验证/认证码。(当使用授权码模式时)"
+    }
+  ]; // 授权请求中收到的一次性验证/认证码。(当使用授权码模式时)
+
+  // —— 登录安全增强字段 ——
+  reserved 40, 41;
+  reserved "captcha_id", "captcha_code";
+
+  optional string mfa_code = 42 [
+    json_name = "mfaCode",
+    (gnostic.openapi.v3.property) = {description: "MFA TOTP 验证码（启用 MFA 二步登录时必填）"}
+  ]; // MFA TOTP 验证码
+}
+
+// 用户后台登录 - 回应
+message LoginResponse {
+  string access_token = 1 [
+    json_name = "access_token",
+    (gnostic.openapi.v3.property) = {
+      description: "访问令牌，必选项。授权服务器颁发的访问令牌字符串。"
+    }
+  ]; // 访问令牌，必选项。
+
+  string refresh_token = 2 [
+    json_name = "refresh_token",
+    (gnostic.openapi.v3.property) = {
+      description: "更新令牌，用来获取下一次的访问令牌，可选项。如果访问令牌将过期，则返回刷新令牌很有用，应用程序可以使用该刷新令牌来获取另一个访问令牌。但是，通过隐式授予颁发的令牌不能颁发刷新令牌。"
+    }
+  ]; // 更新令牌，用来获取下一次的访问令牌，可选项。
+
+  string token_type = 3 [
+    json_name = "token_type",
+    (gnostic.openapi.v3.property) = {
+      description: "令牌的类型，该值大小写不敏感，必选项，可以是bearer类型或mac类型，通常只是字符串“Bearer”。",
+      default: {string: "Bearer"}
+    }
+  ]; // 令牌类型，该值大小写不敏感，必选项，可以是bearer类型或mac类型。
+
+  optional int64 expires_in = 4 [
+    json_name = "expires_in",
+    (gnostic.openapi.v3.property) = {
+      description: "令牌有效时间，单位为秒。如果访问令牌过期，服务器应回复授予访问令牌的持续时间。如果省略该参数，必须其他方式设置过期时间。"
+    }
+  ]; // 令牌有效时间，单位为秒。如果访问令牌过期，服务器应回复授予访问令牌的持续时间。如果省略该参数，必须其他方式设置过期时间。
+
+  optional string scope = 5 [
+    json_name = "scope",
+    (gnostic.openapi.v3.property) = {
+      description: "以空格分隔的用户授予范围列表。如果未提供，scope则授权任何范围，默认为空列表。"
+    }
+  ]; // 以空格分隔的用户授予范围列表。如果未提供，scope则授权任何范围，默认为空列表。
+
+  // MFA 二步登录临时令牌：当用户启用了 MFA 且登录请求未携带 mfa_code 时，
+  // 服务端返回此字段并附带 mfa_required=true，前端据此调用 VerifyMFA 完成第二步。
+  optional string mfa_token = 10 [
+    json_name = "mfaToken",
+    (gnostic.openapi.v3.property) = {description: "MFA 二步登录临时令牌"}
+  ]; // MFA 临时令牌
+
+  optional bool mfa_required = 11 [
+    json_name = "mfaRequired",
+    (gnostic.openapi.v3.property) = {description: "是否需要 MFA 二步验证"}
+  ]; // 是否需要 MFA
+}
+
+// 验证令牌 - 请求
+message ValidateTokenRequest {
+  string token = 1 [
+    json_name = "isValid",
+    (gnostic.openapi.v3.property) = {
+      description: "令牌"
+    }
+  ]; // 令牌
+
+  ClientType client_type = 2 [
+    json_name = "clientType",
+    (gnostic.openapi.v3.property) = {
+      description: "客戶端類型"
+    }
+  ]; // 客戶端類型
+}
+
+// 验证令牌 - 回应
+message ValidateTokenResponse {
+  bool is_valid = 1 [
+    json_name = "isValid",
+    (gnostic.openapi.v3.property) = {
+      description: "令牌是否有效"
+    }
+  ]; // 令牌是否有效
+
+  optional UserTokenPayload claim = 2 [
+    json_name = "claim",
+    (gnostic.openapi.v3.property) = {
+      description: "用戶令牌载体"
+    }
+  ]; // 用戶令牌载体
+}
+
+message RegisterUserRequest {
+  string username = 1 [
+    json_name = "username",
+    (gnostic.openapi.v3.property) = {
+      description: "用户名"
+    }
+  ]; // 用户名
+
+  string password = 2 [
+    json_name = "password",
+    (gnostic.openapi.v3.property) = {
+      description: "登入密码"
+    }
+  ]; // 登入密码
+
+  string tenant_code = 3 [
+    json_name = "tenantCode",
+    (gnostic.openapi.v3.property) = {
+      description: "租户代码"
+    }
+  ]; // 租户代码
+
+  optional string email = 4 [
+    json_name = "email",
+    (gnostic.openapi.v3.property) = {
+      description: "电子邮件地址"
+    }
+  ]; // 电子邮件地址
+}
+message RegisterUserResponse {
+  uint32 user_id = 1;
+}
+
+// 用户令牌载体
+message UserTokenPayload {
+  uint32 user_id = 1 [
+    json_name = "uid",
+    (gnostic.openapi.v3.property) = {
+      description: "用户ID"
+    }
+  ]; // 用户ID
+
+  optional uint32 tenant_id = 2 [
+    json_name = "tid",
+    (gnostic.openapi.v3.property) = {
+      description: "租户ID"
+    }
+  ]; // 租户ID
+
+  optional string username = 3 [
+    json_name = "sub",
+    (gnostic.openapi.v3.property) = {
+      description: "用户名"
+    }
+  ]; // 用户名
+
+  optional string client_id = 4 [
+    json_name = "cid",
+    (gnostic.openapi.v3.property) = {
+      description: "客户端ID"
+    }
+  ]; // 客户端ID
+
+  user.service.v1.UserAuthority authority = 5 [
+    json_name = "aut",
+    (gnostic.openapi.v3.property) = {
+      description: "用户权限"
+    }
+  ]; // 用户权限
+
+  repeated string roles = 6 [
+    json_name = "roc",
+    (gnostic.openapi.v3.property) = {
+      description: "用户角色列表，以逗号分隔"
+    }
+  ]; // 用户角色列表，以逗号分隔
+
+  optional uint32 role_id = 7 [
+    json_name = "rid",
+    (gnostic.openapi.v3.property) = {
+      description: "角色ID"
+    }
+  ]; // 角色ID
+
+  optional string device_id = 8 [
+    json_name = "did",
+    (gnostic.openapi.v3.property) = {
+      description: "设备ID"
+    }
+  ]; // 设备ID
+}
+
+// 获取当前用户身份信息 - 响应
+message WhoAmIResponse {
+  uint32 user_id = 1 [
+    json_name = "uid",
+    (gnostic.openapi.v3.property) = {
+      description: "用户ID"
+    }
+  ]; // 用户ID
+
+  string username = 2 [
+    json_name = "username",
+    (gnostic.openapi.v3.property) = {
+      description: "当前用户的用户名"
+    }
+  ]; // 当前用户的用户名
+
+  user.service.v1.UserAuthority authority = 3 [
+    json_name = "authority",
+    (gnostic.openapi.v3.property) = {
+      description: "用户权限"
+    }
+  ]; // 用户权限
+}
+
+// 修改用户密码 - 请求
+message ChangePasswordRequest {
+  string username = 1 [
+    json_name = "username",
+    (gnostic.openapi.v3.property) = {
+      description: "用户名"
+    }
+  ]; // 用户名
+
+  string old_password = 2 [
+    json_name = "oldPassword",
+    (gnostic.openapi.v3.property) = {
+      description: "旧密码"
+    }
+  ]; // 旧密码
+
+  string new_password = 3 [
+    json_name = "newPassword",
+    (gnostic.openapi.v3.property) = {
+      description: "新密码"
+    }
+  ]; // 新密码
+
+  // 管理员重置密码时指定目标用户ID（为 0 时按 username 解析当前用户自助修改）
+  optional uint32 user_id = 4 [
+    json_name = "userId",
+    (gnostic.openapi.v3.property) = {description: "目标用户ID（管理员重置时用）"}
+  ]; // 目标用户ID
+}
+
+// MFA 二步登录 - 请求
+message VerifyMFARequest {
+  string mfa_token = 1 [
+    json_name = "mfaToken",
+    (gnostic.openapi.v3.property) = {description: "第一步登录返回的 MFA 临时令牌"}
+  ]; // MFA 临时令牌
+
+  string mfa_code = 2 [
+    json_name = "mfaCode",
+    (gnostic.openapi.v3.property) = {description: "TOTP 验证码"}
+  ]; // TOTP 验证码
+}
+
+// 启用 MFA - 响应
+message EnableMFAResponse {
+  string secret = 1 [
+    json_name = "secret",
+    (gnostic.openapi.v3.property) = {description: "TOTP 共享密钥（base32）"}
+  ]; // TOTP 密钥
+
+  string otpauth_url = 2 [
+    json_name = "otpauthUrl",
+    (gnostic.openapi.v3.property) = {description: "otpauth:// 协议URL，前端据此生成二维码"}
+  ]; // otpauth URL
+}
+
+// 禁用 MFA - 请求
+message DisableMFARequest {
+  string mfa_code = 1 [
+    json_name = "mfaCode",
+    (gnostic.openapi.v3.property) = {description: "TOTP 验证码（确认操作者本人）"}
+  ]; // TOTP 验证码
+}
+
+// 确认 MFA 绑定 - 请求
+message ConfirmMFARequest {
+  string mfa_code = 1 [
+    json_name = "mfaCode",
+    (gnostic.openapi.v3.property) = {description: "TOTP 验证码（确认绑定者已完成扫码）"}
+  ]; // TOTP 验证码
+}

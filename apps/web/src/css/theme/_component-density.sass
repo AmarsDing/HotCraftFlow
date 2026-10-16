@@ -1,0 +1,78 @@
+// 全局组件密度样式。
+//
+// 通过 CSS 调整 Quasar 组件的视觉密度，避免每个页面重复声明 dense prop。
+// 仅调整视觉属性（padding/字号/高度），不改变组件行为。
+// 若页面显式传 dense prop，Quasar 内部样式会与本文叠加，需保证本文规则足够宽松。
+
+// === QTable：统一字号与密度（表格字体/标签较旧版放大一档，对齐全站可读性约定） ===
+.q-table
+  thead th, tbody td
+    padding: 8px 12px
+    font-size: var(--text-base, 14px)
+  thead th
+    font-weight: 700
+    font-size: var(--text-base, 14px)
+    text-transform: none
+    opacity: 0.9
+
+// 紧凑模式（dense prop 已传时）再降一档
+.q-table--dense
+  thead th, tbody td
+    padding: 5px 10px
+    font-size: var(--text-sm, 13px)
+
+// === QField/QInput/QSelect：默认 dense 高度 ===
+// 仅压平「无标签、非多行」的 dense 字段到 34px（筛选栏对齐等场景，筛选栏一律用 placeholder 无 label）。
+// 带标签字段（stack-label 悬浮标签需 control-container padding-top 14px 腾位）与 textarea
+//（Quasar 原生 control height:auto + 按 rows 撑高）必须保持 Quasar 原生 dense 度量（40px/auto），
+// 否则 native 被定高 34px 后标签与值文字互相叠压、溢出边框（2026-08-10 高级规则抽屉实证）。
+.q-field--dense:not(.q-field--labeled):not(.q-textarea) .q-field__control,
+.q-field--dense:not(.q-field--labeled):not(.q-textarea) .q-field__native,
+.q-field--dense:not(.q-field--labeled):not(.q-textarea) .q-field__marginal
+  height: 34px
+  min-height: 34px
+
+// 无 label 的单选 QSelect 会被 Quasar 加 q-field--auto-height，其专有规则
+// （.q-field--dense.q-field--auto-height .q-field__control，优先级更高）把高度顶回 40px，
+// 导致筛选栏里 select(40px) 与 input(34px) 同排不齐；无 chips 无需自动撑高，强制回 34px。
+// 注意 §4.10 红线：height 与 min-height 必须同步覆盖，::after 由全局 height:auto 修复兜底。
+// 必须排除带 label 的 q-select（:not(.q-field--labeled)）：悬浮标签需 control padding-top 14px
+// 腾位，压到 34px 后选中值文字贴底溢出边框（2026-08-10 模拟采集器指标表单实证）。
+.q-field--dense.q-field--auto-height.q-select--without-chips:not(.q-field--labeled) .q-field__control,
+.q-field--dense.q-field--auto-height.q-select--without-chips:not(.q-field--labeled) .q-field__native,
+.q-field--dense.q-field--auto-height.q-select--without-chips:not(.q-field--labeled) .q-field__marginal
+  height: 34px
+  min-height: 34px
+
+.q-field--dense .q-field__native,
+.q-field--dense .q-field__prefix,
+.q-field--dense .q-field__suffix
+  font-size: var(--text-sm, 13px)
+
+// === QChip：默认 padding 减小 ===
+.q-chip
+  font-size: var(--text-xs, 12px)
+  min-height: 22px
+.q-chip--dense
+  min-height: 18px
+
+// === QBtn：默认 padding 收紧（不影响 round/fab 按钮） ===
+.q-btn:not(.q-btn--round):not(.q-btn--fab):not(.q-btn--outline)
+  min-height: 30px
+  font-size: var(--text-sm, 13px)
+  .q-btn__content
+    font-size: var(--text-sm, 13px)
+
+// === QItem：默认密度 ===
+.q-item
+  min-height: 36px
+  padding: 6px 12px
+.q-item--dense
+  min-height: 28px
+  padding: 2px 12px
+
+// === QToolbar：减小高度 ===
+.q-toolbar
+  min-height: 44px
+.q-toolbar__title
+  font-size: var(--text-md, 15px)
