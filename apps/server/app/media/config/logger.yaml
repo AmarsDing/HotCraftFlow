@@ -1,4 +1,15 @@
-# 日志（kratos log → stdout；级别/格式与 admin 对齐）。
+# 日志：结构与 pb.Log 对齐（log.logger.* + log.file.*），字段语义同 admin。
+# level/stackLevel 是 zap 枚举值：0=info；-1=debug。
 log:
-  level: info
-  format: text
+  logger:
+    level: 0
+    stackLevel: 0
+    caller: true
+    callerSkip: 3
+    development: false
+  file:
+    filename: ./logs/media.log
+    maxSize: 2
+    maxBackups: 5
+    maxAge: 7
+    compress: false

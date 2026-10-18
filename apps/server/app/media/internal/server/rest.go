@@ -138,7 +138,9 @@ func newRestServer(cfg *conf.Bootstrap, tp *tracesdk.TracerProvider, mds ...midd
 			if rest.Middleware.GetEnableRecovery() {
 				ms = append(ms, recovery.Recovery())
 			}
-			if rest.Middleware.GetEnableTracing() {
+			// tp 为 nil 表示 trace endpoint 未配置（observability 语义=禁用），
+			// 此时装 tracing 中间件会在 kratos 内部空指针炸停。
+			if rest.Middleware.GetEnableTracing() && tp != nil {
 				ms = append(ms, tracing.Server(tracing.WithTracerProvider(tp)))
 			}
 			if rest.Middleware.GetEnableValidate() {

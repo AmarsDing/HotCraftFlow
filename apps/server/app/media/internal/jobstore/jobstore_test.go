@@ -2,10 +2,20 @@ package jobstore
 
 import (
 	"context"
+	"database/sql"
 	"os"
 	"testing"
 	"time"
 )
+
+// testSchema 本包测试的专属 PG schema。
+//
+// 为什么需要：go test 默认并行跑不同包的测试二进制，所有 touch PG 的包
+// 若共享 public schema 会互相踩（如今真案例：sseapi 包 Start→FailOrphaned
+// 把 jobstore 包迁移中途的 running 行判成孤儿 failed，反之亦然——
+// 生产单实例纪律下 FailOrphaned 无过滤是正确语义，缺陷只在测试环境）。
+// 解法：每包独立 schema 彻底隔离，收尾 DROP CASCADE 一次清干净。
+const testSchema = "jobstore_test"
 
 // openTestStore DSN 门控：无 MEDIA_TEST_DSN 一律 skip（CI 无 PG 不红）。
 func openTestStore(t *testing.T) *Store {
@@ -14,7 +24,16 @@ func openTestStore(t *testing.T) *Store {
 	if dsn == "" {
 		t.Skip("MEDIA_TEST_DSN 未设置，跳过 PG 集成测试")
 	}
-	s, err := Open(dsn, 16)
+	admin, err := sql.Open("pgx", dsn)
+	if err != nil {
+		t.Fatalf("open admin: %v", err)
+	}
+	if _, err := admin.ExecContext(t.Context(), `CREATE SCHEMA IF NOT EXISTS `+testSchema); err != nil {
+		t.Fatalf("create schema: %v", err)
+	}
+	_ = admin.Close()
+
+	s, err := Open(dsn+" search_path="+testSchema, 16)
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
@@ -22,9 +41,11 @@ func openTestStore(t *testing.T) *Store {
 		t.Fatalf("ensure schema: %v", err)
 	}
 	t.Cleanup(func() {
-		// 测试数据清场（按测试 id 前缀批量抹掉）。
-		ctx := context.Background()
-		_, _ = s.db.ExecContext(ctx, `DELETE FROM media_jobs WHERE id LIKE 'job_test_%'`)
+		admin, err := sql.Open("pgx", dsn)
+		if err == nil {
+			_, _ = admin.ExecContext(context.Background(), `DROP SCHEMA IF EXISTS `+testSchema+` CASCADE`)
+			_ = admin.Close()
+		}
 		_ = s.Close()
 	})
 	return s
@@ -44,18 +65,20 @@ func TestSubmitIdempotencyAndEventMirror(t *testing.T) {
 	}
 
 	// 同 idempotency_key 重复提交：返回原任务、不重排队。
-	j2 := j
-	j2.IdempotencyKey = "idem-key-1"
-	_, _, err = s.Submit(ctx, j2, nil)
-	if err != nil {
-		t.Fatalf("带 key 提交: %v", err)
+	// 注意必须用另一个主键 ID——复用旧 ID 只换 key 会撞 media_jobs_pkey。
+	j2 := Job{ID: "job_test_idem_2", Lane: "io", Type: "exec.probe",
+		PayloadJSON: `{"bin":"ffmpeg"}`, IdempotencyKey: "idem-key-1"}
+	first2, createdK, err := s.Submit(ctx, j2, nil)
+	if err != nil || !createdK {
+		t.Fatalf("带 key 首次提交: createdK=%v err=%v", createdK, err)
 	}
 	again, created2, err := s.Submit(ctx, j2, nil)
 	if err != nil || created2 {
 		t.Fatalf("幂等重复: created2=%v err=%v", created2, err)
 	}
-	if again.LastSeq != got.LastSeq {
-		t.Fatalf("幂等不得新增事件: %d → %d", got.LastSeq, again.LastSeq)
+	if again.ID != first2.ID || again.LastSeq != first2.LastSeq {
+		t.Fatalf("幂等命中应返回原任务不新增事件: %s/%d → %s/%d",
+			first2.ID, first2.LastSeq, again.ID, again.LastSeq)
 	}
 }
 
