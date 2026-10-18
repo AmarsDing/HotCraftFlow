@@ -9,6 +9,7 @@ import (
 	"framework/app/admin/internal/data/ent/usertoken"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -18,6 +19,7 @@ type UserTokenCreate struct {
 	config
 	mutation *UserTokenMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -331,6 +333,7 @@ func (_c *UserTokenCreate) createSpec() (*UserToken, *sqlgraph.CreateSpec) {
 		_node = &UserToken{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(usertoken.Table, sqlgraph.NewFieldSpec(usertoken.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -390,11 +393,551 @@ func (_c *UserTokenCreate) createSpec() (*UserToken, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.UserToken.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.UserTokenUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *UserTokenCreate) OnConflict(opts ...sql.ConflictOption) *UserTokenUpsertOne {
+	_c.conflict = opts
+	return &UserTokenUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.UserToken.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *UserTokenCreate) OnConflictColumns(columns ...string) *UserTokenUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &UserTokenUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// UserTokenUpsertOne is the builder for "upsert"-ing
+	//  one UserToken node.
+	UserTokenUpsertOne struct {
+		create *UserTokenCreate
+	}
+
+	// UserTokenUpsert is the "OnConflict" setter.
+	UserTokenUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *UserTokenUpsert) SetUpdateTime(v time.Time) *UserTokenUpsert {
+	u.Set(usertoken.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *UserTokenUpsert) UpdateUpdateTime() *UserTokenUpsert {
+	u.SetExcluded(usertoken.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *UserTokenUpsert) ClearUpdateTime() *UserTokenUpsert {
+	u.SetNull(usertoken.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *UserTokenUpsert) SetDeleteTime(v time.Time) *UserTokenUpsert {
+	u.Set(usertoken.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *UserTokenUpsert) UpdateDeleteTime() *UserTokenUpsert {
+	u.SetExcluded(usertoken.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *UserTokenUpsert) ClearDeleteTime() *UserTokenUpsert {
+	u.SetNull(usertoken.FieldDeleteTime)
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *UserTokenUpsert) SetUserID(v uint32) *UserTokenUpsert {
+	u.Set(usertoken.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *UserTokenUpsert) UpdateUserID() *UserTokenUpsert {
+	u.SetExcluded(usertoken.FieldUserID)
+	return u
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *UserTokenUpsert) AddUserID(v uint32) *UserTokenUpsert {
+	u.Add(usertoken.FieldUserID, v)
+	return u
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (u *UserTokenUpsert) ClearUserID() *UserTokenUpsert {
+	u.SetNull(usertoken.FieldUserID)
+	return u
+}
+
+// SetToken sets the "token" field.
+func (u *UserTokenUpsert) SetToken(v string) *UserTokenUpsert {
+	u.Set(usertoken.FieldToken, v)
+	return u
+}
+
+// UpdateToken sets the "token" field to the value that was provided on create.
+func (u *UserTokenUpsert) UpdateToken() *UserTokenUpsert {
+	u.SetExcluded(usertoken.FieldToken)
+	return u
+}
+
+// SetTokenType sets the "token_type" field.
+func (u *UserTokenUpsert) SetTokenType(v usertoken.TokenType) *UserTokenUpsert {
+	u.Set(usertoken.FieldTokenType, v)
+	return u
+}
+
+// UpdateTokenType sets the "token_type" field to the value that was provided on create.
+func (u *UserTokenUpsert) UpdateTokenType() *UserTokenUpsert {
+	u.SetExcluded(usertoken.FieldTokenType)
+	return u
+}
+
+// SetClientID sets the "client_id" field.
+func (u *UserTokenUpsert) SetClientID(v string) *UserTokenUpsert {
+	u.Set(usertoken.FieldClientID, v)
+	return u
+}
+
+// UpdateClientID sets the "client_id" field to the value that was provided on create.
+func (u *UserTokenUpsert) UpdateClientID() *UserTokenUpsert {
+	u.SetExcluded(usertoken.FieldClientID)
+	return u
+}
+
+// ClearClientID clears the value of the "client_id" field.
+func (u *UserTokenUpsert) ClearClientID() *UserTokenUpsert {
+	u.SetNull(usertoken.FieldClientID)
+	return u
+}
+
+// SetLoginIP sets the "login_ip" field.
+func (u *UserTokenUpsert) SetLoginIP(v string) *UserTokenUpsert {
+	u.Set(usertoken.FieldLoginIP, v)
+	return u
+}
+
+// UpdateLoginIP sets the "login_ip" field to the value that was provided on create.
+func (u *UserTokenUpsert) UpdateLoginIP() *UserTokenUpsert {
+	u.SetExcluded(usertoken.FieldLoginIP)
+	return u
+}
+
+// ClearLoginIP clears the value of the "login_ip" field.
+func (u *UserTokenUpsert) ClearLoginIP() *UserTokenUpsert {
+	u.SetNull(usertoken.FieldLoginIP)
+	return u
+}
+
+// SetLoginLocation sets the "login_location" field.
+func (u *UserTokenUpsert) SetLoginLocation(v string) *UserTokenUpsert {
+	u.Set(usertoken.FieldLoginLocation, v)
+	return u
+}
+
+// UpdateLoginLocation sets the "login_location" field to the value that was provided on create.
+func (u *UserTokenUpsert) UpdateLoginLocation() *UserTokenUpsert {
+	u.SetExcluded(usertoken.FieldLoginLocation)
+	return u
+}
+
+// ClearLoginLocation clears the value of the "login_location" field.
+func (u *UserTokenUpsert) ClearLoginLocation() *UserTokenUpsert {
+	u.SetNull(usertoken.FieldLoginLocation)
+	return u
+}
+
+// SetUserAgent sets the "user_agent" field.
+func (u *UserTokenUpsert) SetUserAgent(v string) *UserTokenUpsert {
+	u.Set(usertoken.FieldUserAgent, v)
+	return u
+}
+
+// UpdateUserAgent sets the "user_agent" field to the value that was provided on create.
+func (u *UserTokenUpsert) UpdateUserAgent() *UserTokenUpsert {
+	u.SetExcluded(usertoken.FieldUserAgent)
+	return u
+}
+
+// ClearUserAgent clears the value of the "user_agent" field.
+func (u *UserTokenUpsert) ClearUserAgent() *UserTokenUpsert {
+	u.SetNull(usertoken.FieldUserAgent)
+	return u
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (u *UserTokenUpsert) SetExpiresAt(v time.Time) *UserTokenUpsert {
+	u.Set(usertoken.FieldExpiresAt, v)
+	return u
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *UserTokenUpsert) UpdateExpiresAt() *UserTokenUpsert {
+	u.SetExcluded(usertoken.FieldExpiresAt)
+	return u
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (u *UserTokenUpsert) ClearExpiresAt() *UserTokenUpsert {
+	u.SetNull(usertoken.FieldExpiresAt)
+	return u
+}
+
+// SetRevoked sets the "revoked" field.
+func (u *UserTokenUpsert) SetRevoked(v bool) *UserTokenUpsert {
+	u.Set(usertoken.FieldRevoked, v)
+	return u
+}
+
+// UpdateRevoked sets the "revoked" field to the value that was provided on create.
+func (u *UserTokenUpsert) UpdateRevoked() *UserTokenUpsert {
+	u.SetExcluded(usertoken.FieldRevoked)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.UserToken.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(usertoken.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *UserTokenUpsertOne) UpdateNewValues() *UserTokenUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(usertoken.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(usertoken.FieldCreateTime)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(usertoken.FieldTenantID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.UserToken.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *UserTokenUpsertOne) Ignore() *UserTokenUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *UserTokenUpsertOne) DoNothing() *UserTokenUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the UserTokenCreate.OnConflict
+// documentation for more info.
+func (u *UserTokenUpsertOne) Update(set func(*UserTokenUpsert)) *UserTokenUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&UserTokenUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *UserTokenUpsertOne) SetUpdateTime(v time.Time) *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *UserTokenUpsertOne) UpdateUpdateTime() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *UserTokenUpsertOne) ClearUpdateTime() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *UserTokenUpsertOne) SetDeleteTime(v time.Time) *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *UserTokenUpsertOne) UpdateDeleteTime() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *UserTokenUpsertOne) ClearDeleteTime() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *UserTokenUpsertOne) SetUserID(v uint32) *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *UserTokenUpsertOne) AddUserID(v uint32) *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.AddUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *UserTokenUpsertOne) UpdateUserID() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (u *UserTokenUpsertOne) ClearUserID() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.ClearUserID()
+	})
+}
+
+// SetToken sets the "token" field.
+func (u *UserTokenUpsertOne) SetToken(v string) *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetToken(v)
+	})
+}
+
+// UpdateToken sets the "token" field to the value that was provided on create.
+func (u *UserTokenUpsertOne) UpdateToken() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateToken()
+	})
+}
+
+// SetTokenType sets the "token_type" field.
+func (u *UserTokenUpsertOne) SetTokenType(v usertoken.TokenType) *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetTokenType(v)
+	})
+}
+
+// UpdateTokenType sets the "token_type" field to the value that was provided on create.
+func (u *UserTokenUpsertOne) UpdateTokenType() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateTokenType()
+	})
+}
+
+// SetClientID sets the "client_id" field.
+func (u *UserTokenUpsertOne) SetClientID(v string) *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetClientID(v)
+	})
+}
+
+// UpdateClientID sets the "client_id" field to the value that was provided on create.
+func (u *UserTokenUpsertOne) UpdateClientID() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateClientID()
+	})
+}
+
+// ClearClientID clears the value of the "client_id" field.
+func (u *UserTokenUpsertOne) ClearClientID() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.ClearClientID()
+	})
+}
+
+// SetLoginIP sets the "login_ip" field.
+func (u *UserTokenUpsertOne) SetLoginIP(v string) *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetLoginIP(v)
+	})
+}
+
+// UpdateLoginIP sets the "login_ip" field to the value that was provided on create.
+func (u *UserTokenUpsertOne) UpdateLoginIP() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateLoginIP()
+	})
+}
+
+// ClearLoginIP clears the value of the "login_ip" field.
+func (u *UserTokenUpsertOne) ClearLoginIP() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.ClearLoginIP()
+	})
+}
+
+// SetLoginLocation sets the "login_location" field.
+func (u *UserTokenUpsertOne) SetLoginLocation(v string) *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetLoginLocation(v)
+	})
+}
+
+// UpdateLoginLocation sets the "login_location" field to the value that was provided on create.
+func (u *UserTokenUpsertOne) UpdateLoginLocation() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateLoginLocation()
+	})
+}
+
+// ClearLoginLocation clears the value of the "login_location" field.
+func (u *UserTokenUpsertOne) ClearLoginLocation() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.ClearLoginLocation()
+	})
+}
+
+// SetUserAgent sets the "user_agent" field.
+func (u *UserTokenUpsertOne) SetUserAgent(v string) *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetUserAgent(v)
+	})
+}
+
+// UpdateUserAgent sets the "user_agent" field to the value that was provided on create.
+func (u *UserTokenUpsertOne) UpdateUserAgent() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateUserAgent()
+	})
+}
+
+// ClearUserAgent clears the value of the "user_agent" field.
+func (u *UserTokenUpsertOne) ClearUserAgent() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.ClearUserAgent()
+	})
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (u *UserTokenUpsertOne) SetExpiresAt(v time.Time) *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetExpiresAt(v)
+	})
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *UserTokenUpsertOne) UpdateExpiresAt() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateExpiresAt()
+	})
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (u *UserTokenUpsertOne) ClearExpiresAt() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.ClearExpiresAt()
+	})
+}
+
+// SetRevoked sets the "revoked" field.
+func (u *UserTokenUpsertOne) SetRevoked(v bool) *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetRevoked(v)
+	})
+}
+
+// UpdateRevoked sets the "revoked" field to the value that was provided on create.
+func (u *UserTokenUpsertOne) UpdateRevoked() *UserTokenUpsertOne {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateRevoked()
+	})
+}
+
+// Exec executes the query.
+func (u *UserTokenUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for UserTokenCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *UserTokenUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *UserTokenUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *UserTokenUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // UserTokenCreateBulk is the builder for creating many UserToken entities in bulk.
 type UserTokenCreateBulk struct {
 	config
 	err      error
 	builders []*UserTokenCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the UserToken entities in the database.
@@ -424,6 +967,7 @@ func (_c *UserTokenCreateBulk) Save(ctx context.Context) ([]*UserToken, error) {
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -474,6 +1018,343 @@ func (_c *UserTokenCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *UserTokenCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.UserToken.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.UserTokenUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *UserTokenCreateBulk) OnConflict(opts ...sql.ConflictOption) *UserTokenUpsertBulk {
+	_c.conflict = opts
+	return &UserTokenUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.UserToken.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *UserTokenCreateBulk) OnConflictColumns(columns ...string) *UserTokenUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &UserTokenUpsertBulk{
+		create: _c,
+	}
+}
+
+// UserTokenUpsertBulk is the builder for "upsert"-ing
+// a bulk of UserToken nodes.
+type UserTokenUpsertBulk struct {
+	create *UserTokenCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.UserToken.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(usertoken.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *UserTokenUpsertBulk) UpdateNewValues() *UserTokenUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(usertoken.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(usertoken.FieldCreateTime)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(usertoken.FieldTenantID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.UserToken.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *UserTokenUpsertBulk) Ignore() *UserTokenUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *UserTokenUpsertBulk) DoNothing() *UserTokenUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the UserTokenCreateBulk.OnConflict
+// documentation for more info.
+func (u *UserTokenUpsertBulk) Update(set func(*UserTokenUpsert)) *UserTokenUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&UserTokenUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *UserTokenUpsertBulk) SetUpdateTime(v time.Time) *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *UserTokenUpsertBulk) UpdateUpdateTime() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *UserTokenUpsertBulk) ClearUpdateTime() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *UserTokenUpsertBulk) SetDeleteTime(v time.Time) *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *UserTokenUpsertBulk) UpdateDeleteTime() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *UserTokenUpsertBulk) ClearDeleteTime() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *UserTokenUpsertBulk) SetUserID(v uint32) *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *UserTokenUpsertBulk) AddUserID(v uint32) *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.AddUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *UserTokenUpsertBulk) UpdateUserID() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (u *UserTokenUpsertBulk) ClearUserID() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.ClearUserID()
+	})
+}
+
+// SetToken sets the "token" field.
+func (u *UserTokenUpsertBulk) SetToken(v string) *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetToken(v)
+	})
+}
+
+// UpdateToken sets the "token" field to the value that was provided on create.
+func (u *UserTokenUpsertBulk) UpdateToken() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateToken()
+	})
+}
+
+// SetTokenType sets the "token_type" field.
+func (u *UserTokenUpsertBulk) SetTokenType(v usertoken.TokenType) *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetTokenType(v)
+	})
+}
+
+// UpdateTokenType sets the "token_type" field to the value that was provided on create.
+func (u *UserTokenUpsertBulk) UpdateTokenType() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateTokenType()
+	})
+}
+
+// SetClientID sets the "client_id" field.
+func (u *UserTokenUpsertBulk) SetClientID(v string) *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetClientID(v)
+	})
+}
+
+// UpdateClientID sets the "client_id" field to the value that was provided on create.
+func (u *UserTokenUpsertBulk) UpdateClientID() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateClientID()
+	})
+}
+
+// ClearClientID clears the value of the "client_id" field.
+func (u *UserTokenUpsertBulk) ClearClientID() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.ClearClientID()
+	})
+}
+
+// SetLoginIP sets the "login_ip" field.
+func (u *UserTokenUpsertBulk) SetLoginIP(v string) *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetLoginIP(v)
+	})
+}
+
+// UpdateLoginIP sets the "login_ip" field to the value that was provided on create.
+func (u *UserTokenUpsertBulk) UpdateLoginIP() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateLoginIP()
+	})
+}
+
+// ClearLoginIP clears the value of the "login_ip" field.
+func (u *UserTokenUpsertBulk) ClearLoginIP() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.ClearLoginIP()
+	})
+}
+
+// SetLoginLocation sets the "login_location" field.
+func (u *UserTokenUpsertBulk) SetLoginLocation(v string) *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetLoginLocation(v)
+	})
+}
+
+// UpdateLoginLocation sets the "login_location" field to the value that was provided on create.
+func (u *UserTokenUpsertBulk) UpdateLoginLocation() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateLoginLocation()
+	})
+}
+
+// ClearLoginLocation clears the value of the "login_location" field.
+func (u *UserTokenUpsertBulk) ClearLoginLocation() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.ClearLoginLocation()
+	})
+}
+
+// SetUserAgent sets the "user_agent" field.
+func (u *UserTokenUpsertBulk) SetUserAgent(v string) *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetUserAgent(v)
+	})
+}
+
+// UpdateUserAgent sets the "user_agent" field to the value that was provided on create.
+func (u *UserTokenUpsertBulk) UpdateUserAgent() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateUserAgent()
+	})
+}
+
+// ClearUserAgent clears the value of the "user_agent" field.
+func (u *UserTokenUpsertBulk) ClearUserAgent() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.ClearUserAgent()
+	})
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (u *UserTokenUpsertBulk) SetExpiresAt(v time.Time) *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetExpiresAt(v)
+	})
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *UserTokenUpsertBulk) UpdateExpiresAt() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateExpiresAt()
+	})
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (u *UserTokenUpsertBulk) ClearExpiresAt() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.ClearExpiresAt()
+	})
+}
+
+// SetRevoked sets the "revoked" field.
+func (u *UserTokenUpsertBulk) SetRevoked(v bool) *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.SetRevoked(v)
+	})
+}
+
+// UpdateRevoked sets the "revoked" field to the value that was provided on create.
+func (u *UserTokenUpsertBulk) UpdateRevoked() *UserTokenUpsertBulk {
+	return u.Update(func(s *UserTokenUpsert) {
+		s.UpdateRevoked()
+	})
+}
+
+// Exec executes the query.
+func (u *UserTokenUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the UserTokenCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for UserTokenCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *UserTokenUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

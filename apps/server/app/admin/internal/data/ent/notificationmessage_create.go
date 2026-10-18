@@ -4,10 +4,12 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"framework/app/admin/internal/data/ent/notificationmessage"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -17,6 +19,7 @@ type NotificationMessageCreate struct {
 	config
 	mutation *NotificationMessageMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -242,6 +245,7 @@ func (_c *NotificationMessageCreate) createSpec() (*NotificationMessage, *sqlgra
 		_node = &NotificationMessage{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(notificationmessage.Table, sqlgraph.NewFieldSpec(notificationmessage.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -289,11 +293,499 @@ func (_c *NotificationMessageCreate) createSpec() (*NotificationMessage, *sqlgra
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.NotificationMessage.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.NotificationMessageUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *NotificationMessageCreate) OnConflict(opts ...sql.ConflictOption) *NotificationMessageUpsertOne {
+	_c.conflict = opts
+	return &NotificationMessageUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.NotificationMessage.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *NotificationMessageCreate) OnConflictColumns(columns ...string) *NotificationMessageUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &NotificationMessageUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// NotificationMessageUpsertOne is the builder for "upsert"-ing
+	//  one NotificationMessage node.
+	NotificationMessageUpsertOne struct {
+		create *NotificationMessageCreate
+	}
+
+	// NotificationMessageUpsert is the "OnConflict" setter.
+	NotificationMessageUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *NotificationMessageUpsert) SetUpdateTime(v time.Time) *NotificationMessageUpsert {
+	u.Set(notificationmessage.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *NotificationMessageUpsert) UpdateUpdateTime() *NotificationMessageUpsert {
+	u.SetExcluded(notificationmessage.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *NotificationMessageUpsert) ClearUpdateTime() *NotificationMessageUpsert {
+	u.SetNull(notificationmessage.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *NotificationMessageUpsert) SetDeleteTime(v time.Time) *NotificationMessageUpsert {
+	u.Set(notificationmessage.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *NotificationMessageUpsert) UpdateDeleteTime() *NotificationMessageUpsert {
+	u.SetExcluded(notificationmessage.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *NotificationMessageUpsert) ClearDeleteTime() *NotificationMessageUpsert {
+	u.SetNull(notificationmessage.FieldDeleteTime)
+	return u
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *NotificationMessageUpsert) SetCreateBy(v uint32) *NotificationMessageUpsert {
+	u.Set(notificationmessage.FieldCreateBy, v)
+	return u
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *NotificationMessageUpsert) UpdateCreateBy() *NotificationMessageUpsert {
+	u.SetExcluded(notificationmessage.FieldCreateBy)
+	return u
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *NotificationMessageUpsert) AddCreateBy(v uint32) *NotificationMessageUpsert {
+	u.Add(notificationmessage.FieldCreateBy, v)
+	return u
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *NotificationMessageUpsert) ClearCreateBy() *NotificationMessageUpsert {
+	u.SetNull(notificationmessage.FieldCreateBy)
+	return u
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *NotificationMessageUpsert) SetUpdateBy(v uint32) *NotificationMessageUpsert {
+	u.Set(notificationmessage.FieldUpdateBy, v)
+	return u
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *NotificationMessageUpsert) UpdateUpdateBy() *NotificationMessageUpsert {
+	u.SetExcluded(notificationmessage.FieldUpdateBy)
+	return u
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *NotificationMessageUpsert) AddUpdateBy(v uint32) *NotificationMessageUpsert {
+	u.Add(notificationmessage.FieldUpdateBy, v)
+	return u
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *NotificationMessageUpsert) ClearUpdateBy() *NotificationMessageUpsert {
+	u.SetNull(notificationmessage.FieldUpdateBy)
+	return u
+}
+
+// SetSubject sets the "subject" field.
+func (u *NotificationMessageUpsert) SetSubject(v string) *NotificationMessageUpsert {
+	u.Set(notificationmessage.FieldSubject, v)
+	return u
+}
+
+// UpdateSubject sets the "subject" field to the value that was provided on create.
+func (u *NotificationMessageUpsert) UpdateSubject() *NotificationMessageUpsert {
+	u.SetExcluded(notificationmessage.FieldSubject)
+	return u
+}
+
+// ClearSubject clears the value of the "subject" field.
+func (u *NotificationMessageUpsert) ClearSubject() *NotificationMessageUpsert {
+	u.SetNull(notificationmessage.FieldSubject)
+	return u
+}
+
+// SetContent sets the "content" field.
+func (u *NotificationMessageUpsert) SetContent(v string) *NotificationMessageUpsert {
+	u.Set(notificationmessage.FieldContent, v)
+	return u
+}
+
+// UpdateContent sets the "content" field to the value that was provided on create.
+func (u *NotificationMessageUpsert) UpdateContent() *NotificationMessageUpsert {
+	u.SetExcluded(notificationmessage.FieldContent)
+	return u
+}
+
+// ClearContent clears the value of the "content" field.
+func (u *NotificationMessageUpsert) ClearContent() *NotificationMessageUpsert {
+	u.SetNull(notificationmessage.FieldContent)
+	return u
+}
+
+// SetCategoryID sets the "category_id" field.
+func (u *NotificationMessageUpsert) SetCategoryID(v uint32) *NotificationMessageUpsert {
+	u.Set(notificationmessage.FieldCategoryID, v)
+	return u
+}
+
+// UpdateCategoryID sets the "category_id" field to the value that was provided on create.
+func (u *NotificationMessageUpsert) UpdateCategoryID() *NotificationMessageUpsert {
+	u.SetExcluded(notificationmessage.FieldCategoryID)
+	return u
+}
+
+// AddCategoryID adds v to the "category_id" field.
+func (u *NotificationMessageUpsert) AddCategoryID(v uint32) *NotificationMessageUpsert {
+	u.Add(notificationmessage.FieldCategoryID, v)
+	return u
+}
+
+// ClearCategoryID clears the value of the "category_id" field.
+func (u *NotificationMessageUpsert) ClearCategoryID() *NotificationMessageUpsert {
+	u.SetNull(notificationmessage.FieldCategoryID)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *NotificationMessageUpsert) SetStatus(v notificationmessage.Status) *NotificationMessageUpsert {
+	u.Set(notificationmessage.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *NotificationMessageUpsert) UpdateStatus() *NotificationMessageUpsert {
+	u.SetExcluded(notificationmessage.FieldStatus)
+	return u
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *NotificationMessageUpsert) ClearStatus() *NotificationMessageUpsert {
+	u.SetNull(notificationmessage.FieldStatus)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.NotificationMessage.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(notificationmessage.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *NotificationMessageUpsertOne) UpdateNewValues() *NotificationMessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(notificationmessage.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(notificationmessage.FieldCreateTime)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(notificationmessage.FieldTenantID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.NotificationMessage.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *NotificationMessageUpsertOne) Ignore() *NotificationMessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *NotificationMessageUpsertOne) DoNothing() *NotificationMessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the NotificationMessageCreate.OnConflict
+// documentation for more info.
+func (u *NotificationMessageUpsertOne) Update(set func(*NotificationMessageUpsert)) *NotificationMessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&NotificationMessageUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *NotificationMessageUpsertOne) SetUpdateTime(v time.Time) *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *NotificationMessageUpsertOne) UpdateUpdateTime() *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *NotificationMessageUpsertOne) ClearUpdateTime() *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *NotificationMessageUpsertOne) SetDeleteTime(v time.Time) *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *NotificationMessageUpsertOne) UpdateDeleteTime() *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *NotificationMessageUpsertOne) ClearDeleteTime() *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *NotificationMessageUpsertOne) SetCreateBy(v uint32) *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *NotificationMessageUpsertOne) AddCreateBy(v uint32) *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *NotificationMessageUpsertOne) UpdateCreateBy() *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *NotificationMessageUpsertOne) ClearCreateBy() *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *NotificationMessageUpsertOne) SetUpdateBy(v uint32) *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *NotificationMessageUpsertOne) AddUpdateBy(v uint32) *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *NotificationMessageUpsertOne) UpdateUpdateBy() *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *NotificationMessageUpsertOne) ClearUpdateBy() *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetSubject sets the "subject" field.
+func (u *NotificationMessageUpsertOne) SetSubject(v string) *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.SetSubject(v)
+	})
+}
+
+// UpdateSubject sets the "subject" field to the value that was provided on create.
+func (u *NotificationMessageUpsertOne) UpdateSubject() *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.UpdateSubject()
+	})
+}
+
+// ClearSubject clears the value of the "subject" field.
+func (u *NotificationMessageUpsertOne) ClearSubject() *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.ClearSubject()
+	})
+}
+
+// SetContent sets the "content" field.
+func (u *NotificationMessageUpsertOne) SetContent(v string) *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.SetContent(v)
+	})
+}
+
+// UpdateContent sets the "content" field to the value that was provided on create.
+func (u *NotificationMessageUpsertOne) UpdateContent() *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.UpdateContent()
+	})
+}
+
+// ClearContent clears the value of the "content" field.
+func (u *NotificationMessageUpsertOne) ClearContent() *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.ClearContent()
+	})
+}
+
+// SetCategoryID sets the "category_id" field.
+func (u *NotificationMessageUpsertOne) SetCategoryID(v uint32) *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.SetCategoryID(v)
+	})
+}
+
+// AddCategoryID adds v to the "category_id" field.
+func (u *NotificationMessageUpsertOne) AddCategoryID(v uint32) *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.AddCategoryID(v)
+	})
+}
+
+// UpdateCategoryID sets the "category_id" field to the value that was provided on create.
+func (u *NotificationMessageUpsertOne) UpdateCategoryID() *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.UpdateCategoryID()
+	})
+}
+
+// ClearCategoryID clears the value of the "category_id" field.
+func (u *NotificationMessageUpsertOne) ClearCategoryID() *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.ClearCategoryID()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *NotificationMessageUpsertOne) SetStatus(v notificationmessage.Status) *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *NotificationMessageUpsertOne) UpdateStatus() *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *NotificationMessageUpsertOne) ClearStatus() *NotificationMessageUpsertOne {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// Exec executes the query.
+func (u *NotificationMessageUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for NotificationMessageCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *NotificationMessageUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *NotificationMessageUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *NotificationMessageUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // NotificationMessageCreateBulk is the builder for creating many NotificationMessage entities in bulk.
 type NotificationMessageCreateBulk struct {
 	config
 	err      error
 	builders []*NotificationMessageCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the NotificationMessage entities in the database.
@@ -322,6 +814,7 @@ func (_c *NotificationMessageCreateBulk) Save(ctx context.Context) ([]*Notificat
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -372,6 +865,315 @@ func (_c *NotificationMessageCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *NotificationMessageCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.NotificationMessage.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.NotificationMessageUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *NotificationMessageCreateBulk) OnConflict(opts ...sql.ConflictOption) *NotificationMessageUpsertBulk {
+	_c.conflict = opts
+	return &NotificationMessageUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.NotificationMessage.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *NotificationMessageCreateBulk) OnConflictColumns(columns ...string) *NotificationMessageUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &NotificationMessageUpsertBulk{
+		create: _c,
+	}
+}
+
+// NotificationMessageUpsertBulk is the builder for "upsert"-ing
+// a bulk of NotificationMessage nodes.
+type NotificationMessageUpsertBulk struct {
+	create *NotificationMessageCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.NotificationMessage.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(notificationmessage.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *NotificationMessageUpsertBulk) UpdateNewValues() *NotificationMessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(notificationmessage.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(notificationmessage.FieldCreateTime)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(notificationmessage.FieldTenantID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.NotificationMessage.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *NotificationMessageUpsertBulk) Ignore() *NotificationMessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *NotificationMessageUpsertBulk) DoNothing() *NotificationMessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the NotificationMessageCreateBulk.OnConflict
+// documentation for more info.
+func (u *NotificationMessageUpsertBulk) Update(set func(*NotificationMessageUpsert)) *NotificationMessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&NotificationMessageUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *NotificationMessageUpsertBulk) SetUpdateTime(v time.Time) *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *NotificationMessageUpsertBulk) UpdateUpdateTime() *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *NotificationMessageUpsertBulk) ClearUpdateTime() *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *NotificationMessageUpsertBulk) SetDeleteTime(v time.Time) *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *NotificationMessageUpsertBulk) UpdateDeleteTime() *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *NotificationMessageUpsertBulk) ClearDeleteTime() *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *NotificationMessageUpsertBulk) SetCreateBy(v uint32) *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *NotificationMessageUpsertBulk) AddCreateBy(v uint32) *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *NotificationMessageUpsertBulk) UpdateCreateBy() *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *NotificationMessageUpsertBulk) ClearCreateBy() *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *NotificationMessageUpsertBulk) SetUpdateBy(v uint32) *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *NotificationMessageUpsertBulk) AddUpdateBy(v uint32) *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *NotificationMessageUpsertBulk) UpdateUpdateBy() *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *NotificationMessageUpsertBulk) ClearUpdateBy() *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetSubject sets the "subject" field.
+func (u *NotificationMessageUpsertBulk) SetSubject(v string) *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.SetSubject(v)
+	})
+}
+
+// UpdateSubject sets the "subject" field to the value that was provided on create.
+func (u *NotificationMessageUpsertBulk) UpdateSubject() *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.UpdateSubject()
+	})
+}
+
+// ClearSubject clears the value of the "subject" field.
+func (u *NotificationMessageUpsertBulk) ClearSubject() *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.ClearSubject()
+	})
+}
+
+// SetContent sets the "content" field.
+func (u *NotificationMessageUpsertBulk) SetContent(v string) *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.SetContent(v)
+	})
+}
+
+// UpdateContent sets the "content" field to the value that was provided on create.
+func (u *NotificationMessageUpsertBulk) UpdateContent() *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.UpdateContent()
+	})
+}
+
+// ClearContent clears the value of the "content" field.
+func (u *NotificationMessageUpsertBulk) ClearContent() *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.ClearContent()
+	})
+}
+
+// SetCategoryID sets the "category_id" field.
+func (u *NotificationMessageUpsertBulk) SetCategoryID(v uint32) *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.SetCategoryID(v)
+	})
+}
+
+// AddCategoryID adds v to the "category_id" field.
+func (u *NotificationMessageUpsertBulk) AddCategoryID(v uint32) *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.AddCategoryID(v)
+	})
+}
+
+// UpdateCategoryID sets the "category_id" field to the value that was provided on create.
+func (u *NotificationMessageUpsertBulk) UpdateCategoryID() *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.UpdateCategoryID()
+	})
+}
+
+// ClearCategoryID clears the value of the "category_id" field.
+func (u *NotificationMessageUpsertBulk) ClearCategoryID() *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.ClearCategoryID()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *NotificationMessageUpsertBulk) SetStatus(v notificationmessage.Status) *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *NotificationMessageUpsertBulk) UpdateStatus() *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *NotificationMessageUpsertBulk) ClearStatus() *NotificationMessageUpsertBulk {
+	return u.Update(func(s *NotificationMessageUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// Exec executes the query.
+func (u *NotificationMessageUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the NotificationMessageCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for NotificationMessageCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *NotificationMessageUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

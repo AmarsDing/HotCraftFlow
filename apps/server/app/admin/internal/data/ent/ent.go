@@ -10,14 +10,44 @@ import (
 	"framework/app/admin/internal/data/ent/adminloginrestriction"
 	"framework/app/admin/internal/data/ent/adminoperationlog"
 	"framework/app/admin/internal/data/ent/apiresource"
+	"framework/app/admin/internal/data/ent/authorizationrecord"
 	"framework/app/admin/internal/data/ent/casbinrule"
+	"framework/app/admin/internal/data/ent/clustermergeevent"
+	"framework/app/admin/internal/data/ent/collectrun"
+	"framework/app/admin/internal/data/ent/compliancerule"
+	"framework/app/admin/internal/data/ent/credentialaccount"
 	"framework/app/admin/internal/data/ent/datapermission"
+	"framework/app/admin/internal/data/ent/deadletter"
+	"framework/app/admin/internal/data/ent/dedupsample"
 	"framework/app/admin/internal/data/ent/department"
 	"framework/app/admin/internal/data/ent/dict"
 	"framework/app/admin/internal/data/ent/dictcategory"
+	"framework/app/admin/internal/data/ent/entityassetmapping"
+	"framework/app/admin/internal/data/ent/evidencesnapshot"
 	"framework/app/admin/internal/data/ent/file"
+	"framework/app/admin/internal/data/ent/intelcluster"
+	"framework/app/admin/internal/data/ent/intelitem"
+	"framework/app/admin/internal/data/ent/intelsource"
 	"framework/app/admin/internal/data/ent/loginfailcounter"
+	"framework/app/admin/internal/data/ent/mapapprovalrecord"
+	"framework/app/admin/internal/data/ent/mapdispatchunit"
+	"framework/app/admin/internal/data/ent/mapperformancesnapshot"
+	"framework/app/admin/internal/data/ent/mappublishaccount"
+	"framework/app/admin/internal/data/ent/mappublishchannel"
+	"framework/app/admin/internal/data/ent/mappublishreceipt"
 	"framework/app/admin/internal/data/ent/menu"
+	"framework/app/admin/internal/data/ent/miaeventcard"
+	"framework/app/admin/internal/data/ent/miaimpactcard"
+	"framework/app/admin/internal/data/ent/miaquotecache"
+	"framework/app/admin/internal/data/ent/miatransmissionrule"
+	"framework/app/admin/internal/data/ent/mmeanalysiscache"
+	"framework/app/admin/internal/data/ent/mmeasset"
+	"framework/app/admin/internal/data/ent/mmemontagetask"
+	"framework/app/admin/internal/data/ent/mmerenderjob"
+	"framework/app/admin/internal/data/ent/mmetemplate"
+	"framework/app/admin/internal/data/ent/mmevariant"
+	"framework/app/admin/internal/data/ent/mmevariantset"
+	"framework/app/admin/internal/data/ent/narrativecoinmapping"
 	"framework/app/admin/internal/data/ent/notificationmessage"
 	"framework/app/admin/internal/data/ent/notificationmessagecategory"
 	"framework/app/admin/internal/data/ent/notificationmessagerecipient"
@@ -43,6 +73,8 @@ import (
 	"framework/app/admin/internal/data/ent/toollinkcategory"
 	"framework/app/admin/internal/data/ent/toollinkssoticket"
 	"framework/app/admin/internal/data/ent/toollinkusermark"
+	"framework/app/admin/internal/data/ent/topic"
+	"framework/app/admin/internal/data/ent/topicsource"
 	"framework/app/admin/internal/data/ent/user"
 	"framework/app/admin/internal/data/ent/usercredential"
 	"framework/app/admin/internal/data/ent/userpost"
@@ -118,14 +150,44 @@ func checkColumn(t, c string) error {
 			adminloginrestriction.Table:        adminloginrestriction.ValidColumn,
 			adminoperationlog.Table:            adminoperationlog.ValidColumn,
 			apiresource.Table:                  apiresource.ValidColumn,
+			authorizationrecord.Table:          authorizationrecord.ValidColumn,
 			casbinrule.Table:                   casbinrule.ValidColumn,
+			clustermergeevent.Table:            clustermergeevent.ValidColumn,
+			collectrun.Table:                   collectrun.ValidColumn,
+			compliancerule.Table:               compliancerule.ValidColumn,
+			credentialaccount.Table:            credentialaccount.ValidColumn,
 			datapermission.Table:               datapermission.ValidColumn,
+			deadletter.Table:                   deadletter.ValidColumn,
+			dedupsample.Table:                  dedupsample.ValidColumn,
 			department.Table:                   department.ValidColumn,
 			dict.Table:                         dict.ValidColumn,
 			dictcategory.Table:                 dictcategory.ValidColumn,
+			entityassetmapping.Table:           entityassetmapping.ValidColumn,
+			evidencesnapshot.Table:             evidencesnapshot.ValidColumn,
 			file.Table:                         file.ValidColumn,
+			intelcluster.Table:                 intelcluster.ValidColumn,
+			intelitem.Table:                    intelitem.ValidColumn,
+			intelsource.Table:                  intelsource.ValidColumn,
 			loginfailcounter.Table:             loginfailcounter.ValidColumn,
+			mapapprovalrecord.Table:            mapapprovalrecord.ValidColumn,
+			mapdispatchunit.Table:              mapdispatchunit.ValidColumn,
+			mapperformancesnapshot.Table:       mapperformancesnapshot.ValidColumn,
+			mappublishaccount.Table:            mappublishaccount.ValidColumn,
+			mappublishchannel.Table:            mappublishchannel.ValidColumn,
+			mappublishreceipt.Table:            mappublishreceipt.ValidColumn,
 			menu.Table:                         menu.ValidColumn,
+			miaeventcard.Table:                 miaeventcard.ValidColumn,
+			miaimpactcard.Table:                miaimpactcard.ValidColumn,
+			miaquotecache.Table:                miaquotecache.ValidColumn,
+			miatransmissionrule.Table:          miatransmissionrule.ValidColumn,
+			mmeanalysiscache.Table:             mmeanalysiscache.ValidColumn,
+			mmeasset.Table:                     mmeasset.ValidColumn,
+			mmemontagetask.Table:               mmemontagetask.ValidColumn,
+			mmerenderjob.Table:                 mmerenderjob.ValidColumn,
+			mmetemplate.Table:                  mmetemplate.ValidColumn,
+			mmevariant.Table:                   mmevariant.ValidColumn,
+			mmevariantset.Table:                mmevariantset.ValidColumn,
+			narrativecoinmapping.Table:         narrativecoinmapping.ValidColumn,
 			notificationmessage.Table:          notificationmessage.ValidColumn,
 			notificationmessagecategory.Table:  notificationmessagecategory.ValidColumn,
 			notificationmessagerecipient.Table: notificationmessagerecipient.ValidColumn,
@@ -151,6 +213,8 @@ func checkColumn(t, c string) error {
 			toollinkcategory.Table:             toollinkcategory.ValidColumn,
 			toollinkssoticket.Table:            toollinkssoticket.ValidColumn,
 			toollinkusermark.Table:             toollinkusermark.ValidColumn,
+			topic.Table:                        topic.ValidColumn,
+			topicsource.Table:                  topicsource.ValidColumn,
 			user.Table:                         user.ValidColumn,
 			usercredential.Table:               usercredential.ValidColumn,
 			userpost.Table:                     userpost.ValidColumn,

@@ -4,10 +4,12 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"framework/app/admin/internal/data/ent/adminloginrestriction"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -17,6 +19,7 @@ type AdminLoginRestrictionCreate struct {
 	config
 	mutation *AdminLoginRestrictionMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -313,6 +316,7 @@ func (_c *AdminLoginRestrictionCreate) createSpec() (*AdminLoginRestriction, *sq
 		_node = &AdminLoginRestriction{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(adminloginrestriction.Table, sqlgraph.NewFieldSpec(adminloginrestriction.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -372,11 +376,652 @@ func (_c *AdminLoginRestrictionCreate) createSpec() (*AdminLoginRestriction, *sq
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.AdminLoginRestriction.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.AdminLoginRestrictionUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *AdminLoginRestrictionCreate) OnConflict(opts ...sql.ConflictOption) *AdminLoginRestrictionUpsertOne {
+	_c.conflict = opts
+	return &AdminLoginRestrictionUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.AdminLoginRestriction.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *AdminLoginRestrictionCreate) OnConflictColumns(columns ...string) *AdminLoginRestrictionUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &AdminLoginRestrictionUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// AdminLoginRestrictionUpsertOne is the builder for "upsert"-ing
+	//  one AdminLoginRestriction node.
+	AdminLoginRestrictionUpsertOne struct {
+		create *AdminLoginRestrictionCreate
+	}
+
+	// AdminLoginRestrictionUpsert is the "OnConflict" setter.
+	AdminLoginRestrictionUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *AdminLoginRestrictionUpsert) SetUpdateTime(v time.Time) *AdminLoginRestrictionUpsert {
+	u.Set(adminloginrestriction.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsert) UpdateUpdateTime() *AdminLoginRestrictionUpsert {
+	u.SetExcluded(adminloginrestriction.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *AdminLoginRestrictionUpsert) ClearUpdateTime() *AdminLoginRestrictionUpsert {
+	u.SetNull(adminloginrestriction.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *AdminLoginRestrictionUpsert) SetDeleteTime(v time.Time) *AdminLoginRestrictionUpsert {
+	u.Set(adminloginrestriction.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsert) UpdateDeleteTime() *AdminLoginRestrictionUpsert {
+	u.SetExcluded(adminloginrestriction.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *AdminLoginRestrictionUpsert) ClearDeleteTime() *AdminLoginRestrictionUpsert {
+	u.SetNull(adminloginrestriction.FieldDeleteTime)
+	return u
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *AdminLoginRestrictionUpsert) SetCreateBy(v uint32) *AdminLoginRestrictionUpsert {
+	u.Set(adminloginrestriction.FieldCreateBy, v)
+	return u
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsert) UpdateCreateBy() *AdminLoginRestrictionUpsert {
+	u.SetExcluded(adminloginrestriction.FieldCreateBy)
+	return u
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *AdminLoginRestrictionUpsert) AddCreateBy(v uint32) *AdminLoginRestrictionUpsert {
+	u.Add(adminloginrestriction.FieldCreateBy, v)
+	return u
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *AdminLoginRestrictionUpsert) ClearCreateBy() *AdminLoginRestrictionUpsert {
+	u.SetNull(adminloginrestriction.FieldCreateBy)
+	return u
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *AdminLoginRestrictionUpsert) SetUpdateBy(v uint32) *AdminLoginRestrictionUpsert {
+	u.Set(adminloginrestriction.FieldUpdateBy, v)
+	return u
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsert) UpdateUpdateBy() *AdminLoginRestrictionUpsert {
+	u.SetExcluded(adminloginrestriction.FieldUpdateBy)
+	return u
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *AdminLoginRestrictionUpsert) AddUpdateBy(v uint32) *AdminLoginRestrictionUpsert {
+	u.Add(adminloginrestriction.FieldUpdateBy, v)
+	return u
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *AdminLoginRestrictionUpsert) ClearUpdateBy() *AdminLoginRestrictionUpsert {
+	u.SetNull(adminloginrestriction.FieldUpdateBy)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *AdminLoginRestrictionUpsert) SetStatus(v adminloginrestriction.Status) *AdminLoginRestrictionUpsert {
+	u.Set(adminloginrestriction.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsert) UpdateStatus() *AdminLoginRestrictionUpsert {
+	u.SetExcluded(adminloginrestriction.FieldStatus)
+	return u
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *AdminLoginRestrictionUpsert) ClearStatus() *AdminLoginRestrictionUpsert {
+	u.SetNull(adminloginrestriction.FieldStatus)
+	return u
+}
+
+// SetTargetType sets the "target_type" field.
+func (u *AdminLoginRestrictionUpsert) SetTargetType(v adminloginrestriction.TargetType) *AdminLoginRestrictionUpsert {
+	u.Set(adminloginrestriction.FieldTargetType, v)
+	return u
+}
+
+// UpdateTargetType sets the "target_type" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsert) UpdateTargetType() *AdminLoginRestrictionUpsert {
+	u.SetExcluded(adminloginrestriction.FieldTargetType)
+	return u
+}
+
+// ClearTargetType clears the value of the "target_type" field.
+func (u *AdminLoginRestrictionUpsert) ClearTargetType() *AdminLoginRestrictionUpsert {
+	u.SetNull(adminloginrestriction.FieldTargetType)
+	return u
+}
+
+// SetTargetValue sets the "target_value" field.
+func (u *AdminLoginRestrictionUpsert) SetTargetValue(v string) *AdminLoginRestrictionUpsert {
+	u.Set(adminloginrestriction.FieldTargetValue, v)
+	return u
+}
+
+// UpdateTargetValue sets the "target_value" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsert) UpdateTargetValue() *AdminLoginRestrictionUpsert {
+	u.SetExcluded(adminloginrestriction.FieldTargetValue)
+	return u
+}
+
+// ClearTargetValue clears the value of the "target_value" field.
+func (u *AdminLoginRestrictionUpsert) ClearTargetValue() *AdminLoginRestrictionUpsert {
+	u.SetNull(adminloginrestriction.FieldTargetValue)
+	return u
+}
+
+// SetAction sets the "action" field.
+func (u *AdminLoginRestrictionUpsert) SetAction(v adminloginrestriction.Action) *AdminLoginRestrictionUpsert {
+	u.Set(adminloginrestriction.FieldAction, v)
+	return u
+}
+
+// UpdateAction sets the "action" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsert) UpdateAction() *AdminLoginRestrictionUpsert {
+	u.SetExcluded(adminloginrestriction.FieldAction)
+	return u
+}
+
+// ClearAction clears the value of the "action" field.
+func (u *AdminLoginRestrictionUpsert) ClearAction() *AdminLoginRestrictionUpsert {
+	u.SetNull(adminloginrestriction.FieldAction)
+	return u
+}
+
+// SetReason sets the "reason" field.
+func (u *AdminLoginRestrictionUpsert) SetReason(v string) *AdminLoginRestrictionUpsert {
+	u.Set(adminloginrestriction.FieldReason, v)
+	return u
+}
+
+// UpdateReason sets the "reason" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsert) UpdateReason() *AdminLoginRestrictionUpsert {
+	u.SetExcluded(adminloginrestriction.FieldReason)
+	return u
+}
+
+// ClearReason clears the value of the "reason" field.
+func (u *AdminLoginRestrictionUpsert) ClearReason() *AdminLoginRestrictionUpsert {
+	u.SetNull(adminloginrestriction.FieldReason)
+	return u
+}
+
+// SetExpireTime sets the "expire_time" field.
+func (u *AdminLoginRestrictionUpsert) SetExpireTime(v time.Time) *AdminLoginRestrictionUpsert {
+	u.Set(adminloginrestriction.FieldExpireTime, v)
+	return u
+}
+
+// UpdateExpireTime sets the "expire_time" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsert) UpdateExpireTime() *AdminLoginRestrictionUpsert {
+	u.SetExcluded(adminloginrestriction.FieldExpireTime)
+	return u
+}
+
+// ClearExpireTime clears the value of the "expire_time" field.
+func (u *AdminLoginRestrictionUpsert) ClearExpireTime() *AdminLoginRestrictionUpsert {
+	u.SetNull(adminloginrestriction.FieldExpireTime)
+	return u
+}
+
+// SetHitCount sets the "hit_count" field.
+func (u *AdminLoginRestrictionUpsert) SetHitCount(v uint64) *AdminLoginRestrictionUpsert {
+	u.Set(adminloginrestriction.FieldHitCount, v)
+	return u
+}
+
+// UpdateHitCount sets the "hit_count" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsert) UpdateHitCount() *AdminLoginRestrictionUpsert {
+	u.SetExcluded(adminloginrestriction.FieldHitCount)
+	return u
+}
+
+// AddHitCount adds v to the "hit_count" field.
+func (u *AdminLoginRestrictionUpsert) AddHitCount(v uint64) *AdminLoginRestrictionUpsert {
+	u.Add(adminloginrestriction.FieldHitCount, v)
+	return u
+}
+
+// ClearHitCount clears the value of the "hit_count" field.
+func (u *AdminLoginRestrictionUpsert) ClearHitCount() *AdminLoginRestrictionUpsert {
+	u.SetNull(adminloginrestriction.FieldHitCount)
+	return u
+}
+
+// SetLastHitTime sets the "last_hit_time" field.
+func (u *AdminLoginRestrictionUpsert) SetLastHitTime(v time.Time) *AdminLoginRestrictionUpsert {
+	u.Set(adminloginrestriction.FieldLastHitTime, v)
+	return u
+}
+
+// UpdateLastHitTime sets the "last_hit_time" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsert) UpdateLastHitTime() *AdminLoginRestrictionUpsert {
+	u.SetExcluded(adminloginrestriction.FieldLastHitTime)
+	return u
+}
+
+// ClearLastHitTime clears the value of the "last_hit_time" field.
+func (u *AdminLoginRestrictionUpsert) ClearLastHitTime() *AdminLoginRestrictionUpsert {
+	u.SetNull(adminloginrestriction.FieldLastHitTime)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.AdminLoginRestriction.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(adminloginrestriction.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *AdminLoginRestrictionUpsertOne) UpdateNewValues() *AdminLoginRestrictionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(adminloginrestriction.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(adminloginrestriction.FieldCreateTime)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.AdminLoginRestriction.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *AdminLoginRestrictionUpsertOne) Ignore() *AdminLoginRestrictionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *AdminLoginRestrictionUpsertOne) DoNothing() *AdminLoginRestrictionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the AdminLoginRestrictionCreate.OnConflict
+// documentation for more info.
+func (u *AdminLoginRestrictionUpsertOne) Update(set func(*AdminLoginRestrictionUpsert)) *AdminLoginRestrictionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&AdminLoginRestrictionUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *AdminLoginRestrictionUpsertOne) SetUpdateTime(v time.Time) *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertOne) UpdateUpdateTime() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *AdminLoginRestrictionUpsertOne) ClearUpdateTime() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *AdminLoginRestrictionUpsertOne) SetDeleteTime(v time.Time) *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertOne) UpdateDeleteTime() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *AdminLoginRestrictionUpsertOne) ClearDeleteTime() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *AdminLoginRestrictionUpsertOne) SetCreateBy(v uint32) *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *AdminLoginRestrictionUpsertOne) AddCreateBy(v uint32) *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertOne) UpdateCreateBy() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *AdminLoginRestrictionUpsertOne) ClearCreateBy() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *AdminLoginRestrictionUpsertOne) SetUpdateBy(v uint32) *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *AdminLoginRestrictionUpsertOne) AddUpdateBy(v uint32) *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertOne) UpdateUpdateBy() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *AdminLoginRestrictionUpsertOne) ClearUpdateBy() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *AdminLoginRestrictionUpsertOne) SetStatus(v adminloginrestriction.Status) *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertOne) UpdateStatus() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *AdminLoginRestrictionUpsertOne) ClearStatus() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetTargetType sets the "target_type" field.
+func (u *AdminLoginRestrictionUpsertOne) SetTargetType(v adminloginrestriction.TargetType) *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetTargetType(v)
+	})
+}
+
+// UpdateTargetType sets the "target_type" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertOne) UpdateTargetType() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateTargetType()
+	})
+}
+
+// ClearTargetType clears the value of the "target_type" field.
+func (u *AdminLoginRestrictionUpsertOne) ClearTargetType() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearTargetType()
+	})
+}
+
+// SetTargetValue sets the "target_value" field.
+func (u *AdminLoginRestrictionUpsertOne) SetTargetValue(v string) *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetTargetValue(v)
+	})
+}
+
+// UpdateTargetValue sets the "target_value" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertOne) UpdateTargetValue() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateTargetValue()
+	})
+}
+
+// ClearTargetValue clears the value of the "target_value" field.
+func (u *AdminLoginRestrictionUpsertOne) ClearTargetValue() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearTargetValue()
+	})
+}
+
+// SetAction sets the "action" field.
+func (u *AdminLoginRestrictionUpsertOne) SetAction(v adminloginrestriction.Action) *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetAction(v)
+	})
+}
+
+// UpdateAction sets the "action" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertOne) UpdateAction() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateAction()
+	})
+}
+
+// ClearAction clears the value of the "action" field.
+func (u *AdminLoginRestrictionUpsertOne) ClearAction() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearAction()
+	})
+}
+
+// SetReason sets the "reason" field.
+func (u *AdminLoginRestrictionUpsertOne) SetReason(v string) *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetReason(v)
+	})
+}
+
+// UpdateReason sets the "reason" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertOne) UpdateReason() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateReason()
+	})
+}
+
+// ClearReason clears the value of the "reason" field.
+func (u *AdminLoginRestrictionUpsertOne) ClearReason() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearReason()
+	})
+}
+
+// SetExpireTime sets the "expire_time" field.
+func (u *AdminLoginRestrictionUpsertOne) SetExpireTime(v time.Time) *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetExpireTime(v)
+	})
+}
+
+// UpdateExpireTime sets the "expire_time" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertOne) UpdateExpireTime() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateExpireTime()
+	})
+}
+
+// ClearExpireTime clears the value of the "expire_time" field.
+func (u *AdminLoginRestrictionUpsertOne) ClearExpireTime() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearExpireTime()
+	})
+}
+
+// SetHitCount sets the "hit_count" field.
+func (u *AdminLoginRestrictionUpsertOne) SetHitCount(v uint64) *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetHitCount(v)
+	})
+}
+
+// AddHitCount adds v to the "hit_count" field.
+func (u *AdminLoginRestrictionUpsertOne) AddHitCount(v uint64) *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.AddHitCount(v)
+	})
+}
+
+// UpdateHitCount sets the "hit_count" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertOne) UpdateHitCount() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateHitCount()
+	})
+}
+
+// ClearHitCount clears the value of the "hit_count" field.
+func (u *AdminLoginRestrictionUpsertOne) ClearHitCount() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearHitCount()
+	})
+}
+
+// SetLastHitTime sets the "last_hit_time" field.
+func (u *AdminLoginRestrictionUpsertOne) SetLastHitTime(v time.Time) *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetLastHitTime(v)
+	})
+}
+
+// UpdateLastHitTime sets the "last_hit_time" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertOne) UpdateLastHitTime() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateLastHitTime()
+	})
+}
+
+// ClearLastHitTime clears the value of the "last_hit_time" field.
+func (u *AdminLoginRestrictionUpsertOne) ClearLastHitTime() *AdminLoginRestrictionUpsertOne {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearLastHitTime()
+	})
+}
+
+// Exec executes the query.
+func (u *AdminLoginRestrictionUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for AdminLoginRestrictionCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *AdminLoginRestrictionUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *AdminLoginRestrictionUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *AdminLoginRestrictionUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // AdminLoginRestrictionCreateBulk is the builder for creating many AdminLoginRestriction entities in bulk.
 type AdminLoginRestrictionCreateBulk struct {
 	config
 	err      error
 	builders []*AdminLoginRestrictionCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the AdminLoginRestriction entities in the database.
@@ -406,6 +1051,7 @@ func (_c *AdminLoginRestrictionCreateBulk) Save(ctx context.Context) ([]*AdminLo
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -456,6 +1102,396 @@ func (_c *AdminLoginRestrictionCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *AdminLoginRestrictionCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.AdminLoginRestriction.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.AdminLoginRestrictionUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *AdminLoginRestrictionCreateBulk) OnConflict(opts ...sql.ConflictOption) *AdminLoginRestrictionUpsertBulk {
+	_c.conflict = opts
+	return &AdminLoginRestrictionUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.AdminLoginRestriction.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *AdminLoginRestrictionCreateBulk) OnConflictColumns(columns ...string) *AdminLoginRestrictionUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &AdminLoginRestrictionUpsertBulk{
+		create: _c,
+	}
+}
+
+// AdminLoginRestrictionUpsertBulk is the builder for "upsert"-ing
+// a bulk of AdminLoginRestriction nodes.
+type AdminLoginRestrictionUpsertBulk struct {
+	create *AdminLoginRestrictionCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.AdminLoginRestriction.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(adminloginrestriction.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *AdminLoginRestrictionUpsertBulk) UpdateNewValues() *AdminLoginRestrictionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(adminloginrestriction.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(adminloginrestriction.FieldCreateTime)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.AdminLoginRestriction.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *AdminLoginRestrictionUpsertBulk) Ignore() *AdminLoginRestrictionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *AdminLoginRestrictionUpsertBulk) DoNothing() *AdminLoginRestrictionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the AdminLoginRestrictionCreateBulk.OnConflict
+// documentation for more info.
+func (u *AdminLoginRestrictionUpsertBulk) Update(set func(*AdminLoginRestrictionUpsert)) *AdminLoginRestrictionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&AdminLoginRestrictionUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *AdminLoginRestrictionUpsertBulk) SetUpdateTime(v time.Time) *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertBulk) UpdateUpdateTime() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *AdminLoginRestrictionUpsertBulk) ClearUpdateTime() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *AdminLoginRestrictionUpsertBulk) SetDeleteTime(v time.Time) *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertBulk) UpdateDeleteTime() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *AdminLoginRestrictionUpsertBulk) ClearDeleteTime() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *AdminLoginRestrictionUpsertBulk) SetCreateBy(v uint32) *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *AdminLoginRestrictionUpsertBulk) AddCreateBy(v uint32) *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertBulk) UpdateCreateBy() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *AdminLoginRestrictionUpsertBulk) ClearCreateBy() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *AdminLoginRestrictionUpsertBulk) SetUpdateBy(v uint32) *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *AdminLoginRestrictionUpsertBulk) AddUpdateBy(v uint32) *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertBulk) UpdateUpdateBy() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *AdminLoginRestrictionUpsertBulk) ClearUpdateBy() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *AdminLoginRestrictionUpsertBulk) SetStatus(v adminloginrestriction.Status) *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertBulk) UpdateStatus() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *AdminLoginRestrictionUpsertBulk) ClearStatus() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetTargetType sets the "target_type" field.
+func (u *AdminLoginRestrictionUpsertBulk) SetTargetType(v adminloginrestriction.TargetType) *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetTargetType(v)
+	})
+}
+
+// UpdateTargetType sets the "target_type" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertBulk) UpdateTargetType() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateTargetType()
+	})
+}
+
+// ClearTargetType clears the value of the "target_type" field.
+func (u *AdminLoginRestrictionUpsertBulk) ClearTargetType() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearTargetType()
+	})
+}
+
+// SetTargetValue sets the "target_value" field.
+func (u *AdminLoginRestrictionUpsertBulk) SetTargetValue(v string) *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetTargetValue(v)
+	})
+}
+
+// UpdateTargetValue sets the "target_value" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertBulk) UpdateTargetValue() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateTargetValue()
+	})
+}
+
+// ClearTargetValue clears the value of the "target_value" field.
+func (u *AdminLoginRestrictionUpsertBulk) ClearTargetValue() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearTargetValue()
+	})
+}
+
+// SetAction sets the "action" field.
+func (u *AdminLoginRestrictionUpsertBulk) SetAction(v adminloginrestriction.Action) *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetAction(v)
+	})
+}
+
+// UpdateAction sets the "action" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertBulk) UpdateAction() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateAction()
+	})
+}
+
+// ClearAction clears the value of the "action" field.
+func (u *AdminLoginRestrictionUpsertBulk) ClearAction() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearAction()
+	})
+}
+
+// SetReason sets the "reason" field.
+func (u *AdminLoginRestrictionUpsertBulk) SetReason(v string) *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetReason(v)
+	})
+}
+
+// UpdateReason sets the "reason" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertBulk) UpdateReason() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateReason()
+	})
+}
+
+// ClearReason clears the value of the "reason" field.
+func (u *AdminLoginRestrictionUpsertBulk) ClearReason() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearReason()
+	})
+}
+
+// SetExpireTime sets the "expire_time" field.
+func (u *AdminLoginRestrictionUpsertBulk) SetExpireTime(v time.Time) *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetExpireTime(v)
+	})
+}
+
+// UpdateExpireTime sets the "expire_time" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertBulk) UpdateExpireTime() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateExpireTime()
+	})
+}
+
+// ClearExpireTime clears the value of the "expire_time" field.
+func (u *AdminLoginRestrictionUpsertBulk) ClearExpireTime() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearExpireTime()
+	})
+}
+
+// SetHitCount sets the "hit_count" field.
+func (u *AdminLoginRestrictionUpsertBulk) SetHitCount(v uint64) *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetHitCount(v)
+	})
+}
+
+// AddHitCount adds v to the "hit_count" field.
+func (u *AdminLoginRestrictionUpsertBulk) AddHitCount(v uint64) *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.AddHitCount(v)
+	})
+}
+
+// UpdateHitCount sets the "hit_count" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertBulk) UpdateHitCount() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateHitCount()
+	})
+}
+
+// ClearHitCount clears the value of the "hit_count" field.
+func (u *AdminLoginRestrictionUpsertBulk) ClearHitCount() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearHitCount()
+	})
+}
+
+// SetLastHitTime sets the "last_hit_time" field.
+func (u *AdminLoginRestrictionUpsertBulk) SetLastHitTime(v time.Time) *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.SetLastHitTime(v)
+	})
+}
+
+// UpdateLastHitTime sets the "last_hit_time" field to the value that was provided on create.
+func (u *AdminLoginRestrictionUpsertBulk) UpdateLastHitTime() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.UpdateLastHitTime()
+	})
+}
+
+// ClearLastHitTime clears the value of the "last_hit_time" field.
+func (u *AdminLoginRestrictionUpsertBulk) ClearLastHitTime() *AdminLoginRestrictionUpsertBulk {
+	return u.Update(func(s *AdminLoginRestrictionUpsert) {
+		s.ClearLastHitTime()
+	})
+}
+
+// Exec executes the query.
+func (u *AdminLoginRestrictionUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the AdminLoginRestrictionCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for AdminLoginRestrictionCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *AdminLoginRestrictionUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

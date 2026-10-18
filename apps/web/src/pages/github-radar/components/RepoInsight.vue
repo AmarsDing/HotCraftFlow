@@ -1,6 +1,6 @@
 <template>
   <!-- AI 总结：三级（brief / summary / deep），生成 / 缓存 / 错误态 -->
-  <div class="repo-insight">
+  <div class="repo-insight" data-cy="insight-panel">
     <div class="row q-gutter-sm q-mb-md">
       <q-btn
         v-for="lv in levels"
@@ -23,6 +23,7 @@
         color="primary"
         icon="refresh"
         :loading="loading"
+        :disable="!llmReady"
         :label="
           current
             ? current.cached
@@ -31,7 +32,9 @@
             : t('githubRadar.generateSummary')
         "
         @click="generate(activeLevel)"
-      />
+      >
+        <q-tooltip v-if="!llmReady">{{ t('githubRadar.llmNotConfigured') }}</q-tooltip>
+      </q-btn>
     </div>
 
     <q-banner v-if="!llmReady" dense rounded class="q-mb-md bg-warning text-white">
@@ -41,19 +44,30 @@
       </template>
     </q-banner>
 
+    <!-- 请求级失败统一为内嵌 banner（弃 Notify 双通道），可原地重试 -->
+    <q-banner v-if="apiError" dense rounded class="q-mb-md bg-negative text-white" data-cy="insight-error">
+      {{ apiError }}
+      <template #action>
+        <q-btn v-if="llmReady" flat dense :label="t('common.retry')" @click="generate(activeLevel)" />
+      </template>
+    </q-banner>
+
     <div v-if="loading" class="repo-insight__loading">
-      <q-spinner-dots size="32px" color="primary" />
+      <q-skeleton type="text" width="45%" />
+      <q-skeleton type="text" width="90%" />
+      <q-skeleton type="text" width="80%" />
+      <q-skeleton type="rect" height="72px" class="q-mt-xs" />
       <div class="text-caption q-mt-sm" style="color: var(--color-text-secondary)">
         {{ t('githubRadar.aiAnalyzing', { name: fullName, level: levelDesc }) }}
       </div>
     </div>
 
     <template v-else-if="current">
-      <q-banner v-if="current.error" dense rounded class="q-mb-md bg-negative text-white" data-cy="insight-error">
+      <q-banner v-if="current.error" dense rounded class="q-mb-md bg-negative text-white">
         {{ current.error }}
       </q-banner>
       <template v-if="current.content_markdown">
-        <MarkdownView :source="current.content_markdown" />
+        <MarkdownRenderer :source="current.content_markdown" />
         <div class="repo-insight__meta text-caption q-mt-sm" style="color: var(--color-text-secondary)">
           <span v-if="current.cached"><q-icon name="cached" size="13px" /> {{ t('githubRadar.cachedResult') }} · </span>
           <span v-if="current.model">{{ t('githubRadar.modelLabel', { model: current.model }) }} · </span>
@@ -71,6 +85,16 @@
       <div class="text-caption" style="color: var(--color-text-secondary)">
         {{ t('githubRadar.noInsightHint') }}
       </div>
+      <q-btn
+        class="q-mt-md"
+        unelevated
+        no-caps
+        color="primary"
+        icon="auto_awesome"
+        :disable="!llmReady"
+        :label="t('githubRadar.generateSummary')"
+        @click="generate(activeLevel)"
+      />
     </div>
   </div>
 </template>
@@ -78,13 +102,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Notify } from 'quasar';
 import { radarRepoService } from '../../../services';
-import MarkdownView from './MarkdownView.vue';
-import { INSIGHT_LEVELS, type AIInsight } from '../types';
+import MarkdownRenderer from '../../../components/MarkdownRenderer.vue';
+import { INSIGHT_LEVELS, normalizeInsight, type AIInsight } from '../types';
 
-const props = defineProps<{ fullName: string; llmReady?: boolean }>();
+const props = defineProps<{ fullName: string; llmReady?: boolean; prefetched?: AIInsight | null }>();
 defineEmits<{ 'open-settings': [] }>();
+
+const { t } = useI18n();
 
 // 等级 label/desc 走 i18n（types.ts 中的 INSIGHT_LEVELS 保留 value/icon 作为静态数据源）
 const levels = computed(() =>
@@ -96,39 +121,53 @@ const levels = computed(() =>
 );
 const activeLevel = ref<'brief' | 'summary' | 'deep'>('summary');
 const loading = ref(false);
+const apiError = ref('');
 const results = ref<Record<string, AIInsight>>({});
 
 const current = computed(() => results.value[activeLevel.value] || null);
 const levelDesc = computed(() => levels.value.find((l) => l.value === activeLevel.value)?.desc || '');
-const { t } = useI18n();
 
 watch(
   () => props.fullName,
   () => {
-    results.value = {};
+    results.value = props.prefetched ? { [props.prefetched.level]: props.prefetched } : {};
+    apiError.value = '';
+  },
+);
+
+// 详情面板打开时带出的 cache-only 快照：仅作种子秒显（不烧配额）；
+// 用户手动 generate 后新结果会按等级覆盖它。预取在 loadDetail 完成后才到达，故需独立 watch。
+watch(
+  () => props.prefetched,
+  (p) => {
+    if (!p) return;
+    results.value = { ...results.value, [p.level]: p };
   },
 );
 
 async function generate(level: 'brief' | 'summary' | 'deep') {
-  if (loading.value) return;
+  if (loading.value || !props.llmReady) return;
   loading.value = true;
+  apiError.value = '';
   try {
     const res = await radarRepoService.generateInsight(props.fullName, level);
     if (res.insight) {
-      results.value = { ...results.value, [level]: res.insight as unknown as AIInsight };
+      results.value = {
+        ...results.value,
+        [level]: normalizeInsight(res.insight as unknown as Record<string, unknown>),
+      };
     }
   } catch (e) {
-    Notify.create({ type: 'negative', message: t('githubRadar.insightFailed', { msg: (e as Error).message }) });
+    apiError.value = t('githubRadar.insightFailed', { msg: (e as Error).message });
   } finally {
     loading.value = false;
   }
 }
 
+// 切档不自动生成（防烧每日 3 次/级配额）：无本地结果时显示「生成」CTA 由用户显式触发
 function selectLevel(level: 'brief' | 'summary' | 'deep') {
   activeLevel.value = level;
-  if (!results.value[level]) {
-    void generate(level);
-  }
+  apiError.value = '';
 }
 
 function formatTime(iso: string): string {
@@ -142,6 +181,6 @@ function formatTime(iso: string): string {
 .repo-insight__loading
   display: flex
   flex-direction: column
-  align-items: center
-  padding: var(--space-6)
+  gap: var(--space-2)
+  padding: var(--space-2) 0
 </style>

@@ -7,14 +7,44 @@ import (
 	"framework/app/admin/internal/data/ent/adminloginrestriction"
 	"framework/app/admin/internal/data/ent/adminoperationlog"
 	"framework/app/admin/internal/data/ent/apiresource"
+	"framework/app/admin/internal/data/ent/authorizationrecord"
 	"framework/app/admin/internal/data/ent/casbinrule"
+	"framework/app/admin/internal/data/ent/clustermergeevent"
+	"framework/app/admin/internal/data/ent/collectrun"
+	"framework/app/admin/internal/data/ent/compliancerule"
+	"framework/app/admin/internal/data/ent/credentialaccount"
 	"framework/app/admin/internal/data/ent/datapermission"
+	"framework/app/admin/internal/data/ent/deadletter"
+	"framework/app/admin/internal/data/ent/dedupsample"
 	"framework/app/admin/internal/data/ent/department"
 	"framework/app/admin/internal/data/ent/dict"
 	"framework/app/admin/internal/data/ent/dictcategory"
+	"framework/app/admin/internal/data/ent/entityassetmapping"
+	"framework/app/admin/internal/data/ent/evidencesnapshot"
 	"framework/app/admin/internal/data/ent/file"
+	"framework/app/admin/internal/data/ent/intelcluster"
+	"framework/app/admin/internal/data/ent/intelitem"
+	"framework/app/admin/internal/data/ent/intelsource"
 	"framework/app/admin/internal/data/ent/loginfailcounter"
+	"framework/app/admin/internal/data/ent/mapapprovalrecord"
+	"framework/app/admin/internal/data/ent/mapdispatchunit"
+	"framework/app/admin/internal/data/ent/mapperformancesnapshot"
+	"framework/app/admin/internal/data/ent/mappublishaccount"
+	"framework/app/admin/internal/data/ent/mappublishchannel"
+	"framework/app/admin/internal/data/ent/mappublishreceipt"
 	"framework/app/admin/internal/data/ent/menu"
+	"framework/app/admin/internal/data/ent/miaeventcard"
+	"framework/app/admin/internal/data/ent/miaimpactcard"
+	"framework/app/admin/internal/data/ent/miaquotecache"
+	"framework/app/admin/internal/data/ent/miatransmissionrule"
+	"framework/app/admin/internal/data/ent/mmeanalysiscache"
+	"framework/app/admin/internal/data/ent/mmeasset"
+	"framework/app/admin/internal/data/ent/mmemontagetask"
+	"framework/app/admin/internal/data/ent/mmerenderjob"
+	"framework/app/admin/internal/data/ent/mmetemplate"
+	"framework/app/admin/internal/data/ent/mmevariant"
+	"framework/app/admin/internal/data/ent/mmevariantset"
+	"framework/app/admin/internal/data/ent/narrativecoinmapping"
 	"framework/app/admin/internal/data/ent/notificationmessage"
 	"framework/app/admin/internal/data/ent/notificationmessagecategory"
 	"framework/app/admin/internal/data/ent/notificationmessagerecipient"
@@ -41,6 +71,8 @@ import (
 	"framework/app/admin/internal/data/ent/toollinkcategory"
 	"framework/app/admin/internal/data/ent/toollinkssoticket"
 	"framework/app/admin/internal/data/ent/toollinkusermark"
+	"framework/app/admin/internal/data/ent/topic"
+	"framework/app/admin/internal/data/ent/topicsource"
 	"framework/app/admin/internal/data/ent/user"
 	"framework/app/admin/internal/data/ent/usercredential"
 	"framework/app/admin/internal/data/ent/userpost"
@@ -55,7 +87,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 42)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 74)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   adminloginlog.Table,
@@ -187,6 +219,30 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[4] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   authorizationrecord.Table,
+			Columns: authorizationrecord.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: authorizationrecord.FieldID,
+			},
+		},
+		Type: "AuthorizationRecord",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			authorizationrecord.FieldCreateTime:  {Type: field.TypeTime, Column: authorizationrecord.FieldCreateTime},
+			authorizationrecord.FieldUpdateTime:  {Type: field.TypeTime, Column: authorizationrecord.FieldUpdateTime},
+			authorizationrecord.FieldDeleteTime:  {Type: field.TypeTime, Column: authorizationrecord.FieldDeleteTime},
+			authorizationrecord.FieldCreateBy:    {Type: field.TypeUint32, Column: authorizationrecord.FieldCreateBy},
+			authorizationrecord.FieldUpdateBy:    {Type: field.TypeUint32, Column: authorizationrecord.FieldUpdateBy},
+			authorizationrecord.FieldSubject:     {Type: field.TypeString, Column: authorizationrecord.FieldSubject},
+			authorizationrecord.FieldSubjectKey:  {Type: field.TypeString, Column: authorizationrecord.FieldSubjectKey},
+			authorizationrecord.FieldStatus:      {Type: field.TypeString, Column: authorizationrecord.FieldStatus},
+			authorizationrecord.FieldScope:       {Type: field.TypeString, Column: authorizationrecord.FieldScope},
+			authorizationrecord.FieldEvidenceRef: {Type: field.TypeString, Column: authorizationrecord.FieldEvidenceRef},
+			authorizationrecord.FieldValidUntil:  {Type: field.TypeTime, Column: authorizationrecord.FieldValidUntil},
+		},
+	}
+	graph.Nodes[5] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   casbinrule.Table,
 			Columns: casbinrule.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -205,7 +261,108 @@ var schemaGraph = func() *sqlgraph.Schema {
 			casbinrule.FieldV5:    {Type: field.TypeString, Column: casbinrule.FieldV5},
 		},
 	}
-	graph.Nodes[5] = &sqlgraph.Node{
+	graph.Nodes[6] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   clustermergeevent.Table,
+			Columns: clustermergeevent.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: clustermergeevent.FieldID,
+			},
+		},
+		Type: "ClusterMergeEvent",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			clustermergeevent.FieldCreateTime:    {Type: field.TypeTime, Column: clustermergeevent.FieldCreateTime},
+			clustermergeevent.FieldUpdateTime:    {Type: field.TypeTime, Column: clustermergeevent.FieldUpdateTime},
+			clustermergeevent.FieldDeleteTime:    {Type: field.TypeTime, Column: clustermergeevent.FieldDeleteTime},
+			clustermergeevent.FieldFromClusterID: {Type: field.TypeString, Column: clustermergeevent.FieldFromClusterID},
+			clustermergeevent.FieldToClusterID:   {Type: field.TypeString, Column: clustermergeevent.FieldToClusterID},
+			clustermergeevent.FieldReason:        {Type: field.TypeString, Column: clustermergeevent.FieldReason},
+			clustermergeevent.FieldMemberCount:   {Type: field.TypeInt32, Column: clustermergeevent.FieldMemberCount},
+		},
+	}
+	graph.Nodes[7] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   collectrun.Table,
+			Columns: collectrun.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: collectrun.FieldID,
+			},
+		},
+		Type: "CollectRun",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			collectrun.FieldCreateTime: {Type: field.TypeTime, Column: collectrun.FieldCreateTime},
+			collectrun.FieldUpdateTime: {Type: field.TypeTime, Column: collectrun.FieldUpdateTime},
+			collectrun.FieldDeleteTime: {Type: field.TypeTime, Column: collectrun.FieldDeleteTime},
+			collectrun.FieldSourceID:   {Type: field.TypeString, Column: collectrun.FieldSourceID},
+			collectrun.FieldTrigger:    {Type: field.TypeString, Column: collectrun.FieldTrigger},
+			collectrun.FieldStartedAt:  {Type: field.TypeTime, Column: collectrun.FieldStartedAt},
+			collectrun.FieldFinishedAt: {Type: field.TypeTime, Column: collectrun.FieldFinishedAt},
+			collectrun.FieldFetched:    {Type: field.TypeInt32, Column: collectrun.FieldFetched},
+			collectrun.FieldNormalized: {Type: field.TypeInt32, Column: collectrun.FieldNormalized},
+			collectrun.FieldMerged:     {Type: field.TypeInt32, Column: collectrun.FieldMerged},
+			collectrun.FieldBlocked:    {Type: field.TypeInt32, Column: collectrun.FieldBlocked},
+			collectrun.FieldSkipped:    {Type: field.TypeInt32, Column: collectrun.FieldSkipped},
+			collectrun.FieldStatus:     {Type: field.TypeString, Column: collectrun.FieldStatus},
+			collectrun.FieldErrorCode:  {Type: field.TypeString, Column: collectrun.FieldErrorCode},
+		},
+	}
+	graph.Nodes[8] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   compliancerule.Table,
+			Columns: compliancerule.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: compliancerule.FieldID,
+			},
+		},
+		Type: "ComplianceRule",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			compliancerule.FieldCreateTime:     {Type: field.TypeTime, Column: compliancerule.FieldCreateTime},
+			compliancerule.FieldUpdateTime:     {Type: field.TypeTime, Column: compliancerule.FieldUpdateTime},
+			compliancerule.FieldDeleteTime:     {Type: field.TypeTime, Column: compliancerule.FieldDeleteTime},
+			compliancerule.FieldCreateBy:       {Type: field.TypeUint32, Column: compliancerule.FieldCreateBy},
+			compliancerule.FieldUpdateBy:       {Type: field.TypeUint32, Column: compliancerule.FieldUpdateBy},
+			compliancerule.FieldRuleType:       {Type: field.TypeString, Column: compliancerule.FieldRuleType},
+			compliancerule.FieldPattern:        {Type: field.TypeString, Column: compliancerule.FieldPattern},
+			compliancerule.FieldAction:         {Type: field.TypeString, Column: compliancerule.FieldAction},
+			compliancerule.FieldPriority:       {Type: field.TypeInt32, Column: compliancerule.FieldPriority},
+			compliancerule.FieldEnabled:        {Type: field.TypeBool, Column: compliancerule.FieldEnabled},
+			compliancerule.FieldEffectiveFrom:  {Type: field.TypeTime, Column: compliancerule.FieldEffectiveFrom},
+			compliancerule.FieldEffectiveUntil: {Type: field.TypeTime, Column: compliancerule.FieldEffectiveUntil},
+			compliancerule.FieldHitCount:       {Type: field.TypeInt64, Column: compliancerule.FieldHitCount},
+			compliancerule.FieldScope:          {Type: field.TypeString, Column: compliancerule.FieldScope},
+			compliancerule.FieldPlatform:       {Type: field.TypeString, Column: compliancerule.FieldPlatform},
+			compliancerule.FieldRemark:         {Type: field.TypeString, Column: compliancerule.FieldRemark},
+		},
+	}
+	graph.Nodes[9] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   credentialaccount.Table,
+			Columns: credentialaccount.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: credentialaccount.FieldID,
+			},
+		},
+		Type: "CredentialAccount",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			credentialaccount.FieldCreateTime:    {Type: field.TypeTime, Column: credentialaccount.FieldCreateTime},
+			credentialaccount.FieldUpdateTime:    {Type: field.TypeTime, Column: credentialaccount.FieldUpdateTime},
+			credentialaccount.FieldDeleteTime:    {Type: field.TypeTime, Column: credentialaccount.FieldDeleteTime},
+			credentialaccount.FieldPlatform:      {Type: field.TypeString, Column: credentialaccount.FieldPlatform},
+			credentialaccount.FieldAccountKey:    {Type: field.TypeString, Column: credentialaccount.FieldAccountKey},
+			credentialaccount.FieldCredentialRef: {Type: field.TypeString, Column: credentialaccount.FieldCredentialRef},
+			credentialaccount.FieldEnabled:       {Type: field.TypeBool, Column: credentialaccount.FieldEnabled},
+			credentialaccount.FieldQuotaUsed:     {Type: field.TypeInt64, Column: credentialaccount.FieldQuotaUsed},
+			credentialaccount.FieldQuotaLimit:    {Type: field.TypeInt64, Column: credentialaccount.FieldQuotaLimit},
+			credentialaccount.FieldFailStreak:    {Type: field.TypeInt32, Column: credentialaccount.FieldFailStreak},
+			credentialaccount.FieldPausedUntil:   {Type: field.TypeTime, Column: credentialaccount.FieldPausedUntil},
+			credentialaccount.FieldLastUsedAt:    {Type: field.TypeTime, Column: credentialaccount.FieldLastUsedAt},
+		},
+	}
+	graph.Nodes[10] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   datapermission.Table,
 			Columns: datapermission.Columns,
@@ -228,7 +385,55 @@ var schemaGraph = func() *sqlgraph.Schema {
 			datapermission.FieldRuleJSON:   {Type: field.TypeString, Column: datapermission.FieldRuleJSON},
 		},
 	}
-	graph.Nodes[6] = &sqlgraph.Node{
+	graph.Nodes[11] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   deadletter.Table,
+			Columns: deadletter.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: deadletter.FieldID,
+			},
+		},
+		Type: "DeadLetter",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			deadletter.FieldCreateTime:    {Type: field.TypeTime, Column: deadletter.FieldCreateTime},
+			deadletter.FieldUpdateTime:    {Type: field.TypeTime, Column: deadletter.FieldUpdateTime},
+			deadletter.FieldDeleteTime:    {Type: field.TypeTime, Column: deadletter.FieldDeleteTime},
+			deadletter.FieldTaskType:      {Type: field.TypeString, Column: deadletter.FieldTaskType},
+			deadletter.FieldPayload:       {Type: field.TypeJSON, Column: deadletter.FieldPayload},
+			deadletter.FieldErrorCode:     {Type: field.TypeString, Column: deadletter.FieldErrorCode},
+			deadletter.FieldErrorMsg:      {Type: field.TypeString, Column: deadletter.FieldErrorMsg},
+			deadletter.FieldAttempt:       {Type: field.TypeInt32, Column: deadletter.FieldAttempt},
+			deadletter.FieldFirstFailedAt: {Type: field.TypeTime, Column: deadletter.FieldFirstFailedAt},
+			deadletter.FieldLastFailedAt:  {Type: field.TypeTime, Column: deadletter.FieldLastFailedAt},
+			deadletter.FieldStatus:        {Type: field.TypeString, Column: deadletter.FieldStatus},
+			deadletter.FieldReplayedBy:    {Type: field.TypeString, Column: deadletter.FieldReplayedBy},
+			deadletter.FieldReplayedAt:    {Type: field.TypeTime, Column: deadletter.FieldReplayedAt},
+		},
+	}
+	graph.Nodes[12] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   dedupsample.Table,
+			Columns: dedupsample.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: dedupsample.FieldID,
+			},
+		},
+		Type: "DedupSample",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			dedupsample.FieldCreateTime: {Type: field.TypeTime, Column: dedupsample.FieldCreateTime},
+			dedupsample.FieldUpdateTime: {Type: field.TypeTime, Column: dedupsample.FieldUpdateTime},
+			dedupsample.FieldDeleteTime: {Type: field.TypeTime, Column: dedupsample.FieldDeleteTime},
+			dedupsample.FieldIntelID:    {Type: field.TypeString, Column: dedupsample.FieldIntelID},
+			dedupsample.FieldClusterID:  {Type: field.TypeString, Column: dedupsample.FieldClusterID},
+			dedupsample.FieldAction:     {Type: field.TypeString, Column: dedupsample.FieldAction},
+			dedupsample.FieldLevel:      {Type: field.TypeString, Column: dedupsample.FieldLevel},
+			dedupsample.FieldSimScore:   {Type: field.TypeFloat64, Column: dedupsample.FieldSimScore},
+			dedupsample.FieldOperator:   {Type: field.TypeString, Column: dedupsample.FieldOperator},
+		},
+	}
+	graph.Nodes[13] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   department.Table,
 			Columns: department.Columns,
@@ -254,7 +459,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			department.FieldSortID:         {Type: field.TypeInt32, Column: department.FieldSortID},
 		},
 	}
-	graph.Nodes[7] = &sqlgraph.Node{
+	graph.Nodes[14] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   dict.Table,
 			Columns: dict.Columns,
@@ -282,7 +487,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			dict.FieldSortID:        {Type: field.TypeInt32, Column: dict.FieldSortID},
 		},
 	}
-	graph.Nodes[8] = &sqlgraph.Node{
+	graph.Nodes[15] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   dictcategory.Table,
 			Columns: dictcategory.Columns,
@@ -306,7 +511,68 @@ var schemaGraph = func() *sqlgraph.Schema {
 			dictcategory.FieldSortID:     {Type: field.TypeInt32, Column: dictcategory.FieldSortID},
 		},
 	}
-	graph.Nodes[9] = &sqlgraph.Node{
+	graph.Nodes[16] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   entityassetmapping.Table,
+			Columns: entityassetmapping.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: entityassetmapping.FieldID,
+			},
+		},
+		Type: "EntityAssetMapping",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			entityassetmapping.FieldCreateTime:    {Type: field.TypeTime, Column: entityassetmapping.FieldCreateTime},
+			entityassetmapping.FieldUpdateTime:    {Type: field.TypeTime, Column: entityassetmapping.FieldUpdateTime},
+			entityassetmapping.FieldDeleteTime:    {Type: field.TypeTime, Column: entityassetmapping.FieldDeleteTime},
+			entityassetmapping.FieldCreateBy:      {Type: field.TypeUint32, Column: entityassetmapping.FieldCreateBy},
+			entityassetmapping.FieldUpdateBy:      {Type: field.TypeUint32, Column: entityassetmapping.FieldUpdateBy},
+			entityassetmapping.FieldTenantID:      {Type: field.TypeUint32, Column: entityassetmapping.FieldTenantID},
+			entityassetmapping.FieldEntityName:    {Type: field.TypeString, Column: entityassetmapping.FieldEntityName},
+			entityassetmapping.FieldEntityAlias:   {Type: field.TypeJSON, Column: entityassetmapping.FieldEntityAlias},
+			entityassetmapping.FieldEntityType:    {Type: field.TypeEnum, Column: entityassetmapping.FieldEntityType},
+			entityassetmapping.FieldAssetClass:    {Type: field.TypeEnum, Column: entityassetmapping.FieldAssetClass},
+			entityassetmapping.FieldSymbol:        {Type: field.TypeString, Column: entityassetmapping.FieldSymbol},
+			entityassetmapping.FieldDirectionBias: {Type: field.TypeEnum, Column: entityassetmapping.FieldDirectionBias},
+			entityassetmapping.FieldConfidence:    {Type: field.TypeFloat64, Column: entityassetmapping.FieldConfidence},
+			entityassetmapping.FieldSource:        {Type: field.TypeString, Column: entityassetmapping.FieldSource},
+			entityassetmapping.FieldNotes:         {Type: field.TypeString, Column: entityassetmapping.FieldNotes},
+			entityassetmapping.FieldEnabled:       {Type: field.TypeBool, Column: entityassetmapping.FieldEnabled},
+		},
+	}
+	graph.Nodes[17] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   evidencesnapshot.Table,
+			Columns: evidencesnapshot.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: evidencesnapshot.FieldID,
+			},
+		},
+		Type: "EvidenceSnapshot",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			evidencesnapshot.FieldCreateTime:    {Type: field.TypeTime, Column: evidencesnapshot.FieldCreateTime},
+			evidencesnapshot.FieldUpdateTime:    {Type: field.TypeTime, Column: evidencesnapshot.FieldUpdateTime},
+			evidencesnapshot.FieldDeleteTime:    {Type: field.TypeTime, Column: evidencesnapshot.FieldDeleteTime},
+			evidencesnapshot.FieldIntelID:       {Type: field.TypeString, Column: evidencesnapshot.FieldIntelID},
+			evidencesnapshot.FieldCollectedAt:   {Type: field.TypeTime, Column: evidencesnapshot.FieldCollectedAt},
+			evidencesnapshot.FieldMethod:        {Type: field.TypeString, Column: evidencesnapshot.FieldMethod},
+			evidencesnapshot.FieldRequestURL:    {Type: field.TypeString, Column: evidencesnapshot.FieldRequestURL},
+			evidencesnapshot.FieldFinalURL:      {Type: field.TypeString, Column: evidencesnapshot.FieldFinalURL},
+			evidencesnapshot.FieldHTTPStatus:    {Type: field.TypeInt32, Column: evidencesnapshot.FieldHTTPStatus},
+			evidencesnapshot.FieldHTTPHeaders:   {Type: field.TypeJSON, Column: evidencesnapshot.FieldHTTPHeaders},
+			evidencesnapshot.FieldRawPath:       {Type: field.TypeString, Column: evidencesnapshot.FieldRawPath},
+			evidencesnapshot.FieldRawHash:       {Type: field.TypeString, Column: evidencesnapshot.FieldRawHash},
+			evidencesnapshot.FieldPrevHash:      {Type: field.TypeString, Column: evidencesnapshot.FieldPrevHash},
+			evidencesnapshot.FieldChainHash:     {Type: field.TypeString, Column: evidencesnapshot.FieldChainHash},
+			evidencesnapshot.FieldRobotsChecked: {Type: field.TypeBool, Column: evidencesnapshot.FieldRobotsChecked},
+			evidencesnapshot.FieldRobotsAllowed: {Type: field.TypeBool, Column: evidencesnapshot.FieldRobotsAllowed},
+			evidencesnapshot.FieldCrawlDelayMs:  {Type: field.TypeInt32, Column: evidencesnapshot.FieldCrawlDelayMs},
+			evidencesnapshot.FieldRetainUntil:   {Type: field.TypeTime, Column: evidencesnapshot.FieldRetainUntil},
+			evidencesnapshot.FieldRawSizeBytes:  {Type: field.TypeInt64, Column: evidencesnapshot.FieldRawSizeBytes},
+		},
+	}
+	graph.Nodes[18] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   file.Table,
 			Columns: file.Columns,
@@ -337,7 +603,131 @@ var schemaGraph = func() *sqlgraph.Schema {
 			file.FieldMd5:           {Type: field.TypeString, Column: file.FieldMd5},
 		},
 	}
-	graph.Nodes[10] = &sqlgraph.Node{
+	graph.Nodes[19] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   intelcluster.Table,
+			Columns: intelcluster.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: intelcluster.FieldID,
+			},
+		},
+		Type: "IntelCluster",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			intelcluster.FieldCreateTime:       {Type: field.TypeTime, Column: intelcluster.FieldCreateTime},
+			intelcluster.FieldUpdateTime:       {Type: field.TypeTime, Column: intelcluster.FieldUpdateTime},
+			intelcluster.FieldDeleteTime:       {Type: field.TypeTime, Column: intelcluster.FieldDeleteTime},
+			intelcluster.FieldLabel:            {Type: field.TypeString, Column: intelcluster.FieldLabel},
+			intelcluster.FieldMemberCount:      {Type: field.TypeInt32, Column: intelcluster.FieldMemberCount},
+			intelcluster.FieldPlatformCount:    {Type: field.TypeInt32, Column: intelcluster.FieldPlatformCount},
+			intelcluster.FieldRepresentativeID: {Type: field.TypeString, Column: intelcluster.FieldRepresentativeID},
+			intelcluster.FieldRegion:           {Type: field.TypeString, Column: intelcluster.FieldRegion},
+			intelcluster.FieldCategory:         {Type: field.TypeString, Column: intelcluster.FieldCategory},
+			intelcluster.FieldFirstSeenAt:      {Type: field.TypeTime, Column: intelcluster.FieldFirstSeenAt},
+			intelcluster.FieldLastSeenAt:       {Type: field.TypeTime, Column: intelcluster.FieldLastSeenAt},
+			intelcluster.FieldMergedBy:         {Type: field.TypeString, Column: intelcluster.FieldMergedBy},
+			intelcluster.FieldCentroidRef:      {Type: field.TypeString, Column: intelcluster.FieldCentroidRef},
+			intelcluster.FieldStatus:           {Type: field.TypeString, Column: intelcluster.FieldStatus},
+			intelcluster.FieldClosedAt:         {Type: field.TypeTime, Column: intelcluster.FieldClosedAt},
+		},
+	}
+	graph.Nodes[20] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   intelitem.Table,
+			Columns: intelitem.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: intelitem.FieldID,
+			},
+		},
+		Type: "IntelItem",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			intelitem.FieldCreateTime:         {Type: field.TypeTime, Column: intelitem.FieldCreateTime},
+			intelitem.FieldUpdateTime:         {Type: field.TypeTime, Column: intelitem.FieldUpdateTime},
+			intelitem.FieldDeleteTime:         {Type: field.TypeTime, Column: intelitem.FieldDeleteTime},
+			intelitem.FieldAPIVersion:         {Type: field.TypeString, Column: intelitem.FieldAPIVersion},
+			intelitem.FieldPlatform:           {Type: field.TypeString, Column: intelitem.FieldPlatform},
+			intelitem.FieldRegion:             {Type: field.TypeString, Column: intelitem.FieldRegion},
+			intelitem.FieldCollectMethod:      {Type: field.TypeString, Column: intelitem.FieldCollectMethod},
+			intelitem.FieldSourceURL:          {Type: field.TypeString, Column: intelitem.FieldSourceURL},
+			intelitem.FieldAuthor:             {Type: field.TypeString, Column: intelitem.FieldAuthor},
+			intelitem.FieldCollectedAt:        {Type: field.TypeTime, Column: intelitem.FieldCollectedAt},
+			intelitem.FieldPublishedAt:        {Type: field.TypeTime, Column: intelitem.FieldPublishedAt},
+			intelitem.FieldPublishedAtSuspect: {Type: field.TypeBool, Column: intelitem.FieldPublishedAtSuspect},
+			intelitem.FieldTitle:              {Type: field.TypeString, Column: intelitem.FieldTitle},
+			intelitem.FieldText:               {Type: field.TypeString, Column: intelitem.FieldText},
+			intelitem.FieldMediaRefs:          {Type: field.TypeJSON, Column: intelitem.FieldMediaRefs},
+			intelitem.FieldLang:               {Type: field.TypeString, Column: intelitem.FieldLang},
+			intelitem.FieldEntities:           {Type: field.TypeJSON, Column: intelitem.FieldEntities},
+			intelitem.FieldCategory:           {Type: field.TypeString, Column: intelitem.FieldCategory},
+			intelitem.FieldRank:               {Type: field.TypeInt32, Column: intelitem.FieldRank},
+			intelitem.FieldRankTotal:          {Type: field.TypeInt32, Column: intelitem.FieldRankTotal},
+			intelitem.FieldViews:              {Type: field.TypeInt64, Column: intelitem.FieldViews},
+			intelitem.FieldLikes:              {Type: field.TypeInt64, Column: intelitem.FieldLikes},
+			intelitem.FieldComments:           {Type: field.TypeInt64, Column: intelitem.FieldComments},
+			intelitem.FieldMetricsAsOf:        {Type: field.TypeTime, Column: intelitem.FieldMetricsAsOf},
+			intelitem.FieldURLKey:             {Type: field.TypeString, Column: intelitem.FieldURLKey},
+			intelitem.FieldCycleBucket:        {Type: field.TypeInt64, Column: intelitem.FieldCycleBucket},
+			intelitem.FieldDedupKey:           {Type: field.TypeString, Column: intelitem.FieldDedupKey},
+			intelitem.FieldFingerprintValid:   {Type: field.TypeBool, Column: intelitem.FieldFingerprintValid},
+			intelitem.FieldFpB0:               {Type: field.TypeInt16, Column: intelitem.FieldFpB0},
+			intelitem.FieldFpB1:               {Type: field.TypeInt16, Column: intelitem.FieldFpB1},
+			intelitem.FieldFpB2:               {Type: field.TypeInt16, Column: intelitem.FieldFpB2},
+			intelitem.FieldFpB3:               {Type: field.TypeInt16, Column: intelitem.FieldFpB3},
+			intelitem.FieldFingerprintHex:     {Type: field.TypeString, Column: intelitem.FieldFingerprintHex},
+			intelitem.FieldEmbeddingID:        {Type: field.TypeString, Column: intelitem.FieldEmbeddingID},
+			intelitem.FieldClusterID:          {Type: field.TypeString, Column: intelitem.FieldClusterID},
+			intelitem.FieldComplianceGate:     {Type: field.TypeString, Column: intelitem.FieldComplianceGate},
+			intelitem.FieldComplianceReasons:  {Type: field.TypeJSON, Column: intelitem.FieldComplianceReasons},
+			intelitem.FieldWorkabilityScore:   {Type: field.TypeFloat64, Column: intelitem.FieldWorkabilityScore},
+			intelitem.FieldWorkabilityReason:  {Type: field.TypeString, Column: intelitem.FieldWorkabilityReason},
+			intelitem.FieldSourceID:           {Type: field.TypeString, Column: intelitem.FieldSourceID},
+			intelitem.FieldEvidenceID:         {Type: field.TypeString, Column: intelitem.FieldEvidenceID},
+			intelitem.FieldPublishState:       {Type: field.TypeString, Column: intelitem.FieldPublishState},
+			intelitem.FieldRawPayload:         {Type: field.TypeJSON, Column: intelitem.FieldRawPayload},
+			intelitem.FieldRawSize:            {Type: field.TypeInt64, Column: intelitem.FieldRawSize},
+			intelitem.FieldRawTruncated:       {Type: field.TypeBool, Column: intelitem.FieldRawTruncated},
+		},
+	}
+	graph.Nodes[21] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   intelsource.Table,
+			Columns: intelsource.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: intelsource.FieldID,
+			},
+		},
+		Type: "IntelSource",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			intelsource.FieldCreateTime:         {Type: field.TypeTime, Column: intelsource.FieldCreateTime},
+			intelsource.FieldUpdateTime:         {Type: field.TypeTime, Column: intelsource.FieldUpdateTime},
+			intelsource.FieldDeleteTime:         {Type: field.TypeTime, Column: intelsource.FieldDeleteTime},
+			intelsource.FieldPlatform:           {Type: field.TypeString, Column: intelsource.FieldPlatform},
+			intelsource.FieldRegion:             {Type: field.TypeString, Column: intelsource.FieldRegion},
+			intelsource.FieldKind:               {Type: field.TypeString, Column: intelsource.FieldKind},
+			intelsource.FieldMethod:             {Type: field.TypeString, Column: intelsource.FieldMethod},
+			intelsource.FieldConfig:             {Type: field.TypeJSON, Column: intelsource.FieldConfig},
+			intelsource.FieldConfigSchemaHint:   {Type: field.TypeString, Column: intelsource.FieldConfigSchemaHint},
+			intelsource.FieldEnabled:            {Type: field.TypeBool, Column: intelsource.FieldEnabled},
+			intelsource.FieldIntervalMinutes:    {Type: field.TypeInt32, Column: intelsource.FieldIntervalMinutes},
+			intelsource.FieldRateLimitPerMin:    {Type: field.TypeInt32, Column: intelsource.FieldRateLimitPerMin},
+			intelsource.FieldPriority:           {Type: field.TypeInt32, Column: intelsource.FieldPriority},
+			intelsource.FieldCredentialRef:      {Type: field.TypeString, Column: intelsource.FieldCredentialRef},
+			intelsource.FieldWeight:             {Type: field.TypeFloat64, Column: intelsource.FieldWeight},
+			intelsource.FieldRobotsExempt:       {Type: field.TypeBool, Column: intelsource.FieldRobotsExempt},
+			intelsource.FieldRobotsExemptReason: {Type: field.TypeString, Column: intelsource.FieldRobotsExemptReason},
+			intelsource.FieldStatus:             {Type: field.TypeString, Column: intelsource.FieldStatus},
+			intelsource.FieldPausedUntil:        {Type: field.TypeTime, Column: intelsource.FieldPausedUntil},
+			intelsource.FieldFailStreak:         {Type: field.TypeInt32, Column: intelsource.FieldFailStreak},
+			intelsource.FieldLastRunAt:          {Type: field.TypeTime, Column: intelsource.FieldLastRunAt},
+			intelsource.FieldLastSuccessAt:      {Type: field.TypeTime, Column: intelsource.FieldLastSuccessAt},
+			intelsource.FieldSuccessCount7d:     {Type: field.TypeInt32, Column: intelsource.FieldSuccessCount7d},
+			intelsource.FieldFailCount7d:        {Type: field.TypeInt32, Column: intelsource.FieldFailCount7d},
+			intelsource.FieldLastError:          {Type: field.TypeString, Column: intelsource.FieldLastError},
+		},
+	}
+	graph.Nodes[22] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   loginfailcounter.Table,
 			Columns: loginfailcounter.Columns,
@@ -355,7 +745,195 @@ var schemaGraph = func() *sqlgraph.Schema {
 			loginfailcounter.FieldLockedUntil: {Type: field.TypeTime, Column: loginfailcounter.FieldLockedUntil},
 		},
 	}
-	graph.Nodes[11] = &sqlgraph.Node{
+	graph.Nodes[23] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   mapapprovalrecord.Table,
+			Columns: mapapprovalrecord.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: mapapprovalrecord.FieldID,
+			},
+		},
+		Type: "MapApprovalRecord",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			mapapprovalrecord.FieldCreateTime:         {Type: field.TypeTime, Column: mapapprovalrecord.FieldCreateTime},
+			mapapprovalrecord.FieldUpdateTime:         {Type: field.TypeTime, Column: mapapprovalrecord.FieldUpdateTime},
+			mapapprovalrecord.FieldDeleteTime:         {Type: field.TypeTime, Column: mapapprovalrecord.FieldDeleteTime},
+			mapapprovalrecord.FieldCreateBy:           {Type: field.TypeUint32, Column: mapapprovalrecord.FieldCreateBy},
+			mapapprovalrecord.FieldUpdateBy:           {Type: field.TypeUint32, Column: mapapprovalrecord.FieldUpdateBy},
+			mapapprovalrecord.FieldTenantID:           {Type: field.TypeUint32, Column: mapapprovalrecord.FieldTenantID},
+			mapapprovalrecord.FieldDispatchUnitID:     {Type: field.TypeString, Column: mapapprovalrecord.FieldDispatchUnitID},
+			mapapprovalrecord.FieldAction:             {Type: field.TypeEnum, Column: mapapprovalrecord.FieldAction},
+			mapapprovalrecord.FieldActor:              {Type: field.TypeString, Column: mapapprovalrecord.FieldActor},
+			mapapprovalrecord.FieldActorType:          {Type: field.TypeEnum, Column: mapapprovalrecord.FieldActorType},
+			mapapprovalrecord.FieldFromState:          {Type: field.TypeString, Column: mapapprovalrecord.FieldFromState},
+			mapapprovalrecord.FieldToState:            {Type: field.TypeString, Column: mapapprovalrecord.FieldToState},
+			mapapprovalrecord.FieldReason:             {Type: field.TypeString, Column: mapapprovalrecord.FieldReason},
+			mapapprovalrecord.FieldVisibilityAtAction: {Type: field.TypeString, Column: mapapprovalrecord.FieldVisibilityAtAction},
+			mapapprovalrecord.FieldIP:                 {Type: field.TypeString, Column: mapapprovalrecord.FieldIP},
+			mapapprovalrecord.FieldUserAgent:          {Type: field.TypeString, Column: mapapprovalrecord.FieldUserAgent},
+			mapapprovalrecord.FieldResult:             {Type: field.TypeEnum, Column: mapapprovalrecord.FieldResult},
+		},
+	}
+	graph.Nodes[24] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   mapdispatchunit.Table,
+			Columns: mapdispatchunit.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: mapdispatchunit.FieldID,
+			},
+		},
+		Type: "MapDispatchUnit",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			mapdispatchunit.FieldCreateTime:               {Type: field.TypeTime, Column: mapdispatchunit.FieldCreateTime},
+			mapdispatchunit.FieldUpdateTime:               {Type: field.TypeTime, Column: mapdispatchunit.FieldUpdateTime},
+			mapdispatchunit.FieldDeleteTime:               {Type: field.TypeTime, Column: mapdispatchunit.FieldDeleteTime},
+			mapdispatchunit.FieldCreateBy:                 {Type: field.TypeUint32, Column: mapdispatchunit.FieldCreateBy},
+			mapdispatchunit.FieldUpdateBy:                 {Type: field.TypeUint32, Column: mapdispatchunit.FieldUpdateBy},
+			mapdispatchunit.FieldTenantID:                 {Type: field.TypeUint32, Column: mapdispatchunit.FieldTenantID},
+			mapdispatchunit.FieldUnitID:                   {Type: field.TypeString, Column: mapdispatchunit.FieldUnitID},
+			mapdispatchunit.FieldVariantSetID:             {Type: field.TypeString, Column: mapdispatchunit.FieldVariantSetID},
+			mapdispatchunit.FieldVariantID:                {Type: field.TypeString, Column: mapdispatchunit.FieldVariantID},
+			mapdispatchunit.FieldTargets:                  {Type: field.TypeJSON, Column: mapdispatchunit.FieldTargets},
+			mapdispatchunit.FieldScheduledFor:             {Type: field.TypeTime, Column: mapdispatchunit.FieldScheduledFor},
+			mapdispatchunit.FieldScheduleMode:             {Type: field.TypeEnum, Column: mapdispatchunit.FieldScheduleMode},
+			mapdispatchunit.FieldVisibilityDefault:        {Type: field.TypeEnum, Column: mapdispatchunit.FieldVisibilityDefault},
+			mapdispatchunit.FieldVisibilityOverrideReason: {Type: field.TypeString, Column: mapdispatchunit.FieldVisibilityOverrideReason},
+			mapdispatchunit.FieldApprovalState:            {Type: field.TypeEnum, Column: mapdispatchunit.FieldApprovalState},
+			mapdispatchunit.FieldSubmittedBy:              {Type: field.TypeString, Column: mapdispatchunit.FieldSubmittedBy},
+			mapdispatchunit.FieldApprover:                 {Type: field.TypeString, Column: mapdispatchunit.FieldApprover},
+			mapdispatchunit.FieldApprovedAt:               {Type: field.TypeTime, Column: mapdispatchunit.FieldApprovedAt},
+			mapdispatchunit.FieldRejectReason:             {Type: field.TypeString, Column: mapdispatchunit.FieldRejectReason},
+			mapdispatchunit.FieldPublishState:             {Type: field.TypeEnum, Column: mapdispatchunit.FieldPublishState},
+			mapdispatchunit.FieldPostID:                   {Type: field.TypeString, Column: mapdispatchunit.FieldPostID},
+			mapdispatchunit.FieldPostURL:                  {Type: field.TypeString, Column: mapdispatchunit.FieldPostURL},
+			mapdispatchunit.FieldPublishedAt:              {Type: field.TypeTime, Column: mapdispatchunit.FieldPublishedAt},
+			mapdispatchunit.FieldOperator:                 {Type: field.TypeString, Column: mapdispatchunit.FieldOperator},
+			mapdispatchunit.FieldFeedbackRef:              {Type: field.TypeString, Column: mapdispatchunit.FieldFeedbackRef},
+		},
+	}
+	graph.Nodes[25] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   mapperformancesnapshot.Table,
+			Columns: mapperformancesnapshot.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: mapperformancesnapshot.FieldID,
+			},
+		},
+		Type: "MapPerformanceSnapshot",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			mapperformancesnapshot.FieldCreateTime:     {Type: field.TypeTime, Column: mapperformancesnapshot.FieldCreateTime},
+			mapperformancesnapshot.FieldUpdateTime:     {Type: field.TypeTime, Column: mapperformancesnapshot.FieldUpdateTime},
+			mapperformancesnapshot.FieldDeleteTime:     {Type: field.TypeTime, Column: mapperformancesnapshot.FieldDeleteTime},
+			mapperformancesnapshot.FieldCreateBy:       {Type: field.TypeUint32, Column: mapperformancesnapshot.FieldCreateBy},
+			mapperformancesnapshot.FieldUpdateBy:       {Type: field.TypeUint32, Column: mapperformancesnapshot.FieldUpdateBy},
+			mapperformancesnapshot.FieldTenantID:       {Type: field.TypeUint32, Column: mapperformancesnapshot.FieldTenantID},
+			mapperformancesnapshot.FieldSnapshotID:     {Type: field.TypeString, Column: mapperformancesnapshot.FieldSnapshotID},
+			mapperformancesnapshot.FieldReceiptID:      {Type: field.TypeString, Column: mapperformancesnapshot.FieldReceiptID},
+			mapperformancesnapshot.FieldDispatchUnitID: {Type: field.TypeString, Column: mapperformancesnapshot.FieldDispatchUnitID},
+			mapperformancesnapshot.FieldVariantID:      {Type: field.TypeString, Column: mapperformancesnapshot.FieldVariantID},
+			mapperformancesnapshot.FieldPlatformKey:    {Type: field.TypeString, Column: mapperformancesnapshot.FieldPlatformKey},
+			mapperformancesnapshot.FieldViews:          {Type: field.TypeInt64, Column: mapperformancesnapshot.FieldViews},
+			mapperformancesnapshot.FieldLikes:          {Type: field.TypeInt64, Column: mapperformancesnapshot.FieldLikes},
+			mapperformancesnapshot.FieldComments:       {Type: field.TypeInt64, Column: mapperformancesnapshot.FieldComments},
+			mapperformancesnapshot.FieldShares:         {Type: field.TypeInt64, Column: mapperformancesnapshot.FieldShares},
+			mapperformancesnapshot.FieldFavorites:      {Type: field.TypeInt64, Column: mapperformancesnapshot.FieldFavorites},
+			mapperformancesnapshot.FieldCompletionRate: {Type: field.TypeFloat64, Column: mapperformancesnapshot.FieldCompletionRate},
+			mapperformancesnapshot.FieldFetchedAt:      {Type: field.TypeTime, Column: mapperformancesnapshot.FieldFetchedAt},
+			mapperformancesnapshot.FieldCandidateID:    {Type: field.TypeString, Column: mapperformancesnapshot.FieldCandidateID},
+		},
+	}
+	graph.Nodes[26] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   mappublishaccount.Table,
+			Columns: mappublishaccount.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: mappublishaccount.FieldID,
+			},
+		},
+		Type: "MapPublishAccount",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			mappublishaccount.FieldCreateTime:          {Type: field.TypeTime, Column: mappublishaccount.FieldCreateTime},
+			mappublishaccount.FieldUpdateTime:          {Type: field.TypeTime, Column: mappublishaccount.FieldUpdateTime},
+			mappublishaccount.FieldDeleteTime:          {Type: field.TypeTime, Column: mappublishaccount.FieldDeleteTime},
+			mappublishaccount.FieldCreateBy:            {Type: field.TypeUint32, Column: mappublishaccount.FieldCreateBy},
+			mappublishaccount.FieldUpdateBy:            {Type: field.TypeUint32, Column: mappublishaccount.FieldUpdateBy},
+			mappublishaccount.FieldTenantID:            {Type: field.TypeUint32, Column: mappublishaccount.FieldTenantID},
+			mappublishaccount.FieldAccountID:           {Type: field.TypeString, Column: mappublishaccount.FieldAccountID},
+			mappublishaccount.FieldChannelID:           {Type: field.TypeString, Column: mappublishaccount.FieldChannelID},
+			mappublishaccount.FieldDisplayName:         {Type: field.TypeString, Column: mappublishaccount.FieldDisplayName},
+			mappublishaccount.FieldCredentialRef:       {Type: field.TypeString, Column: mappublishaccount.FieldCredentialRef},
+			mappublishaccount.FieldCredentialType:      {Type: field.TypeEnum, Column: mappublishaccount.FieldCredentialType},
+			mappublishaccount.FieldEnabled:             {Type: field.TypeBool, Column: mappublishaccount.FieldEnabled},
+			mappublishaccount.FieldHealth:              {Type: field.TypeEnum, Column: mappublishaccount.FieldHealth},
+			mappublishaccount.FieldConsecutiveFailures: {Type: field.TypeInt, Column: mappublishaccount.FieldConsecutiveFailures},
+			mappublishaccount.FieldPausedUntil:         {Type: field.TypeTime, Column: mappublishaccount.FieldPausedUntil},
+			mappublishaccount.FieldPublished24h:        {Type: field.TypeInt, Column: mappublishaccount.FieldPublished24h},
+			mappublishaccount.FieldLastPublishedAt:     {Type: field.TypeTime, Column: mappublishaccount.FieldLastPublishedAt},
+			mappublishaccount.FieldLastError:           {Type: field.TypeString, Column: mappublishaccount.FieldLastError},
+		},
+	}
+	graph.Nodes[27] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   mappublishchannel.Table,
+			Columns: mappublishchannel.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: mappublishchannel.FieldID,
+			},
+		},
+		Type: "MapPublishChannel",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			mappublishchannel.FieldCreateTime:     {Type: field.TypeTime, Column: mappublishchannel.FieldCreateTime},
+			mappublishchannel.FieldUpdateTime:     {Type: field.TypeTime, Column: mappublishchannel.FieldUpdateTime},
+			mappublishchannel.FieldDeleteTime:     {Type: field.TypeTime, Column: mappublishchannel.FieldDeleteTime},
+			mappublishchannel.FieldCreateBy:       {Type: field.TypeUint32, Column: mappublishchannel.FieldCreateBy},
+			mappublishchannel.FieldUpdateBy:       {Type: field.TypeUint32, Column: mappublishchannel.FieldUpdateBy},
+			mappublishchannel.FieldTenantID:       {Type: field.TypeUint32, Column: mappublishchannel.FieldTenantID},
+			mappublishchannel.FieldChannelID:      {Type: field.TypeString, Column: mappublishchannel.FieldChannelID},
+			mappublishchannel.FieldPlatformKey:    {Type: field.TypeString, Column: mappublishchannel.FieldPlatformKey},
+			mappublishchannel.FieldSlot:           {Type: field.TypeString, Column: mappublishchannel.FieldSlot},
+			mappublishchannel.FieldRegion:         {Type: field.TypeEnum, Column: mappublishchannel.FieldRegion},
+			mappublishchannel.FieldEnabled:        {Type: field.TypeBool, Column: mappublishchannel.FieldEnabled},
+			mappublishchannel.FieldCapability:     {Type: field.TypeJSON, Column: mappublishchannel.FieldCapability},
+			mappublishchannel.FieldAdapterVersion: {Type: field.TypeString, Column: mappublishchannel.FieldAdapterVersion},
+			mappublishchannel.FieldPriority:       {Type: field.TypeInt, Column: mappublishchannel.FieldPriority},
+		},
+	}
+	graph.Nodes[28] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   mappublishreceipt.Table,
+			Columns: mappublishreceipt.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: mappublishreceipt.FieldID,
+			},
+		},
+		Type: "MapPublishReceipt",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			mappublishreceipt.FieldCreateTime:         {Type: field.TypeTime, Column: mappublishreceipt.FieldCreateTime},
+			mappublishreceipt.FieldUpdateTime:         {Type: field.TypeTime, Column: mappublishreceipt.FieldUpdateTime},
+			mappublishreceipt.FieldDeleteTime:         {Type: field.TypeTime, Column: mappublishreceipt.FieldDeleteTime},
+			mappublishreceipt.FieldCreateBy:           {Type: field.TypeUint32, Column: mappublishreceipt.FieldCreateBy},
+			mappublishreceipt.FieldUpdateBy:           {Type: field.TypeUint32, Column: mappublishreceipt.FieldUpdateBy},
+			mappublishreceipt.FieldTenantID:           {Type: field.TypeUint32, Column: mappublishreceipt.FieldTenantID},
+			mappublishreceipt.FieldReceiptID:          {Type: field.TypeString, Column: mappublishreceipt.FieldReceiptID},
+			mappublishreceipt.FieldDispatchUnitID:     {Type: field.TypeString, Column: mappublishreceipt.FieldDispatchUnitID},
+			mappublishreceipt.FieldAccountID:          {Type: field.TypeString, Column: mappublishreceipt.FieldAccountID},
+			mappublishreceipt.FieldPlatformKey:        {Type: field.TypeString, Column: mappublishreceipt.FieldPlatformKey},
+			mappublishreceipt.FieldPostID:             {Type: field.TypeString, Column: mappublishreceipt.FieldPostID},
+			mappublishreceipt.FieldPostURL:            {Type: field.TypeString, Column: mappublishreceipt.FieldPostURL},
+			mappublishreceipt.FieldVisibility:         {Type: field.TypeEnum, Column: mappublishreceipt.FieldVisibility},
+			mappublishreceipt.FieldPublishedAt:        {Type: field.TypeTime, Column: mappublishreceipt.FieldPublishedAt},
+			mappublishreceipt.FieldOperator:           {Type: field.TypeString, Column: mappublishreceipt.FieldOperator},
+			mappublishreceipt.FieldRequestPayloadHash: {Type: field.TypeString, Column: mappublishreceipt.FieldRequestPayloadHash},
+			mappublishreceipt.FieldResponseRawRef:     {Type: field.TypeString, Column: mappublishreceipt.FieldResponseRawRef},
+		},
+	}
+	graph.Nodes[29] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   menu.Table,
 			Columns: menu.Columns,
@@ -386,7 +964,352 @@ var schemaGraph = func() *sqlgraph.Schema {
 			menu.FieldMeta:       {Type: field.TypeJSON, Column: menu.FieldMeta},
 		},
 	}
-	graph.Nodes[12] = &sqlgraph.Node{
+	graph.Nodes[30] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   miaeventcard.Table,
+			Columns: miaeventcard.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: miaeventcard.FieldID,
+			},
+		},
+		Type: "MiaEventCard",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			miaeventcard.FieldCreateTime:     {Type: field.TypeTime, Column: miaeventcard.FieldCreateTime},
+			miaeventcard.FieldUpdateTime:     {Type: field.TypeTime, Column: miaeventcard.FieldUpdateTime},
+			miaeventcard.FieldDeleteTime:     {Type: field.TypeTime, Column: miaeventcard.FieldDeleteTime},
+			miaeventcard.FieldCreateBy:       {Type: field.TypeUint32, Column: miaeventcard.FieldCreateBy},
+			miaeventcard.FieldUpdateBy:       {Type: field.TypeUint32, Column: miaeventcard.FieldUpdateBy},
+			miaeventcard.FieldTenantID:       {Type: field.TypeUint32, Column: miaeventcard.FieldTenantID},
+			miaeventcard.FieldEventID:        {Type: field.TypeString, Column: miaeventcard.FieldEventID},
+			miaeventcard.FieldTitle:          {Type: field.TypeString, Column: miaeventcard.FieldTitle},
+			miaeventcard.FieldSummary:        {Type: field.TypeString, Column: miaeventcard.FieldSummary},
+			miaeventcard.FieldOccurredAt:     {Type: field.TypeTime, Column: miaeventcard.FieldOccurredAt},
+			miaeventcard.FieldTopicID:        {Type: field.TypeString, Column: miaeventcard.FieldTopicID},
+			miaeventcard.FieldSourceIntelIds: {Type: field.TypeJSON, Column: miaeventcard.FieldSourceIntelIds},
+			miaeventcard.FieldSourceCount:    {Type: field.TypeInt, Column: miaeventcard.FieldSourceCount},
+			miaeventcard.FieldDomains:        {Type: field.TypeJSON, Column: miaeventcard.FieldDomains},
+			miaeventcard.FieldEntities:       {Type: field.TypeJSON, Column: miaeventcard.FieldEntities},
+			miaeventcard.FieldCategory:       {Type: field.TypeEnum, Column: miaeventcard.FieldCategory},
+			miaeventcard.FieldLang:           {Type: field.TypeString, Column: miaeventcard.FieldLang},
+			miaeventcard.FieldMergedBy:       {Type: field.TypeEnum, Column: miaeventcard.FieldMergedBy},
+			miaeventcard.FieldSplitLocked:    {Type: field.TypeBool, Column: miaeventcard.FieldSplitLocked},
+		},
+	}
+	graph.Nodes[31] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   miaimpactcard.Table,
+			Columns: miaimpactcard.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: miaimpactcard.FieldID,
+			},
+		},
+		Type: "MiaImpactCard",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			miaimpactcard.FieldCreateTime:      {Type: field.TypeTime, Column: miaimpactcard.FieldCreateTime},
+			miaimpactcard.FieldUpdateTime:      {Type: field.TypeTime, Column: miaimpactcard.FieldUpdateTime},
+			miaimpactcard.FieldDeleteTime:      {Type: field.TypeTime, Column: miaimpactcard.FieldDeleteTime},
+			miaimpactcard.FieldCreateBy:        {Type: field.TypeUint32, Column: miaimpactcard.FieldCreateBy},
+			miaimpactcard.FieldUpdateBy:        {Type: field.TypeUint32, Column: miaimpactcard.FieldUpdateBy},
+			miaimpactcard.FieldTenantID:        {Type: field.TypeUint32, Column: miaimpactcard.FieldTenantID},
+			miaimpactcard.FieldImpactID:        {Type: field.TypeString, Column: miaimpactcard.FieldImpactID},
+			miaimpactcard.FieldEventID:         {Type: field.TypeString, Column: miaimpactcard.FieldEventID},
+			miaimpactcard.FieldTopicID:         {Type: field.TypeString, Column: miaimpactcard.FieldTopicID},
+			miaimpactcard.FieldTitle:           {Type: field.TypeString, Column: miaimpactcard.FieldTitle},
+			miaimpactcard.FieldSummary:         {Type: field.TypeString, Column: miaimpactcard.FieldSummary},
+			miaimpactcard.FieldLang:            {Type: field.TypeString, Column: miaimpactcard.FieldLang},
+			miaimpactcard.FieldSentimentLabel:  {Type: field.TypeEnum, Column: miaimpactcard.FieldSentimentLabel},
+			miaimpactcard.FieldSentimentScore:  {Type: field.TypeFloat64, Column: miaimpactcard.FieldSentimentScore},
+			miaimpactcard.FieldSentimentEngine: {Type: field.TypeEnum, Column: miaimpactcard.FieldSentimentEngine},
+			miaimpactcard.FieldImpactScore:     {Type: field.TypeFloat64, Column: miaimpactcard.FieldImpactScore},
+			miaimpactcard.FieldDirection:       {Type: field.TypeEnum, Column: miaimpactcard.FieldDirection},
+			miaimpactcard.FieldTTLHours:        {Type: field.TypeInt, Column: miaimpactcard.FieldTTLHours},
+			miaimpactcard.FieldExpiresAt:       {Type: field.TypeTime, Column: miaimpactcard.FieldExpiresAt},
+			miaimpactcard.FieldFactors:         {Type: field.TypeJSON, Column: miaimpactcard.FieldFactors},
+			miaimpactcard.FieldAffected:        {Type: field.TypeJSON, Column: miaimpactcard.FieldAffected},
+			miaimpactcard.FieldNoMapping:       {Type: field.TypeBool, Column: miaimpactcard.FieldNoMapping},
+			miaimpactcard.FieldDisclaimer:      {Type: field.TypeString, Column: miaimpactcard.FieldDisclaimer},
+			miaimpactcard.FieldRuleVersion:     {Type: field.TypeString, Column: miaimpactcard.FieldRuleVersion},
+			miaimpactcard.FieldWeightsSnapshot: {Type: field.TypeJSON, Column: miaimpactcard.FieldWeightsSnapshot},
+			miaimpactcard.FieldVerified:        {Type: field.TypeJSON, Column: miaimpactcard.FieldVerified},
+			miaimpactcard.FieldOccurredAt:      {Type: field.TypeTime, Column: miaimpactcard.FieldOccurredAt},
+			miaimpactcard.FieldPushed:          {Type: field.TypeBool, Column: miaimpactcard.FieldPushed},
+		},
+	}
+	graph.Nodes[32] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   miaquotecache.Table,
+			Columns: miaquotecache.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: miaquotecache.FieldID,
+			},
+		},
+		Type: "MiaQuoteCache",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			miaquotecache.FieldCreateTime: {Type: field.TypeTime, Column: miaquotecache.FieldCreateTime},
+			miaquotecache.FieldUpdateTime: {Type: field.TypeTime, Column: miaquotecache.FieldUpdateTime},
+			miaquotecache.FieldDeleteTime: {Type: field.TypeTime, Column: miaquotecache.FieldDeleteTime},
+			miaquotecache.FieldCreateBy:   {Type: field.TypeUint32, Column: miaquotecache.FieldCreateBy},
+			miaquotecache.FieldUpdateBy:   {Type: field.TypeUint32, Column: miaquotecache.FieldUpdateBy},
+			miaquotecache.FieldTenantID:   {Type: field.TypeUint32, Column: miaquotecache.FieldTenantID},
+			miaquotecache.FieldSymbol:     {Type: field.TypeString, Column: miaquotecache.FieldSymbol},
+			miaquotecache.FieldProvider:   {Type: field.TypeString, Column: miaquotecache.FieldProvider},
+			miaquotecache.FieldOhlcv:      {Type: field.TypeJSON, Column: miaquotecache.FieldOhlcv},
+			miaquotecache.FieldFetchedAt:  {Type: field.TypeTime, Column: miaquotecache.FieldFetchedAt},
+		},
+	}
+	graph.Nodes[33] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   miatransmissionrule.Table,
+			Columns: miatransmissionrule.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: miatransmissionrule.FieldID,
+			},
+		},
+		Type: "MiaTransmissionRule",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			miatransmissionrule.FieldCreateTime:   {Type: field.TypeTime, Column: miatransmissionrule.FieldCreateTime},
+			miatransmissionrule.FieldUpdateTime:   {Type: field.TypeTime, Column: miatransmissionrule.FieldUpdateTime},
+			miatransmissionrule.FieldDeleteTime:   {Type: field.TypeTime, Column: miatransmissionrule.FieldDeleteTime},
+			miatransmissionrule.FieldCreateBy:     {Type: field.TypeUint32, Column: miatransmissionrule.FieldCreateBy},
+			miatransmissionrule.FieldUpdateBy:     {Type: field.TypeUint32, Column: miatransmissionrule.FieldUpdateBy},
+			miatransmissionrule.FieldTenantID:     {Type: field.TypeUint32, Column: miatransmissionrule.FieldTenantID},
+			miatransmissionrule.FieldRuleID:       {Type: field.TypeString, Column: miatransmissionrule.FieldRuleID},
+			miatransmissionrule.FieldTrigger:      {Type: field.TypeJSON, Column: miatransmissionrule.FieldTrigger},
+			miatransmissionrule.FieldFromAsset:    {Type: field.TypeString, Column: miatransmissionrule.FieldFromAsset},
+			miatransmissionrule.FieldToAsset:      {Type: field.TypeString, Column: miatransmissionrule.FieldToAsset},
+			miatransmissionrule.FieldToDirection:  {Type: field.TypeEnum, Column: miatransmissionrule.FieldToDirection},
+			miatransmissionrule.FieldConfidence:   {Type: field.TypeFloat64, Column: miatransmissionrule.FieldConfidence},
+			miatransmissionrule.FieldNote:         {Type: field.TypeString, Column: miatransmissionrule.FieldNote},
+			miatransmissionrule.FieldEnabled:      {Type: field.TypeBool, Column: miatransmissionrule.FieldEnabled},
+			miatransmissionrule.FieldHitCount:     {Type: field.TypeInt, Column: miatransmissionrule.FieldHitCount},
+			miatransmissionrule.FieldCorrectCount: {Type: field.TypeInt, Column: miatransmissionrule.FieldCorrectCount},
+		},
+	}
+	graph.Nodes[34] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   mmeanalysiscache.Table,
+			Columns: mmeanalysiscache.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: mmeanalysiscache.FieldID,
+			},
+		},
+		Type: "MmeAnalysisCache",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			mmeanalysiscache.FieldCreateTime:    {Type: field.TypeTime, Column: mmeanalysiscache.FieldCreateTime},
+			mmeanalysiscache.FieldUpdateTime:    {Type: field.TypeTime, Column: mmeanalysiscache.FieldUpdateTime},
+			mmeanalysiscache.FieldDeleteTime:    {Type: field.TypeTime, Column: mmeanalysiscache.FieldDeleteTime},
+			mmeanalysiscache.FieldCacheKey:      {Type: field.TypeString, Column: mmeanalysiscache.FieldCacheKey},
+			mmeanalysiscache.FieldKind:          {Type: field.TypeString, Column: mmeanalysiscache.FieldKind},
+			mmeanalysiscache.FieldAssetID:       {Type: field.TypeString, Column: mmeanalysiscache.FieldAssetID},
+			mmeanalysiscache.FieldPayloadPath:   {Type: field.TypeString, Column: mmeanalysiscache.FieldPayloadPath},
+			mmeanalysiscache.FieldPayloadMeta:   {Type: field.TypeJSON, Column: mmeanalysiscache.FieldPayloadMeta},
+			mmeanalysiscache.FieldEngine:        {Type: field.TypeString, Column: mmeanalysiscache.FieldEngine},
+			mmeanalysiscache.FieldEngineVersion: {Type: field.TypeString, Column: mmeanalysiscache.FieldEngineVersion},
+			mmeanalysiscache.FieldPromptVersion: {Type: field.TypeString, Column: mmeanalysiscache.FieldPromptVersion},
+			mmeanalysiscache.FieldHitCount:      {Type: field.TypeInt64, Column: mmeanalysiscache.FieldHitCount},
+			mmeanalysiscache.FieldSizeBytes:     {Type: field.TypeInt64, Column: mmeanalysiscache.FieldSizeBytes},
+			mmeanalysiscache.FieldExpiresAt:     {Type: field.TypeTime, Column: mmeanalysiscache.FieldExpiresAt},
+		},
+	}
+	graph.Nodes[35] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   mmeasset.Table,
+			Columns: mmeasset.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: mmeasset.FieldID,
+			},
+		},
+		Type: "MmeAsset",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			mmeasset.FieldCreateTime:   {Type: field.TypeTime, Column: mmeasset.FieldCreateTime},
+			mmeasset.FieldUpdateTime:   {Type: field.TypeTime, Column: mmeasset.FieldUpdateTime},
+			mmeasset.FieldDeleteTime:   {Type: field.TypeTime, Column: mmeasset.FieldDeleteTime},
+			mmeasset.FieldFingerprint:  {Type: field.TypeString, Column: mmeasset.FieldFingerprint},
+			mmeasset.FieldSourceURL:    {Type: field.TypeString, Column: mmeasset.FieldSourceURL},
+			mmeasset.FieldLocalPath:    {Type: field.TypeString, Column: mmeasset.FieldLocalPath},
+			mmeasset.FieldDurationSec:  {Type: field.TypeFloat64, Column: mmeasset.FieldDurationSec},
+			mmeasset.FieldWidth:        {Type: field.TypeInt32, Column: mmeasset.FieldWidth},
+			mmeasset.FieldHeight:       {Type: field.TypeInt32, Column: mmeasset.FieldHeight},
+			mmeasset.FieldSizeBytes:    {Type: field.TypeInt64, Column: mmeasset.FieldSizeBytes},
+			mmeasset.FieldRefCount:     {Type: field.TypeInt32, Column: mmeasset.FieldRefCount},
+			mmeasset.FieldMetaTitle:    {Type: field.TypeString, Column: mmeasset.FieldMetaTitle},
+			mmeasset.FieldSubtitlePath: {Type: field.TypeString, Column: mmeasset.FieldSubtitlePath},
+		},
+	}
+	graph.Nodes[36] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   mmemontagetask.Table,
+			Columns: mmemontagetask.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: mmemontagetask.FieldID,
+			},
+		},
+		Type: "MmeMontageTask",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			mmemontagetask.FieldCreateTime:    {Type: field.TypeTime, Column: mmemontagetask.FieldCreateTime},
+			mmemontagetask.FieldUpdateTime:    {Type: field.TypeTime, Column: mmemontagetask.FieldUpdateTime},
+			mmemontagetask.FieldDeleteTime:    {Type: field.TypeTime, Column: mmemontagetask.FieldDeleteTime},
+			mmemontagetask.FieldTitle:         {Type: field.TypeString, Column: mmemontagetask.FieldTitle},
+			mmemontagetask.FieldSourceType:    {Type: field.TypeString, Column: mmemontagetask.FieldSourceType},
+			mmemontagetask.FieldSourceRef:     {Type: field.TypeString, Column: mmemontagetask.FieldSourceRef},
+			mmemontagetask.FieldCandidateID:   {Type: field.TypeString, Column: mmemontagetask.FieldCandidateID},
+			mmemontagetask.FieldIntelID:       {Type: field.TypeString, Column: mmemontagetask.FieldIntelID},
+			mmemontagetask.FieldAssetID:       {Type: field.TypeString, Column: mmemontagetask.FieldAssetID},
+			mmemontagetask.FieldUserIntent:    {Type: field.TypeString, Column: mmemontagetask.FieldUserIntent},
+			mmemontagetask.FieldState:         {Type: field.TypeString, Column: mmemontagetask.FieldState},
+			mmemontagetask.FieldPromptVersion: {Type: field.TypeString, Column: mmemontagetask.FieldPromptVersion},
+			mmemontagetask.FieldAsrEngine:     {Type: field.TypeString, Column: mmemontagetask.FieldAsrEngine},
+			mmemontagetask.FieldErrorMsg:      {Type: field.TypeString, Column: mmemontagetask.FieldErrorMsg},
+			mmemontagetask.FieldHighlights:    {Type: field.TypeJSON, Column: mmemontagetask.FieldHighlights},
+			mmemontagetask.FieldProgress:      {Type: field.TypeFloat64, Column: mmemontagetask.FieldProgress},
+		},
+	}
+	graph.Nodes[37] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   mmerenderjob.Table,
+			Columns: mmerenderjob.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: mmerenderjob.FieldID,
+			},
+		},
+		Type: "MmeRenderJob",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			mmerenderjob.FieldCreateTime:       {Type: field.TypeTime, Column: mmerenderjob.FieldCreateTime},
+			mmerenderjob.FieldUpdateTime:       {Type: field.TypeTime, Column: mmerenderjob.FieldUpdateTime},
+			mmerenderjob.FieldDeleteTime:       {Type: field.TypeTime, Column: mmerenderjob.FieldDeleteTime},
+			mmerenderjob.FieldVariantID:        {Type: field.TypeString, Column: mmerenderjob.FieldVariantID},
+			mmerenderjob.FieldState:            {Type: field.TypeString, Column: mmerenderjob.FieldState},
+			mmerenderjob.FieldProgress:         {Type: field.TypeFloat64, Column: mmerenderjob.FieldProgress},
+			mmerenderjob.FieldStartedAt:        {Type: field.TypeTime, Column: mmerenderjob.FieldStartedAt},
+			mmerenderjob.FieldFinishedAt:       {Type: field.TypeTime, Column: mmerenderjob.FieldFinishedAt},
+			mmerenderjob.FieldWorkerID:         {Type: field.TypeString, Column: mmerenderjob.FieldWorkerID},
+			mmerenderjob.FieldErrorCode:        {Type: field.TypeString, Column: mmerenderjob.FieldErrorCode},
+			mmerenderjob.FieldErrorMsg:         {Type: field.TypeString, Column: mmerenderjob.FieldErrorMsg},
+			mmerenderjob.FieldIntermediatePath: {Type: field.TypeString, Column: mmerenderjob.FieldIntermediatePath},
+			mmerenderjob.FieldAttempt:          {Type: field.TypeInt32, Column: mmerenderjob.FieldAttempt},
+		},
+	}
+	graph.Nodes[38] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   mmetemplate.Table,
+			Columns: mmetemplate.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: mmetemplate.FieldID,
+			},
+		},
+		Type: "MmeTemplate",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			mmetemplate.FieldCreateTime:  {Type: field.TypeTime, Column: mmetemplate.FieldCreateTime},
+			mmetemplate.FieldUpdateTime:  {Type: field.TypeTime, Column: mmetemplate.FieldUpdateTime},
+			mmetemplate.FieldDeleteTime:  {Type: field.TypeTime, Column: mmetemplate.FieldDeleteTime},
+			mmetemplate.FieldName:        {Type: field.TypeString, Column: mmetemplate.FieldName},
+			mmetemplate.FieldIntroPath:   {Type: field.TypeString, Column: mmetemplate.FieldIntroPath},
+			mmetemplate.FieldOutroPath:   {Type: field.TypeString, Column: mmetemplate.FieldOutroPath},
+			mmetemplate.FieldTransition:  {Type: field.TypeString, Column: mmetemplate.FieldTransition},
+			mmetemplate.FieldCaptionSkin: {Type: field.TypeJSON, Column: mmetemplate.FieldCaptionSkin},
+			mmetemplate.FieldEnabled:     {Type: field.TypeBool, Column: mmetemplate.FieldEnabled},
+		},
+	}
+	graph.Nodes[39] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   mmevariant.Table,
+			Columns: mmevariant.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: mmevariant.FieldID,
+			},
+		},
+		Type: "MmeVariant",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			mmevariant.FieldCreateTime:     {Type: field.TypeTime, Column: mmevariant.FieldCreateTime},
+			mmevariant.FieldUpdateTime:     {Type: field.TypeTime, Column: mmevariant.FieldUpdateTime},
+			mmevariant.FieldDeleteTime:     {Type: field.TypeTime, Column: mmevariant.FieldDeleteTime},
+			mmevariant.FieldSetID:          {Type: field.TypeString, Column: mmevariant.FieldSetID},
+			mmevariant.FieldContentVersion: {Type: field.TypeString, Column: mmevariant.FieldContentVersion},
+			mmevariant.FieldAspect:         {Type: field.TypeString, Column: mmevariant.FieldAspect},
+			mmevariant.FieldHookID:         {Type: field.TypeString, Column: mmevariant.FieldHookID},
+			mmevariant.FieldCoverID:        {Type: field.TypeString, Column: mmevariant.FieldCoverID},
+			mmevariant.FieldEdlRef:         {Type: field.TypeString, Column: mmevariant.FieldEdlRef},
+			mmevariant.FieldDurationSec:    {Type: field.TypeFloat64, Column: mmevariant.FieldDurationSec},
+			mmevariant.FieldVideoPath:      {Type: field.TypeString, Column: mmevariant.FieldVideoPath},
+			mmevariant.FieldCoverPath:      {Type: field.TypeString, Column: mmevariant.FieldCoverPath},
+			mmevariant.FieldCaptionStyle:   {Type: field.TypeString, Column: mmevariant.FieldCaptionStyle},
+			mmevariant.FieldSrtPath:        {Type: field.TypeString, Column: mmevariant.FieldSrtPath},
+			mmevariant.FieldCopyJSON:       {Type: field.TypeJSON, Column: mmevariant.FieldCopyJSON},
+			mmevariant.FieldCopyDegraded:   {Type: field.TypeBool, Column: mmevariant.FieldCopyDegraded},
+			mmevariant.FieldManifestPath:   {Type: field.TypeString, Column: mmevariant.FieldManifestPath},
+			mmevariant.FieldQcBoundaryOk:   {Type: field.TypeBool, Column: mmevariant.FieldQcBoundaryOk},
+			mmevariant.FieldQcSubtitleOk:   {Type: field.TypeBool, Column: mmevariant.FieldQcSubtitleOk},
+			mmevariant.FieldQcScore:        {Type: field.TypeFloat64, Column: mmevariant.FieldQcScore},
+			mmevariant.FieldRenderState:    {Type: field.TypeString, Column: mmevariant.FieldRenderState},
+			mmevariant.FieldRenderError:    {Type: field.TypeString, Column: mmevariant.FieldRenderError},
+			mmevariant.FieldSelected:       {Type: field.TypeBool, Column: mmevariant.FieldSelected},
+			mmevariant.FieldReviewState:    {Type: field.TypeString, Column: mmevariant.FieldReviewState},
+			mmevariant.FieldReviewReason:   {Type: field.TypeString, Column: mmevariant.FieldReviewReason},
+		},
+	}
+	graph.Nodes[40] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   mmevariantset.Table,
+			Columns: mmevariantset.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeString,
+				Column: mmevariantset.FieldID,
+			},
+		},
+		Type: "MmeVariantSet",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			mmevariantset.FieldCreateTime:        {Type: field.TypeTime, Column: mmevariantset.FieldCreateTime},
+			mmevariantset.FieldUpdateTime:        {Type: field.TypeTime, Column: mmevariantset.FieldUpdateTime},
+			mmevariantset.FieldDeleteTime:        {Type: field.TypeTime, Column: mmevariantset.FieldDeleteTime},
+			mmevariantset.FieldTaskID:            {Type: field.TypeString, Column: mmevariantset.FieldTaskID},
+			mmevariantset.FieldCandidateID:       {Type: field.TypeString, Column: mmevariantset.FieldCandidateID},
+			mmevariantset.FieldAssetID:           {Type: field.TypeString, Column: mmevariantset.FieldAssetID},
+			mmevariantset.FieldTranscriptRef:     {Type: field.TypeString, Column: mmevariantset.FieldTranscriptRef},
+			mmevariantset.FieldState:             {Type: field.TypeString, Column: mmevariantset.FieldState},
+			mmevariantset.FieldVariantCount:      {Type: field.TypeInt32, Column: mmevariantset.FieldVariantCount},
+			mmevariantset.FieldDiffMinSimilarity: {Type: field.TypeFloat64, Column: mmevariantset.FieldDiffMinSimilarity},
+			mmevariantset.FieldDiffWarn:          {Type: field.TypeBool, Column: mmevariantset.FieldDiffWarn},
+			mmevariantset.FieldDiffPairs:         {Type: field.TypeJSON, Column: mmevariantset.FieldDiffPairs},
+			mmevariantset.FieldTemplateID:        {Type: field.TypeString, Column: mmevariantset.FieldTemplateID},
+		},
+	}
+	graph.Nodes[41] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   narrativecoinmapping.Table,
+			Columns: narrativecoinmapping.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: narrativecoinmapping.FieldID,
+			},
+		},
+		Type: "NarrativeCoinMapping",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			narrativecoinmapping.FieldCreateTime:           {Type: field.TypeTime, Column: narrativecoinmapping.FieldCreateTime},
+			narrativecoinmapping.FieldUpdateTime:           {Type: field.TypeTime, Column: narrativecoinmapping.FieldUpdateTime},
+			narrativecoinmapping.FieldDeleteTime:           {Type: field.TypeTime, Column: narrativecoinmapping.FieldDeleteTime},
+			narrativecoinmapping.FieldCreateBy:             {Type: field.TypeUint32, Column: narrativecoinmapping.FieldCreateBy},
+			narrativecoinmapping.FieldUpdateBy:             {Type: field.TypeUint32, Column: narrativecoinmapping.FieldUpdateBy},
+			narrativecoinmapping.FieldTenantID:             {Type: field.TypeUint32, Column: narrativecoinmapping.FieldTenantID},
+			narrativecoinmapping.FieldNarrative:            {Type: field.TypeString, Column: narrativecoinmapping.FieldNarrative},
+			narrativecoinmapping.FieldKeywords:             {Type: field.TypeJSON, Column: narrativecoinmapping.FieldKeywords},
+			narrativecoinmapping.FieldCoins:                {Type: field.TypeJSON, Column: narrativecoinmapping.FieldCoins},
+			narrativecoinmapping.FieldDefaultSentimentHint: {Type: field.TypeEnum, Column: narrativecoinmapping.FieldDefaultSentimentHint},
+			narrativecoinmapping.FieldTTLHours:             {Type: field.TypeInt, Column: narrativecoinmapping.FieldTTLHours},
+			narrativecoinmapping.FieldConfidence:           {Type: field.TypeFloat64, Column: narrativecoinmapping.FieldConfidence},
+			narrativecoinmapping.FieldEnabled:              {Type: field.TypeBool, Column: narrativecoinmapping.FieldEnabled},
+		},
+	}
+	graph.Nodes[42] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   notificationmessage.Table,
 			Columns: notificationmessage.Columns,
@@ -409,7 +1332,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			notificationmessage.FieldStatus:     {Type: field.TypeEnum, Column: notificationmessage.FieldStatus},
 		},
 	}
-	graph.Nodes[13] = &sqlgraph.Node{
+	graph.Nodes[43] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   notificationmessagecategory.Table,
 			Columns: notificationmessagecategory.Columns,
@@ -434,7 +1357,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			notificationmessagecategory.FieldParentID:   {Type: field.TypeUint32, Column: notificationmessagecategory.FieldParentID},
 		},
 	}
-	graph.Nodes[14] = &sqlgraph.Node{
+	graph.Nodes[44] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   notificationmessagerecipient.Table,
 			Columns: notificationmessagerecipient.Columns,
@@ -454,7 +1377,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			notificationmessagerecipient.FieldStatus:      {Type: field.TypeEnum, Column: notificationmessagerecipient.FieldStatus},
 		},
 	}
-	graph.Nodes[15] = &sqlgraph.Node{
+	graph.Nodes[45] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   organization.Table,
 			Columns: organization.Columns,
@@ -478,7 +1401,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			organization.FieldSortID:     {Type: field.TypeInt32, Column: organization.FieldSortID},
 		},
 	}
-	graph.Nodes[16] = &sqlgraph.Node{
+	graph.Nodes[46] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   passwordhistory.Table,
 			Columns: passwordhistory.Columns,
@@ -495,7 +1418,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			passwordhistory.FieldPassword:   {Type: field.TypeString, Column: passwordhistory.FieldPassword},
 		},
 	}
-	graph.Nodes[17] = &sqlgraph.Node{
+	graph.Nodes[47] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   position.Table,
 			Columns: position.Columns,
@@ -521,7 +1444,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			position.FieldSortID:     {Type: field.TypeInt32, Column: position.FieldSortID},
 		},
 	}
-	graph.Nodes[18] = &sqlgraph.Node{
+	graph.Nodes[48] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   privatemessage.Table,
 			Columns: privatemessage.Columns,
@@ -543,7 +1466,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			privatemessage.FieldReceiverID: {Type: field.TypeUint32, Column: privatemessage.FieldReceiverID},
 		},
 	}
-	graph.Nodes[19] = &sqlgraph.Node{
+	graph.Nodes[49] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   radaruserconfig.Table,
 			Columns: radaruserconfig.Columns,
@@ -567,7 +1490,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			radaruserconfig.FieldCloneDir:       {Type: field.TypeString, Column: radaruserconfig.FieldCloneDir},
 		},
 	}
-	graph.Nodes[20] = &sqlgraph.Node{
+	graph.Nodes[50] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   radarwatch.Table,
 			Columns: radarwatch.Columns,
@@ -591,7 +1514,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			radarwatch.FieldSparkline:     {Type: field.TypeJSON, Column: radarwatch.FieldSparkline},
 		},
 	}
-	graph.Nodes[21] = &sqlgraph.Node{
+	graph.Nodes[51] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   radarwatchevent.Table,
 			Columns: radarwatchevent.Columns,
@@ -613,7 +1536,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			radarwatchevent.FieldRead:       {Type: field.TypeBool, Column: radarwatchevent.FieldRead},
 		},
 	}
-	graph.Nodes[22] = &sqlgraph.Node{
+	graph.Nodes[52] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   resourcegroup.Table,
 			Columns: resourcegroup.Columns,
@@ -632,7 +1555,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			resourcegroup.FieldDescription: {Type: field.TypeString, Column: resourcegroup.FieldDescription},
 		},
 	}
-	graph.Nodes[23] = &sqlgraph.Node{
+	graph.Nodes[53] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   role.Table,
 			Columns: role.Columns,
@@ -657,7 +1580,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			role.FieldSortID:     {Type: field.TypeInt32, Column: role.FieldSortID},
 		},
 	}
-	graph.Nodes[24] = &sqlgraph.Node{
+	graph.Nodes[54] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   roleapi.Table,
 			Columns: roleapi.Columns,
@@ -674,7 +1597,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			roleapi.FieldAPIID:      {Type: field.TypeUint32, Column: roleapi.FieldAPIID},
 		},
 	}
-	graph.Nodes[25] = &sqlgraph.Node{
+	graph.Nodes[55] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   roledept.Table,
 			Columns: roledept.Columns,
@@ -691,7 +1614,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			roledept.FieldDeptID:     {Type: field.TypeUint32, Column: roledept.FieldDeptID},
 		},
 	}
-	graph.Nodes[26] = &sqlgraph.Node{
+	graph.Nodes[56] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   rolemenu.Table,
 			Columns: rolemenu.Columns,
@@ -708,7 +1631,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			rolemenu.FieldMenuID:     {Type: field.TypeUint32, Column: rolemenu.FieldMenuID},
 		},
 	}
-	graph.Nodes[27] = &sqlgraph.Node{
+	graph.Nodes[57] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   roleresourcegroup.Table,
 			Columns: roleresourcegroup.Columns,
@@ -725,7 +1648,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			roleresourcegroup.FieldResourceGroupID: {Type: field.TypeUint32, Column: roleresourcegroup.FieldResourceGroupID},
 		},
 	}
-	graph.Nodes[28] = &sqlgraph.Node{
+	graph.Nodes[58] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   storagelayer.Table,
 			Columns: storagelayer.Columns,
@@ -747,7 +1670,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			storagelayer.FieldChecksum:   {Type: field.TypeString, Column: storagelayer.FieldChecksum},
 		},
 	}
-	graph.Nodes[29] = &sqlgraph.Node{
+	graph.Nodes[59] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemconfig.Table,
 			Columns: systemconfig.Columns,
@@ -769,7 +1692,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemconfig.FieldDescription: {Type: field.TypeString, Column: systemconfig.FieldDescription},
 		},
 	}
-	graph.Nodes[30] = &sqlgraph.Node{
+	graph.Nodes[60] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   task.Table,
 			Columns: task.Columns,
@@ -796,7 +1719,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			task.FieldEnable:      {Type: field.TypeBool, Column: task.FieldEnable},
 		},
 	}
-	graph.Nodes[31] = &sqlgraph.Node{
+	graph.Nodes[61] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   taskexecution.Table,
 			Columns: taskexecution.Columns,
@@ -817,7 +1740,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			taskexecution.FieldDurationMs: {Type: field.TypeUint64, Column: taskexecution.FieldDurationMs},
 		},
 	}
-	graph.Nodes[32] = &sqlgraph.Node{
+	graph.Nodes[62] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   tenant.Table,
 			Columns: tenant.Columns,
@@ -842,7 +1765,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			tenant.FieldUnsubscribeAt:  {Type: field.TypeTime, Column: tenant.FieldUnsubscribeAt},
 		},
 	}
-	graph.Nodes[33] = &sqlgraph.Node{
+	graph.Nodes[63] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   toollink.Table,
 			Columns: toollink.Columns,
@@ -877,7 +1800,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			toollink.FieldDescriptionI18n: {Type: field.TypeJSON, Column: toollink.FieldDescriptionI18n},
 		},
 	}
-	graph.Nodes[34] = &sqlgraph.Node{
+	graph.Nodes[64] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   toollinkcategory.Table,
 			Columns: toollinkcategory.Columns,
@@ -900,7 +1823,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			toollinkcategory.FieldSort:        {Type: field.TypeInt32, Column: toollinkcategory.FieldSort},
 		},
 	}
-	graph.Nodes[35] = &sqlgraph.Node{
+	graph.Nodes[65] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   toollinkssoticket.Table,
 			Columns: toollinkssoticket.Columns,
@@ -921,7 +1844,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			toollinkssoticket.FieldUsedAt:     {Type: field.TypeTime, Column: toollinkssoticket.FieldUsedAt},
 		},
 	}
-	graph.Nodes[36] = &sqlgraph.Node{
+	graph.Nodes[66] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   toollinkusermark.Table,
 			Columns: toollinkusermark.Columns,
@@ -942,7 +1865,82 @@ var schemaGraph = func() *sqlgraph.Schema {
 			toollinkusermark.FieldLastClickAt: {Type: field.TypeTime, Column: toollinkusermark.FieldLastClickAt},
 		},
 	}
-	graph.Nodes[37] = &sqlgraph.Node{
+	graph.Nodes[67] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   topic.Table,
+			Columns: topic.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: topic.FieldID,
+			},
+		},
+		Type: "Topic",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			topic.FieldCreateTime:            {Type: field.TypeTime, Column: topic.FieldCreateTime},
+			topic.FieldUpdateTime:            {Type: field.TypeTime, Column: topic.FieldUpdateTime},
+			topic.FieldDeleteTime:            {Type: field.TypeTime, Column: topic.FieldDeleteTime},
+			topic.FieldCreateBy:              {Type: field.TypeUint32, Column: topic.FieldCreateBy},
+			topic.FieldUpdateBy:              {Type: field.TypeUint32, Column: topic.FieldUpdateBy},
+			topic.FieldTenantID:              {Type: field.TypeUint32, Column: topic.FieldTenantID},
+			topic.FieldTopicID:               {Type: field.TypeString, Column: topic.FieldTopicID},
+			topic.FieldAPIVersion:            {Type: field.TypeString, Column: topic.FieldAPIVersion},
+			topic.FieldLabel:                 {Type: field.TypeString, Column: topic.FieldLabel},
+			topic.FieldCategory:              {Type: field.TypeEnum, Column: topic.FieldCategory},
+			topic.FieldRegion:                {Type: field.TypeEnum, Column: topic.FieldRegion},
+			topic.FieldStage:                 {Type: field.TypeEnum, Column: topic.FieldStage},
+			topic.FieldStageSince:            {Type: field.TypeTime, Column: topic.FieldStageSince},
+			topic.FieldStageDurationPoints:   {Type: field.TypeInt, Column: topic.FieldStageDurationPoints},
+			topic.FieldHeatScore:             {Type: field.TypeFloat64, Column: topic.FieldHeatScore},
+			topic.FieldVelocity:              {Type: field.TypeFloat64, Column: topic.FieldVelocity},
+			topic.FieldAccel:                 {Type: field.TypeFloat64, Column: topic.FieldAccel},
+			topic.FieldRankPct:               {Type: field.TypeFloat64, Column: topic.FieldRankPct},
+			topic.FieldEngPct:                {Type: field.TypeFloat64, Column: topic.FieldEngPct},
+			topic.FieldFreshness:             {Type: field.TypeFloat64, Column: topic.FieldFreshness},
+			topic.FieldBreadth:               {Type: field.TypeFloat64, Column: topic.FieldBreadth},
+			topic.FieldWRankEff:              {Type: field.TypeFloat64, Column: topic.FieldWRankEff},
+			topic.FieldWEngEff:               {Type: field.TypeFloat64, Column: topic.FieldWEngEff},
+			topic.FieldWFreshEff:             {Type: field.TypeFloat64, Column: topic.FieldWFreshEff},
+			topic.FieldWBreadthEff:           {Type: field.TypeFloat64, Column: topic.FieldWBreadthEff},
+			topic.FieldMissingFactors:        {Type: field.TypeJSON, Column: topic.FieldMissingFactors},
+			topic.FieldWeightEpoch:           {Type: field.TypeString, Column: topic.FieldWeightEpoch},
+			topic.FieldPlatformCount:         {Type: field.TypeInt, Column: topic.FieldPlatformCount},
+			topic.FieldPlatforms:             {Type: field.TypeJSON, Column: topic.FieldPlatforms},
+			topic.FieldFirstSeenAt:           {Type: field.TypeTime, Column: topic.FieldFirstSeenAt},
+			topic.FieldLastSeenAt:            {Type: field.TypeTime, Column: topic.FieldLastSeenAt},
+			topic.FieldOrigin:                {Type: field.TypeJSON, Column: topic.FieldOrigin},
+			topic.FieldRepresentativeIntelID: {Type: field.TypeString, Column: topic.FieldRepresentativeIntelID},
+			topic.FieldMergeLock:             {Type: field.TypeBool, Column: topic.FieldMergeLock},
+			topic.FieldNeedsReview:           {Type: field.TypeBool, Column: topic.FieldNeedsReview},
+			topic.FieldIsArchived:            {Type: field.TypeBool, Column: topic.FieldIsArchived},
+		},
+	}
+	graph.Nodes[68] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   topicsource.Table,
+			Columns: topicsource.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: topicsource.FieldID,
+			},
+		},
+		Type: "TopicSource",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			topicsource.FieldCreateTime:    {Type: field.TypeTime, Column: topicsource.FieldCreateTime},
+			topicsource.FieldUpdateTime:    {Type: field.TypeTime, Column: topicsource.FieldUpdateTime},
+			topicsource.FieldDeleteTime:    {Type: field.TypeTime, Column: topicsource.FieldDeleteTime},
+			topicsource.FieldCreateBy:      {Type: field.TypeUint32, Column: topicsource.FieldCreateBy},
+			topicsource.FieldUpdateBy:      {Type: field.TypeUint32, Column: topicsource.FieldUpdateBy},
+			topicsource.FieldTenantID:      {Type: field.TypeUint32, Column: topicsource.FieldTenantID},
+			topicsource.FieldTopicID:       {Type: field.TypeString, Column: topicsource.FieldTopicID},
+			topicsource.FieldIntelID:       {Type: field.TypeString, Column: topicsource.FieldIntelID},
+			topicsource.FieldClusterKey:    {Type: field.TypeString, Column: topicsource.FieldClusterKey},
+			topicsource.FieldContributedAt: {Type: field.TypeTime, Column: topicsource.FieldContributedAt},
+			topicsource.FieldSimilarity:    {Type: field.TypeFloat64, Column: topicsource.FieldSimilarity},
+			topicsource.FieldMovedBy:       {Type: field.TypeString, Column: topicsource.FieldMovedBy},
+			topicsource.FieldMovedAt:       {Type: field.TypeTime, Column: topicsource.FieldMovedAt},
+		},
+	}
+	graph.Nodes[69] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
@@ -989,7 +1987,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			user.FieldOperationPassword: {Type: field.TypeString, Column: user.FieldOperationPassword},
 		},
 	}
-	graph.Nodes[38] = &sqlgraph.Node{
+	graph.Nodes[70] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   usercredential.Table,
 			Columns: usercredential.Columns,
@@ -1016,7 +2014,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			usercredential.FieldResetToken:     {Type: field.TypeString, Column: usercredential.FieldResetToken},
 		},
 	}
-	graph.Nodes[39] = &sqlgraph.Node{
+	graph.Nodes[71] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   userpost.Table,
 			Columns: userpost.Columns,
@@ -1033,7 +2031,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			userpost.FieldPostID:     {Type: field.TypeUint32, Column: userpost.FieldPostID},
 		},
 	}
-	graph.Nodes[40] = &sqlgraph.Node{
+	graph.Nodes[72] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   userrole.Table,
 			Columns: userrole.Columns,
@@ -1050,7 +2048,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			userrole.FieldRoleID:     {Type: field.TypeUint32, Column: userrole.FieldRoleID},
 		},
 	}
-	graph.Nodes[41] = &sqlgraph.Node{
+	graph.Nodes[73] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   usertoken.Table,
 			Columns: usertoken.Columns,
@@ -1775,6 +2773,101 @@ func (f *ApiResourceFilter) WhereDelisted(p entql.BoolP) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (_q *AuthorizationRecordQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the AuthorizationRecordQuery builder.
+func (_q *AuthorizationRecordQuery) Filter() *AuthorizationRecordFilter {
+	return &AuthorizationRecordFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *AuthorizationRecordMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the AuthorizationRecordMutation builder.
+func (m *AuthorizationRecordMutation) Filter() *AuthorizationRecordFilter {
+	return &AuthorizationRecordFilter{config: m.config, predicateAdder: m}
+}
+
+// AuthorizationRecordFilter provides a generic filtering capability at runtime for AuthorizationRecordQuery.
+type AuthorizationRecordFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *AuthorizationRecordFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *AuthorizationRecordFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(authorizationrecord.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *AuthorizationRecordFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(authorizationrecord.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *AuthorizationRecordFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(authorizationrecord.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *AuthorizationRecordFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(authorizationrecord.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *AuthorizationRecordFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(authorizationrecord.FieldCreateBy))
+}
+
+// WhereUpdateBy applies the entql uint32 predicate on the update_by field.
+func (f *AuthorizationRecordFilter) WhereUpdateBy(p entql.Uint32P) {
+	f.Where(p.Field(authorizationrecord.FieldUpdateBy))
+}
+
+// WhereSubject applies the entql string predicate on the subject field.
+func (f *AuthorizationRecordFilter) WhereSubject(p entql.StringP) {
+	f.Where(p.Field(authorizationrecord.FieldSubject))
+}
+
+// WhereSubjectKey applies the entql string predicate on the subject_key field.
+func (f *AuthorizationRecordFilter) WhereSubjectKey(p entql.StringP) {
+	f.Where(p.Field(authorizationrecord.FieldSubjectKey))
+}
+
+// WhereStatus applies the entql string predicate on the status field.
+func (f *AuthorizationRecordFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(authorizationrecord.FieldStatus))
+}
+
+// WhereScope applies the entql string predicate on the scope field.
+func (f *AuthorizationRecordFilter) WhereScope(p entql.StringP) {
+	f.Where(p.Field(authorizationrecord.FieldScope))
+}
+
+// WhereEvidenceRef applies the entql string predicate on the evidence_ref field.
+func (f *AuthorizationRecordFilter) WhereEvidenceRef(p entql.StringP) {
+	f.Where(p.Field(authorizationrecord.FieldEvidenceRef))
+}
+
+// WhereValidUntil applies the entql time.Time predicate on the valid_until field.
+func (f *AuthorizationRecordFilter) WhereValidUntil(p entql.TimeP) {
+	f.Where(p.Field(authorizationrecord.FieldValidUntil))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (_q *CasbinRuleQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
@@ -1803,7 +2896,7 @@ type CasbinRuleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *CasbinRuleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1850,6 +2943,411 @@ func (f *CasbinRuleFilter) WhereV5(p entql.StringP) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (_q *ClusterMergeEventQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the ClusterMergeEventQuery builder.
+func (_q *ClusterMergeEventQuery) Filter() *ClusterMergeEventFilter {
+	return &ClusterMergeEventFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *ClusterMergeEventMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the ClusterMergeEventMutation builder.
+func (m *ClusterMergeEventMutation) Filter() *ClusterMergeEventFilter {
+	return &ClusterMergeEventFilter{config: m.config, predicateAdder: m}
+}
+
+// ClusterMergeEventFilter provides a generic filtering capability at runtime for ClusterMergeEventQuery.
+type ClusterMergeEventFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *ClusterMergeEventFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *ClusterMergeEventFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(clustermergeevent.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *ClusterMergeEventFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(clustermergeevent.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *ClusterMergeEventFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(clustermergeevent.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *ClusterMergeEventFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(clustermergeevent.FieldDeleteTime))
+}
+
+// WhereFromClusterID applies the entql string predicate on the from_cluster_id field.
+func (f *ClusterMergeEventFilter) WhereFromClusterID(p entql.StringP) {
+	f.Where(p.Field(clustermergeevent.FieldFromClusterID))
+}
+
+// WhereToClusterID applies the entql string predicate on the to_cluster_id field.
+func (f *ClusterMergeEventFilter) WhereToClusterID(p entql.StringP) {
+	f.Where(p.Field(clustermergeevent.FieldToClusterID))
+}
+
+// WhereReason applies the entql string predicate on the reason field.
+func (f *ClusterMergeEventFilter) WhereReason(p entql.StringP) {
+	f.Where(p.Field(clustermergeevent.FieldReason))
+}
+
+// WhereMemberCount applies the entql int32 predicate on the member_count field.
+func (f *ClusterMergeEventFilter) WhereMemberCount(p entql.Int32P) {
+	f.Where(p.Field(clustermergeevent.FieldMemberCount))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *CollectRunQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the CollectRunQuery builder.
+func (_q *CollectRunQuery) Filter() *CollectRunFilter {
+	return &CollectRunFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *CollectRunMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the CollectRunMutation builder.
+func (m *CollectRunMutation) Filter() *CollectRunFilter {
+	return &CollectRunFilter{config: m.config, predicateAdder: m}
+}
+
+// CollectRunFilter provides a generic filtering capability at runtime for CollectRunQuery.
+type CollectRunFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *CollectRunFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *CollectRunFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(collectrun.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *CollectRunFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(collectrun.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *CollectRunFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(collectrun.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *CollectRunFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(collectrun.FieldDeleteTime))
+}
+
+// WhereSourceID applies the entql string predicate on the source_id field.
+func (f *CollectRunFilter) WhereSourceID(p entql.StringP) {
+	f.Where(p.Field(collectrun.FieldSourceID))
+}
+
+// WhereTrigger applies the entql string predicate on the trigger field.
+func (f *CollectRunFilter) WhereTrigger(p entql.StringP) {
+	f.Where(p.Field(collectrun.FieldTrigger))
+}
+
+// WhereStartedAt applies the entql time.Time predicate on the started_at field.
+func (f *CollectRunFilter) WhereStartedAt(p entql.TimeP) {
+	f.Where(p.Field(collectrun.FieldStartedAt))
+}
+
+// WhereFinishedAt applies the entql time.Time predicate on the finished_at field.
+func (f *CollectRunFilter) WhereFinishedAt(p entql.TimeP) {
+	f.Where(p.Field(collectrun.FieldFinishedAt))
+}
+
+// WhereFetched applies the entql int32 predicate on the fetched field.
+func (f *CollectRunFilter) WhereFetched(p entql.Int32P) {
+	f.Where(p.Field(collectrun.FieldFetched))
+}
+
+// WhereNormalized applies the entql int32 predicate on the normalized field.
+func (f *CollectRunFilter) WhereNormalized(p entql.Int32P) {
+	f.Where(p.Field(collectrun.FieldNormalized))
+}
+
+// WhereMerged applies the entql int32 predicate on the merged field.
+func (f *CollectRunFilter) WhereMerged(p entql.Int32P) {
+	f.Where(p.Field(collectrun.FieldMerged))
+}
+
+// WhereBlocked applies the entql int32 predicate on the blocked field.
+func (f *CollectRunFilter) WhereBlocked(p entql.Int32P) {
+	f.Where(p.Field(collectrun.FieldBlocked))
+}
+
+// WhereSkipped applies the entql int32 predicate on the skipped field.
+func (f *CollectRunFilter) WhereSkipped(p entql.Int32P) {
+	f.Where(p.Field(collectrun.FieldSkipped))
+}
+
+// WhereStatus applies the entql string predicate on the status field.
+func (f *CollectRunFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(collectrun.FieldStatus))
+}
+
+// WhereErrorCode applies the entql string predicate on the error_code field.
+func (f *CollectRunFilter) WhereErrorCode(p entql.StringP) {
+	f.Where(p.Field(collectrun.FieldErrorCode))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *ComplianceRuleQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the ComplianceRuleQuery builder.
+func (_q *ComplianceRuleQuery) Filter() *ComplianceRuleFilter {
+	return &ComplianceRuleFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *ComplianceRuleMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the ComplianceRuleMutation builder.
+func (m *ComplianceRuleMutation) Filter() *ComplianceRuleFilter {
+	return &ComplianceRuleFilter{config: m.config, predicateAdder: m}
+}
+
+// ComplianceRuleFilter provides a generic filtering capability at runtime for ComplianceRuleQuery.
+type ComplianceRuleFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *ComplianceRuleFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *ComplianceRuleFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(compliancerule.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *ComplianceRuleFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(compliancerule.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *ComplianceRuleFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(compliancerule.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *ComplianceRuleFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(compliancerule.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *ComplianceRuleFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(compliancerule.FieldCreateBy))
+}
+
+// WhereUpdateBy applies the entql uint32 predicate on the update_by field.
+func (f *ComplianceRuleFilter) WhereUpdateBy(p entql.Uint32P) {
+	f.Where(p.Field(compliancerule.FieldUpdateBy))
+}
+
+// WhereRuleType applies the entql string predicate on the rule_type field.
+func (f *ComplianceRuleFilter) WhereRuleType(p entql.StringP) {
+	f.Where(p.Field(compliancerule.FieldRuleType))
+}
+
+// WherePattern applies the entql string predicate on the pattern field.
+func (f *ComplianceRuleFilter) WherePattern(p entql.StringP) {
+	f.Where(p.Field(compliancerule.FieldPattern))
+}
+
+// WhereAction applies the entql string predicate on the action field.
+func (f *ComplianceRuleFilter) WhereAction(p entql.StringP) {
+	f.Where(p.Field(compliancerule.FieldAction))
+}
+
+// WherePriority applies the entql int32 predicate on the priority field.
+func (f *ComplianceRuleFilter) WherePriority(p entql.Int32P) {
+	f.Where(p.Field(compliancerule.FieldPriority))
+}
+
+// WhereEnabled applies the entql bool predicate on the enabled field.
+func (f *ComplianceRuleFilter) WhereEnabled(p entql.BoolP) {
+	f.Where(p.Field(compliancerule.FieldEnabled))
+}
+
+// WhereEffectiveFrom applies the entql time.Time predicate on the effective_from field.
+func (f *ComplianceRuleFilter) WhereEffectiveFrom(p entql.TimeP) {
+	f.Where(p.Field(compliancerule.FieldEffectiveFrom))
+}
+
+// WhereEffectiveUntil applies the entql time.Time predicate on the effective_until field.
+func (f *ComplianceRuleFilter) WhereEffectiveUntil(p entql.TimeP) {
+	f.Where(p.Field(compliancerule.FieldEffectiveUntil))
+}
+
+// WhereHitCount applies the entql int64 predicate on the hit_count field.
+func (f *ComplianceRuleFilter) WhereHitCount(p entql.Int64P) {
+	f.Where(p.Field(compliancerule.FieldHitCount))
+}
+
+// WhereScope applies the entql string predicate on the scope field.
+func (f *ComplianceRuleFilter) WhereScope(p entql.StringP) {
+	f.Where(p.Field(compliancerule.FieldScope))
+}
+
+// WherePlatform applies the entql string predicate on the platform field.
+func (f *ComplianceRuleFilter) WherePlatform(p entql.StringP) {
+	f.Where(p.Field(compliancerule.FieldPlatform))
+}
+
+// WhereRemark applies the entql string predicate on the remark field.
+func (f *ComplianceRuleFilter) WhereRemark(p entql.StringP) {
+	f.Where(p.Field(compliancerule.FieldRemark))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *CredentialAccountQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the CredentialAccountQuery builder.
+func (_q *CredentialAccountQuery) Filter() *CredentialAccountFilter {
+	return &CredentialAccountFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *CredentialAccountMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the CredentialAccountMutation builder.
+func (m *CredentialAccountMutation) Filter() *CredentialAccountFilter {
+	return &CredentialAccountFilter{config: m.config, predicateAdder: m}
+}
+
+// CredentialAccountFilter provides a generic filtering capability at runtime for CredentialAccountQuery.
+type CredentialAccountFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *CredentialAccountFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *CredentialAccountFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(credentialaccount.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *CredentialAccountFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(credentialaccount.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *CredentialAccountFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(credentialaccount.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *CredentialAccountFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(credentialaccount.FieldDeleteTime))
+}
+
+// WherePlatform applies the entql string predicate on the platform field.
+func (f *CredentialAccountFilter) WherePlatform(p entql.StringP) {
+	f.Where(p.Field(credentialaccount.FieldPlatform))
+}
+
+// WhereAccountKey applies the entql string predicate on the account_key field.
+func (f *CredentialAccountFilter) WhereAccountKey(p entql.StringP) {
+	f.Where(p.Field(credentialaccount.FieldAccountKey))
+}
+
+// WhereCredentialRef applies the entql string predicate on the credential_ref field.
+func (f *CredentialAccountFilter) WhereCredentialRef(p entql.StringP) {
+	f.Where(p.Field(credentialaccount.FieldCredentialRef))
+}
+
+// WhereEnabled applies the entql bool predicate on the enabled field.
+func (f *CredentialAccountFilter) WhereEnabled(p entql.BoolP) {
+	f.Where(p.Field(credentialaccount.FieldEnabled))
+}
+
+// WhereQuotaUsed applies the entql int64 predicate on the quota_used field.
+func (f *CredentialAccountFilter) WhereQuotaUsed(p entql.Int64P) {
+	f.Where(p.Field(credentialaccount.FieldQuotaUsed))
+}
+
+// WhereQuotaLimit applies the entql int64 predicate on the quota_limit field.
+func (f *CredentialAccountFilter) WhereQuotaLimit(p entql.Int64P) {
+	f.Where(p.Field(credentialaccount.FieldQuotaLimit))
+}
+
+// WhereFailStreak applies the entql int32 predicate on the fail_streak field.
+func (f *CredentialAccountFilter) WhereFailStreak(p entql.Int32P) {
+	f.Where(p.Field(credentialaccount.FieldFailStreak))
+}
+
+// WherePausedUntil applies the entql time.Time predicate on the paused_until field.
+func (f *CredentialAccountFilter) WherePausedUntil(p entql.TimeP) {
+	f.Where(p.Field(credentialaccount.FieldPausedUntil))
+}
+
+// WhereLastUsedAt applies the entql time.Time predicate on the last_used_at field.
+func (f *CredentialAccountFilter) WhereLastUsedAt(p entql.TimeP) {
+	f.Where(p.Field(credentialaccount.FieldLastUsedAt))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (_q *DataPermissionQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
@@ -1878,7 +3376,7 @@ type DataPermissionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *DataPermissionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[10].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1940,6 +3438,196 @@ func (f *DataPermissionFilter) WhereRuleJSON(p entql.StringP) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (_q *DeadLetterQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the DeadLetterQuery builder.
+func (_q *DeadLetterQuery) Filter() *DeadLetterFilter {
+	return &DeadLetterFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *DeadLetterMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the DeadLetterMutation builder.
+func (m *DeadLetterMutation) Filter() *DeadLetterFilter {
+	return &DeadLetterFilter{config: m.config, predicateAdder: m}
+}
+
+// DeadLetterFilter provides a generic filtering capability at runtime for DeadLetterQuery.
+type DeadLetterFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *DeadLetterFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[11].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *DeadLetterFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(deadletter.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *DeadLetterFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(deadletter.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *DeadLetterFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(deadletter.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *DeadLetterFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(deadletter.FieldDeleteTime))
+}
+
+// WhereTaskType applies the entql string predicate on the task_type field.
+func (f *DeadLetterFilter) WhereTaskType(p entql.StringP) {
+	f.Where(p.Field(deadletter.FieldTaskType))
+}
+
+// WherePayload applies the entql json.RawMessage predicate on the payload field.
+func (f *DeadLetterFilter) WherePayload(p entql.BytesP) {
+	f.Where(p.Field(deadletter.FieldPayload))
+}
+
+// WhereErrorCode applies the entql string predicate on the error_code field.
+func (f *DeadLetterFilter) WhereErrorCode(p entql.StringP) {
+	f.Where(p.Field(deadletter.FieldErrorCode))
+}
+
+// WhereErrorMsg applies the entql string predicate on the error_msg field.
+func (f *DeadLetterFilter) WhereErrorMsg(p entql.StringP) {
+	f.Where(p.Field(deadletter.FieldErrorMsg))
+}
+
+// WhereAttempt applies the entql int32 predicate on the attempt field.
+func (f *DeadLetterFilter) WhereAttempt(p entql.Int32P) {
+	f.Where(p.Field(deadletter.FieldAttempt))
+}
+
+// WhereFirstFailedAt applies the entql time.Time predicate on the first_failed_at field.
+func (f *DeadLetterFilter) WhereFirstFailedAt(p entql.TimeP) {
+	f.Where(p.Field(deadletter.FieldFirstFailedAt))
+}
+
+// WhereLastFailedAt applies the entql time.Time predicate on the last_failed_at field.
+func (f *DeadLetterFilter) WhereLastFailedAt(p entql.TimeP) {
+	f.Where(p.Field(deadletter.FieldLastFailedAt))
+}
+
+// WhereStatus applies the entql string predicate on the status field.
+func (f *DeadLetterFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(deadletter.FieldStatus))
+}
+
+// WhereReplayedBy applies the entql string predicate on the replayed_by field.
+func (f *DeadLetterFilter) WhereReplayedBy(p entql.StringP) {
+	f.Where(p.Field(deadletter.FieldReplayedBy))
+}
+
+// WhereReplayedAt applies the entql time.Time predicate on the replayed_at field.
+func (f *DeadLetterFilter) WhereReplayedAt(p entql.TimeP) {
+	f.Where(p.Field(deadletter.FieldReplayedAt))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *DedupSampleQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the DedupSampleQuery builder.
+func (_q *DedupSampleQuery) Filter() *DedupSampleFilter {
+	return &DedupSampleFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *DedupSampleMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the DedupSampleMutation builder.
+func (m *DedupSampleMutation) Filter() *DedupSampleFilter {
+	return &DedupSampleFilter{config: m.config, predicateAdder: m}
+}
+
+// DedupSampleFilter provides a generic filtering capability at runtime for DedupSampleQuery.
+type DedupSampleFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *DedupSampleFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[12].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *DedupSampleFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(dedupsample.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *DedupSampleFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(dedupsample.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *DedupSampleFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(dedupsample.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *DedupSampleFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(dedupsample.FieldDeleteTime))
+}
+
+// WhereIntelID applies the entql string predicate on the intel_id field.
+func (f *DedupSampleFilter) WhereIntelID(p entql.StringP) {
+	f.Where(p.Field(dedupsample.FieldIntelID))
+}
+
+// WhereClusterID applies the entql string predicate on the cluster_id field.
+func (f *DedupSampleFilter) WhereClusterID(p entql.StringP) {
+	f.Where(p.Field(dedupsample.FieldClusterID))
+}
+
+// WhereAction applies the entql string predicate on the action field.
+func (f *DedupSampleFilter) WhereAction(p entql.StringP) {
+	f.Where(p.Field(dedupsample.FieldAction))
+}
+
+// WhereLevel applies the entql string predicate on the level field.
+func (f *DedupSampleFilter) WhereLevel(p entql.StringP) {
+	f.Where(p.Field(dedupsample.FieldLevel))
+}
+
+// WhereSimScore applies the entql float64 predicate on the sim_score field.
+func (f *DedupSampleFilter) WhereSimScore(p entql.Float64P) {
+	f.Where(p.Field(dedupsample.FieldSimScore))
+}
+
+// WhereOperator applies the entql string predicate on the operator field.
+func (f *DedupSampleFilter) WhereOperator(p entql.StringP) {
+	f.Where(p.Field(dedupsample.FieldOperator))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (_q *DepartmentQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
@@ -1968,7 +3656,7 @@ type DepartmentFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *DepartmentFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[13].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2101,7 +3789,7 @@ type DictFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *DictFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[14].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2216,7 +3904,7 @@ type DictCategoryFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *DictCategoryFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[15].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2283,6 +3971,261 @@ func (f *DictCategoryFilter) WhereSortID(p entql.Int32P) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (_q *EntityAssetMappingQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the EntityAssetMappingQuery builder.
+func (_q *EntityAssetMappingQuery) Filter() *EntityAssetMappingFilter {
+	return &EntityAssetMappingFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *EntityAssetMappingMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the EntityAssetMappingMutation builder.
+func (m *EntityAssetMappingMutation) Filter() *EntityAssetMappingFilter {
+	return &EntityAssetMappingFilter{config: m.config, predicateAdder: m}
+}
+
+// EntityAssetMappingFilter provides a generic filtering capability at runtime for EntityAssetMappingQuery.
+type EntityAssetMappingFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *EntityAssetMappingFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[16].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *EntityAssetMappingFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(entityassetmapping.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *EntityAssetMappingFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(entityassetmapping.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *EntityAssetMappingFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(entityassetmapping.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *EntityAssetMappingFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(entityassetmapping.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *EntityAssetMappingFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(entityassetmapping.FieldCreateBy))
+}
+
+// WhereUpdateBy applies the entql uint32 predicate on the update_by field.
+func (f *EntityAssetMappingFilter) WhereUpdateBy(p entql.Uint32P) {
+	f.Where(p.Field(entityassetmapping.FieldUpdateBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *EntityAssetMappingFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(entityassetmapping.FieldTenantID))
+}
+
+// WhereEntityName applies the entql string predicate on the entity_name field.
+func (f *EntityAssetMappingFilter) WhereEntityName(p entql.StringP) {
+	f.Where(p.Field(entityassetmapping.FieldEntityName))
+}
+
+// WhereEntityAlias applies the entql json.RawMessage predicate on the entity_alias field.
+func (f *EntityAssetMappingFilter) WhereEntityAlias(p entql.BytesP) {
+	f.Where(p.Field(entityassetmapping.FieldEntityAlias))
+}
+
+// WhereEntityType applies the entql string predicate on the entity_type field.
+func (f *EntityAssetMappingFilter) WhereEntityType(p entql.StringP) {
+	f.Where(p.Field(entityassetmapping.FieldEntityType))
+}
+
+// WhereAssetClass applies the entql string predicate on the asset_class field.
+func (f *EntityAssetMappingFilter) WhereAssetClass(p entql.StringP) {
+	f.Where(p.Field(entityassetmapping.FieldAssetClass))
+}
+
+// WhereSymbol applies the entql string predicate on the symbol field.
+func (f *EntityAssetMappingFilter) WhereSymbol(p entql.StringP) {
+	f.Where(p.Field(entityassetmapping.FieldSymbol))
+}
+
+// WhereDirectionBias applies the entql string predicate on the direction_bias field.
+func (f *EntityAssetMappingFilter) WhereDirectionBias(p entql.StringP) {
+	f.Where(p.Field(entityassetmapping.FieldDirectionBias))
+}
+
+// WhereConfidence applies the entql float64 predicate on the confidence field.
+func (f *EntityAssetMappingFilter) WhereConfidence(p entql.Float64P) {
+	f.Where(p.Field(entityassetmapping.FieldConfidence))
+}
+
+// WhereSource applies the entql string predicate on the source field.
+func (f *EntityAssetMappingFilter) WhereSource(p entql.StringP) {
+	f.Where(p.Field(entityassetmapping.FieldSource))
+}
+
+// WhereNotes applies the entql string predicate on the notes field.
+func (f *EntityAssetMappingFilter) WhereNotes(p entql.StringP) {
+	f.Where(p.Field(entityassetmapping.FieldNotes))
+}
+
+// WhereEnabled applies the entql bool predicate on the enabled field.
+func (f *EntityAssetMappingFilter) WhereEnabled(p entql.BoolP) {
+	f.Where(p.Field(entityassetmapping.FieldEnabled))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *EvidenceSnapshotQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the EvidenceSnapshotQuery builder.
+func (_q *EvidenceSnapshotQuery) Filter() *EvidenceSnapshotFilter {
+	return &EvidenceSnapshotFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *EvidenceSnapshotMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the EvidenceSnapshotMutation builder.
+func (m *EvidenceSnapshotMutation) Filter() *EvidenceSnapshotFilter {
+	return &EvidenceSnapshotFilter{config: m.config, predicateAdder: m}
+}
+
+// EvidenceSnapshotFilter provides a generic filtering capability at runtime for EvidenceSnapshotQuery.
+type EvidenceSnapshotFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *EvidenceSnapshotFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[17].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *EvidenceSnapshotFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(evidencesnapshot.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *EvidenceSnapshotFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(evidencesnapshot.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *EvidenceSnapshotFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(evidencesnapshot.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *EvidenceSnapshotFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(evidencesnapshot.FieldDeleteTime))
+}
+
+// WhereIntelID applies the entql string predicate on the intel_id field.
+func (f *EvidenceSnapshotFilter) WhereIntelID(p entql.StringP) {
+	f.Where(p.Field(evidencesnapshot.FieldIntelID))
+}
+
+// WhereCollectedAt applies the entql time.Time predicate on the collected_at field.
+func (f *EvidenceSnapshotFilter) WhereCollectedAt(p entql.TimeP) {
+	f.Where(p.Field(evidencesnapshot.FieldCollectedAt))
+}
+
+// WhereMethod applies the entql string predicate on the method field.
+func (f *EvidenceSnapshotFilter) WhereMethod(p entql.StringP) {
+	f.Where(p.Field(evidencesnapshot.FieldMethod))
+}
+
+// WhereRequestURL applies the entql string predicate on the request_url field.
+func (f *EvidenceSnapshotFilter) WhereRequestURL(p entql.StringP) {
+	f.Where(p.Field(evidencesnapshot.FieldRequestURL))
+}
+
+// WhereFinalURL applies the entql string predicate on the final_url field.
+func (f *EvidenceSnapshotFilter) WhereFinalURL(p entql.StringP) {
+	f.Where(p.Field(evidencesnapshot.FieldFinalURL))
+}
+
+// WhereHTTPStatus applies the entql int32 predicate on the http_status field.
+func (f *EvidenceSnapshotFilter) WhereHTTPStatus(p entql.Int32P) {
+	f.Where(p.Field(evidencesnapshot.FieldHTTPStatus))
+}
+
+// WhereHTTPHeaders applies the entql json.RawMessage predicate on the http_headers field.
+func (f *EvidenceSnapshotFilter) WhereHTTPHeaders(p entql.BytesP) {
+	f.Where(p.Field(evidencesnapshot.FieldHTTPHeaders))
+}
+
+// WhereRawPath applies the entql string predicate on the raw_path field.
+func (f *EvidenceSnapshotFilter) WhereRawPath(p entql.StringP) {
+	f.Where(p.Field(evidencesnapshot.FieldRawPath))
+}
+
+// WhereRawHash applies the entql string predicate on the raw_hash field.
+func (f *EvidenceSnapshotFilter) WhereRawHash(p entql.StringP) {
+	f.Where(p.Field(evidencesnapshot.FieldRawHash))
+}
+
+// WherePrevHash applies the entql string predicate on the prev_hash field.
+func (f *EvidenceSnapshotFilter) WherePrevHash(p entql.StringP) {
+	f.Where(p.Field(evidencesnapshot.FieldPrevHash))
+}
+
+// WhereChainHash applies the entql string predicate on the chain_hash field.
+func (f *EvidenceSnapshotFilter) WhereChainHash(p entql.StringP) {
+	f.Where(p.Field(evidencesnapshot.FieldChainHash))
+}
+
+// WhereRobotsChecked applies the entql bool predicate on the robots_checked field.
+func (f *EvidenceSnapshotFilter) WhereRobotsChecked(p entql.BoolP) {
+	f.Where(p.Field(evidencesnapshot.FieldRobotsChecked))
+}
+
+// WhereRobotsAllowed applies the entql bool predicate on the robots_allowed field.
+func (f *EvidenceSnapshotFilter) WhereRobotsAllowed(p entql.BoolP) {
+	f.Where(p.Field(evidencesnapshot.FieldRobotsAllowed))
+}
+
+// WhereCrawlDelayMs applies the entql int32 predicate on the crawl_delay_ms field.
+func (f *EvidenceSnapshotFilter) WhereCrawlDelayMs(p entql.Int32P) {
+	f.Where(p.Field(evidencesnapshot.FieldCrawlDelayMs))
+}
+
+// WhereRetainUntil applies the entql time.Time predicate on the retain_until field.
+func (f *EvidenceSnapshotFilter) WhereRetainUntil(p entql.TimeP) {
+	f.Where(p.Field(evidencesnapshot.FieldRetainUntil))
+}
+
+// WhereRawSizeBytes applies the entql int64 predicate on the raw_size_bytes field.
+func (f *EvidenceSnapshotFilter) WhereRawSizeBytes(p entql.Int64P) {
+	f.Where(p.Field(evidencesnapshot.FieldRawSizeBytes))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (_q *FileQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
@@ -2311,7 +4254,7 @@ type FileFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *FileFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[18].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2413,6 +4356,551 @@ func (f *FileFilter) WhereMd5(p entql.StringP) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (_q *IntelClusterQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the IntelClusterQuery builder.
+func (_q *IntelClusterQuery) Filter() *IntelClusterFilter {
+	return &IntelClusterFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *IntelClusterMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the IntelClusterMutation builder.
+func (m *IntelClusterMutation) Filter() *IntelClusterFilter {
+	return &IntelClusterFilter{config: m.config, predicateAdder: m}
+}
+
+// IntelClusterFilter provides a generic filtering capability at runtime for IntelClusterQuery.
+type IntelClusterFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *IntelClusterFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[19].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *IntelClusterFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(intelcluster.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *IntelClusterFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(intelcluster.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *IntelClusterFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(intelcluster.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *IntelClusterFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(intelcluster.FieldDeleteTime))
+}
+
+// WhereLabel applies the entql string predicate on the label field.
+func (f *IntelClusterFilter) WhereLabel(p entql.StringP) {
+	f.Where(p.Field(intelcluster.FieldLabel))
+}
+
+// WhereMemberCount applies the entql int32 predicate on the member_count field.
+func (f *IntelClusterFilter) WhereMemberCount(p entql.Int32P) {
+	f.Where(p.Field(intelcluster.FieldMemberCount))
+}
+
+// WherePlatformCount applies the entql int32 predicate on the platform_count field.
+func (f *IntelClusterFilter) WherePlatformCount(p entql.Int32P) {
+	f.Where(p.Field(intelcluster.FieldPlatformCount))
+}
+
+// WhereRepresentativeID applies the entql string predicate on the representative_id field.
+func (f *IntelClusterFilter) WhereRepresentativeID(p entql.StringP) {
+	f.Where(p.Field(intelcluster.FieldRepresentativeID))
+}
+
+// WhereRegion applies the entql string predicate on the region field.
+func (f *IntelClusterFilter) WhereRegion(p entql.StringP) {
+	f.Where(p.Field(intelcluster.FieldRegion))
+}
+
+// WhereCategory applies the entql string predicate on the category field.
+func (f *IntelClusterFilter) WhereCategory(p entql.StringP) {
+	f.Where(p.Field(intelcluster.FieldCategory))
+}
+
+// WhereFirstSeenAt applies the entql time.Time predicate on the first_seen_at field.
+func (f *IntelClusterFilter) WhereFirstSeenAt(p entql.TimeP) {
+	f.Where(p.Field(intelcluster.FieldFirstSeenAt))
+}
+
+// WhereLastSeenAt applies the entql time.Time predicate on the last_seen_at field.
+func (f *IntelClusterFilter) WhereLastSeenAt(p entql.TimeP) {
+	f.Where(p.Field(intelcluster.FieldLastSeenAt))
+}
+
+// WhereMergedBy applies the entql string predicate on the merged_by field.
+func (f *IntelClusterFilter) WhereMergedBy(p entql.StringP) {
+	f.Where(p.Field(intelcluster.FieldMergedBy))
+}
+
+// WhereCentroidRef applies the entql string predicate on the centroid_ref field.
+func (f *IntelClusterFilter) WhereCentroidRef(p entql.StringP) {
+	f.Where(p.Field(intelcluster.FieldCentroidRef))
+}
+
+// WhereStatus applies the entql string predicate on the status field.
+func (f *IntelClusterFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(intelcluster.FieldStatus))
+}
+
+// WhereClosedAt applies the entql time.Time predicate on the closed_at field.
+func (f *IntelClusterFilter) WhereClosedAt(p entql.TimeP) {
+	f.Where(p.Field(intelcluster.FieldClosedAt))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *IntelItemQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the IntelItemQuery builder.
+func (_q *IntelItemQuery) Filter() *IntelItemFilter {
+	return &IntelItemFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *IntelItemMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the IntelItemMutation builder.
+func (m *IntelItemMutation) Filter() *IntelItemFilter {
+	return &IntelItemFilter{config: m.config, predicateAdder: m}
+}
+
+// IntelItemFilter provides a generic filtering capability at runtime for IntelItemQuery.
+type IntelItemFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *IntelItemFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[20].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *IntelItemFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *IntelItemFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(intelitem.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *IntelItemFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(intelitem.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *IntelItemFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(intelitem.FieldDeleteTime))
+}
+
+// WhereAPIVersion applies the entql string predicate on the api_version field.
+func (f *IntelItemFilter) WhereAPIVersion(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldAPIVersion))
+}
+
+// WherePlatform applies the entql string predicate on the platform field.
+func (f *IntelItemFilter) WherePlatform(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldPlatform))
+}
+
+// WhereRegion applies the entql string predicate on the region field.
+func (f *IntelItemFilter) WhereRegion(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldRegion))
+}
+
+// WhereCollectMethod applies the entql string predicate on the collect_method field.
+func (f *IntelItemFilter) WhereCollectMethod(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldCollectMethod))
+}
+
+// WhereSourceURL applies the entql string predicate on the source_url field.
+func (f *IntelItemFilter) WhereSourceURL(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldSourceURL))
+}
+
+// WhereAuthor applies the entql string predicate on the author field.
+func (f *IntelItemFilter) WhereAuthor(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldAuthor))
+}
+
+// WhereCollectedAt applies the entql time.Time predicate on the collected_at field.
+func (f *IntelItemFilter) WhereCollectedAt(p entql.TimeP) {
+	f.Where(p.Field(intelitem.FieldCollectedAt))
+}
+
+// WherePublishedAt applies the entql time.Time predicate on the published_at field.
+func (f *IntelItemFilter) WherePublishedAt(p entql.TimeP) {
+	f.Where(p.Field(intelitem.FieldPublishedAt))
+}
+
+// WherePublishedAtSuspect applies the entql bool predicate on the published_at_suspect field.
+func (f *IntelItemFilter) WherePublishedAtSuspect(p entql.BoolP) {
+	f.Where(p.Field(intelitem.FieldPublishedAtSuspect))
+}
+
+// WhereTitle applies the entql string predicate on the title field.
+func (f *IntelItemFilter) WhereTitle(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldTitle))
+}
+
+// WhereText applies the entql string predicate on the text field.
+func (f *IntelItemFilter) WhereText(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldText))
+}
+
+// WhereMediaRefs applies the entql json.RawMessage predicate on the media_refs field.
+func (f *IntelItemFilter) WhereMediaRefs(p entql.BytesP) {
+	f.Where(p.Field(intelitem.FieldMediaRefs))
+}
+
+// WhereLang applies the entql string predicate on the lang field.
+func (f *IntelItemFilter) WhereLang(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldLang))
+}
+
+// WhereEntities applies the entql json.RawMessage predicate on the entities field.
+func (f *IntelItemFilter) WhereEntities(p entql.BytesP) {
+	f.Where(p.Field(intelitem.FieldEntities))
+}
+
+// WhereCategory applies the entql string predicate on the category field.
+func (f *IntelItemFilter) WhereCategory(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldCategory))
+}
+
+// WhereRank applies the entql int32 predicate on the rank field.
+func (f *IntelItemFilter) WhereRank(p entql.Int32P) {
+	f.Where(p.Field(intelitem.FieldRank))
+}
+
+// WhereRankTotal applies the entql int32 predicate on the rank_total field.
+func (f *IntelItemFilter) WhereRankTotal(p entql.Int32P) {
+	f.Where(p.Field(intelitem.FieldRankTotal))
+}
+
+// WhereViews applies the entql int64 predicate on the views field.
+func (f *IntelItemFilter) WhereViews(p entql.Int64P) {
+	f.Where(p.Field(intelitem.FieldViews))
+}
+
+// WhereLikes applies the entql int64 predicate on the likes field.
+func (f *IntelItemFilter) WhereLikes(p entql.Int64P) {
+	f.Where(p.Field(intelitem.FieldLikes))
+}
+
+// WhereComments applies the entql int64 predicate on the comments field.
+func (f *IntelItemFilter) WhereComments(p entql.Int64P) {
+	f.Where(p.Field(intelitem.FieldComments))
+}
+
+// WhereMetricsAsOf applies the entql time.Time predicate on the metrics_as_of field.
+func (f *IntelItemFilter) WhereMetricsAsOf(p entql.TimeP) {
+	f.Where(p.Field(intelitem.FieldMetricsAsOf))
+}
+
+// WhereURLKey applies the entql string predicate on the url_key field.
+func (f *IntelItemFilter) WhereURLKey(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldURLKey))
+}
+
+// WhereCycleBucket applies the entql int64 predicate on the cycle_bucket field.
+func (f *IntelItemFilter) WhereCycleBucket(p entql.Int64P) {
+	f.Where(p.Field(intelitem.FieldCycleBucket))
+}
+
+// WhereDedupKey applies the entql string predicate on the dedup_key field.
+func (f *IntelItemFilter) WhereDedupKey(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldDedupKey))
+}
+
+// WhereFingerprintValid applies the entql bool predicate on the fingerprint_valid field.
+func (f *IntelItemFilter) WhereFingerprintValid(p entql.BoolP) {
+	f.Where(p.Field(intelitem.FieldFingerprintValid))
+}
+
+// WhereFpB0 applies the entql int16 predicate on the fp_b0 field.
+func (f *IntelItemFilter) WhereFpB0(p entql.Int16P) {
+	f.Where(p.Field(intelitem.FieldFpB0))
+}
+
+// WhereFpB1 applies the entql int16 predicate on the fp_b1 field.
+func (f *IntelItemFilter) WhereFpB1(p entql.Int16P) {
+	f.Where(p.Field(intelitem.FieldFpB1))
+}
+
+// WhereFpB2 applies the entql int16 predicate on the fp_b2 field.
+func (f *IntelItemFilter) WhereFpB2(p entql.Int16P) {
+	f.Where(p.Field(intelitem.FieldFpB2))
+}
+
+// WhereFpB3 applies the entql int16 predicate on the fp_b3 field.
+func (f *IntelItemFilter) WhereFpB3(p entql.Int16P) {
+	f.Where(p.Field(intelitem.FieldFpB3))
+}
+
+// WhereFingerprintHex applies the entql string predicate on the fingerprint_hex field.
+func (f *IntelItemFilter) WhereFingerprintHex(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldFingerprintHex))
+}
+
+// WhereEmbeddingID applies the entql string predicate on the embedding_id field.
+func (f *IntelItemFilter) WhereEmbeddingID(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldEmbeddingID))
+}
+
+// WhereClusterID applies the entql string predicate on the cluster_id field.
+func (f *IntelItemFilter) WhereClusterID(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldClusterID))
+}
+
+// WhereComplianceGate applies the entql string predicate on the compliance_gate field.
+func (f *IntelItemFilter) WhereComplianceGate(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldComplianceGate))
+}
+
+// WhereComplianceReasons applies the entql json.RawMessage predicate on the compliance_reasons field.
+func (f *IntelItemFilter) WhereComplianceReasons(p entql.BytesP) {
+	f.Where(p.Field(intelitem.FieldComplianceReasons))
+}
+
+// WhereWorkabilityScore applies the entql float64 predicate on the workability_score field.
+func (f *IntelItemFilter) WhereWorkabilityScore(p entql.Float64P) {
+	f.Where(p.Field(intelitem.FieldWorkabilityScore))
+}
+
+// WhereWorkabilityReason applies the entql string predicate on the workability_reason field.
+func (f *IntelItemFilter) WhereWorkabilityReason(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldWorkabilityReason))
+}
+
+// WhereSourceID applies the entql string predicate on the source_id field.
+func (f *IntelItemFilter) WhereSourceID(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldSourceID))
+}
+
+// WhereEvidenceID applies the entql string predicate on the evidence_id field.
+func (f *IntelItemFilter) WhereEvidenceID(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldEvidenceID))
+}
+
+// WherePublishState applies the entql string predicate on the publish_state field.
+func (f *IntelItemFilter) WherePublishState(p entql.StringP) {
+	f.Where(p.Field(intelitem.FieldPublishState))
+}
+
+// WhereRawPayload applies the entql json.RawMessage predicate on the raw_payload field.
+func (f *IntelItemFilter) WhereRawPayload(p entql.BytesP) {
+	f.Where(p.Field(intelitem.FieldRawPayload))
+}
+
+// WhereRawSize applies the entql int64 predicate on the raw_size field.
+func (f *IntelItemFilter) WhereRawSize(p entql.Int64P) {
+	f.Where(p.Field(intelitem.FieldRawSize))
+}
+
+// WhereRawTruncated applies the entql bool predicate on the raw_truncated field.
+func (f *IntelItemFilter) WhereRawTruncated(p entql.BoolP) {
+	f.Where(p.Field(intelitem.FieldRawTruncated))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *IntelSourceQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the IntelSourceQuery builder.
+func (_q *IntelSourceQuery) Filter() *IntelSourceFilter {
+	return &IntelSourceFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *IntelSourceMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the IntelSourceMutation builder.
+func (m *IntelSourceMutation) Filter() *IntelSourceFilter {
+	return &IntelSourceFilter{config: m.config, predicateAdder: m}
+}
+
+// IntelSourceFilter provides a generic filtering capability at runtime for IntelSourceQuery.
+type IntelSourceFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *IntelSourceFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[21].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *IntelSourceFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(intelsource.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *IntelSourceFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(intelsource.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *IntelSourceFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(intelsource.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *IntelSourceFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(intelsource.FieldDeleteTime))
+}
+
+// WherePlatform applies the entql string predicate on the platform field.
+func (f *IntelSourceFilter) WherePlatform(p entql.StringP) {
+	f.Where(p.Field(intelsource.FieldPlatform))
+}
+
+// WhereRegion applies the entql string predicate on the region field.
+func (f *IntelSourceFilter) WhereRegion(p entql.StringP) {
+	f.Where(p.Field(intelsource.FieldRegion))
+}
+
+// WhereKind applies the entql string predicate on the kind field.
+func (f *IntelSourceFilter) WhereKind(p entql.StringP) {
+	f.Where(p.Field(intelsource.FieldKind))
+}
+
+// WhereMethod applies the entql string predicate on the method field.
+func (f *IntelSourceFilter) WhereMethod(p entql.StringP) {
+	f.Where(p.Field(intelsource.FieldMethod))
+}
+
+// WhereConfig applies the entql json.RawMessage predicate on the config field.
+func (f *IntelSourceFilter) WhereConfig(p entql.BytesP) {
+	f.Where(p.Field(intelsource.FieldConfig))
+}
+
+// WhereConfigSchemaHint applies the entql string predicate on the config_schema_hint field.
+func (f *IntelSourceFilter) WhereConfigSchemaHint(p entql.StringP) {
+	f.Where(p.Field(intelsource.FieldConfigSchemaHint))
+}
+
+// WhereEnabled applies the entql bool predicate on the enabled field.
+func (f *IntelSourceFilter) WhereEnabled(p entql.BoolP) {
+	f.Where(p.Field(intelsource.FieldEnabled))
+}
+
+// WhereIntervalMinutes applies the entql int32 predicate on the interval_minutes field.
+func (f *IntelSourceFilter) WhereIntervalMinutes(p entql.Int32P) {
+	f.Where(p.Field(intelsource.FieldIntervalMinutes))
+}
+
+// WhereRateLimitPerMin applies the entql int32 predicate on the rate_limit_per_min field.
+func (f *IntelSourceFilter) WhereRateLimitPerMin(p entql.Int32P) {
+	f.Where(p.Field(intelsource.FieldRateLimitPerMin))
+}
+
+// WherePriority applies the entql int32 predicate on the priority field.
+func (f *IntelSourceFilter) WherePriority(p entql.Int32P) {
+	f.Where(p.Field(intelsource.FieldPriority))
+}
+
+// WhereCredentialRef applies the entql string predicate on the credential_ref field.
+func (f *IntelSourceFilter) WhereCredentialRef(p entql.StringP) {
+	f.Where(p.Field(intelsource.FieldCredentialRef))
+}
+
+// WhereWeight applies the entql float64 predicate on the weight field.
+func (f *IntelSourceFilter) WhereWeight(p entql.Float64P) {
+	f.Where(p.Field(intelsource.FieldWeight))
+}
+
+// WhereRobotsExempt applies the entql bool predicate on the robots_exempt field.
+func (f *IntelSourceFilter) WhereRobotsExempt(p entql.BoolP) {
+	f.Where(p.Field(intelsource.FieldRobotsExempt))
+}
+
+// WhereRobotsExemptReason applies the entql string predicate on the robots_exempt_reason field.
+func (f *IntelSourceFilter) WhereRobotsExemptReason(p entql.StringP) {
+	f.Where(p.Field(intelsource.FieldRobotsExemptReason))
+}
+
+// WhereStatus applies the entql string predicate on the status field.
+func (f *IntelSourceFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(intelsource.FieldStatus))
+}
+
+// WherePausedUntil applies the entql time.Time predicate on the paused_until field.
+func (f *IntelSourceFilter) WherePausedUntil(p entql.TimeP) {
+	f.Where(p.Field(intelsource.FieldPausedUntil))
+}
+
+// WhereFailStreak applies the entql int32 predicate on the fail_streak field.
+func (f *IntelSourceFilter) WhereFailStreak(p entql.Int32P) {
+	f.Where(p.Field(intelsource.FieldFailStreak))
+}
+
+// WhereLastRunAt applies the entql time.Time predicate on the last_run_at field.
+func (f *IntelSourceFilter) WhereLastRunAt(p entql.TimeP) {
+	f.Where(p.Field(intelsource.FieldLastRunAt))
+}
+
+// WhereLastSuccessAt applies the entql time.Time predicate on the last_success_at field.
+func (f *IntelSourceFilter) WhereLastSuccessAt(p entql.TimeP) {
+	f.Where(p.Field(intelsource.FieldLastSuccessAt))
+}
+
+// WhereSuccessCount7d applies the entql int32 predicate on the success_count_7d field.
+func (f *IntelSourceFilter) WhereSuccessCount7d(p entql.Int32P) {
+	f.Where(p.Field(intelsource.FieldSuccessCount7d))
+}
+
+// WhereFailCount7d applies the entql int32 predicate on the fail_count_7d field.
+func (f *IntelSourceFilter) WhereFailCount7d(p entql.Int32P) {
+	f.Where(p.Field(intelsource.FieldFailCount7d))
+}
+
+// WhereLastError applies the entql string predicate on the last_error field.
+func (f *IntelSourceFilter) WhereLastError(p entql.StringP) {
+	f.Where(p.Field(intelsource.FieldLastError))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (_q *LoginFailCounterQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
@@ -2441,7 +4929,7 @@ type LoginFailCounterFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *LoginFailCounterFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[10].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[22].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2478,6 +4966,796 @@ func (f *LoginFailCounterFilter) WhereLockedUntil(p entql.TimeP) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (_q *MapApprovalRecordQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MapApprovalRecordQuery builder.
+func (_q *MapApprovalRecordQuery) Filter() *MapApprovalRecordFilter {
+	return &MapApprovalRecordFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MapApprovalRecordMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MapApprovalRecordMutation builder.
+func (m *MapApprovalRecordMutation) Filter() *MapApprovalRecordFilter {
+	return &MapApprovalRecordFilter{config: m.config, predicateAdder: m}
+}
+
+// MapApprovalRecordFilter provides a generic filtering capability at runtime for MapApprovalRecordQuery.
+type MapApprovalRecordFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MapApprovalRecordFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[23].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *MapApprovalRecordFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(mapapprovalrecord.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MapApprovalRecordFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(mapapprovalrecord.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MapApprovalRecordFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(mapapprovalrecord.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MapApprovalRecordFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(mapapprovalrecord.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *MapApprovalRecordFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(mapapprovalrecord.FieldCreateBy))
+}
+
+// WhereUpdateBy applies the entql uint32 predicate on the update_by field.
+func (f *MapApprovalRecordFilter) WhereUpdateBy(p entql.Uint32P) {
+	f.Where(p.Field(mapapprovalrecord.FieldUpdateBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *MapApprovalRecordFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(mapapprovalrecord.FieldTenantID))
+}
+
+// WhereDispatchUnitID applies the entql string predicate on the dispatch_unit_id field.
+func (f *MapApprovalRecordFilter) WhereDispatchUnitID(p entql.StringP) {
+	f.Where(p.Field(mapapprovalrecord.FieldDispatchUnitID))
+}
+
+// WhereAction applies the entql string predicate on the action field.
+func (f *MapApprovalRecordFilter) WhereAction(p entql.StringP) {
+	f.Where(p.Field(mapapprovalrecord.FieldAction))
+}
+
+// WhereActor applies the entql string predicate on the actor field.
+func (f *MapApprovalRecordFilter) WhereActor(p entql.StringP) {
+	f.Where(p.Field(mapapprovalrecord.FieldActor))
+}
+
+// WhereActorType applies the entql string predicate on the actor_type field.
+func (f *MapApprovalRecordFilter) WhereActorType(p entql.StringP) {
+	f.Where(p.Field(mapapprovalrecord.FieldActorType))
+}
+
+// WhereFromState applies the entql string predicate on the from_state field.
+func (f *MapApprovalRecordFilter) WhereFromState(p entql.StringP) {
+	f.Where(p.Field(mapapprovalrecord.FieldFromState))
+}
+
+// WhereToState applies the entql string predicate on the to_state field.
+func (f *MapApprovalRecordFilter) WhereToState(p entql.StringP) {
+	f.Where(p.Field(mapapprovalrecord.FieldToState))
+}
+
+// WhereReason applies the entql string predicate on the reason field.
+func (f *MapApprovalRecordFilter) WhereReason(p entql.StringP) {
+	f.Where(p.Field(mapapprovalrecord.FieldReason))
+}
+
+// WhereVisibilityAtAction applies the entql string predicate on the visibility_at_action field.
+func (f *MapApprovalRecordFilter) WhereVisibilityAtAction(p entql.StringP) {
+	f.Where(p.Field(mapapprovalrecord.FieldVisibilityAtAction))
+}
+
+// WhereIP applies the entql string predicate on the ip field.
+func (f *MapApprovalRecordFilter) WhereIP(p entql.StringP) {
+	f.Where(p.Field(mapapprovalrecord.FieldIP))
+}
+
+// WhereUserAgent applies the entql string predicate on the user_agent field.
+func (f *MapApprovalRecordFilter) WhereUserAgent(p entql.StringP) {
+	f.Where(p.Field(mapapprovalrecord.FieldUserAgent))
+}
+
+// WhereResult applies the entql string predicate on the result field.
+func (f *MapApprovalRecordFilter) WhereResult(p entql.StringP) {
+	f.Where(p.Field(mapapprovalrecord.FieldResult))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *MapDispatchUnitQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MapDispatchUnitQuery builder.
+func (_q *MapDispatchUnitQuery) Filter() *MapDispatchUnitFilter {
+	return &MapDispatchUnitFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MapDispatchUnitMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MapDispatchUnitMutation builder.
+func (m *MapDispatchUnitMutation) Filter() *MapDispatchUnitFilter {
+	return &MapDispatchUnitFilter{config: m.config, predicateAdder: m}
+}
+
+// MapDispatchUnitFilter provides a generic filtering capability at runtime for MapDispatchUnitQuery.
+type MapDispatchUnitFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MapDispatchUnitFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[24].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *MapDispatchUnitFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(mapdispatchunit.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MapDispatchUnitFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(mapdispatchunit.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MapDispatchUnitFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(mapdispatchunit.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MapDispatchUnitFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(mapdispatchunit.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *MapDispatchUnitFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(mapdispatchunit.FieldCreateBy))
+}
+
+// WhereUpdateBy applies the entql uint32 predicate on the update_by field.
+func (f *MapDispatchUnitFilter) WhereUpdateBy(p entql.Uint32P) {
+	f.Where(p.Field(mapdispatchunit.FieldUpdateBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *MapDispatchUnitFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(mapdispatchunit.FieldTenantID))
+}
+
+// WhereUnitID applies the entql string predicate on the unit_id field.
+func (f *MapDispatchUnitFilter) WhereUnitID(p entql.StringP) {
+	f.Where(p.Field(mapdispatchunit.FieldUnitID))
+}
+
+// WhereVariantSetID applies the entql string predicate on the variant_set_id field.
+func (f *MapDispatchUnitFilter) WhereVariantSetID(p entql.StringP) {
+	f.Where(p.Field(mapdispatchunit.FieldVariantSetID))
+}
+
+// WhereVariantID applies the entql string predicate on the variant_id field.
+func (f *MapDispatchUnitFilter) WhereVariantID(p entql.StringP) {
+	f.Where(p.Field(mapdispatchunit.FieldVariantID))
+}
+
+// WhereTargets applies the entql json.RawMessage predicate on the targets field.
+func (f *MapDispatchUnitFilter) WhereTargets(p entql.BytesP) {
+	f.Where(p.Field(mapdispatchunit.FieldTargets))
+}
+
+// WhereScheduledFor applies the entql time.Time predicate on the scheduled_for field.
+func (f *MapDispatchUnitFilter) WhereScheduledFor(p entql.TimeP) {
+	f.Where(p.Field(mapdispatchunit.FieldScheduledFor))
+}
+
+// WhereScheduleMode applies the entql string predicate on the schedule_mode field.
+func (f *MapDispatchUnitFilter) WhereScheduleMode(p entql.StringP) {
+	f.Where(p.Field(mapdispatchunit.FieldScheduleMode))
+}
+
+// WhereVisibilityDefault applies the entql string predicate on the visibility_default field.
+func (f *MapDispatchUnitFilter) WhereVisibilityDefault(p entql.StringP) {
+	f.Where(p.Field(mapdispatchunit.FieldVisibilityDefault))
+}
+
+// WhereVisibilityOverrideReason applies the entql string predicate on the visibility_override_reason field.
+func (f *MapDispatchUnitFilter) WhereVisibilityOverrideReason(p entql.StringP) {
+	f.Where(p.Field(mapdispatchunit.FieldVisibilityOverrideReason))
+}
+
+// WhereApprovalState applies the entql string predicate on the approval_state field.
+func (f *MapDispatchUnitFilter) WhereApprovalState(p entql.StringP) {
+	f.Where(p.Field(mapdispatchunit.FieldApprovalState))
+}
+
+// WhereSubmittedBy applies the entql string predicate on the submitted_by field.
+func (f *MapDispatchUnitFilter) WhereSubmittedBy(p entql.StringP) {
+	f.Where(p.Field(mapdispatchunit.FieldSubmittedBy))
+}
+
+// WhereApprover applies the entql string predicate on the approver field.
+func (f *MapDispatchUnitFilter) WhereApprover(p entql.StringP) {
+	f.Where(p.Field(mapdispatchunit.FieldApprover))
+}
+
+// WhereApprovedAt applies the entql time.Time predicate on the approved_at field.
+func (f *MapDispatchUnitFilter) WhereApprovedAt(p entql.TimeP) {
+	f.Where(p.Field(mapdispatchunit.FieldApprovedAt))
+}
+
+// WhereRejectReason applies the entql string predicate on the reject_reason field.
+func (f *MapDispatchUnitFilter) WhereRejectReason(p entql.StringP) {
+	f.Where(p.Field(mapdispatchunit.FieldRejectReason))
+}
+
+// WherePublishState applies the entql string predicate on the publish_state field.
+func (f *MapDispatchUnitFilter) WherePublishState(p entql.StringP) {
+	f.Where(p.Field(mapdispatchunit.FieldPublishState))
+}
+
+// WherePostID applies the entql string predicate on the post_id field.
+func (f *MapDispatchUnitFilter) WherePostID(p entql.StringP) {
+	f.Where(p.Field(mapdispatchunit.FieldPostID))
+}
+
+// WherePostURL applies the entql string predicate on the post_url field.
+func (f *MapDispatchUnitFilter) WherePostURL(p entql.StringP) {
+	f.Where(p.Field(mapdispatchunit.FieldPostURL))
+}
+
+// WherePublishedAt applies the entql time.Time predicate on the published_at field.
+func (f *MapDispatchUnitFilter) WherePublishedAt(p entql.TimeP) {
+	f.Where(p.Field(mapdispatchunit.FieldPublishedAt))
+}
+
+// WhereOperator applies the entql string predicate on the operator field.
+func (f *MapDispatchUnitFilter) WhereOperator(p entql.StringP) {
+	f.Where(p.Field(mapdispatchunit.FieldOperator))
+}
+
+// WhereFeedbackRef applies the entql string predicate on the feedback_ref field.
+func (f *MapDispatchUnitFilter) WhereFeedbackRef(p entql.StringP) {
+	f.Where(p.Field(mapdispatchunit.FieldFeedbackRef))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *MapPerformanceSnapshotQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MapPerformanceSnapshotQuery builder.
+func (_q *MapPerformanceSnapshotQuery) Filter() *MapPerformanceSnapshotFilter {
+	return &MapPerformanceSnapshotFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MapPerformanceSnapshotMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MapPerformanceSnapshotMutation builder.
+func (m *MapPerformanceSnapshotMutation) Filter() *MapPerformanceSnapshotFilter {
+	return &MapPerformanceSnapshotFilter{config: m.config, predicateAdder: m}
+}
+
+// MapPerformanceSnapshotFilter provides a generic filtering capability at runtime for MapPerformanceSnapshotQuery.
+type MapPerformanceSnapshotFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MapPerformanceSnapshotFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[25].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *MapPerformanceSnapshotFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(mapperformancesnapshot.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MapPerformanceSnapshotFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(mapperformancesnapshot.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MapPerformanceSnapshotFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(mapperformancesnapshot.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MapPerformanceSnapshotFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(mapperformancesnapshot.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *MapPerformanceSnapshotFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(mapperformancesnapshot.FieldCreateBy))
+}
+
+// WhereUpdateBy applies the entql uint32 predicate on the update_by field.
+func (f *MapPerformanceSnapshotFilter) WhereUpdateBy(p entql.Uint32P) {
+	f.Where(p.Field(mapperformancesnapshot.FieldUpdateBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *MapPerformanceSnapshotFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(mapperformancesnapshot.FieldTenantID))
+}
+
+// WhereSnapshotID applies the entql string predicate on the snapshot_id field.
+func (f *MapPerformanceSnapshotFilter) WhereSnapshotID(p entql.StringP) {
+	f.Where(p.Field(mapperformancesnapshot.FieldSnapshotID))
+}
+
+// WhereReceiptID applies the entql string predicate on the receipt_id field.
+func (f *MapPerformanceSnapshotFilter) WhereReceiptID(p entql.StringP) {
+	f.Where(p.Field(mapperformancesnapshot.FieldReceiptID))
+}
+
+// WhereDispatchUnitID applies the entql string predicate on the dispatch_unit_id field.
+func (f *MapPerformanceSnapshotFilter) WhereDispatchUnitID(p entql.StringP) {
+	f.Where(p.Field(mapperformancesnapshot.FieldDispatchUnitID))
+}
+
+// WhereVariantID applies the entql string predicate on the variant_id field.
+func (f *MapPerformanceSnapshotFilter) WhereVariantID(p entql.StringP) {
+	f.Where(p.Field(mapperformancesnapshot.FieldVariantID))
+}
+
+// WherePlatformKey applies the entql string predicate on the platform_key field.
+func (f *MapPerformanceSnapshotFilter) WherePlatformKey(p entql.StringP) {
+	f.Where(p.Field(mapperformancesnapshot.FieldPlatformKey))
+}
+
+// WhereViews applies the entql int64 predicate on the views field.
+func (f *MapPerformanceSnapshotFilter) WhereViews(p entql.Int64P) {
+	f.Where(p.Field(mapperformancesnapshot.FieldViews))
+}
+
+// WhereLikes applies the entql int64 predicate on the likes field.
+func (f *MapPerformanceSnapshotFilter) WhereLikes(p entql.Int64P) {
+	f.Where(p.Field(mapperformancesnapshot.FieldLikes))
+}
+
+// WhereComments applies the entql int64 predicate on the comments field.
+func (f *MapPerformanceSnapshotFilter) WhereComments(p entql.Int64P) {
+	f.Where(p.Field(mapperformancesnapshot.FieldComments))
+}
+
+// WhereShares applies the entql int64 predicate on the shares field.
+func (f *MapPerformanceSnapshotFilter) WhereShares(p entql.Int64P) {
+	f.Where(p.Field(mapperformancesnapshot.FieldShares))
+}
+
+// WhereFavorites applies the entql int64 predicate on the favorites field.
+func (f *MapPerformanceSnapshotFilter) WhereFavorites(p entql.Int64P) {
+	f.Where(p.Field(mapperformancesnapshot.FieldFavorites))
+}
+
+// WhereCompletionRate applies the entql float64 predicate on the completion_rate field.
+func (f *MapPerformanceSnapshotFilter) WhereCompletionRate(p entql.Float64P) {
+	f.Where(p.Field(mapperformancesnapshot.FieldCompletionRate))
+}
+
+// WhereFetchedAt applies the entql time.Time predicate on the fetched_at field.
+func (f *MapPerformanceSnapshotFilter) WhereFetchedAt(p entql.TimeP) {
+	f.Where(p.Field(mapperformancesnapshot.FieldFetchedAt))
+}
+
+// WhereCandidateID applies the entql string predicate on the candidate_id field.
+func (f *MapPerformanceSnapshotFilter) WhereCandidateID(p entql.StringP) {
+	f.Where(p.Field(mapperformancesnapshot.FieldCandidateID))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *MapPublishAccountQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MapPublishAccountQuery builder.
+func (_q *MapPublishAccountQuery) Filter() *MapPublishAccountFilter {
+	return &MapPublishAccountFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MapPublishAccountMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MapPublishAccountMutation builder.
+func (m *MapPublishAccountMutation) Filter() *MapPublishAccountFilter {
+	return &MapPublishAccountFilter{config: m.config, predicateAdder: m}
+}
+
+// MapPublishAccountFilter provides a generic filtering capability at runtime for MapPublishAccountQuery.
+type MapPublishAccountFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MapPublishAccountFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[26].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *MapPublishAccountFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(mappublishaccount.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MapPublishAccountFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(mappublishaccount.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MapPublishAccountFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(mappublishaccount.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MapPublishAccountFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(mappublishaccount.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *MapPublishAccountFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(mappublishaccount.FieldCreateBy))
+}
+
+// WhereUpdateBy applies the entql uint32 predicate on the update_by field.
+func (f *MapPublishAccountFilter) WhereUpdateBy(p entql.Uint32P) {
+	f.Where(p.Field(mappublishaccount.FieldUpdateBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *MapPublishAccountFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(mappublishaccount.FieldTenantID))
+}
+
+// WhereAccountID applies the entql string predicate on the account_id field.
+func (f *MapPublishAccountFilter) WhereAccountID(p entql.StringP) {
+	f.Where(p.Field(mappublishaccount.FieldAccountID))
+}
+
+// WhereChannelID applies the entql string predicate on the channel_id field.
+func (f *MapPublishAccountFilter) WhereChannelID(p entql.StringP) {
+	f.Where(p.Field(mappublishaccount.FieldChannelID))
+}
+
+// WhereDisplayName applies the entql string predicate on the display_name field.
+func (f *MapPublishAccountFilter) WhereDisplayName(p entql.StringP) {
+	f.Where(p.Field(mappublishaccount.FieldDisplayName))
+}
+
+// WhereCredentialRef applies the entql string predicate on the credential_ref field.
+func (f *MapPublishAccountFilter) WhereCredentialRef(p entql.StringP) {
+	f.Where(p.Field(mappublishaccount.FieldCredentialRef))
+}
+
+// WhereCredentialType applies the entql string predicate on the credential_type field.
+func (f *MapPublishAccountFilter) WhereCredentialType(p entql.StringP) {
+	f.Where(p.Field(mappublishaccount.FieldCredentialType))
+}
+
+// WhereEnabled applies the entql bool predicate on the enabled field.
+func (f *MapPublishAccountFilter) WhereEnabled(p entql.BoolP) {
+	f.Where(p.Field(mappublishaccount.FieldEnabled))
+}
+
+// WhereHealth applies the entql string predicate on the health field.
+func (f *MapPublishAccountFilter) WhereHealth(p entql.StringP) {
+	f.Where(p.Field(mappublishaccount.FieldHealth))
+}
+
+// WhereConsecutiveFailures applies the entql int predicate on the consecutive_failures field.
+func (f *MapPublishAccountFilter) WhereConsecutiveFailures(p entql.IntP) {
+	f.Where(p.Field(mappublishaccount.FieldConsecutiveFailures))
+}
+
+// WherePausedUntil applies the entql time.Time predicate on the paused_until field.
+func (f *MapPublishAccountFilter) WherePausedUntil(p entql.TimeP) {
+	f.Where(p.Field(mappublishaccount.FieldPausedUntil))
+}
+
+// WherePublished24h applies the entql int predicate on the published_24h field.
+func (f *MapPublishAccountFilter) WherePublished24h(p entql.IntP) {
+	f.Where(p.Field(mappublishaccount.FieldPublished24h))
+}
+
+// WhereLastPublishedAt applies the entql time.Time predicate on the last_published_at field.
+func (f *MapPublishAccountFilter) WhereLastPublishedAt(p entql.TimeP) {
+	f.Where(p.Field(mappublishaccount.FieldLastPublishedAt))
+}
+
+// WhereLastError applies the entql string predicate on the last_error field.
+func (f *MapPublishAccountFilter) WhereLastError(p entql.StringP) {
+	f.Where(p.Field(mappublishaccount.FieldLastError))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *MapPublishChannelQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MapPublishChannelQuery builder.
+func (_q *MapPublishChannelQuery) Filter() *MapPublishChannelFilter {
+	return &MapPublishChannelFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MapPublishChannelMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MapPublishChannelMutation builder.
+func (m *MapPublishChannelMutation) Filter() *MapPublishChannelFilter {
+	return &MapPublishChannelFilter{config: m.config, predicateAdder: m}
+}
+
+// MapPublishChannelFilter provides a generic filtering capability at runtime for MapPublishChannelQuery.
+type MapPublishChannelFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MapPublishChannelFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[27].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *MapPublishChannelFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(mappublishchannel.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MapPublishChannelFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(mappublishchannel.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MapPublishChannelFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(mappublishchannel.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MapPublishChannelFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(mappublishchannel.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *MapPublishChannelFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(mappublishchannel.FieldCreateBy))
+}
+
+// WhereUpdateBy applies the entql uint32 predicate on the update_by field.
+func (f *MapPublishChannelFilter) WhereUpdateBy(p entql.Uint32P) {
+	f.Where(p.Field(mappublishchannel.FieldUpdateBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *MapPublishChannelFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(mappublishchannel.FieldTenantID))
+}
+
+// WhereChannelID applies the entql string predicate on the channel_id field.
+func (f *MapPublishChannelFilter) WhereChannelID(p entql.StringP) {
+	f.Where(p.Field(mappublishchannel.FieldChannelID))
+}
+
+// WherePlatformKey applies the entql string predicate on the platform_key field.
+func (f *MapPublishChannelFilter) WherePlatformKey(p entql.StringP) {
+	f.Where(p.Field(mappublishchannel.FieldPlatformKey))
+}
+
+// WhereSlot applies the entql string predicate on the slot field.
+func (f *MapPublishChannelFilter) WhereSlot(p entql.StringP) {
+	f.Where(p.Field(mappublishchannel.FieldSlot))
+}
+
+// WhereRegion applies the entql string predicate on the region field.
+func (f *MapPublishChannelFilter) WhereRegion(p entql.StringP) {
+	f.Where(p.Field(mappublishchannel.FieldRegion))
+}
+
+// WhereEnabled applies the entql bool predicate on the enabled field.
+func (f *MapPublishChannelFilter) WhereEnabled(p entql.BoolP) {
+	f.Where(p.Field(mappublishchannel.FieldEnabled))
+}
+
+// WhereCapability applies the entql json.RawMessage predicate on the capability field.
+func (f *MapPublishChannelFilter) WhereCapability(p entql.BytesP) {
+	f.Where(p.Field(mappublishchannel.FieldCapability))
+}
+
+// WhereAdapterVersion applies the entql string predicate on the adapter_version field.
+func (f *MapPublishChannelFilter) WhereAdapterVersion(p entql.StringP) {
+	f.Where(p.Field(mappublishchannel.FieldAdapterVersion))
+}
+
+// WherePriority applies the entql int predicate on the priority field.
+func (f *MapPublishChannelFilter) WherePriority(p entql.IntP) {
+	f.Where(p.Field(mappublishchannel.FieldPriority))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *MapPublishReceiptQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MapPublishReceiptQuery builder.
+func (_q *MapPublishReceiptQuery) Filter() *MapPublishReceiptFilter {
+	return &MapPublishReceiptFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MapPublishReceiptMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MapPublishReceiptMutation builder.
+func (m *MapPublishReceiptMutation) Filter() *MapPublishReceiptFilter {
+	return &MapPublishReceiptFilter{config: m.config, predicateAdder: m}
+}
+
+// MapPublishReceiptFilter provides a generic filtering capability at runtime for MapPublishReceiptQuery.
+type MapPublishReceiptFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MapPublishReceiptFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[28].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *MapPublishReceiptFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(mappublishreceipt.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MapPublishReceiptFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(mappublishreceipt.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MapPublishReceiptFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(mappublishreceipt.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MapPublishReceiptFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(mappublishreceipt.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *MapPublishReceiptFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(mappublishreceipt.FieldCreateBy))
+}
+
+// WhereUpdateBy applies the entql uint32 predicate on the update_by field.
+func (f *MapPublishReceiptFilter) WhereUpdateBy(p entql.Uint32P) {
+	f.Where(p.Field(mappublishreceipt.FieldUpdateBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *MapPublishReceiptFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(mappublishreceipt.FieldTenantID))
+}
+
+// WhereReceiptID applies the entql string predicate on the receipt_id field.
+func (f *MapPublishReceiptFilter) WhereReceiptID(p entql.StringP) {
+	f.Where(p.Field(mappublishreceipt.FieldReceiptID))
+}
+
+// WhereDispatchUnitID applies the entql string predicate on the dispatch_unit_id field.
+func (f *MapPublishReceiptFilter) WhereDispatchUnitID(p entql.StringP) {
+	f.Where(p.Field(mappublishreceipt.FieldDispatchUnitID))
+}
+
+// WhereAccountID applies the entql string predicate on the account_id field.
+func (f *MapPublishReceiptFilter) WhereAccountID(p entql.StringP) {
+	f.Where(p.Field(mappublishreceipt.FieldAccountID))
+}
+
+// WherePlatformKey applies the entql string predicate on the platform_key field.
+func (f *MapPublishReceiptFilter) WherePlatformKey(p entql.StringP) {
+	f.Where(p.Field(mappublishreceipt.FieldPlatformKey))
+}
+
+// WherePostID applies the entql string predicate on the post_id field.
+func (f *MapPublishReceiptFilter) WherePostID(p entql.StringP) {
+	f.Where(p.Field(mappublishreceipt.FieldPostID))
+}
+
+// WherePostURL applies the entql string predicate on the post_url field.
+func (f *MapPublishReceiptFilter) WherePostURL(p entql.StringP) {
+	f.Where(p.Field(mappublishreceipt.FieldPostURL))
+}
+
+// WhereVisibility applies the entql string predicate on the visibility field.
+func (f *MapPublishReceiptFilter) WhereVisibility(p entql.StringP) {
+	f.Where(p.Field(mappublishreceipt.FieldVisibility))
+}
+
+// WherePublishedAt applies the entql time.Time predicate on the published_at field.
+func (f *MapPublishReceiptFilter) WherePublishedAt(p entql.TimeP) {
+	f.Where(p.Field(mappublishreceipt.FieldPublishedAt))
+}
+
+// WhereOperator applies the entql string predicate on the operator field.
+func (f *MapPublishReceiptFilter) WhereOperator(p entql.StringP) {
+	f.Where(p.Field(mappublishreceipt.FieldOperator))
+}
+
+// WhereRequestPayloadHash applies the entql string predicate on the request_payload_hash field.
+func (f *MapPublishReceiptFilter) WhereRequestPayloadHash(p entql.StringP) {
+	f.Where(p.Field(mappublishreceipt.FieldRequestPayloadHash))
+}
+
+// WhereResponseRawRef applies the entql string predicate on the response_raw_ref field.
+func (f *MapPublishReceiptFilter) WhereResponseRawRef(p entql.StringP) {
+	f.Where(p.Field(mappublishreceipt.FieldResponseRawRef))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (_q *MenuQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
@@ -2506,7 +5784,7 @@ type MenuFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *MenuFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[11].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[29].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2636,6 +5914,1431 @@ func (f *MenuFilter) WhereHasChildrenWith(preds ...predicate.Menu) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (_q *MiaEventCardQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MiaEventCardQuery builder.
+func (_q *MiaEventCardQuery) Filter() *MiaEventCardFilter {
+	return &MiaEventCardFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MiaEventCardMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MiaEventCardMutation builder.
+func (m *MiaEventCardMutation) Filter() *MiaEventCardFilter {
+	return &MiaEventCardFilter{config: m.config, predicateAdder: m}
+}
+
+// MiaEventCardFilter provides a generic filtering capability at runtime for MiaEventCardQuery.
+type MiaEventCardFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MiaEventCardFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[30].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *MiaEventCardFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(miaeventcard.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MiaEventCardFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(miaeventcard.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MiaEventCardFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(miaeventcard.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MiaEventCardFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(miaeventcard.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *MiaEventCardFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(miaeventcard.FieldCreateBy))
+}
+
+// WhereUpdateBy applies the entql uint32 predicate on the update_by field.
+func (f *MiaEventCardFilter) WhereUpdateBy(p entql.Uint32P) {
+	f.Where(p.Field(miaeventcard.FieldUpdateBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *MiaEventCardFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(miaeventcard.FieldTenantID))
+}
+
+// WhereEventID applies the entql string predicate on the event_id field.
+func (f *MiaEventCardFilter) WhereEventID(p entql.StringP) {
+	f.Where(p.Field(miaeventcard.FieldEventID))
+}
+
+// WhereTitle applies the entql string predicate on the title field.
+func (f *MiaEventCardFilter) WhereTitle(p entql.StringP) {
+	f.Where(p.Field(miaeventcard.FieldTitle))
+}
+
+// WhereSummary applies the entql string predicate on the summary field.
+func (f *MiaEventCardFilter) WhereSummary(p entql.StringP) {
+	f.Where(p.Field(miaeventcard.FieldSummary))
+}
+
+// WhereOccurredAt applies the entql time.Time predicate on the occurred_at field.
+func (f *MiaEventCardFilter) WhereOccurredAt(p entql.TimeP) {
+	f.Where(p.Field(miaeventcard.FieldOccurredAt))
+}
+
+// WhereTopicID applies the entql string predicate on the topic_id field.
+func (f *MiaEventCardFilter) WhereTopicID(p entql.StringP) {
+	f.Where(p.Field(miaeventcard.FieldTopicID))
+}
+
+// WhereSourceIntelIds applies the entql json.RawMessage predicate on the source_intel_ids field.
+func (f *MiaEventCardFilter) WhereSourceIntelIds(p entql.BytesP) {
+	f.Where(p.Field(miaeventcard.FieldSourceIntelIds))
+}
+
+// WhereSourceCount applies the entql int predicate on the source_count field.
+func (f *MiaEventCardFilter) WhereSourceCount(p entql.IntP) {
+	f.Where(p.Field(miaeventcard.FieldSourceCount))
+}
+
+// WhereDomains applies the entql json.RawMessage predicate on the domains field.
+func (f *MiaEventCardFilter) WhereDomains(p entql.BytesP) {
+	f.Where(p.Field(miaeventcard.FieldDomains))
+}
+
+// WhereEntities applies the entql json.RawMessage predicate on the entities field.
+func (f *MiaEventCardFilter) WhereEntities(p entql.BytesP) {
+	f.Where(p.Field(miaeventcard.FieldEntities))
+}
+
+// WhereCategory applies the entql string predicate on the category field.
+func (f *MiaEventCardFilter) WhereCategory(p entql.StringP) {
+	f.Where(p.Field(miaeventcard.FieldCategory))
+}
+
+// WhereLang applies the entql string predicate on the lang field.
+func (f *MiaEventCardFilter) WhereLang(p entql.StringP) {
+	f.Where(p.Field(miaeventcard.FieldLang))
+}
+
+// WhereMergedBy applies the entql string predicate on the merged_by field.
+func (f *MiaEventCardFilter) WhereMergedBy(p entql.StringP) {
+	f.Where(p.Field(miaeventcard.FieldMergedBy))
+}
+
+// WhereSplitLocked applies the entql bool predicate on the split_locked field.
+func (f *MiaEventCardFilter) WhereSplitLocked(p entql.BoolP) {
+	f.Where(p.Field(miaeventcard.FieldSplitLocked))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *MiaImpactCardQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MiaImpactCardQuery builder.
+func (_q *MiaImpactCardQuery) Filter() *MiaImpactCardFilter {
+	return &MiaImpactCardFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MiaImpactCardMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MiaImpactCardMutation builder.
+func (m *MiaImpactCardMutation) Filter() *MiaImpactCardFilter {
+	return &MiaImpactCardFilter{config: m.config, predicateAdder: m}
+}
+
+// MiaImpactCardFilter provides a generic filtering capability at runtime for MiaImpactCardQuery.
+type MiaImpactCardFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MiaImpactCardFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[31].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *MiaImpactCardFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(miaimpactcard.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MiaImpactCardFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(miaimpactcard.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MiaImpactCardFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(miaimpactcard.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MiaImpactCardFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(miaimpactcard.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *MiaImpactCardFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(miaimpactcard.FieldCreateBy))
+}
+
+// WhereUpdateBy applies the entql uint32 predicate on the update_by field.
+func (f *MiaImpactCardFilter) WhereUpdateBy(p entql.Uint32P) {
+	f.Where(p.Field(miaimpactcard.FieldUpdateBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *MiaImpactCardFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(miaimpactcard.FieldTenantID))
+}
+
+// WhereImpactID applies the entql string predicate on the impact_id field.
+func (f *MiaImpactCardFilter) WhereImpactID(p entql.StringP) {
+	f.Where(p.Field(miaimpactcard.FieldImpactID))
+}
+
+// WhereEventID applies the entql string predicate on the event_id field.
+func (f *MiaImpactCardFilter) WhereEventID(p entql.StringP) {
+	f.Where(p.Field(miaimpactcard.FieldEventID))
+}
+
+// WhereTopicID applies the entql string predicate on the topic_id field.
+func (f *MiaImpactCardFilter) WhereTopicID(p entql.StringP) {
+	f.Where(p.Field(miaimpactcard.FieldTopicID))
+}
+
+// WhereTitle applies the entql string predicate on the title field.
+func (f *MiaImpactCardFilter) WhereTitle(p entql.StringP) {
+	f.Where(p.Field(miaimpactcard.FieldTitle))
+}
+
+// WhereSummary applies the entql string predicate on the summary field.
+func (f *MiaImpactCardFilter) WhereSummary(p entql.StringP) {
+	f.Where(p.Field(miaimpactcard.FieldSummary))
+}
+
+// WhereLang applies the entql string predicate on the lang field.
+func (f *MiaImpactCardFilter) WhereLang(p entql.StringP) {
+	f.Where(p.Field(miaimpactcard.FieldLang))
+}
+
+// WhereSentimentLabel applies the entql string predicate on the sentiment_label field.
+func (f *MiaImpactCardFilter) WhereSentimentLabel(p entql.StringP) {
+	f.Where(p.Field(miaimpactcard.FieldSentimentLabel))
+}
+
+// WhereSentimentScore applies the entql float64 predicate on the sentiment_score field.
+func (f *MiaImpactCardFilter) WhereSentimentScore(p entql.Float64P) {
+	f.Where(p.Field(miaimpactcard.FieldSentimentScore))
+}
+
+// WhereSentimentEngine applies the entql string predicate on the sentiment_engine field.
+func (f *MiaImpactCardFilter) WhereSentimentEngine(p entql.StringP) {
+	f.Where(p.Field(miaimpactcard.FieldSentimentEngine))
+}
+
+// WhereImpactScore applies the entql float64 predicate on the impact_score field.
+func (f *MiaImpactCardFilter) WhereImpactScore(p entql.Float64P) {
+	f.Where(p.Field(miaimpactcard.FieldImpactScore))
+}
+
+// WhereDirection applies the entql string predicate on the direction field.
+func (f *MiaImpactCardFilter) WhereDirection(p entql.StringP) {
+	f.Where(p.Field(miaimpactcard.FieldDirection))
+}
+
+// WhereTTLHours applies the entql int predicate on the ttl_hours field.
+func (f *MiaImpactCardFilter) WhereTTLHours(p entql.IntP) {
+	f.Where(p.Field(miaimpactcard.FieldTTLHours))
+}
+
+// WhereExpiresAt applies the entql time.Time predicate on the expires_at field.
+func (f *MiaImpactCardFilter) WhereExpiresAt(p entql.TimeP) {
+	f.Where(p.Field(miaimpactcard.FieldExpiresAt))
+}
+
+// WhereFactors applies the entql json.RawMessage predicate on the factors field.
+func (f *MiaImpactCardFilter) WhereFactors(p entql.BytesP) {
+	f.Where(p.Field(miaimpactcard.FieldFactors))
+}
+
+// WhereAffected applies the entql json.RawMessage predicate on the affected field.
+func (f *MiaImpactCardFilter) WhereAffected(p entql.BytesP) {
+	f.Where(p.Field(miaimpactcard.FieldAffected))
+}
+
+// WhereNoMapping applies the entql bool predicate on the no_mapping field.
+func (f *MiaImpactCardFilter) WhereNoMapping(p entql.BoolP) {
+	f.Where(p.Field(miaimpactcard.FieldNoMapping))
+}
+
+// WhereDisclaimer applies the entql string predicate on the disclaimer field.
+func (f *MiaImpactCardFilter) WhereDisclaimer(p entql.StringP) {
+	f.Where(p.Field(miaimpactcard.FieldDisclaimer))
+}
+
+// WhereRuleVersion applies the entql string predicate on the rule_version field.
+func (f *MiaImpactCardFilter) WhereRuleVersion(p entql.StringP) {
+	f.Where(p.Field(miaimpactcard.FieldRuleVersion))
+}
+
+// WhereWeightsSnapshot applies the entql json.RawMessage predicate on the weights_snapshot field.
+func (f *MiaImpactCardFilter) WhereWeightsSnapshot(p entql.BytesP) {
+	f.Where(p.Field(miaimpactcard.FieldWeightsSnapshot))
+}
+
+// WhereVerified applies the entql json.RawMessage predicate on the verified field.
+func (f *MiaImpactCardFilter) WhereVerified(p entql.BytesP) {
+	f.Where(p.Field(miaimpactcard.FieldVerified))
+}
+
+// WhereOccurredAt applies the entql time.Time predicate on the occurred_at field.
+func (f *MiaImpactCardFilter) WhereOccurredAt(p entql.TimeP) {
+	f.Where(p.Field(miaimpactcard.FieldOccurredAt))
+}
+
+// WherePushed applies the entql bool predicate on the pushed field.
+func (f *MiaImpactCardFilter) WherePushed(p entql.BoolP) {
+	f.Where(p.Field(miaimpactcard.FieldPushed))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *MiaQuoteCacheQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MiaQuoteCacheQuery builder.
+func (_q *MiaQuoteCacheQuery) Filter() *MiaQuoteCacheFilter {
+	return &MiaQuoteCacheFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MiaQuoteCacheMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MiaQuoteCacheMutation builder.
+func (m *MiaQuoteCacheMutation) Filter() *MiaQuoteCacheFilter {
+	return &MiaQuoteCacheFilter{config: m.config, predicateAdder: m}
+}
+
+// MiaQuoteCacheFilter provides a generic filtering capability at runtime for MiaQuoteCacheQuery.
+type MiaQuoteCacheFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MiaQuoteCacheFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[32].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *MiaQuoteCacheFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(miaquotecache.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MiaQuoteCacheFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(miaquotecache.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MiaQuoteCacheFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(miaquotecache.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MiaQuoteCacheFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(miaquotecache.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *MiaQuoteCacheFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(miaquotecache.FieldCreateBy))
+}
+
+// WhereUpdateBy applies the entql uint32 predicate on the update_by field.
+func (f *MiaQuoteCacheFilter) WhereUpdateBy(p entql.Uint32P) {
+	f.Where(p.Field(miaquotecache.FieldUpdateBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *MiaQuoteCacheFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(miaquotecache.FieldTenantID))
+}
+
+// WhereSymbol applies the entql string predicate on the symbol field.
+func (f *MiaQuoteCacheFilter) WhereSymbol(p entql.StringP) {
+	f.Where(p.Field(miaquotecache.FieldSymbol))
+}
+
+// WhereProvider applies the entql string predicate on the provider field.
+func (f *MiaQuoteCacheFilter) WhereProvider(p entql.StringP) {
+	f.Where(p.Field(miaquotecache.FieldProvider))
+}
+
+// WhereOhlcv applies the entql json.RawMessage predicate on the ohlcv field.
+func (f *MiaQuoteCacheFilter) WhereOhlcv(p entql.BytesP) {
+	f.Where(p.Field(miaquotecache.FieldOhlcv))
+}
+
+// WhereFetchedAt applies the entql time.Time predicate on the fetched_at field.
+func (f *MiaQuoteCacheFilter) WhereFetchedAt(p entql.TimeP) {
+	f.Where(p.Field(miaquotecache.FieldFetchedAt))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *MiaTransmissionRuleQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MiaTransmissionRuleQuery builder.
+func (_q *MiaTransmissionRuleQuery) Filter() *MiaTransmissionRuleFilter {
+	return &MiaTransmissionRuleFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MiaTransmissionRuleMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MiaTransmissionRuleMutation builder.
+func (m *MiaTransmissionRuleMutation) Filter() *MiaTransmissionRuleFilter {
+	return &MiaTransmissionRuleFilter{config: m.config, predicateAdder: m}
+}
+
+// MiaTransmissionRuleFilter provides a generic filtering capability at runtime for MiaTransmissionRuleQuery.
+type MiaTransmissionRuleFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MiaTransmissionRuleFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[33].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *MiaTransmissionRuleFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(miatransmissionrule.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MiaTransmissionRuleFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(miatransmissionrule.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MiaTransmissionRuleFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(miatransmissionrule.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MiaTransmissionRuleFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(miatransmissionrule.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *MiaTransmissionRuleFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(miatransmissionrule.FieldCreateBy))
+}
+
+// WhereUpdateBy applies the entql uint32 predicate on the update_by field.
+func (f *MiaTransmissionRuleFilter) WhereUpdateBy(p entql.Uint32P) {
+	f.Where(p.Field(miatransmissionrule.FieldUpdateBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *MiaTransmissionRuleFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(miatransmissionrule.FieldTenantID))
+}
+
+// WhereRuleID applies the entql string predicate on the rule_id field.
+func (f *MiaTransmissionRuleFilter) WhereRuleID(p entql.StringP) {
+	f.Where(p.Field(miatransmissionrule.FieldRuleID))
+}
+
+// WhereTrigger applies the entql json.RawMessage predicate on the trigger field.
+func (f *MiaTransmissionRuleFilter) WhereTrigger(p entql.BytesP) {
+	f.Where(p.Field(miatransmissionrule.FieldTrigger))
+}
+
+// WhereFromAsset applies the entql string predicate on the from_asset field.
+func (f *MiaTransmissionRuleFilter) WhereFromAsset(p entql.StringP) {
+	f.Where(p.Field(miatransmissionrule.FieldFromAsset))
+}
+
+// WhereToAsset applies the entql string predicate on the to_asset field.
+func (f *MiaTransmissionRuleFilter) WhereToAsset(p entql.StringP) {
+	f.Where(p.Field(miatransmissionrule.FieldToAsset))
+}
+
+// WhereToDirection applies the entql string predicate on the to_direction field.
+func (f *MiaTransmissionRuleFilter) WhereToDirection(p entql.StringP) {
+	f.Where(p.Field(miatransmissionrule.FieldToDirection))
+}
+
+// WhereConfidence applies the entql float64 predicate on the confidence field.
+func (f *MiaTransmissionRuleFilter) WhereConfidence(p entql.Float64P) {
+	f.Where(p.Field(miatransmissionrule.FieldConfidence))
+}
+
+// WhereNote applies the entql string predicate on the note field.
+func (f *MiaTransmissionRuleFilter) WhereNote(p entql.StringP) {
+	f.Where(p.Field(miatransmissionrule.FieldNote))
+}
+
+// WhereEnabled applies the entql bool predicate on the enabled field.
+func (f *MiaTransmissionRuleFilter) WhereEnabled(p entql.BoolP) {
+	f.Where(p.Field(miatransmissionrule.FieldEnabled))
+}
+
+// WhereHitCount applies the entql int predicate on the hit_count field.
+func (f *MiaTransmissionRuleFilter) WhereHitCount(p entql.IntP) {
+	f.Where(p.Field(miatransmissionrule.FieldHitCount))
+}
+
+// WhereCorrectCount applies the entql int predicate on the correct_count field.
+func (f *MiaTransmissionRuleFilter) WhereCorrectCount(p entql.IntP) {
+	f.Where(p.Field(miatransmissionrule.FieldCorrectCount))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *MmeAnalysisCacheQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MmeAnalysisCacheQuery builder.
+func (_q *MmeAnalysisCacheQuery) Filter() *MmeAnalysisCacheFilter {
+	return &MmeAnalysisCacheFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MmeAnalysisCacheMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MmeAnalysisCacheMutation builder.
+func (m *MmeAnalysisCacheMutation) Filter() *MmeAnalysisCacheFilter {
+	return &MmeAnalysisCacheFilter{config: m.config, predicateAdder: m}
+}
+
+// MmeAnalysisCacheFilter provides a generic filtering capability at runtime for MmeAnalysisCacheQuery.
+type MmeAnalysisCacheFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MmeAnalysisCacheFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[34].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *MmeAnalysisCacheFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(mmeanalysiscache.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MmeAnalysisCacheFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(mmeanalysiscache.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MmeAnalysisCacheFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(mmeanalysiscache.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MmeAnalysisCacheFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(mmeanalysiscache.FieldDeleteTime))
+}
+
+// WhereCacheKey applies the entql string predicate on the cache_key field.
+func (f *MmeAnalysisCacheFilter) WhereCacheKey(p entql.StringP) {
+	f.Where(p.Field(mmeanalysiscache.FieldCacheKey))
+}
+
+// WhereKind applies the entql string predicate on the kind field.
+func (f *MmeAnalysisCacheFilter) WhereKind(p entql.StringP) {
+	f.Where(p.Field(mmeanalysiscache.FieldKind))
+}
+
+// WhereAssetID applies the entql string predicate on the asset_id field.
+func (f *MmeAnalysisCacheFilter) WhereAssetID(p entql.StringP) {
+	f.Where(p.Field(mmeanalysiscache.FieldAssetID))
+}
+
+// WherePayloadPath applies the entql string predicate on the payload_path field.
+func (f *MmeAnalysisCacheFilter) WherePayloadPath(p entql.StringP) {
+	f.Where(p.Field(mmeanalysiscache.FieldPayloadPath))
+}
+
+// WherePayloadMeta applies the entql json.RawMessage predicate on the payload_meta field.
+func (f *MmeAnalysisCacheFilter) WherePayloadMeta(p entql.BytesP) {
+	f.Where(p.Field(mmeanalysiscache.FieldPayloadMeta))
+}
+
+// WhereEngine applies the entql string predicate on the engine field.
+func (f *MmeAnalysisCacheFilter) WhereEngine(p entql.StringP) {
+	f.Where(p.Field(mmeanalysiscache.FieldEngine))
+}
+
+// WhereEngineVersion applies the entql string predicate on the engine_version field.
+func (f *MmeAnalysisCacheFilter) WhereEngineVersion(p entql.StringP) {
+	f.Where(p.Field(mmeanalysiscache.FieldEngineVersion))
+}
+
+// WherePromptVersion applies the entql string predicate on the prompt_version field.
+func (f *MmeAnalysisCacheFilter) WherePromptVersion(p entql.StringP) {
+	f.Where(p.Field(mmeanalysiscache.FieldPromptVersion))
+}
+
+// WhereHitCount applies the entql int64 predicate on the hit_count field.
+func (f *MmeAnalysisCacheFilter) WhereHitCount(p entql.Int64P) {
+	f.Where(p.Field(mmeanalysiscache.FieldHitCount))
+}
+
+// WhereSizeBytes applies the entql int64 predicate on the size_bytes field.
+func (f *MmeAnalysisCacheFilter) WhereSizeBytes(p entql.Int64P) {
+	f.Where(p.Field(mmeanalysiscache.FieldSizeBytes))
+}
+
+// WhereExpiresAt applies the entql time.Time predicate on the expires_at field.
+func (f *MmeAnalysisCacheFilter) WhereExpiresAt(p entql.TimeP) {
+	f.Where(p.Field(mmeanalysiscache.FieldExpiresAt))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *MmeAssetQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MmeAssetQuery builder.
+func (_q *MmeAssetQuery) Filter() *MmeAssetFilter {
+	return &MmeAssetFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MmeAssetMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MmeAssetMutation builder.
+func (m *MmeAssetMutation) Filter() *MmeAssetFilter {
+	return &MmeAssetFilter{config: m.config, predicateAdder: m}
+}
+
+// MmeAssetFilter provides a generic filtering capability at runtime for MmeAssetQuery.
+type MmeAssetFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MmeAssetFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[35].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *MmeAssetFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(mmeasset.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MmeAssetFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(mmeasset.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MmeAssetFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(mmeasset.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MmeAssetFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(mmeasset.FieldDeleteTime))
+}
+
+// WhereFingerprint applies the entql string predicate on the fingerprint field.
+func (f *MmeAssetFilter) WhereFingerprint(p entql.StringP) {
+	f.Where(p.Field(mmeasset.FieldFingerprint))
+}
+
+// WhereSourceURL applies the entql string predicate on the source_url field.
+func (f *MmeAssetFilter) WhereSourceURL(p entql.StringP) {
+	f.Where(p.Field(mmeasset.FieldSourceURL))
+}
+
+// WhereLocalPath applies the entql string predicate on the local_path field.
+func (f *MmeAssetFilter) WhereLocalPath(p entql.StringP) {
+	f.Where(p.Field(mmeasset.FieldLocalPath))
+}
+
+// WhereDurationSec applies the entql float64 predicate on the duration_sec field.
+func (f *MmeAssetFilter) WhereDurationSec(p entql.Float64P) {
+	f.Where(p.Field(mmeasset.FieldDurationSec))
+}
+
+// WhereWidth applies the entql int32 predicate on the width field.
+func (f *MmeAssetFilter) WhereWidth(p entql.Int32P) {
+	f.Where(p.Field(mmeasset.FieldWidth))
+}
+
+// WhereHeight applies the entql int32 predicate on the height field.
+func (f *MmeAssetFilter) WhereHeight(p entql.Int32P) {
+	f.Where(p.Field(mmeasset.FieldHeight))
+}
+
+// WhereSizeBytes applies the entql int64 predicate on the size_bytes field.
+func (f *MmeAssetFilter) WhereSizeBytes(p entql.Int64P) {
+	f.Where(p.Field(mmeasset.FieldSizeBytes))
+}
+
+// WhereRefCount applies the entql int32 predicate on the ref_count field.
+func (f *MmeAssetFilter) WhereRefCount(p entql.Int32P) {
+	f.Where(p.Field(mmeasset.FieldRefCount))
+}
+
+// WhereMetaTitle applies the entql string predicate on the meta_title field.
+func (f *MmeAssetFilter) WhereMetaTitle(p entql.StringP) {
+	f.Where(p.Field(mmeasset.FieldMetaTitle))
+}
+
+// WhereSubtitlePath applies the entql string predicate on the subtitle_path field.
+func (f *MmeAssetFilter) WhereSubtitlePath(p entql.StringP) {
+	f.Where(p.Field(mmeasset.FieldSubtitlePath))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *MmeMontageTaskQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MmeMontageTaskQuery builder.
+func (_q *MmeMontageTaskQuery) Filter() *MmeMontageTaskFilter {
+	return &MmeMontageTaskFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MmeMontageTaskMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MmeMontageTaskMutation builder.
+func (m *MmeMontageTaskMutation) Filter() *MmeMontageTaskFilter {
+	return &MmeMontageTaskFilter{config: m.config, predicateAdder: m}
+}
+
+// MmeMontageTaskFilter provides a generic filtering capability at runtime for MmeMontageTaskQuery.
+type MmeMontageTaskFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MmeMontageTaskFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[36].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *MmeMontageTaskFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(mmemontagetask.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MmeMontageTaskFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(mmemontagetask.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MmeMontageTaskFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(mmemontagetask.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MmeMontageTaskFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(mmemontagetask.FieldDeleteTime))
+}
+
+// WhereTitle applies the entql string predicate on the title field.
+func (f *MmeMontageTaskFilter) WhereTitle(p entql.StringP) {
+	f.Where(p.Field(mmemontagetask.FieldTitle))
+}
+
+// WhereSourceType applies the entql string predicate on the source_type field.
+func (f *MmeMontageTaskFilter) WhereSourceType(p entql.StringP) {
+	f.Where(p.Field(mmemontagetask.FieldSourceType))
+}
+
+// WhereSourceRef applies the entql string predicate on the source_ref field.
+func (f *MmeMontageTaskFilter) WhereSourceRef(p entql.StringP) {
+	f.Where(p.Field(mmemontagetask.FieldSourceRef))
+}
+
+// WhereCandidateID applies the entql string predicate on the candidate_id field.
+func (f *MmeMontageTaskFilter) WhereCandidateID(p entql.StringP) {
+	f.Where(p.Field(mmemontagetask.FieldCandidateID))
+}
+
+// WhereIntelID applies the entql string predicate on the intel_id field.
+func (f *MmeMontageTaskFilter) WhereIntelID(p entql.StringP) {
+	f.Where(p.Field(mmemontagetask.FieldIntelID))
+}
+
+// WhereAssetID applies the entql string predicate on the asset_id field.
+func (f *MmeMontageTaskFilter) WhereAssetID(p entql.StringP) {
+	f.Where(p.Field(mmemontagetask.FieldAssetID))
+}
+
+// WhereUserIntent applies the entql string predicate on the user_intent field.
+func (f *MmeMontageTaskFilter) WhereUserIntent(p entql.StringP) {
+	f.Where(p.Field(mmemontagetask.FieldUserIntent))
+}
+
+// WhereState applies the entql string predicate on the state field.
+func (f *MmeMontageTaskFilter) WhereState(p entql.StringP) {
+	f.Where(p.Field(mmemontagetask.FieldState))
+}
+
+// WherePromptVersion applies the entql string predicate on the prompt_version field.
+func (f *MmeMontageTaskFilter) WherePromptVersion(p entql.StringP) {
+	f.Where(p.Field(mmemontagetask.FieldPromptVersion))
+}
+
+// WhereAsrEngine applies the entql string predicate on the asr_engine field.
+func (f *MmeMontageTaskFilter) WhereAsrEngine(p entql.StringP) {
+	f.Where(p.Field(mmemontagetask.FieldAsrEngine))
+}
+
+// WhereErrorMsg applies the entql string predicate on the error_msg field.
+func (f *MmeMontageTaskFilter) WhereErrorMsg(p entql.StringP) {
+	f.Where(p.Field(mmemontagetask.FieldErrorMsg))
+}
+
+// WhereHighlights applies the entql json.RawMessage predicate on the highlights field.
+func (f *MmeMontageTaskFilter) WhereHighlights(p entql.BytesP) {
+	f.Where(p.Field(mmemontagetask.FieldHighlights))
+}
+
+// WhereProgress applies the entql float64 predicate on the progress field.
+func (f *MmeMontageTaskFilter) WhereProgress(p entql.Float64P) {
+	f.Where(p.Field(mmemontagetask.FieldProgress))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *MmeRenderJobQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MmeRenderJobQuery builder.
+func (_q *MmeRenderJobQuery) Filter() *MmeRenderJobFilter {
+	return &MmeRenderJobFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MmeRenderJobMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MmeRenderJobMutation builder.
+func (m *MmeRenderJobMutation) Filter() *MmeRenderJobFilter {
+	return &MmeRenderJobFilter{config: m.config, predicateAdder: m}
+}
+
+// MmeRenderJobFilter provides a generic filtering capability at runtime for MmeRenderJobQuery.
+type MmeRenderJobFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MmeRenderJobFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[37].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *MmeRenderJobFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(mmerenderjob.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MmeRenderJobFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(mmerenderjob.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MmeRenderJobFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(mmerenderjob.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MmeRenderJobFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(mmerenderjob.FieldDeleteTime))
+}
+
+// WhereVariantID applies the entql string predicate on the variant_id field.
+func (f *MmeRenderJobFilter) WhereVariantID(p entql.StringP) {
+	f.Where(p.Field(mmerenderjob.FieldVariantID))
+}
+
+// WhereState applies the entql string predicate on the state field.
+func (f *MmeRenderJobFilter) WhereState(p entql.StringP) {
+	f.Where(p.Field(mmerenderjob.FieldState))
+}
+
+// WhereProgress applies the entql float64 predicate on the progress field.
+func (f *MmeRenderJobFilter) WhereProgress(p entql.Float64P) {
+	f.Where(p.Field(mmerenderjob.FieldProgress))
+}
+
+// WhereStartedAt applies the entql time.Time predicate on the started_at field.
+func (f *MmeRenderJobFilter) WhereStartedAt(p entql.TimeP) {
+	f.Where(p.Field(mmerenderjob.FieldStartedAt))
+}
+
+// WhereFinishedAt applies the entql time.Time predicate on the finished_at field.
+func (f *MmeRenderJobFilter) WhereFinishedAt(p entql.TimeP) {
+	f.Where(p.Field(mmerenderjob.FieldFinishedAt))
+}
+
+// WhereWorkerID applies the entql string predicate on the worker_id field.
+func (f *MmeRenderJobFilter) WhereWorkerID(p entql.StringP) {
+	f.Where(p.Field(mmerenderjob.FieldWorkerID))
+}
+
+// WhereErrorCode applies the entql string predicate on the error_code field.
+func (f *MmeRenderJobFilter) WhereErrorCode(p entql.StringP) {
+	f.Where(p.Field(mmerenderjob.FieldErrorCode))
+}
+
+// WhereErrorMsg applies the entql string predicate on the error_msg field.
+func (f *MmeRenderJobFilter) WhereErrorMsg(p entql.StringP) {
+	f.Where(p.Field(mmerenderjob.FieldErrorMsg))
+}
+
+// WhereIntermediatePath applies the entql string predicate on the intermediate_path field.
+func (f *MmeRenderJobFilter) WhereIntermediatePath(p entql.StringP) {
+	f.Where(p.Field(mmerenderjob.FieldIntermediatePath))
+}
+
+// WhereAttempt applies the entql int32 predicate on the attempt field.
+func (f *MmeRenderJobFilter) WhereAttempt(p entql.Int32P) {
+	f.Where(p.Field(mmerenderjob.FieldAttempt))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *MmeTemplateQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MmeTemplateQuery builder.
+func (_q *MmeTemplateQuery) Filter() *MmeTemplateFilter {
+	return &MmeTemplateFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MmeTemplateMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MmeTemplateMutation builder.
+func (m *MmeTemplateMutation) Filter() *MmeTemplateFilter {
+	return &MmeTemplateFilter{config: m.config, predicateAdder: m}
+}
+
+// MmeTemplateFilter provides a generic filtering capability at runtime for MmeTemplateQuery.
+type MmeTemplateFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MmeTemplateFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[38].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *MmeTemplateFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(mmetemplate.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MmeTemplateFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(mmetemplate.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MmeTemplateFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(mmetemplate.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MmeTemplateFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(mmetemplate.FieldDeleteTime))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *MmeTemplateFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(mmetemplate.FieldName))
+}
+
+// WhereIntroPath applies the entql string predicate on the intro_path field.
+func (f *MmeTemplateFilter) WhereIntroPath(p entql.StringP) {
+	f.Where(p.Field(mmetemplate.FieldIntroPath))
+}
+
+// WhereOutroPath applies the entql string predicate on the outro_path field.
+func (f *MmeTemplateFilter) WhereOutroPath(p entql.StringP) {
+	f.Where(p.Field(mmetemplate.FieldOutroPath))
+}
+
+// WhereTransition applies the entql string predicate on the transition field.
+func (f *MmeTemplateFilter) WhereTransition(p entql.StringP) {
+	f.Where(p.Field(mmetemplate.FieldTransition))
+}
+
+// WhereCaptionSkin applies the entql json.RawMessage predicate on the caption_skin field.
+func (f *MmeTemplateFilter) WhereCaptionSkin(p entql.BytesP) {
+	f.Where(p.Field(mmetemplate.FieldCaptionSkin))
+}
+
+// WhereEnabled applies the entql bool predicate on the enabled field.
+func (f *MmeTemplateFilter) WhereEnabled(p entql.BoolP) {
+	f.Where(p.Field(mmetemplate.FieldEnabled))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *MmeVariantQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MmeVariantQuery builder.
+func (_q *MmeVariantQuery) Filter() *MmeVariantFilter {
+	return &MmeVariantFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MmeVariantMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MmeVariantMutation builder.
+func (m *MmeVariantMutation) Filter() *MmeVariantFilter {
+	return &MmeVariantFilter{config: m.config, predicateAdder: m}
+}
+
+// MmeVariantFilter provides a generic filtering capability at runtime for MmeVariantQuery.
+type MmeVariantFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MmeVariantFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[39].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *MmeVariantFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(mmevariant.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MmeVariantFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(mmevariant.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MmeVariantFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(mmevariant.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MmeVariantFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(mmevariant.FieldDeleteTime))
+}
+
+// WhereSetID applies the entql string predicate on the set_id field.
+func (f *MmeVariantFilter) WhereSetID(p entql.StringP) {
+	f.Where(p.Field(mmevariant.FieldSetID))
+}
+
+// WhereContentVersion applies the entql string predicate on the content_version field.
+func (f *MmeVariantFilter) WhereContentVersion(p entql.StringP) {
+	f.Where(p.Field(mmevariant.FieldContentVersion))
+}
+
+// WhereAspect applies the entql string predicate on the aspect field.
+func (f *MmeVariantFilter) WhereAspect(p entql.StringP) {
+	f.Where(p.Field(mmevariant.FieldAspect))
+}
+
+// WhereHookID applies the entql string predicate on the hook_id field.
+func (f *MmeVariantFilter) WhereHookID(p entql.StringP) {
+	f.Where(p.Field(mmevariant.FieldHookID))
+}
+
+// WhereCoverID applies the entql string predicate on the cover_id field.
+func (f *MmeVariantFilter) WhereCoverID(p entql.StringP) {
+	f.Where(p.Field(mmevariant.FieldCoverID))
+}
+
+// WhereEdlRef applies the entql string predicate on the edl_ref field.
+func (f *MmeVariantFilter) WhereEdlRef(p entql.StringP) {
+	f.Where(p.Field(mmevariant.FieldEdlRef))
+}
+
+// WhereDurationSec applies the entql float64 predicate on the duration_sec field.
+func (f *MmeVariantFilter) WhereDurationSec(p entql.Float64P) {
+	f.Where(p.Field(mmevariant.FieldDurationSec))
+}
+
+// WhereVideoPath applies the entql string predicate on the video_path field.
+func (f *MmeVariantFilter) WhereVideoPath(p entql.StringP) {
+	f.Where(p.Field(mmevariant.FieldVideoPath))
+}
+
+// WhereCoverPath applies the entql string predicate on the cover_path field.
+func (f *MmeVariantFilter) WhereCoverPath(p entql.StringP) {
+	f.Where(p.Field(mmevariant.FieldCoverPath))
+}
+
+// WhereCaptionStyle applies the entql string predicate on the caption_style field.
+func (f *MmeVariantFilter) WhereCaptionStyle(p entql.StringP) {
+	f.Where(p.Field(mmevariant.FieldCaptionStyle))
+}
+
+// WhereSrtPath applies the entql string predicate on the srt_path field.
+func (f *MmeVariantFilter) WhereSrtPath(p entql.StringP) {
+	f.Where(p.Field(mmevariant.FieldSrtPath))
+}
+
+// WhereCopyJSON applies the entql json.RawMessage predicate on the copy_json field.
+func (f *MmeVariantFilter) WhereCopyJSON(p entql.BytesP) {
+	f.Where(p.Field(mmevariant.FieldCopyJSON))
+}
+
+// WhereCopyDegraded applies the entql bool predicate on the copy_degraded field.
+func (f *MmeVariantFilter) WhereCopyDegraded(p entql.BoolP) {
+	f.Where(p.Field(mmevariant.FieldCopyDegraded))
+}
+
+// WhereManifestPath applies the entql string predicate on the manifest_path field.
+func (f *MmeVariantFilter) WhereManifestPath(p entql.StringP) {
+	f.Where(p.Field(mmevariant.FieldManifestPath))
+}
+
+// WhereQcBoundaryOk applies the entql bool predicate on the qc_boundary_ok field.
+func (f *MmeVariantFilter) WhereQcBoundaryOk(p entql.BoolP) {
+	f.Where(p.Field(mmevariant.FieldQcBoundaryOk))
+}
+
+// WhereQcSubtitleOk applies the entql bool predicate on the qc_subtitle_ok field.
+func (f *MmeVariantFilter) WhereQcSubtitleOk(p entql.BoolP) {
+	f.Where(p.Field(mmevariant.FieldQcSubtitleOk))
+}
+
+// WhereQcScore applies the entql float64 predicate on the qc_score field.
+func (f *MmeVariantFilter) WhereQcScore(p entql.Float64P) {
+	f.Where(p.Field(mmevariant.FieldQcScore))
+}
+
+// WhereRenderState applies the entql string predicate on the render_state field.
+func (f *MmeVariantFilter) WhereRenderState(p entql.StringP) {
+	f.Where(p.Field(mmevariant.FieldRenderState))
+}
+
+// WhereRenderError applies the entql string predicate on the render_error field.
+func (f *MmeVariantFilter) WhereRenderError(p entql.StringP) {
+	f.Where(p.Field(mmevariant.FieldRenderError))
+}
+
+// WhereSelected applies the entql bool predicate on the selected field.
+func (f *MmeVariantFilter) WhereSelected(p entql.BoolP) {
+	f.Where(p.Field(mmevariant.FieldSelected))
+}
+
+// WhereReviewState applies the entql string predicate on the review_state field.
+func (f *MmeVariantFilter) WhereReviewState(p entql.StringP) {
+	f.Where(p.Field(mmevariant.FieldReviewState))
+}
+
+// WhereReviewReason applies the entql string predicate on the review_reason field.
+func (f *MmeVariantFilter) WhereReviewReason(p entql.StringP) {
+	f.Where(p.Field(mmevariant.FieldReviewReason))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *MmeVariantSetQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MmeVariantSetQuery builder.
+func (_q *MmeVariantSetQuery) Filter() *MmeVariantSetFilter {
+	return &MmeVariantSetFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MmeVariantSetMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MmeVariantSetMutation builder.
+func (m *MmeVariantSetMutation) Filter() *MmeVariantSetFilter {
+	return &MmeVariantSetFilter{config: m.config, predicateAdder: m}
+}
+
+// MmeVariantSetFilter provides a generic filtering capability at runtime for MmeVariantSetQuery.
+type MmeVariantSetFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MmeVariantSetFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[40].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql string predicate on the id field.
+func (f *MmeVariantSetFilter) WhereID(p entql.StringP) {
+	f.Where(p.Field(mmevariantset.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MmeVariantSetFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(mmevariantset.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MmeVariantSetFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(mmevariantset.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *MmeVariantSetFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(mmevariantset.FieldDeleteTime))
+}
+
+// WhereTaskID applies the entql string predicate on the task_id field.
+func (f *MmeVariantSetFilter) WhereTaskID(p entql.StringP) {
+	f.Where(p.Field(mmevariantset.FieldTaskID))
+}
+
+// WhereCandidateID applies the entql string predicate on the candidate_id field.
+func (f *MmeVariantSetFilter) WhereCandidateID(p entql.StringP) {
+	f.Where(p.Field(mmevariantset.FieldCandidateID))
+}
+
+// WhereAssetID applies the entql string predicate on the asset_id field.
+func (f *MmeVariantSetFilter) WhereAssetID(p entql.StringP) {
+	f.Where(p.Field(mmevariantset.FieldAssetID))
+}
+
+// WhereTranscriptRef applies the entql string predicate on the transcript_ref field.
+func (f *MmeVariantSetFilter) WhereTranscriptRef(p entql.StringP) {
+	f.Where(p.Field(mmevariantset.FieldTranscriptRef))
+}
+
+// WhereState applies the entql string predicate on the state field.
+func (f *MmeVariantSetFilter) WhereState(p entql.StringP) {
+	f.Where(p.Field(mmevariantset.FieldState))
+}
+
+// WhereVariantCount applies the entql int32 predicate on the variant_count field.
+func (f *MmeVariantSetFilter) WhereVariantCount(p entql.Int32P) {
+	f.Where(p.Field(mmevariantset.FieldVariantCount))
+}
+
+// WhereDiffMinSimilarity applies the entql float64 predicate on the diff_min_similarity field.
+func (f *MmeVariantSetFilter) WhereDiffMinSimilarity(p entql.Float64P) {
+	f.Where(p.Field(mmevariantset.FieldDiffMinSimilarity))
+}
+
+// WhereDiffWarn applies the entql bool predicate on the diff_warn field.
+func (f *MmeVariantSetFilter) WhereDiffWarn(p entql.BoolP) {
+	f.Where(p.Field(mmevariantset.FieldDiffWarn))
+}
+
+// WhereDiffPairs applies the entql json.RawMessage predicate on the diff_pairs field.
+func (f *MmeVariantSetFilter) WhereDiffPairs(p entql.BytesP) {
+	f.Where(p.Field(mmevariantset.FieldDiffPairs))
+}
+
+// WhereTemplateID applies the entql string predicate on the template_id field.
+func (f *MmeVariantSetFilter) WhereTemplateID(p entql.StringP) {
+	f.Where(p.Field(mmevariantset.FieldTemplateID))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *NarrativeCoinMappingQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the NarrativeCoinMappingQuery builder.
+func (_q *NarrativeCoinMappingQuery) Filter() *NarrativeCoinMappingFilter {
+	return &NarrativeCoinMappingFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *NarrativeCoinMappingMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the NarrativeCoinMappingMutation builder.
+func (m *NarrativeCoinMappingMutation) Filter() *NarrativeCoinMappingFilter {
+	return &NarrativeCoinMappingFilter{config: m.config, predicateAdder: m}
+}
+
+// NarrativeCoinMappingFilter provides a generic filtering capability at runtime for NarrativeCoinMappingQuery.
+type NarrativeCoinMappingFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *NarrativeCoinMappingFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[41].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *NarrativeCoinMappingFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(narrativecoinmapping.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *NarrativeCoinMappingFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(narrativecoinmapping.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *NarrativeCoinMappingFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(narrativecoinmapping.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *NarrativeCoinMappingFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(narrativecoinmapping.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *NarrativeCoinMappingFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(narrativecoinmapping.FieldCreateBy))
+}
+
+// WhereUpdateBy applies the entql uint32 predicate on the update_by field.
+func (f *NarrativeCoinMappingFilter) WhereUpdateBy(p entql.Uint32P) {
+	f.Where(p.Field(narrativecoinmapping.FieldUpdateBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *NarrativeCoinMappingFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(narrativecoinmapping.FieldTenantID))
+}
+
+// WhereNarrative applies the entql string predicate on the narrative field.
+func (f *NarrativeCoinMappingFilter) WhereNarrative(p entql.StringP) {
+	f.Where(p.Field(narrativecoinmapping.FieldNarrative))
+}
+
+// WhereKeywords applies the entql json.RawMessage predicate on the keywords field.
+func (f *NarrativeCoinMappingFilter) WhereKeywords(p entql.BytesP) {
+	f.Where(p.Field(narrativecoinmapping.FieldKeywords))
+}
+
+// WhereCoins applies the entql json.RawMessage predicate on the coins field.
+func (f *NarrativeCoinMappingFilter) WhereCoins(p entql.BytesP) {
+	f.Where(p.Field(narrativecoinmapping.FieldCoins))
+}
+
+// WhereDefaultSentimentHint applies the entql string predicate on the default_sentiment_hint field.
+func (f *NarrativeCoinMappingFilter) WhereDefaultSentimentHint(p entql.StringP) {
+	f.Where(p.Field(narrativecoinmapping.FieldDefaultSentimentHint))
+}
+
+// WhereTTLHours applies the entql int predicate on the ttl_hours field.
+func (f *NarrativeCoinMappingFilter) WhereTTLHours(p entql.IntP) {
+	f.Where(p.Field(narrativecoinmapping.FieldTTLHours))
+}
+
+// WhereConfidence applies the entql float64 predicate on the confidence field.
+func (f *NarrativeCoinMappingFilter) WhereConfidence(p entql.Float64P) {
+	f.Where(p.Field(narrativecoinmapping.FieldConfidence))
+}
+
+// WhereEnabled applies the entql bool predicate on the enabled field.
+func (f *NarrativeCoinMappingFilter) WhereEnabled(p entql.BoolP) {
+	f.Where(p.Field(narrativecoinmapping.FieldEnabled))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (_q *NotificationMessageQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
@@ -2664,7 +7367,7 @@ type NotificationMessageFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *NotificationMessageFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[12].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[42].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2754,7 +7457,7 @@ type NotificationMessageCategoryFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *NotificationMessageCategoryFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[13].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[43].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2882,7 +7585,7 @@ type NotificationMessageRecipientFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *NotificationMessageRecipientFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[14].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[44].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2957,7 +7660,7 @@ type OrganizationFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OrganizationFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[15].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[45].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3080,7 +7783,7 @@ type PasswordHistoryFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *PasswordHistoryFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[16].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[46].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3140,7 +7843,7 @@ type PositionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *PositionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[17].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[47].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3273,7 +7976,7 @@ type PrivateMessageFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *PrivateMessageFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[18].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[48].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3358,7 +8061,7 @@ type RadarUserConfigFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RadarUserConfigFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[19].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[49].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3453,7 +8156,7 @@ type RadarWatchFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RadarWatchFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[20].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[50].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3548,7 +8251,7 @@ type RadarWatchEventFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RadarWatchEventFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[21].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[51].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3633,7 +8336,7 @@ type ResourceGroupFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ResourceGroupFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[22].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[52].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3703,7 +8406,7 @@ type RoleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RoleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[23].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[53].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3831,7 +8534,7 @@ type RoleApiFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RoleApiFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[24].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[54].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3891,7 +8594,7 @@ type RoleDeptFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RoleDeptFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[25].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[55].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3951,7 +8654,7 @@ type RoleMenuFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RoleMenuFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[26].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[56].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4011,7 +8714,7 @@ type RoleResourceGroupFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RoleResourceGroupFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[27].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[57].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4071,7 +8774,7 @@ type StorageLayerFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *StorageLayerFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[28].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[58].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4156,7 +8859,7 @@ type SystemConfigFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemConfigFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[29].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[59].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4241,7 +8944,7 @@ type TaskFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TaskFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[30].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[60].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4351,7 +9054,7 @@ type TaskExecutionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TaskExecutionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[31].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[61].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4431,7 +9134,7 @@ type TenantFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TenantFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[32].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[62].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4531,7 +9234,7 @@ type ToolLinkFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ToolLinkFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[33].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[63].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4681,7 +9384,7 @@ type ToolLinkCategoryFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ToolLinkCategoryFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[34].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[64].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4771,7 +9474,7 @@ type ToolLinkSsoTicketFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ToolLinkSsoTicketFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[35].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[65].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4851,7 +9554,7 @@ type ToolLinkUserMarkFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ToolLinkUserMarkFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[36].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[66].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4903,6 +9606,331 @@ func (f *ToolLinkUserMarkFilter) WhereLastClickAt(p entql.TimeP) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (_q *TopicQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the TopicQuery builder.
+func (_q *TopicQuery) Filter() *TopicFilter {
+	return &TopicFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *TopicMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the TopicMutation builder.
+func (m *TopicMutation) Filter() *TopicFilter {
+	return &TopicFilter{config: m.config, predicateAdder: m}
+}
+
+// TopicFilter provides a generic filtering capability at runtime for TopicQuery.
+type TopicFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *TopicFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[67].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *TopicFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(topic.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *TopicFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(topic.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *TopicFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(topic.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *TopicFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(topic.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *TopicFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(topic.FieldCreateBy))
+}
+
+// WhereUpdateBy applies the entql uint32 predicate on the update_by field.
+func (f *TopicFilter) WhereUpdateBy(p entql.Uint32P) {
+	f.Where(p.Field(topic.FieldUpdateBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *TopicFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(topic.FieldTenantID))
+}
+
+// WhereTopicID applies the entql string predicate on the topic_id field.
+func (f *TopicFilter) WhereTopicID(p entql.StringP) {
+	f.Where(p.Field(topic.FieldTopicID))
+}
+
+// WhereAPIVersion applies the entql string predicate on the api_version field.
+func (f *TopicFilter) WhereAPIVersion(p entql.StringP) {
+	f.Where(p.Field(topic.FieldAPIVersion))
+}
+
+// WhereLabel applies the entql string predicate on the label field.
+func (f *TopicFilter) WhereLabel(p entql.StringP) {
+	f.Where(p.Field(topic.FieldLabel))
+}
+
+// WhereCategory applies the entql string predicate on the category field.
+func (f *TopicFilter) WhereCategory(p entql.StringP) {
+	f.Where(p.Field(topic.FieldCategory))
+}
+
+// WhereRegion applies the entql string predicate on the region field.
+func (f *TopicFilter) WhereRegion(p entql.StringP) {
+	f.Where(p.Field(topic.FieldRegion))
+}
+
+// WhereStage applies the entql string predicate on the stage field.
+func (f *TopicFilter) WhereStage(p entql.StringP) {
+	f.Where(p.Field(topic.FieldStage))
+}
+
+// WhereStageSince applies the entql time.Time predicate on the stage_since field.
+func (f *TopicFilter) WhereStageSince(p entql.TimeP) {
+	f.Where(p.Field(topic.FieldStageSince))
+}
+
+// WhereStageDurationPoints applies the entql int predicate on the stage_duration_points field.
+func (f *TopicFilter) WhereStageDurationPoints(p entql.IntP) {
+	f.Where(p.Field(topic.FieldStageDurationPoints))
+}
+
+// WhereHeatScore applies the entql float64 predicate on the heat_score field.
+func (f *TopicFilter) WhereHeatScore(p entql.Float64P) {
+	f.Where(p.Field(topic.FieldHeatScore))
+}
+
+// WhereVelocity applies the entql float64 predicate on the velocity field.
+func (f *TopicFilter) WhereVelocity(p entql.Float64P) {
+	f.Where(p.Field(topic.FieldVelocity))
+}
+
+// WhereAccel applies the entql float64 predicate on the accel field.
+func (f *TopicFilter) WhereAccel(p entql.Float64P) {
+	f.Where(p.Field(topic.FieldAccel))
+}
+
+// WhereRankPct applies the entql float64 predicate on the rank_pct field.
+func (f *TopicFilter) WhereRankPct(p entql.Float64P) {
+	f.Where(p.Field(topic.FieldRankPct))
+}
+
+// WhereEngPct applies the entql float64 predicate on the eng_pct field.
+func (f *TopicFilter) WhereEngPct(p entql.Float64P) {
+	f.Where(p.Field(topic.FieldEngPct))
+}
+
+// WhereFreshness applies the entql float64 predicate on the freshness field.
+func (f *TopicFilter) WhereFreshness(p entql.Float64P) {
+	f.Where(p.Field(topic.FieldFreshness))
+}
+
+// WhereBreadth applies the entql float64 predicate on the breadth field.
+func (f *TopicFilter) WhereBreadth(p entql.Float64P) {
+	f.Where(p.Field(topic.FieldBreadth))
+}
+
+// WhereWRankEff applies the entql float64 predicate on the w_rank_eff field.
+func (f *TopicFilter) WhereWRankEff(p entql.Float64P) {
+	f.Where(p.Field(topic.FieldWRankEff))
+}
+
+// WhereWEngEff applies the entql float64 predicate on the w_eng_eff field.
+func (f *TopicFilter) WhereWEngEff(p entql.Float64P) {
+	f.Where(p.Field(topic.FieldWEngEff))
+}
+
+// WhereWFreshEff applies the entql float64 predicate on the w_fresh_eff field.
+func (f *TopicFilter) WhereWFreshEff(p entql.Float64P) {
+	f.Where(p.Field(topic.FieldWFreshEff))
+}
+
+// WhereWBreadthEff applies the entql float64 predicate on the w_breadth_eff field.
+func (f *TopicFilter) WhereWBreadthEff(p entql.Float64P) {
+	f.Where(p.Field(topic.FieldWBreadthEff))
+}
+
+// WhereMissingFactors applies the entql json.RawMessage predicate on the missing_factors field.
+func (f *TopicFilter) WhereMissingFactors(p entql.BytesP) {
+	f.Where(p.Field(topic.FieldMissingFactors))
+}
+
+// WhereWeightEpoch applies the entql string predicate on the weight_epoch field.
+func (f *TopicFilter) WhereWeightEpoch(p entql.StringP) {
+	f.Where(p.Field(topic.FieldWeightEpoch))
+}
+
+// WherePlatformCount applies the entql int predicate on the platform_count field.
+func (f *TopicFilter) WherePlatformCount(p entql.IntP) {
+	f.Where(p.Field(topic.FieldPlatformCount))
+}
+
+// WherePlatforms applies the entql json.RawMessage predicate on the platforms field.
+func (f *TopicFilter) WherePlatforms(p entql.BytesP) {
+	f.Where(p.Field(topic.FieldPlatforms))
+}
+
+// WhereFirstSeenAt applies the entql time.Time predicate on the first_seen_at field.
+func (f *TopicFilter) WhereFirstSeenAt(p entql.TimeP) {
+	f.Where(p.Field(topic.FieldFirstSeenAt))
+}
+
+// WhereLastSeenAt applies the entql time.Time predicate on the last_seen_at field.
+func (f *TopicFilter) WhereLastSeenAt(p entql.TimeP) {
+	f.Where(p.Field(topic.FieldLastSeenAt))
+}
+
+// WhereOrigin applies the entql json.RawMessage predicate on the origin field.
+func (f *TopicFilter) WhereOrigin(p entql.BytesP) {
+	f.Where(p.Field(topic.FieldOrigin))
+}
+
+// WhereRepresentativeIntelID applies the entql string predicate on the representative_intel_id field.
+func (f *TopicFilter) WhereRepresentativeIntelID(p entql.StringP) {
+	f.Where(p.Field(topic.FieldRepresentativeIntelID))
+}
+
+// WhereMergeLock applies the entql bool predicate on the merge_lock field.
+func (f *TopicFilter) WhereMergeLock(p entql.BoolP) {
+	f.Where(p.Field(topic.FieldMergeLock))
+}
+
+// WhereNeedsReview applies the entql bool predicate on the needs_review field.
+func (f *TopicFilter) WhereNeedsReview(p entql.BoolP) {
+	f.Where(p.Field(topic.FieldNeedsReview))
+}
+
+// WhereIsArchived applies the entql bool predicate on the is_archived field.
+func (f *TopicFilter) WhereIsArchived(p entql.BoolP) {
+	f.Where(p.Field(topic.FieldIsArchived))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *TopicSourceQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the TopicSourceQuery builder.
+func (_q *TopicSourceQuery) Filter() *TopicSourceFilter {
+	return &TopicSourceFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *TopicSourceMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the TopicSourceMutation builder.
+func (m *TopicSourceMutation) Filter() *TopicSourceFilter {
+	return &TopicSourceFilter{config: m.config, predicateAdder: m}
+}
+
+// TopicSourceFilter provides a generic filtering capability at runtime for TopicSourceQuery.
+type TopicSourceFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *TopicSourceFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[68].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *TopicSourceFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(topicsource.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *TopicSourceFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(topicsource.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *TopicSourceFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(topicsource.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *TopicSourceFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(topicsource.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *TopicSourceFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(topicsource.FieldCreateBy))
+}
+
+// WhereUpdateBy applies the entql uint32 predicate on the update_by field.
+func (f *TopicSourceFilter) WhereUpdateBy(p entql.Uint32P) {
+	f.Where(p.Field(topicsource.FieldUpdateBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *TopicSourceFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(topicsource.FieldTenantID))
+}
+
+// WhereTopicID applies the entql string predicate on the topic_id field.
+func (f *TopicSourceFilter) WhereTopicID(p entql.StringP) {
+	f.Where(p.Field(topicsource.FieldTopicID))
+}
+
+// WhereIntelID applies the entql string predicate on the intel_id field.
+func (f *TopicSourceFilter) WhereIntelID(p entql.StringP) {
+	f.Where(p.Field(topicsource.FieldIntelID))
+}
+
+// WhereClusterKey applies the entql string predicate on the cluster_key field.
+func (f *TopicSourceFilter) WhereClusterKey(p entql.StringP) {
+	f.Where(p.Field(topicsource.FieldClusterKey))
+}
+
+// WhereContributedAt applies the entql time.Time predicate on the contributed_at field.
+func (f *TopicSourceFilter) WhereContributedAt(p entql.TimeP) {
+	f.Where(p.Field(topicsource.FieldContributedAt))
+}
+
+// WhereSimilarity applies the entql float64 predicate on the similarity field.
+func (f *TopicSourceFilter) WhereSimilarity(p entql.Float64P) {
+	f.Where(p.Field(topicsource.FieldSimilarity))
+}
+
+// WhereMovedBy applies the entql string predicate on the moved_by field.
+func (f *TopicSourceFilter) WhereMovedBy(p entql.StringP) {
+	f.Where(p.Field(topicsource.FieldMovedBy))
+}
+
+// WhereMovedAt applies the entql time.Time predicate on the moved_at field.
+func (f *TopicSourceFilter) WhereMovedAt(p entql.TimeP) {
+	f.Where(p.Field(topicsource.FieldMovedAt))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (_q *UserQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
@@ -4931,7 +9959,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[37].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[69].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -5141,7 +10169,7 @@ type UserCredentialFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserCredentialFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[38].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[70].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -5251,7 +10279,7 @@ type UserPostFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserPostFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[39].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[71].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -5311,7 +10339,7 @@ type UserRoleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserRoleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[40].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[72].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -5371,7 +10399,7 @@ type UserTokenFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserTokenFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[41].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[73].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

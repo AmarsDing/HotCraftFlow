@@ -9,6 +9,7 @@ import (
 	"framework/app/admin/internal/data/ent/apiresource"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -18,6 +19,7 @@ type ApiResourceCreate struct {
 	config
 	mutation *ApiResourceMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -401,6 +403,7 @@ func (_c *ApiResourceCreate) createSpec() (*ApiResource, *sqlgraph.CreateSpec) {
 		_node = &ApiResource{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(apiresource.Table, sqlgraph.NewFieldSpec(apiresource.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -472,11 +475,678 @@ func (_c *ApiResourceCreate) createSpec() (*ApiResource, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ApiResource.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ApiResourceUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ApiResourceCreate) OnConflict(opts ...sql.ConflictOption) *ApiResourceUpsertOne {
+	_c.conflict = opts
+	return &ApiResourceUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ApiResource.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ApiResourceCreate) OnConflictColumns(columns ...string) *ApiResourceUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ApiResourceUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// ApiResourceUpsertOne is the builder for "upsert"-ing
+	//  one ApiResource node.
+	ApiResourceUpsertOne struct {
+		create *ApiResourceCreate
+	}
+
+	// ApiResourceUpsert is the "OnConflict" setter.
+	ApiResourceUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ApiResourceUpsert) SetUpdateTime(v time.Time) *ApiResourceUpsert {
+	u.Set(apiresource.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ApiResourceUpsert) UpdateUpdateTime() *ApiResourceUpsert {
+	u.SetExcluded(apiresource.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *ApiResourceUpsert) ClearUpdateTime() *ApiResourceUpsert {
+	u.SetNull(apiresource.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *ApiResourceUpsert) SetDeleteTime(v time.Time) *ApiResourceUpsert {
+	u.Set(apiresource.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *ApiResourceUpsert) UpdateDeleteTime() *ApiResourceUpsert {
+	u.SetExcluded(apiresource.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *ApiResourceUpsert) ClearDeleteTime() *ApiResourceUpsert {
+	u.SetNull(apiresource.FieldDeleteTime)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *ApiResourceUpsert) SetStatus(v apiresource.Status) *ApiResourceUpsert {
+	u.Set(apiresource.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *ApiResourceUpsert) UpdateStatus() *ApiResourceUpsert {
+	u.SetExcluded(apiresource.FieldStatus)
+	return u
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *ApiResourceUpsert) ClearStatus() *ApiResourceUpsert {
+	u.SetNull(apiresource.FieldStatus)
+	return u
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *ApiResourceUpsert) SetCreateBy(v uint32) *ApiResourceUpsert {
+	u.Set(apiresource.FieldCreateBy, v)
+	return u
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *ApiResourceUpsert) UpdateCreateBy() *ApiResourceUpsert {
+	u.SetExcluded(apiresource.FieldCreateBy)
+	return u
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *ApiResourceUpsert) AddCreateBy(v uint32) *ApiResourceUpsert {
+	u.Add(apiresource.FieldCreateBy, v)
+	return u
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *ApiResourceUpsert) ClearCreateBy() *ApiResourceUpsert {
+	u.SetNull(apiresource.FieldCreateBy)
+	return u
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *ApiResourceUpsert) SetUpdateBy(v uint32) *ApiResourceUpsert {
+	u.Set(apiresource.FieldUpdateBy, v)
+	return u
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *ApiResourceUpsert) UpdateUpdateBy() *ApiResourceUpsert {
+	u.SetExcluded(apiresource.FieldUpdateBy)
+	return u
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *ApiResourceUpsert) AddUpdateBy(v uint32) *ApiResourceUpsert {
+	u.Add(apiresource.FieldUpdateBy, v)
+	return u
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *ApiResourceUpsert) ClearUpdateBy() *ApiResourceUpsert {
+	u.SetNull(apiresource.FieldUpdateBy)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *ApiResourceUpsert) SetName(v string) *ApiResourceUpsert {
+	u.Set(apiresource.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ApiResourceUpsert) UpdateName() *ApiResourceUpsert {
+	u.SetExcluded(apiresource.FieldName)
+	return u
+}
+
+// SetPath sets the "path" field.
+func (u *ApiResourceUpsert) SetPath(v string) *ApiResourceUpsert {
+	u.Set(apiresource.FieldPath, v)
+	return u
+}
+
+// UpdatePath sets the "path" field to the value that was provided on create.
+func (u *ApiResourceUpsert) UpdatePath() *ApiResourceUpsert {
+	u.SetExcluded(apiresource.FieldPath)
+	return u
+}
+
+// SetMethod sets the "method" field.
+func (u *ApiResourceUpsert) SetMethod(v string) *ApiResourceUpsert {
+	u.Set(apiresource.FieldMethod, v)
+	return u
+}
+
+// UpdateMethod sets the "method" field to the value that was provided on create.
+func (u *ApiResourceUpsert) UpdateMethod() *ApiResourceUpsert {
+	u.SetExcluded(apiresource.FieldMethod)
+	return u
+}
+
+// SetPermission sets the "permission" field.
+func (u *ApiResourceUpsert) SetPermission(v string) *ApiResourceUpsert {
+	u.Set(apiresource.FieldPermission, v)
+	return u
+}
+
+// UpdatePermission sets the "permission" field to the value that was provided on create.
+func (u *ApiResourceUpsert) UpdatePermission() *ApiResourceUpsert {
+	u.SetExcluded(apiresource.FieldPermission)
+	return u
+}
+
+// SetDescription sets the "description" field.
+func (u *ApiResourceUpsert) SetDescription(v string) *ApiResourceUpsert {
+	u.Set(apiresource.FieldDescription, v)
+	return u
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *ApiResourceUpsert) UpdateDescription() *ApiResourceUpsert {
+	u.SetExcluded(apiresource.FieldDescription)
+	return u
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *ApiResourceUpsert) ClearDescription() *ApiResourceUpsert {
+	u.SetNull(apiresource.FieldDescription)
+	return u
+}
+
+// SetModule sets the "module" field.
+func (u *ApiResourceUpsert) SetModule(v string) *ApiResourceUpsert {
+	u.Set(apiresource.FieldModule, v)
+	return u
+}
+
+// UpdateModule sets the "module" field to the value that was provided on create.
+func (u *ApiResourceUpsert) UpdateModule() *ApiResourceUpsert {
+	u.SetExcluded(apiresource.FieldModule)
+	return u
+}
+
+// ClearModule clears the value of the "module" field.
+func (u *ApiResourceUpsert) ClearModule() *ApiResourceUpsert {
+	u.SetNull(apiresource.FieldModule)
+	return u
+}
+
+// SetModuleDescription sets the "module_description" field.
+func (u *ApiResourceUpsert) SetModuleDescription(v string) *ApiResourceUpsert {
+	u.Set(apiresource.FieldModuleDescription, v)
+	return u
+}
+
+// UpdateModuleDescription sets the "module_description" field to the value that was provided on create.
+func (u *ApiResourceUpsert) UpdateModuleDescription() *ApiResourceUpsert {
+	u.SetExcluded(apiresource.FieldModuleDescription)
+	return u
+}
+
+// ClearModuleDescription clears the value of the "module_description" field.
+func (u *ApiResourceUpsert) ClearModuleDescription() *ApiResourceUpsert {
+	u.SetNull(apiresource.FieldModuleDescription)
+	return u
+}
+
+// SetOperation sets the "operation" field.
+func (u *ApiResourceUpsert) SetOperation(v string) *ApiResourceUpsert {
+	u.Set(apiresource.FieldOperation, v)
+	return u
+}
+
+// UpdateOperation sets the "operation" field to the value that was provided on create.
+func (u *ApiResourceUpsert) UpdateOperation() *ApiResourceUpsert {
+	u.SetExcluded(apiresource.FieldOperation)
+	return u
+}
+
+// ClearOperation clears the value of the "operation" field.
+func (u *ApiResourceUpsert) ClearOperation() *ApiResourceUpsert {
+	u.SetNull(apiresource.FieldOperation)
+	return u
+}
+
+// SetSource sets the "source" field.
+func (u *ApiResourceUpsert) SetSource(v string) *ApiResourceUpsert {
+	u.Set(apiresource.FieldSource, v)
+	return u
+}
+
+// UpdateSource sets the "source" field to the value that was provided on create.
+func (u *ApiResourceUpsert) UpdateSource() *ApiResourceUpsert {
+	u.SetExcluded(apiresource.FieldSource)
+	return u
+}
+
+// SetDelisted sets the "delisted" field.
+func (u *ApiResourceUpsert) SetDelisted(v bool) *ApiResourceUpsert {
+	u.Set(apiresource.FieldDelisted, v)
+	return u
+}
+
+// UpdateDelisted sets the "delisted" field to the value that was provided on create.
+func (u *ApiResourceUpsert) UpdateDelisted() *ApiResourceUpsert {
+	u.SetExcluded(apiresource.FieldDelisted)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.ApiResource.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(apiresource.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ApiResourceUpsertOne) UpdateNewValues() *ApiResourceUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(apiresource.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(apiresource.FieldCreateTime)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ApiResource.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *ApiResourceUpsertOne) Ignore() *ApiResourceUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ApiResourceUpsertOne) DoNothing() *ApiResourceUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ApiResourceCreate.OnConflict
+// documentation for more info.
+func (u *ApiResourceUpsertOne) Update(set func(*ApiResourceUpsert)) *ApiResourceUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ApiResourceUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ApiResourceUpsertOne) SetUpdateTime(v time.Time) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ApiResourceUpsertOne) UpdateUpdateTime() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *ApiResourceUpsertOne) ClearUpdateTime() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *ApiResourceUpsertOne) SetDeleteTime(v time.Time) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *ApiResourceUpsertOne) UpdateDeleteTime() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *ApiResourceUpsertOne) ClearDeleteTime() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *ApiResourceUpsertOne) SetStatus(v apiresource.Status) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *ApiResourceUpsertOne) UpdateStatus() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *ApiResourceUpsertOne) ClearStatus() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *ApiResourceUpsertOne) SetCreateBy(v uint32) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *ApiResourceUpsertOne) AddCreateBy(v uint32) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *ApiResourceUpsertOne) UpdateCreateBy() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *ApiResourceUpsertOne) ClearCreateBy() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *ApiResourceUpsertOne) SetUpdateBy(v uint32) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *ApiResourceUpsertOne) AddUpdateBy(v uint32) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *ApiResourceUpsertOne) UpdateUpdateBy() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *ApiResourceUpsertOne) ClearUpdateBy() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *ApiResourceUpsertOne) SetName(v string) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ApiResourceUpsertOne) UpdateName() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetPath sets the "path" field.
+func (u *ApiResourceUpsertOne) SetPath(v string) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetPath(v)
+	})
+}
+
+// UpdatePath sets the "path" field to the value that was provided on create.
+func (u *ApiResourceUpsertOne) UpdatePath() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdatePath()
+	})
+}
+
+// SetMethod sets the "method" field.
+func (u *ApiResourceUpsertOne) SetMethod(v string) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetMethod(v)
+	})
+}
+
+// UpdateMethod sets the "method" field to the value that was provided on create.
+func (u *ApiResourceUpsertOne) UpdateMethod() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateMethod()
+	})
+}
+
+// SetPermission sets the "permission" field.
+func (u *ApiResourceUpsertOne) SetPermission(v string) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetPermission(v)
+	})
+}
+
+// UpdatePermission sets the "permission" field to the value that was provided on create.
+func (u *ApiResourceUpsertOne) UpdatePermission() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdatePermission()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *ApiResourceUpsertOne) SetDescription(v string) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *ApiResourceUpsertOne) UpdateDescription() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *ApiResourceUpsertOne) ClearDescription() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetModule sets the "module" field.
+func (u *ApiResourceUpsertOne) SetModule(v string) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetModule(v)
+	})
+}
+
+// UpdateModule sets the "module" field to the value that was provided on create.
+func (u *ApiResourceUpsertOne) UpdateModule() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateModule()
+	})
+}
+
+// ClearModule clears the value of the "module" field.
+func (u *ApiResourceUpsertOne) ClearModule() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearModule()
+	})
+}
+
+// SetModuleDescription sets the "module_description" field.
+func (u *ApiResourceUpsertOne) SetModuleDescription(v string) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetModuleDescription(v)
+	})
+}
+
+// UpdateModuleDescription sets the "module_description" field to the value that was provided on create.
+func (u *ApiResourceUpsertOne) UpdateModuleDescription() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateModuleDescription()
+	})
+}
+
+// ClearModuleDescription clears the value of the "module_description" field.
+func (u *ApiResourceUpsertOne) ClearModuleDescription() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearModuleDescription()
+	})
+}
+
+// SetOperation sets the "operation" field.
+func (u *ApiResourceUpsertOne) SetOperation(v string) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetOperation(v)
+	})
+}
+
+// UpdateOperation sets the "operation" field to the value that was provided on create.
+func (u *ApiResourceUpsertOne) UpdateOperation() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateOperation()
+	})
+}
+
+// ClearOperation clears the value of the "operation" field.
+func (u *ApiResourceUpsertOne) ClearOperation() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearOperation()
+	})
+}
+
+// SetSource sets the "source" field.
+func (u *ApiResourceUpsertOne) SetSource(v string) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetSource(v)
+	})
+}
+
+// UpdateSource sets the "source" field to the value that was provided on create.
+func (u *ApiResourceUpsertOne) UpdateSource() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateSource()
+	})
+}
+
+// SetDelisted sets the "delisted" field.
+func (u *ApiResourceUpsertOne) SetDelisted(v bool) *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetDelisted(v)
+	})
+}
+
+// UpdateDelisted sets the "delisted" field to the value that was provided on create.
+func (u *ApiResourceUpsertOne) UpdateDelisted() *ApiResourceUpsertOne {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateDelisted()
+	})
+}
+
+// Exec executes the query.
+func (u *ApiResourceUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ApiResourceCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ApiResourceUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *ApiResourceUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *ApiResourceUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // ApiResourceCreateBulk is the builder for creating many ApiResource entities in bulk.
 type ApiResourceCreateBulk struct {
 	config
 	err      error
 	builders []*ApiResourceCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the ApiResource entities in the database.
@@ -506,6 +1176,7 @@ func (_c *ApiResourceCreateBulk) Save(ctx context.Context) ([]*ApiResource, erro
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -556,6 +1227,410 @@ func (_c *ApiResourceCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *ApiResourceCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ApiResource.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ApiResourceUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ApiResourceCreateBulk) OnConflict(opts ...sql.ConflictOption) *ApiResourceUpsertBulk {
+	_c.conflict = opts
+	return &ApiResourceUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ApiResource.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ApiResourceCreateBulk) OnConflictColumns(columns ...string) *ApiResourceUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ApiResourceUpsertBulk{
+		create: _c,
+	}
+}
+
+// ApiResourceUpsertBulk is the builder for "upsert"-ing
+// a bulk of ApiResource nodes.
+type ApiResourceUpsertBulk struct {
+	create *ApiResourceCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.ApiResource.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(apiresource.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ApiResourceUpsertBulk) UpdateNewValues() *ApiResourceUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(apiresource.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(apiresource.FieldCreateTime)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ApiResource.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *ApiResourceUpsertBulk) Ignore() *ApiResourceUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ApiResourceUpsertBulk) DoNothing() *ApiResourceUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ApiResourceCreateBulk.OnConflict
+// documentation for more info.
+func (u *ApiResourceUpsertBulk) Update(set func(*ApiResourceUpsert)) *ApiResourceUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ApiResourceUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ApiResourceUpsertBulk) SetUpdateTime(v time.Time) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ApiResourceUpsertBulk) UpdateUpdateTime() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *ApiResourceUpsertBulk) ClearUpdateTime() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *ApiResourceUpsertBulk) SetDeleteTime(v time.Time) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *ApiResourceUpsertBulk) UpdateDeleteTime() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *ApiResourceUpsertBulk) ClearDeleteTime() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *ApiResourceUpsertBulk) SetStatus(v apiresource.Status) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *ApiResourceUpsertBulk) UpdateStatus() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *ApiResourceUpsertBulk) ClearStatus() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *ApiResourceUpsertBulk) SetCreateBy(v uint32) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *ApiResourceUpsertBulk) AddCreateBy(v uint32) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *ApiResourceUpsertBulk) UpdateCreateBy() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *ApiResourceUpsertBulk) ClearCreateBy() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *ApiResourceUpsertBulk) SetUpdateBy(v uint32) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *ApiResourceUpsertBulk) AddUpdateBy(v uint32) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *ApiResourceUpsertBulk) UpdateUpdateBy() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *ApiResourceUpsertBulk) ClearUpdateBy() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *ApiResourceUpsertBulk) SetName(v string) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ApiResourceUpsertBulk) UpdateName() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetPath sets the "path" field.
+func (u *ApiResourceUpsertBulk) SetPath(v string) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetPath(v)
+	})
+}
+
+// UpdatePath sets the "path" field to the value that was provided on create.
+func (u *ApiResourceUpsertBulk) UpdatePath() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdatePath()
+	})
+}
+
+// SetMethod sets the "method" field.
+func (u *ApiResourceUpsertBulk) SetMethod(v string) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetMethod(v)
+	})
+}
+
+// UpdateMethod sets the "method" field to the value that was provided on create.
+func (u *ApiResourceUpsertBulk) UpdateMethod() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateMethod()
+	})
+}
+
+// SetPermission sets the "permission" field.
+func (u *ApiResourceUpsertBulk) SetPermission(v string) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetPermission(v)
+	})
+}
+
+// UpdatePermission sets the "permission" field to the value that was provided on create.
+func (u *ApiResourceUpsertBulk) UpdatePermission() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdatePermission()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *ApiResourceUpsertBulk) SetDescription(v string) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *ApiResourceUpsertBulk) UpdateDescription() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *ApiResourceUpsertBulk) ClearDescription() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetModule sets the "module" field.
+func (u *ApiResourceUpsertBulk) SetModule(v string) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetModule(v)
+	})
+}
+
+// UpdateModule sets the "module" field to the value that was provided on create.
+func (u *ApiResourceUpsertBulk) UpdateModule() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateModule()
+	})
+}
+
+// ClearModule clears the value of the "module" field.
+func (u *ApiResourceUpsertBulk) ClearModule() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearModule()
+	})
+}
+
+// SetModuleDescription sets the "module_description" field.
+func (u *ApiResourceUpsertBulk) SetModuleDescription(v string) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetModuleDescription(v)
+	})
+}
+
+// UpdateModuleDescription sets the "module_description" field to the value that was provided on create.
+func (u *ApiResourceUpsertBulk) UpdateModuleDescription() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateModuleDescription()
+	})
+}
+
+// ClearModuleDescription clears the value of the "module_description" field.
+func (u *ApiResourceUpsertBulk) ClearModuleDescription() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearModuleDescription()
+	})
+}
+
+// SetOperation sets the "operation" field.
+func (u *ApiResourceUpsertBulk) SetOperation(v string) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetOperation(v)
+	})
+}
+
+// UpdateOperation sets the "operation" field to the value that was provided on create.
+func (u *ApiResourceUpsertBulk) UpdateOperation() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateOperation()
+	})
+}
+
+// ClearOperation clears the value of the "operation" field.
+func (u *ApiResourceUpsertBulk) ClearOperation() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.ClearOperation()
+	})
+}
+
+// SetSource sets the "source" field.
+func (u *ApiResourceUpsertBulk) SetSource(v string) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetSource(v)
+	})
+}
+
+// UpdateSource sets the "source" field to the value that was provided on create.
+func (u *ApiResourceUpsertBulk) UpdateSource() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateSource()
+	})
+}
+
+// SetDelisted sets the "delisted" field.
+func (u *ApiResourceUpsertBulk) SetDelisted(v bool) *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.SetDelisted(v)
+	})
+}
+
+// UpdateDelisted sets the "delisted" field to the value that was provided on create.
+func (u *ApiResourceUpsertBulk) UpdateDelisted() *ApiResourceUpsertBulk {
+	return u.Update(func(s *ApiResourceUpsert) {
+		s.UpdateDelisted()
+	})
+}
+
+// Exec executes the query.
+func (u *ApiResourceUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the ApiResourceCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ApiResourceCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ApiResourceUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

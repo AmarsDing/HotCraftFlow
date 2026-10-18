@@ -9,6 +9,7 @@ import (
 	"framework/app/admin/internal/data/ent/toollinkssoticket"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -18,6 +19,7 @@ type ToolLinkSsoTicketCreate struct {
 	config
 	mutation *ToolLinkSsoTicketMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -190,6 +192,7 @@ func (_c *ToolLinkSsoTicketCreate) createSpec() (*ToolLinkSsoTicket, *sqlgraph.C
 		_node = &ToolLinkSsoTicket{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(toollinkssoticket.Table, sqlgraph.NewFieldSpec(toollinkssoticket.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -229,11 +232,392 @@ func (_c *ToolLinkSsoTicketCreate) createSpec() (*ToolLinkSsoTicket, *sqlgraph.C
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ToolLinkSsoTicket.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ToolLinkSsoTicketUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ToolLinkSsoTicketCreate) OnConflict(opts ...sql.ConflictOption) *ToolLinkSsoTicketUpsertOne {
+	_c.conflict = opts
+	return &ToolLinkSsoTicketUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ToolLinkSsoTicket.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ToolLinkSsoTicketCreate) OnConflictColumns(columns ...string) *ToolLinkSsoTicketUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ToolLinkSsoTicketUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// ToolLinkSsoTicketUpsertOne is the builder for "upsert"-ing
+	//  one ToolLinkSsoTicket node.
+	ToolLinkSsoTicketUpsertOne struct {
+		create *ToolLinkSsoTicketCreate
+	}
+
+	// ToolLinkSsoTicketUpsert is the "OnConflict" setter.
+	ToolLinkSsoTicketUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ToolLinkSsoTicketUpsert) SetUpdateTime(v time.Time) *ToolLinkSsoTicketUpsert {
+	u.Set(toollinkssoticket.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsert) UpdateUpdateTime() *ToolLinkSsoTicketUpsert {
+	u.SetExcluded(toollinkssoticket.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *ToolLinkSsoTicketUpsert) ClearUpdateTime() *ToolLinkSsoTicketUpsert {
+	u.SetNull(toollinkssoticket.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *ToolLinkSsoTicketUpsert) SetDeleteTime(v time.Time) *ToolLinkSsoTicketUpsert {
+	u.Set(toollinkssoticket.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsert) UpdateDeleteTime() *ToolLinkSsoTicketUpsert {
+	u.SetExcluded(toollinkssoticket.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *ToolLinkSsoTicketUpsert) ClearDeleteTime() *ToolLinkSsoTicketUpsert {
+	u.SetNull(toollinkssoticket.FieldDeleteTime)
+	return u
+}
+
+// SetTicket sets the "ticket" field.
+func (u *ToolLinkSsoTicketUpsert) SetTicket(v string) *ToolLinkSsoTicketUpsert {
+	u.Set(toollinkssoticket.FieldTicket, v)
+	return u
+}
+
+// UpdateTicket sets the "ticket" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsert) UpdateTicket() *ToolLinkSsoTicketUpsert {
+	u.SetExcluded(toollinkssoticket.FieldTicket)
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ToolLinkSsoTicketUpsert) SetUserID(v uint32) *ToolLinkSsoTicketUpsert {
+	u.Set(toollinkssoticket.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsert) UpdateUserID() *ToolLinkSsoTicketUpsert {
+	u.SetExcluded(toollinkssoticket.FieldUserID)
+	return u
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *ToolLinkSsoTicketUpsert) AddUserID(v uint32) *ToolLinkSsoTicketUpsert {
+	u.Add(toollinkssoticket.FieldUserID, v)
+	return u
+}
+
+// SetToolLinkID sets the "tool_link_id" field.
+func (u *ToolLinkSsoTicketUpsert) SetToolLinkID(v uint32) *ToolLinkSsoTicketUpsert {
+	u.Set(toollinkssoticket.FieldToolLinkID, v)
+	return u
+}
+
+// UpdateToolLinkID sets the "tool_link_id" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsert) UpdateToolLinkID() *ToolLinkSsoTicketUpsert {
+	u.SetExcluded(toollinkssoticket.FieldToolLinkID)
+	return u
+}
+
+// AddToolLinkID adds v to the "tool_link_id" field.
+func (u *ToolLinkSsoTicketUpsert) AddToolLinkID(v uint32) *ToolLinkSsoTicketUpsert {
+	u.Add(toollinkssoticket.FieldToolLinkID, v)
+	return u
+}
+
+// SetExpireAt sets the "expire_at" field.
+func (u *ToolLinkSsoTicketUpsert) SetExpireAt(v time.Time) *ToolLinkSsoTicketUpsert {
+	u.Set(toollinkssoticket.FieldExpireAt, v)
+	return u
+}
+
+// UpdateExpireAt sets the "expire_at" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsert) UpdateExpireAt() *ToolLinkSsoTicketUpsert {
+	u.SetExcluded(toollinkssoticket.FieldExpireAt)
+	return u
+}
+
+// SetUsedAt sets the "used_at" field.
+func (u *ToolLinkSsoTicketUpsert) SetUsedAt(v time.Time) *ToolLinkSsoTicketUpsert {
+	u.Set(toollinkssoticket.FieldUsedAt, v)
+	return u
+}
+
+// UpdateUsedAt sets the "used_at" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsert) UpdateUsedAt() *ToolLinkSsoTicketUpsert {
+	u.SetExcluded(toollinkssoticket.FieldUsedAt)
+	return u
+}
+
+// ClearUsedAt clears the value of the "used_at" field.
+func (u *ToolLinkSsoTicketUpsert) ClearUsedAt() *ToolLinkSsoTicketUpsert {
+	u.SetNull(toollinkssoticket.FieldUsedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.ToolLinkSsoTicket.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(toollinkssoticket.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ToolLinkSsoTicketUpsertOne) UpdateNewValues() *ToolLinkSsoTicketUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(toollinkssoticket.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(toollinkssoticket.FieldCreateTime)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ToolLinkSsoTicket.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *ToolLinkSsoTicketUpsertOne) Ignore() *ToolLinkSsoTicketUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ToolLinkSsoTicketUpsertOne) DoNothing() *ToolLinkSsoTicketUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ToolLinkSsoTicketCreate.OnConflict
+// documentation for more info.
+func (u *ToolLinkSsoTicketUpsertOne) Update(set func(*ToolLinkSsoTicketUpsert)) *ToolLinkSsoTicketUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ToolLinkSsoTicketUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ToolLinkSsoTicketUpsertOne) SetUpdateTime(v time.Time) *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsertOne) UpdateUpdateTime() *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *ToolLinkSsoTicketUpsertOne) ClearUpdateTime() *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *ToolLinkSsoTicketUpsertOne) SetDeleteTime(v time.Time) *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsertOne) UpdateDeleteTime() *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *ToolLinkSsoTicketUpsertOne) ClearDeleteTime() *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetTicket sets the "ticket" field.
+func (u *ToolLinkSsoTicketUpsertOne) SetTicket(v string) *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.SetTicket(v)
+	})
+}
+
+// UpdateTicket sets the "ticket" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsertOne) UpdateTicket() *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.UpdateTicket()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ToolLinkSsoTicketUpsertOne) SetUserID(v uint32) *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *ToolLinkSsoTicketUpsertOne) AddUserID(v uint32) *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.AddUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsertOne) UpdateUserID() *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetToolLinkID sets the "tool_link_id" field.
+func (u *ToolLinkSsoTicketUpsertOne) SetToolLinkID(v uint32) *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.SetToolLinkID(v)
+	})
+}
+
+// AddToolLinkID adds v to the "tool_link_id" field.
+func (u *ToolLinkSsoTicketUpsertOne) AddToolLinkID(v uint32) *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.AddToolLinkID(v)
+	})
+}
+
+// UpdateToolLinkID sets the "tool_link_id" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsertOne) UpdateToolLinkID() *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.UpdateToolLinkID()
+	})
+}
+
+// SetExpireAt sets the "expire_at" field.
+func (u *ToolLinkSsoTicketUpsertOne) SetExpireAt(v time.Time) *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.SetExpireAt(v)
+	})
+}
+
+// UpdateExpireAt sets the "expire_at" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsertOne) UpdateExpireAt() *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.UpdateExpireAt()
+	})
+}
+
+// SetUsedAt sets the "used_at" field.
+func (u *ToolLinkSsoTicketUpsertOne) SetUsedAt(v time.Time) *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.SetUsedAt(v)
+	})
+}
+
+// UpdateUsedAt sets the "used_at" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsertOne) UpdateUsedAt() *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.UpdateUsedAt()
+	})
+}
+
+// ClearUsedAt clears the value of the "used_at" field.
+func (u *ToolLinkSsoTicketUpsertOne) ClearUsedAt() *ToolLinkSsoTicketUpsertOne {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.ClearUsedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *ToolLinkSsoTicketUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ToolLinkSsoTicketCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ToolLinkSsoTicketUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *ToolLinkSsoTicketUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *ToolLinkSsoTicketUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // ToolLinkSsoTicketCreateBulk is the builder for creating many ToolLinkSsoTicket entities in bulk.
 type ToolLinkSsoTicketCreateBulk struct {
 	config
 	err      error
 	builders []*ToolLinkSsoTicketCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the ToolLinkSsoTicket entities in the database.
@@ -262,6 +646,7 @@ func (_c *ToolLinkSsoTicketCreateBulk) Save(ctx context.Context) ([]*ToolLinkSso
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -312,6 +697,256 @@ func (_c *ToolLinkSsoTicketCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *ToolLinkSsoTicketCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ToolLinkSsoTicket.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ToolLinkSsoTicketUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ToolLinkSsoTicketCreateBulk) OnConflict(opts ...sql.ConflictOption) *ToolLinkSsoTicketUpsertBulk {
+	_c.conflict = opts
+	return &ToolLinkSsoTicketUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ToolLinkSsoTicket.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ToolLinkSsoTicketCreateBulk) OnConflictColumns(columns ...string) *ToolLinkSsoTicketUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ToolLinkSsoTicketUpsertBulk{
+		create: _c,
+	}
+}
+
+// ToolLinkSsoTicketUpsertBulk is the builder for "upsert"-ing
+// a bulk of ToolLinkSsoTicket nodes.
+type ToolLinkSsoTicketUpsertBulk struct {
+	create *ToolLinkSsoTicketCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.ToolLinkSsoTicket.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(toollinkssoticket.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ToolLinkSsoTicketUpsertBulk) UpdateNewValues() *ToolLinkSsoTicketUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(toollinkssoticket.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(toollinkssoticket.FieldCreateTime)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ToolLinkSsoTicket.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *ToolLinkSsoTicketUpsertBulk) Ignore() *ToolLinkSsoTicketUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ToolLinkSsoTicketUpsertBulk) DoNothing() *ToolLinkSsoTicketUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ToolLinkSsoTicketCreateBulk.OnConflict
+// documentation for more info.
+func (u *ToolLinkSsoTicketUpsertBulk) Update(set func(*ToolLinkSsoTicketUpsert)) *ToolLinkSsoTicketUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ToolLinkSsoTicketUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ToolLinkSsoTicketUpsertBulk) SetUpdateTime(v time.Time) *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsertBulk) UpdateUpdateTime() *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *ToolLinkSsoTicketUpsertBulk) ClearUpdateTime() *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *ToolLinkSsoTicketUpsertBulk) SetDeleteTime(v time.Time) *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsertBulk) UpdateDeleteTime() *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *ToolLinkSsoTicketUpsertBulk) ClearDeleteTime() *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetTicket sets the "ticket" field.
+func (u *ToolLinkSsoTicketUpsertBulk) SetTicket(v string) *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.SetTicket(v)
+	})
+}
+
+// UpdateTicket sets the "ticket" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsertBulk) UpdateTicket() *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.UpdateTicket()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ToolLinkSsoTicketUpsertBulk) SetUserID(v uint32) *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *ToolLinkSsoTicketUpsertBulk) AddUserID(v uint32) *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.AddUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsertBulk) UpdateUserID() *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetToolLinkID sets the "tool_link_id" field.
+func (u *ToolLinkSsoTicketUpsertBulk) SetToolLinkID(v uint32) *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.SetToolLinkID(v)
+	})
+}
+
+// AddToolLinkID adds v to the "tool_link_id" field.
+func (u *ToolLinkSsoTicketUpsertBulk) AddToolLinkID(v uint32) *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.AddToolLinkID(v)
+	})
+}
+
+// UpdateToolLinkID sets the "tool_link_id" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsertBulk) UpdateToolLinkID() *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.UpdateToolLinkID()
+	})
+}
+
+// SetExpireAt sets the "expire_at" field.
+func (u *ToolLinkSsoTicketUpsertBulk) SetExpireAt(v time.Time) *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.SetExpireAt(v)
+	})
+}
+
+// UpdateExpireAt sets the "expire_at" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsertBulk) UpdateExpireAt() *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.UpdateExpireAt()
+	})
+}
+
+// SetUsedAt sets the "used_at" field.
+func (u *ToolLinkSsoTicketUpsertBulk) SetUsedAt(v time.Time) *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.SetUsedAt(v)
+	})
+}
+
+// UpdateUsedAt sets the "used_at" field to the value that was provided on create.
+func (u *ToolLinkSsoTicketUpsertBulk) UpdateUsedAt() *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.UpdateUsedAt()
+	})
+}
+
+// ClearUsedAt clears the value of the "used_at" field.
+func (u *ToolLinkSsoTicketUpsertBulk) ClearUsedAt() *ToolLinkSsoTicketUpsertBulk {
+	return u.Update(func(s *ToolLinkSsoTicketUpsert) {
+		s.ClearUsedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *ToolLinkSsoTicketUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the ToolLinkSsoTicketCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ToolLinkSsoTicketCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ToolLinkSsoTicketUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

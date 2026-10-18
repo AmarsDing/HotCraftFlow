@@ -1,0 +1,30 @@
+# media 服务的传输/鉴权配置（私有配置源，覆盖公共 conf 同名 key）。
+server:
+  rest:
+    network: tcp
+    addr: 0.0.0.0:7790        # admin :7788 旁
+    timeout: 30s
+    cors:
+      origins: ["*"]
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+      headers:
+        - Authorization
+        - Content-Type
+        - X-Requested-With
+    middleware:
+      enable_recovery: true
+      enable_tracing: true
+      enable_validate: true
+      enable_metadata: true
+    enable_pprof: true
+
+# JWT：与 admin server.yaml 同一密钥即令牌互通（development 默认钥，生产必换）。
+auth:
+  authn:
+    type: jwt
+    jwt:
+      method: HS256
+      key: CHANGE_ME_DEV_JWT_SECRET
+
+trace:
+  endpoint: ""    # 空 = noop tracer；接入 Jaeger 时填 http://127.0.0.1:4318

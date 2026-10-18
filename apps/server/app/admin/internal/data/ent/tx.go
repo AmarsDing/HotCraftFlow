@@ -20,22 +20,82 @@ type Tx struct {
 	AdminOperationLog *AdminOperationLogClient
 	// ApiResource is the client for interacting with the ApiResource builders.
 	ApiResource *ApiResourceClient
+	// AuthorizationRecord is the client for interacting with the AuthorizationRecord builders.
+	AuthorizationRecord *AuthorizationRecordClient
 	// CasbinRule is the client for interacting with the CasbinRule builders.
 	CasbinRule *CasbinRuleClient
+	// ClusterMergeEvent is the client for interacting with the ClusterMergeEvent builders.
+	ClusterMergeEvent *ClusterMergeEventClient
+	// CollectRun is the client for interacting with the CollectRun builders.
+	CollectRun *CollectRunClient
+	// ComplianceRule is the client for interacting with the ComplianceRule builders.
+	ComplianceRule *ComplianceRuleClient
+	// CredentialAccount is the client for interacting with the CredentialAccount builders.
+	CredentialAccount *CredentialAccountClient
 	// DataPermission is the client for interacting with the DataPermission builders.
 	DataPermission *DataPermissionClient
+	// DeadLetter is the client for interacting with the DeadLetter builders.
+	DeadLetter *DeadLetterClient
+	// DedupSample is the client for interacting with the DedupSample builders.
+	DedupSample *DedupSampleClient
 	// Department is the client for interacting with the Department builders.
 	Department *DepartmentClient
 	// Dict is the client for interacting with the Dict builders.
 	Dict *DictClient
 	// DictCategory is the client for interacting with the DictCategory builders.
 	DictCategory *DictCategoryClient
+	// EntityAssetMapping is the client for interacting with the EntityAssetMapping builders.
+	EntityAssetMapping *EntityAssetMappingClient
+	// EvidenceSnapshot is the client for interacting with the EvidenceSnapshot builders.
+	EvidenceSnapshot *EvidenceSnapshotClient
 	// File is the client for interacting with the File builders.
 	File *FileClient
+	// IntelCluster is the client for interacting with the IntelCluster builders.
+	IntelCluster *IntelClusterClient
+	// IntelItem is the client for interacting with the IntelItem builders.
+	IntelItem *IntelItemClient
+	// IntelSource is the client for interacting with the IntelSource builders.
+	IntelSource *IntelSourceClient
 	// LoginFailCounter is the client for interacting with the LoginFailCounter builders.
 	LoginFailCounter *LoginFailCounterClient
+	// MapApprovalRecord is the client for interacting with the MapApprovalRecord builders.
+	MapApprovalRecord *MapApprovalRecordClient
+	// MapDispatchUnit is the client for interacting with the MapDispatchUnit builders.
+	MapDispatchUnit *MapDispatchUnitClient
+	// MapPerformanceSnapshot is the client for interacting with the MapPerformanceSnapshot builders.
+	MapPerformanceSnapshot *MapPerformanceSnapshotClient
+	// MapPublishAccount is the client for interacting with the MapPublishAccount builders.
+	MapPublishAccount *MapPublishAccountClient
+	// MapPublishChannel is the client for interacting with the MapPublishChannel builders.
+	MapPublishChannel *MapPublishChannelClient
+	// MapPublishReceipt is the client for interacting with the MapPublishReceipt builders.
+	MapPublishReceipt *MapPublishReceiptClient
 	// Menu is the client for interacting with the Menu builders.
 	Menu *MenuClient
+	// MiaEventCard is the client for interacting with the MiaEventCard builders.
+	MiaEventCard *MiaEventCardClient
+	// MiaImpactCard is the client for interacting with the MiaImpactCard builders.
+	MiaImpactCard *MiaImpactCardClient
+	// MiaQuoteCache is the client for interacting with the MiaQuoteCache builders.
+	MiaQuoteCache *MiaQuoteCacheClient
+	// MiaTransmissionRule is the client for interacting with the MiaTransmissionRule builders.
+	MiaTransmissionRule *MiaTransmissionRuleClient
+	// MmeAnalysisCache is the client for interacting with the MmeAnalysisCache builders.
+	MmeAnalysisCache *MmeAnalysisCacheClient
+	// MmeAsset is the client for interacting with the MmeAsset builders.
+	MmeAsset *MmeAssetClient
+	// MmeMontageTask is the client for interacting with the MmeMontageTask builders.
+	MmeMontageTask *MmeMontageTaskClient
+	// MmeRenderJob is the client for interacting with the MmeRenderJob builders.
+	MmeRenderJob *MmeRenderJobClient
+	// MmeTemplate is the client for interacting with the MmeTemplate builders.
+	MmeTemplate *MmeTemplateClient
+	// MmeVariant is the client for interacting with the MmeVariant builders.
+	MmeVariant *MmeVariantClient
+	// MmeVariantSet is the client for interacting with the MmeVariantSet builders.
+	MmeVariantSet *MmeVariantSetClient
+	// NarrativeCoinMapping is the client for interacting with the NarrativeCoinMapping builders.
+	NarrativeCoinMapping *NarrativeCoinMappingClient
 	// NotificationMessage is the client for interacting with the NotificationMessage builders.
 	NotificationMessage *NotificationMessageClient
 	// NotificationMessageCategory is the client for interacting with the NotificationMessageCategory builders.
@@ -86,6 +146,10 @@ type Tx struct {
 	ToolLinkSsoTicket *ToolLinkSsoTicketClient
 	// ToolLinkUserMark is the client for interacting with the ToolLinkUserMark builders.
 	ToolLinkUserMark *ToolLinkUserMarkClient
+	// Topic is the client for interacting with the Topic builders.
+	Topic *TopicClient
+	// TopicSource is the client for interacting with the TopicSource builders.
+	TopicSource *TopicSourceClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// UserCredential is the client for interacting with the UserCredential builders.
@@ -231,14 +295,44 @@ func (tx *Tx) init() {
 	tx.AdminLoginRestriction = NewAdminLoginRestrictionClient(tx.config)
 	tx.AdminOperationLog = NewAdminOperationLogClient(tx.config)
 	tx.ApiResource = NewApiResourceClient(tx.config)
+	tx.AuthorizationRecord = NewAuthorizationRecordClient(tx.config)
 	tx.CasbinRule = NewCasbinRuleClient(tx.config)
+	tx.ClusterMergeEvent = NewClusterMergeEventClient(tx.config)
+	tx.CollectRun = NewCollectRunClient(tx.config)
+	tx.ComplianceRule = NewComplianceRuleClient(tx.config)
+	tx.CredentialAccount = NewCredentialAccountClient(tx.config)
 	tx.DataPermission = NewDataPermissionClient(tx.config)
+	tx.DeadLetter = NewDeadLetterClient(tx.config)
+	tx.DedupSample = NewDedupSampleClient(tx.config)
 	tx.Department = NewDepartmentClient(tx.config)
 	tx.Dict = NewDictClient(tx.config)
 	tx.DictCategory = NewDictCategoryClient(tx.config)
+	tx.EntityAssetMapping = NewEntityAssetMappingClient(tx.config)
+	tx.EvidenceSnapshot = NewEvidenceSnapshotClient(tx.config)
 	tx.File = NewFileClient(tx.config)
+	tx.IntelCluster = NewIntelClusterClient(tx.config)
+	tx.IntelItem = NewIntelItemClient(tx.config)
+	tx.IntelSource = NewIntelSourceClient(tx.config)
 	tx.LoginFailCounter = NewLoginFailCounterClient(tx.config)
+	tx.MapApprovalRecord = NewMapApprovalRecordClient(tx.config)
+	tx.MapDispatchUnit = NewMapDispatchUnitClient(tx.config)
+	tx.MapPerformanceSnapshot = NewMapPerformanceSnapshotClient(tx.config)
+	tx.MapPublishAccount = NewMapPublishAccountClient(tx.config)
+	tx.MapPublishChannel = NewMapPublishChannelClient(tx.config)
+	tx.MapPublishReceipt = NewMapPublishReceiptClient(tx.config)
 	tx.Menu = NewMenuClient(tx.config)
+	tx.MiaEventCard = NewMiaEventCardClient(tx.config)
+	tx.MiaImpactCard = NewMiaImpactCardClient(tx.config)
+	tx.MiaQuoteCache = NewMiaQuoteCacheClient(tx.config)
+	tx.MiaTransmissionRule = NewMiaTransmissionRuleClient(tx.config)
+	tx.MmeAnalysisCache = NewMmeAnalysisCacheClient(tx.config)
+	tx.MmeAsset = NewMmeAssetClient(tx.config)
+	tx.MmeMontageTask = NewMmeMontageTaskClient(tx.config)
+	tx.MmeRenderJob = NewMmeRenderJobClient(tx.config)
+	tx.MmeTemplate = NewMmeTemplateClient(tx.config)
+	tx.MmeVariant = NewMmeVariantClient(tx.config)
+	tx.MmeVariantSet = NewMmeVariantSetClient(tx.config)
+	tx.NarrativeCoinMapping = NewNarrativeCoinMappingClient(tx.config)
 	tx.NotificationMessage = NewNotificationMessageClient(tx.config)
 	tx.NotificationMessageCategory = NewNotificationMessageCategoryClient(tx.config)
 	tx.NotificationMessageRecipient = NewNotificationMessageRecipientClient(tx.config)
@@ -264,6 +358,8 @@ func (tx *Tx) init() {
 	tx.ToolLinkCategory = NewToolLinkCategoryClient(tx.config)
 	tx.ToolLinkSsoTicket = NewToolLinkSsoTicketClient(tx.config)
 	tx.ToolLinkUserMark = NewToolLinkUserMarkClient(tx.config)
+	tx.Topic = NewTopicClient(tx.config)
+	tx.TopicSource = NewTopicSourceClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.UserCredential = NewUserCredentialClient(tx.config)
 	tx.UserPost = NewUserPostClient(tx.config)

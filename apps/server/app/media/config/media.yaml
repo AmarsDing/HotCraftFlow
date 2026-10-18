@@ -1,0 +1,30 @@
+# media 域私有配置：任务/存储/体检/引擎/sidecar。
+# 启动期 Normalize → Validate fail-fast（无效值直接 panic，杜绝错配静默运行）。
+media:
+  enabled: true
+
+  jobs:
+    lanes:
+      infer:  1   # AI 推理串行纪律（GPU/单引擎驻留的排队点）
+      render: 2   # 渲染/合成类
+      io:     4   # 下载/探测等 IO 密集
+    retain_days: 30
+    event_cap_per_job: 500
+    queue_capacity: 1024
+
+  storage:
+    artifact_dir: ./storage/media/artifacts
+
+  doctor:
+    probes: [ffmpeg, ffprobe, yt-dlp, python, ollama]
+    probe_timeout: 3s
+
+  engines:
+    default: echo
+    single_resident: true
+
+  sidecar:
+    ready_timeout: 30s
+    gen_watchdog: 600s
+    idle_reap: 300s
+    max_frame_bytes: 67108864

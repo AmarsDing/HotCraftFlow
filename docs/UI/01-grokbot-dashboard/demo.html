@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grok Bot · Agent 集群实时仪表盘（UI 复刻参考实现）</title>
+<link rel="stylesheet" href="grokbot-design-tokens.css">
+<style>
+/* ============================================================
+   本文件是《UI复刻分析报告》的可运行参考实现
+   纯原生 HTML + CSS + JS，无第三方依赖
+   ============================================================ */
+body{
+  min-height:100vh; padding:28px 16px 0;
+  /* 实测：页面背景除近黑底外，还有明显的粉紫氛围光（左上/右上两团雾） */
+  background:
+    radial-gradient(620px 420px at 8% 22%, rgba(242,94,151,.10), transparent 65%),
+    radial-gradient(560px 380px at 96% 26%, rgba(190,110,240,.09), transparent 65%),
+    radial-gradient(1200px 600px at 20% -10%, rgba(65,210,243,.05), transparent 60%),
+    var(--bg-page);
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{ max-width:960px; margin:0 auto; }
+
+/* ---------- 主卡片 ---------- */
+.card{
+  background:var(--bg-card);
+  border-radius:var(--r-card);
+  box-shadow:var(--shadow-card);
+  padding:0 0 16px;
+  overflow:hidden;
+}
+/* 窗口装饰条（模拟 App / 浏览器窗口，增强"真实产品"观感） */
+.chrome{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 14px; border-bottom:1px solid var(--line);
+}
+.dots{ display:flex; gap:6px; }
+.dots i{ width:10px; height:10px; border-radius:50%; display:block; }
+.dots i:nth-child(1){background:#FF5F57} .dots i:nth-child(2){background:#FEBC2E} .dots i:nth-child(3){background:#28C840}
+.chrome .title{ font-size:11px; color:var(--text-3); letter-spacing:.01em; }
+
+/* ---------- 页头 ---------- */
+.hd{ display:grid; grid-template-columns:1fr auto; gap:16px; padding:16px 16px 0; align-items:flex-start; }
+.brand{ display:flex; gap:12px; align-items:center; }
+.avatar{
+  width:56px; height:56px; border-radius:50%; background:#FBF8FF;
+  display:flex; align-items:center; justify-content:center; gap:4px; flex:none;
+}
+/* 实测头像内是两条"粗而短"的胶囊，不是细长线 */
+.avatar i{ width:6px; height:18px; border-radius:3px; background:#0C0C18; display:block; }
+.brand h1{ margin:0; font-family:var(--font-display);
+  font-size:clamp(26px,3.4vw,var(--fs-display));
+  font-weight:var(--fw-display); letter-spacing:var(--ls-display); white-space:nowrap; }
+.sub{ display:flex; align-items:center; gap:6px; font-size:11px; margin-top:4px; }
+.sub .dot{ width:6px; height:6px; border-radius:50%; background:var(--green);
+  animation:breathe 2s ease-in-out infinite alternate; }
+.sub .shift{ color:var(--green); }
+.sub .clock{ font-family:var(--font-mono); color:var(--text-1); }
+
+.profit{ text-align:right; }
+.profit .big{ font-family:var(--font-display); font-size:var(--fs-bignum); font-weight:var(--fw-bignum);
+  color:var(--green); text-shadow:0 0 22px rgba(82,216,157,.35); line-height:1.05; }
+.profit .cap{ font-size:var(--fs-meta); color:var(--text-3); margin-top:4px; }
+
+/* 实测：统计行与利润块同处右侧一栏，且【数值在上、标签在下】 */
+.hdright{ display:flex; flex-direction:column; align-items:flex-end; gap:12px; }
+.stats{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:clamp(10px,2.2vw,24px); }
+.stat{ text-align:right; }
+.stat .v{ font-family:var(--font-mono); font-size:clamp(16px,2.6vw,22px); font-weight:700;
+  font-variant-numeric:tabular-nums; color:var(--text-1); line-height:1.1; white-space:nowrap; }
+.stat .k{ font-size:clamp(7.5px,1.15vw,var(--fs-label)); font-weight:var(--fw-label);
+  letter-spacing:.07em; text-transform:uppercase; color:var(--text-3);
+  margin-top:3px; white-space:nowrap; }
+
+/* ---------- Chip 行 ---------- */
+.chips{ display:flex; flex-wrap:wrap; gap:var(--sp-2); padding:12px 16px 0; }
+.chip{
+  font-size:var(--fs-chip); font-weight:var(--fw-chip);
+  padding:5px 10px; border-radius:var(--r-chip);
+  background:var(--bg-chip); color:var(--text-2);
+  border:1px solid transparent;
+  animation:rowIn var(--dur-base) var(--ease-out);
+}
+.chip.todo{ background:var(--pink-bg); border-color:var(--pink-line); color:var(--pink); }
+.chip.warn{ background:var(--amber-bg); border-color:var(--amber-line); color:var(--amber);
+            animation:rowIn var(--dur-base) var(--ease-out), pulse-ring .6s var(--ease-soft) 2; }
+.chip.ok  { background:var(--green-bg); border-color:var(--green-line); color:var(--green); }
+.chip.dim { background:rgba(255,255,255,.03); color:var(--text-3); }
+.chip .you{ color:var(--yellow); }
+
+/* ---------- 角色列头 ---------- */
+.roles{ display:grid; grid-template-columns:repeat(5,1fr); padding:16px 16px 6px; }
+.role{ display:flex; flex-direction:column; align-items:center; gap:6px; transition:filter .3s; }
+/* 实测：五个图标形状各不相同 —— SCOUT=青色横向胶囊 / QUANT=紫圆 / RISK=粉水滴 / ROUTER=粉星(带光晕) / YOU=白圆 */
+.role .ico{
+  width:30px; height:30px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; gap:3px;
+  transition:box-shadow .3s;
+}
+.role .ico i{ width:2.5px; height:10px; border-radius:1.5px; background:rgba(10,10,16,.78); display:block; }
+.role .nm{ font-size:var(--fs-label); font-weight:var(--fw-label); letter-spacing:var(--ls-label);
+  text-transform:uppercase; color:var(--text-3); transition:color .3s; }
+.role.scout  .ico{ background:#4AD8F5; width:38px; height:26px; border-radius:999px; }
+.role.quant  .ico{ background:var(--purple); }
+.role.risk   .ico{ background:#F0516B; border-radius:0 50% 50% 50%; transform:rotate(45deg); }
+.role.risk   .ico i{ transform:rotate(-45deg); }
+.role.router .ico{
+  background:var(--pink);
+  clip-path:polygon(50% 2%,62% 22%,84% 18%,82% 40%,98% 50%,82% 60%,84% 82%,62% 78%,
+                    50% 98%,38% 78%,16% 82%,18% 60%,2% 50%,18% 40%,16% 18%,38% 22%);
+  filter:drop-shadow(0 0 9px rgba(242,94,151,.65));
+}
+.role.you    .ico{ background:#FBF8FF; }
+.role.you    .ico i{ display:none; }
+.role.you    .ico::after{ content:'you'; font-size:8px; font-weight:700; color:#0C0C18; }
+.role.active .nm{ color:var(--text-1); }
+.role.active.scout .ico{ box-shadow:0 0 0 6px rgba(74,216,245,.16) }
+.role.active.quant .ico{ box-shadow:0 0 0 6px rgba(164,137,250,.14) }
+.role.active.risk  .ico{ box-shadow:0 0 0 6px rgba(242,94,151,.16) }
+/* router 用了 clip-path，box-shadow 会被裁掉 → 用叠加 drop-shadow 表达高亮 */
+.role.active.router .ico{ filter:drop-shadow(0 0 9px rgba(242,94,151,.65)) drop-shadow(0 0 20px rgba(242,94,151,.5)); }
+.role.active.you   .ico{ box-shadow:0 0 0 6px rgba(227,203,114,.18) }
+
+/* ---------- 工作区三栏 ---------- */
+/* 实测三栏比例 ≈ 1 : 1.95 : 1.5（左窄 / 中最宽 / 右中），不是对称的三等分 */
+.workspace{ display:grid; grid-template-columns:var(--col-ratio-left) var(--col-ratio-mid) var(--col-ratio-right);
+  gap:var(--sp-4); padding:6px 16px 0; align-items:stretch; }
+.workspace > section{ display:flex; flex-direction:column; min-width:0; }
+.colhead{ font-size:var(--fs-label); font-weight:var(--fw-label); letter-spacing:var(--ls-label);
+  text-transform:uppercase; color:var(--text-3); margin-bottom:8px; }
+
+/* 列表行：实测为"方角行 + 行间 1px 分隔线 + 左侧 3px 分类色条"，无卡片式圆角块 */
+.row{
+  position:relative; padding:9px 9px; min-height:var(--row-h);
+  border-left:3px solid var(--accent, var(--line-2));
+  background:transparent; transition:background .2s var(--ease-soft);
+  animation:rowIn var(--dur-base) var(--ease-out);
+}
+.row + .row{ border-top:1px solid rgba(255,255,255,.05); }
+.row:hover{ background:var(--bg-hover); }
+.row .top{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+.row .nm{ font-size:clamp(11.5px,1.75vw,var(--fs-row)); font-weight:var(--fw-row);
+  color:var(--text-1); white-space:nowrap; }
+.row .val{ font-family:var(--font-mono); font-size:clamp(13px,2vw,var(--fs-value));
+  font-weight:var(--fw-value); font-variant-numeric:tabular-nums;
+  color:var(--accent, var(--text-1)); white-space:nowrap; }
+/* 左栏在 592px 视口下很窄（约 120px 可用），meta 必须单行 + 省略号，否则会折行破坏节奏 */
+.row .meta{ font-size:clamp(8px,1.35vw,var(--fs-meta)); color:var(--text-3); margin-top:3px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.row .badge{ font-size:9.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+  padding:2px 6px; border-radius:var(--r-chip); }
+.row .badge.ok{ color:var(--green); background:var(--green-bg); }
+.row .badge.no{ color:var(--red);   background:var(--red-bg); }
+/* 待审批块：实测是【点线 dotted】边框 + 琥珀微背景的独立块 */
+.row.pending{ border:1px dotted rgba(246,193,87,.55); border-left:3px solid var(--amber);
+  border-radius:var(--r-row); background:var(--amber-bg); margin:3px 0;
+  transition:border .25s var(--ease-soft), background .25s var(--ease-soft); }
+.row.pending .nm{ color:var(--amber); }
+/* 暗态占位行：未来事件的行位（实测从一开始就存在，只是极暗） */
+.row.dim{ opacity:.32; }
+.row.dim .nm{ color:var(--text-2); }
+.row.dim .val{ color:var(--text-3); }
+
+/* GPU 行：状态点 + 名称 / 负载条 / 数值 在同一行，meta 在下一行 */
+.gpu .top{ align-items:center; }
+.gpu .nm{ flex:none; white-space:nowrap; }
+.gpu .val{ flex:none; color:var(--text-1); }
+.gpu .bar{ flex:1; min-width:24px; max-width:78px; }
+.bar{ height:4px; border-radius:2px; background:rgba(255,255,255,.07); overflow:hidden; }
+.bar span{ display:block; height:100%; border-radius:2px; background:var(--bar,var(--blue));
+  transform-origin:left center; transition:transform var(--dur-slow) var(--ease-soft); }
+.sdot{ width:6px; height:6px; border-radius:50%; display:inline-block; margin-right:6px;
+  background:var(--green); animation:breathe 2s ease-in-out infinite alternate; }
+.sdot.wait{ background:var(--amber); } .sdot.down{ background:var(--red); }
+.sdot.none{ background:var(--text-3); animation:none; }
+
+/* ---------- 网络图 ---------- */
+.netbox{ position:relative; flex:1; min-height:280px;
+  background:rgba(255,255,255,.012);
+  border:1px solid var(--line); border-radius:var(--r-panel); overflow:visible; }
+.netbox svg{ display:block; width:100%; height:100%; border-radius:var(--r-panel); }
+/* 实测：中心节点是"深色圆 + 粉红发光描边 + 更外的粉点虚线环" */
+.hub{ fill:#12161F; stroke:var(--pink); stroke-width:1.5;
+  filter:drop-shadow(0 0 10px rgba(242,94,151,.75)); }
+.hub-ring{ fill:none; stroke:rgba(242,94,151,.38); stroke-width:1; stroke-dasharray:3 5;
+  transform-origin:200px 132px; animation:spin 14s linear infinite; }
+.hub-val{ fill:var(--text-1); font-family:var(--font-mono); font-size:11px; font-weight:700;
+  text-anchor:middle; }
+.hub-sub{ fill:var(--text-3); font-family:var(--font-mono); font-size:6px; text-anchor:middle;
+  letter-spacing:.08em; }
+/* 底轨极淡；真正的"线"是 JS 撒出的一串彩色小圆点（点链） */
+.edge{ fill:none; stroke:rgba(255,255,255,.05); stroke-width:1; }
+
+/* ---------- 审批弹窗 ---------- */
+.action{
+  position:absolute; left:50%; top:62%; width:min(320px,112%); transform:translate(-50%,-50%) scale(.96);
+  opacity:0; pointer-events:none;
+  background:rgba(12,12,24,.96); backdrop-filter:blur(8px);
+  border:1px solid var(--amber-line); border-radius:var(--r-panel); box-shadow:var(--glow-amber);
+  padding:12px 14px; z-index:5;
+  transition:opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.action.show{ opacity:1; transform:translate(-50%,-50%) scale(1); pointer-events:auto; }
+.action.out { opacity:0; transform:translate(-50%,-50%) scale(.98); }
+/* 实测：弹窗标题是白色粗体（琥珀色只用于边框与 RISK 等状态词） */
+.action h4{ margin:0 0 6px; font-size:14px; font-weight:700; color:var(--text-1); }
+.action .l1{ font-size:12px; color:var(--text-1); }
+.action .l2{ font-size:var(--fs-meta); color:var(--text-3); margin-top:2px; }
+.action .l2 b{ color:var(--amber); font-weight:600; }
+.acts{ display:flex; gap:8px; margin-top:12px; }
+.btn{ flex:1; height:30px; border-radius:var(--r-btn); border:1px solid transparent;
+  font-size:12px; font-weight:600; cursor:pointer;
+  transition:transform var(--dur-micro) var(--ease-out), filter .2s, background .2s, color .2s; }
+/* 实测默认态：approve 是"暗底 + 亮描边 + 白字"；只有 hover 时才翻成浅色实心深字 */
+.btn.primary{ background:rgba(255,255,255,.06); color:var(--text-1); border-color:rgba(255,255,255,.42); }
+.btn.ghost{ background:rgba(255,255,255,.03); color:var(--text-2); border-color:rgba(255,255,255,.10); }
+.btn.primary:hover{ background:rgba(255,255,255,.92); color:#0C0C18; }
+.btn.ghost:hover{ background:rgba(255,255,255,.10); color:var(--text-1); }
+.btn:active{ transform:scale(.97); }
+.btn.done{ background:var(--green-bg); color:var(--green); border-color:var(--green-line); pointer-events:none; }
+
+/* ---------- MONEY ---------- */
+.money{ display:grid; grid-template-columns:1fr var(--col-money); gap:var(--sp-4); padding:16px 16px 0; }
+.panel{ border:1px solid var(--line); border-radius:var(--r-panel); padding:12px; background:rgba(255,255,255,.012); }
+.panel .pt{ font-size:var(--fs-label); font-weight:var(--fw-label); letter-spacing:var(--ls-label);
+  text-transform:uppercase; color:var(--text-3); margin-bottom:8px; }
+/* 图例：竖排两行，紧跟 MONEY 标签下方（实测） */
+.legend{ display:flex; flex-direction:column; gap:3px; font-size:var(--fs-meta);
+  color:var(--text-2); margin-bottom:6px; }
+.legend i{ width:10px; height:2px; border-radius:1px; display:inline-block; margin-right:6px; vertical-align:middle; }
+.legend .rev i{ background:var(--green); } .legend .cost i{ background:var(--pink); }
+.chart{ position:relative; }
+.chart svg{ display:block; width:100%; height:120px; }
+.line{ fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.line.rev{ stroke:var(--green); } .line.cost{ stroke:var(--pink); }
+/* 末端高亮圆点（带 glow）——实测绿线末端有明显光点 */
+.tip{ position:absolute; width:8px; height:8px; border-radius:50%; background:var(--green);
+  box-shadow:0 0 12px rgba(82,216,157,.95); transform:translate(-50%,-50%);
+  transition:left .5s var(--ease-soft), top .5s var(--ease-soft); }
+
+/* 结算卡 */
+.tally .tr{ display:flex; justify-content:space-between; align-items:center; height:22px; font-size:11.5px; }
+.tally .tr .k{ color:var(--text-3); }
+.tally .tr .v{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; color:var(--text-1); }
+.tally .tr.neg .v{ color:var(--red); } .tally .tr.cyan .v{ color:var(--cyan); }
+.tally .total{ margin-top:8px; padding:8px 10px; border-radius:var(--r-row); background:var(--bg-inset); }
+.tally .total .k{ color:var(--text-2); } .tally .total .v{ color:var(--green); font-weight:700; }
+
+/* ---------- 日志 ---------- */
+.logbox{ margin:16px 16px 0; height:112px; overflow:hidden;
+  border:1px solid var(--line); border-radius:var(--r-panel); padding:10px 12px;
+  background:rgba(255,255,255,.012); }
+.lrow{ display:flex; gap:8px; font-family:var(--font-mono); font-size:var(--fs-log);
+  line-height:1.55; padding:1px 0;
+  transition:opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out); }
+.lrow + .lrow{ border-top:1px solid rgba(255,255,255,.04); }   /* 实测日志行之间也有细分隔线 */
+.lrow.enter{ opacity:0; transform:translateY(6px); }
+.lrow.leave{ opacity:0; transform:translateY(-4px); }
+.lrow .t{ color:var(--text-4); flex:none; }
+.lrow .g{ flex:none; width:52px; }
+/* 实测标签配色：you=黄 / risk=粉红 / router=粉紫 / scout·scribe=青绿 / quant=紫 */
+.lrow .g[data-tag="you"]{color:var(--yellow)} .lrow .g[data-tag="risk"]{color:var(--pink)}
+.lrow .g[data-tag="router"]{color:#C08BF0} .lrow .g[data-tag="scout"]{color:#5BD8B0}
+.lrow .g[data-tag="quant"]{color:var(--purple)} .lrow .g[data-tag="scribe"]{color:#5BD8B0}
+.lrow .m{ color:var(--text-2); }
+.lrow .m b{ color:var(--text-1); font-weight:400; }
+
+/* ---------- 下方浅色区块（落地页下一屏）----------
+   实测：只露出约 30px 的一窄条（浅灰白底 + 强模糊彩色光斑），下面直接是页面外 */
+.next{ position:relative; height:54px; margin-top:16px; border-radius:var(--r-card) var(--r-card) 0 0;
+  background:#EFF0F3; overflow:hidden; }
+.next .blob{ position:absolute; border-radius:50%; filter:blur(80px); opacity:.55; }
+.next .b1{ width:200px; height:200px; background:#F6C157; left:-60px;  top:-140px; }
+.next .b2{ width:180px; height:180px; background:#41D2F3; left:180px;  top:-150px; }
+.next .b3{ width:160px; height:160px; background:#F25E97; right:-40px; top:-130px; }
+
+/* ⚠️ 关键：视频本身就是 592px 窄屏下的"三栏并排 + 图表/结算卡左右并排"密集布局。
+   因此断点必须压到 380px 以下，绝不能按常规响应式在 820/768 就塌成单列 —— 那会完全走样 */
+@media (max-width:380px){
+  .workspace{ grid-template-columns:1fr; }
+  .money{ grid-template-columns:1fr; }
+}
+/* 注意：实测在 592px 宽的移动视口下，页头依然是"左品牌 / 右数据"两列、统计行依然 4 列横排，
+   所以断点要压得很低，不要一提窄屏就塌成单列 —— 那是还原度的大坑 */
+@media (max-width:400px){
+  .hd{ grid-template-columns:1fr; }
+  .hdright{ align-items:flex-start; }
+  .stats{ grid-template-columns:repeat(4,1fr); gap:10px; }
+  .stat{ text-align:left; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <!-- 窗口装饰条 -->
+    <div class="chrome">
+      <div class="dots"><i></i><i></i><i></i></div>
+      <div class="title">Grok Bot — token night shift · stopLine on</div>
+    </div>
+
+    <!-- 页头 -->
+    <div class="hd">
+      <div class="brand">
+        <div class="avatar"><i></i><i></i></div>
+        <div>
+          <h1>Grok Bot</h1>
+          <div class="sub"><span class="dot"></span><span class="shift">night shift</span><span class="clock">· 03:26</span></div>
+        </div>
+      </div>
+      <div class="hdright">
+        <div class="profit">
+          <div class="big tabular" id="profit">+$0.00</div>
+          <div class="cap">profit tonight · of the $1,000 budget</div>
+        </div>
+        <!-- 统计行：数值在上、标签在下 -->
+        <div class="stats">
+          <div class="stat"><div class="v tabular" id="tokens">0M</div><div class="k">tokens served</div></div>
+          <div class="stat"><div class="v tabular" id="rate">0k</div><div class="k">tok/s now</div></div>
+          <div class="stat"><div class="v tabular" id="hosts">0/8</div><div class="k">nodes on</div></div>
+          <div class="stat"><div class="v tabular" id="alerts">0</div><div class="k">overnight</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chip 行 -->
+    <div class="chips" id="chips"></div>
+
+    <!-- 角色列头 -->
+    <div class="roles">
+      <div class="role scout active"><div class="ico"><i></i><i></i></div><div class="nm">scout</div></div>
+      <div class="role quant"><div class="ico"><i></i><i></i></div><div class="nm">quant</div></div>
+      <div class="role risk"><div class="ico"><i></i><i></i></div><div class="nm">risk</div></div>
+      <div class="role router"><div class="ico"><i></i><i></i></div><div class="nm">router</div></div>
+      <div class="role you"><div class="ico"></div><div class="nm">you</div></div>
+    </div>
+
+    <!-- 工作区 -->
+    <div class="workspace">
+      <section>
+        <div class="colhead">clients</div>
+        <div id="clients"></div>
+      </section>
+
+      <section>
+        <div class="colhead">router</div>
+        <div class="netbox" id="netbox">
+          <!-- viewBox 比例尽量贴近容器比例，避免 preserveAspectRatio="none" 把曲线压平 -->
+          <svg viewBox="0 0 400 300" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="gradGreen" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(82,216,157,.18)"/>
+                <stop offset="100%" stop-color="rgba(82,216,157,0)"/>
+              </linearGradient>
+            </defs>
+            <g id="edges"></g>
+            <g id="particles"></g>
+            <circle class="hub-ring" cx="200" cy="132" r="36"/>
+            <circle class="hub" cx="200" cy="132" r="27"/>
+            <text class="hub-val" x="200" y="133" id="hubVal">15.1k</text>
+            <text class="hub-sub" x="200" y="145">TOK/S</text>
+          </svg>
+          <!-- 审批弹窗 -->
+          <div class="action" id="action">
+            <h4 id="acTitle">RENT 6×H100 · Dallas</h4>
+            <div class="l1" id="acL1">$11.28/h · till 07:00</div>
+            <div class="l2" id="acL2">queue 2.4k tok/s · RISK: <b>PASS</b></div>
+            <div class="acts">
+              <button class="btn primary" id="btnApprove">approve</button>
+              <button class="btn ghost" id="btnDeny">deny</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="colhead">gpu nodes</div>
+        <div id="gpus"></div>
+      </section>
+    </div>
+
+    <!-- MONEY -->
+    <div class="money">
+      <div class="panel">
+        <div class="pt">money</div>
+        <!-- 实测：图例是"竖排两行"，贴在图表左上角 -->
+        <div class="legend">
+          <span class="rev"><i></i>token revenue</span>
+          <span class="cost"><i></i>GPU rent</span>
+        </div>
+        <div class="chart">
+          <svg viewBox="0 0 300 120" preserveAspectRatio="none">
+            <path id="areaRev" fill="url(#gradGreen)" stroke="none"></path>
+            <path id="lineCost" class="line cost"></path>
+            <path id="lineRev"  class="line rev"></path>
+          </svg>
+          <!-- 末端当前值指示点：用 HTML 元素定位，避免被非等比 SVG 拉成椭圆 -->
+          <span class="tip" id="tipRev"></span>
+        </div>
+      </div>
+      <div class="panel tally">
+        <div class="pt">tonight</div>
+        <div class="tr"><span class="k">token revenue</span><span class="v tabular" id="tRev">$0.00</span></div>
+        <div class="tr neg"><span class="k">GPU rent</span><span class="v tabular" id="tCost">-$0.00</span></div>
+        <div class="tr cyan"><span class="k">avg $ / 1M</span><span class="v tabular" id="tAvg">$0.00</span></div>
+        <div class="tr total"><span class="k">profit</span><span class="v tabular" id="tProfit">$0.00</span></div>
+      </div>
+    </div>
+
+    <!-- 日志 -->
+    <div class="logbox" id="log"></div>
+  </div>
+
+  <div class="next"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+</div>
+
+<script>
+/* ============================================================
+   1. 状态
+   ============================================================ */
+const S = {
+  tokens: 196_200_000, rate: 15.1, hosts: 5, alerts: 0,
+  revenue: 794.56, cost: 226.66, avg: 4.95, profit: 567.70,
+  revSeries: [], costSeries: [],
+};
+
+/* 实测：列表从一开始就包含"未来事件"的暗态占位行，事件发生后逐条点亮 */
+const CLIENTS = [
+  { nm:'chat.app',    meta:'11.3k tok/s · $1.99 / 1M', val:'3.2k', c:'var(--cyan)',   st:'ok'  },
+  { nm:'code.copilot',meta:'8.4k tok/s · $2.40 / 1M',  val:'1.3k', c:'var(--cyan)',   st:'ok'  },
+  { nm:'support.bot', meta:'6.1k tok/s · $1.55 / 1M',  val:'1.7k', c:'var(--green)',  st:'ok'  },
+  { nm:'doc.search',  meta:'9.8k tok/s · $1.20 / 1M',  val:'2.4k', c:'var(--yellow)', st:'ok'  },
+  { nm:'game NPCs',   meta:'14.2k tok/s · $4.29 / 1M', val:'6.5k', c:'var(--pink)',   st:'ok'  },
+  { nm:'translator',  meta:'7.9k tok/s · $3.10 / 1M',  val:'2.2k', c:'var(--purple)', st:'dim' },
+  { nm:'voice agent', meta:'99.99% SLA unreachable',   val:'—',    c:'var(--line-2)', st:'dim' },
+];
+const GPUS = [
+  { nm:'N1 · Oslo',      meta:'llama-70b · $12.40/h',  val:'2.9k', pct:.58, bar:'var(--blue)',  st:'ok'      },
+  { nm:'N2 · Ashburn',   meta:'llama-70b · $12.10/h',  val:'3.4k', pct:.72, bar:'var(--amber)', st:'ok'      },
+  { nm:'N3 · Frankfurt', meta:'mixtral-8x7b · $9.80/h',val:'2.1k', pct:.42, bar:'var(--blue)',  st:'ok'      },
+  { nm:'N4 · Oslo',      meta:'qwen-32b · $13.20/h',   val:'2.8k', pct:.55, bar:'var(--blue)',  st:'ok'      },
+  { nm:'N5 · Helsinki',  meta:'llama-70b · $11.90/h',  val:'3.0k', pct:.66, bar:'var(--amber)', st:'ok'      },
+  { nm:'N6 · Dallas',    meta:'llama-70b · $11.28/h',  val:'—',    pct:0,   bar:'var(--blue)',  st:'pending' },
+  { nm:'N7 · Reno',      meta:'llama-8b · $11.68/h',   val:'—',    pct:0,   bar:'var(--amber)', st:'dim'     },
+  { nm:'N8 · Paris',     meta:'qwen-32b · $12.72/h',   val:'—',    pct:0,   bar:'var(--blue)',  st:'dim'     },
+];
+
+/* ============================================================
+   2. 数字插值器（odometer）：指数平滑，永不阶梯跳变
+   ============================================================ */
+function counter(el, fmt){
+  let cur = 0, target = 0;
+  return { set(v){ target = v; }, tick(){
+    cur += (target - cur) * 0.12;
+    if (Math.abs(target - cur) < 0.005) cur = target;
+    el.textContent = fmt(cur);
+  }};
+}
+const C = {
+  profit: counter(document.getElementById('profit'), v => '+$' + v.toFixed(2)),
+  tokens: counter(document.getElementById('tokens'), v => (v/1e6).toFixed(1) + 'M'),
+  rate:   counter(document.getElementById('rate'),   v => v.toFixed(1) + 'k'),
+  hosts:  counter(document.getElementById('hosts'),  v => Math.round(v) + '/8'),
+  alerts: counter(document.getElementById('alerts'), v => String(Math.round(v))),
+  tRev:   counter(document.getElementById('tRev'),   v => '$' + v.toFixed(2)),
+  tCost:  counter(document.getElementById('tCost'),  v => '-$' + v.toFixed(2)),
+  tAvg:   counter(document.getElementById('tAvg'),   v => '$' + v.toFixed(2)),
+  tProfit:counter(document.getElementById('tProfit'),v => '$' + v.toFixed(2)),
+  hub:    counter(document.getElementById('hubVal'), v => v.toFixed(1) + 'k'),
+};
+function syncCounters(){
+  C.profit.set(S.profit); C.tokens.set(S.tokens); C.rate.set(S.rate);
+  C.hosts.set(S.hosts);   C.alerts.set(S.alerts);
+  C.tRev.set(S.revenue);  C.tCost.set(S.cost); C.tAvg.set(S.avg); C.tProfit.set(S.profit);
+  C.hub.set(S.rate);
+}
+
+/* ============================================================
+   3. 网络图：贝塞尔连线 + 沿路径流动的粒子
+   ============================================================ */
+const SVGNS = 'http://www.w3.org/2000/svg';
+// 实测：中心节点位于区域"垂直居中略偏上"，审批弹窗压在它下方一点点
+const HUB = { x:200, y:132 };
+const LEFT_NODES  = [{x:18,y:40},{x:18,y:88},{x:18,y:132},{x:18,y:186},{x:18,y:246}];
+const RIGHT_NODES = [{x:382,y:40},{x:382,y:88},{x:382,y:132},{x:382,y:186},{x:382,y:246}];
+/* 每条"线"的颜色 = 该数据流实体的语义色（与左右列表的 accent 一致） */
+const EDGE_COLORS = ['var(--cyan)','var(--cyan)','var(--green)','var(--yellow)','var(--pink)',
+                     'var(--pink)','var(--cyan)','var(--cyan)','var(--purple)','var(--amber)'];
+
+// 控制点水平外扩 → 明显的 S 形汇聚（实测曲线呈扇形收拢，弧度较大）
+function bezier(a, b){
+  const dx = Math.abs(b.x - a.x) * 0.50;
+  return `M${a.x},${a.y} C${a.x+dx},${a.y} ${b.x-dx},${b.y} ${b.x},${b.y}`;
+}
+const edgesG = document.getElementById('edges');
+const partsG = document.getElementById('particles');
+const chains = [];                       // 每条边 = 一串点
+const SAMPLE_STEP = 3;                   // 路径预采样步长(px)
+const DOT_GAP     = 6;                     // 点间距(px)；取 SAMPLE_STEP 的整数倍以保证间距严格均匀
+
+const ALL = LEFT_NODES.map(n => [n, HUB]).concat(RIGHT_NODES.map(n => [HUB, n]));
+/* ⚠️ 必须在布局完成后初始化：SVG 用 height:100% 时，若此时父容器高度还没算出来，
+   getTotalLength() 会返回 0，预采样表变空数组，之后索引取到 undefined 直接报错 */
+let initTries = 0;
+function initChains(){
+  if (chains.length) return;                       // 幂等
+  // 注意：不能用 <g id="edges"> 测高度 —— 它此刻还没有子节点，高度恒为 0，会导致永远初始化不了
+  const box = document.getElementById('netbox');
+  if (box && box.getBoundingClientRect().height < 40 && initTries++ < 90){
+    requestAnimationFrame(initChains); return;      // 布局未就绪 → 下一帧重试
+  }
+  ALL.forEach(([a, b], i) => {
+  const p = document.createElementNS(SVGNS, 'path');
+  p.setAttribute('class', 'edge');
+  p.setAttribute('d', bezier(a, b));
+  edgesG.appendChild(p);
+
+    // ① 预采样路径点（路径静态，只算一次；运行时只做数组索引，避免每帧 getPointAtLength）
+    const len = p.getTotalLength();
+    if (!len) return;                      // 极端情况兜底
+    const samples = [];
+    for (let d = 0; d <= len; d += SAMPLE_STEP) samples.push(p.getPointAtLength(d));
+    const N = samples.length;
+    if (N < 4) return;
+
+    // ② 沿路径撒点
+    const col = EDGE_COLORS[i];
+    const perDot = DOT_GAP / SAMPLE_STEP;
+    const count = Math.max(4, Math.floor(N / perDot));
+    const dots = [];
+    for (let k = 0; k < count; k++){
+      const c = document.createElementNS(SVGNS, 'circle');
+      c.setAttribute('r', '1.8');
+      // SVG 呈现属性不支持 var()，必须用内联样式
+      c.style.fill = col; c.style.color = col;
+      c.style.filter = 'drop-shadow(0 0 2px currentColor)';
+      partsG.appendChild(c);
+      dots.push({ el:c, base: Math.round(k * perDot) });
+    }
+    // ③ 端点淡出表（越靠近曲线两端越透明）
+    const fade = new Array(N);
+    const fadeLen = Math.max(6, N * 0.10);
+    for (let d = 0; d < N; d++) fade[d] = Math.min(1, Math.min(d, N-1-d) / fadeLen);
+    chains.push({ samples, dots, fade, N });
+  });
+}
+if (document.readyState === 'complete') initChains();
+else window.addEventListener('load', initChains);
+
+/* 点链整体沿路径流动：所有边共用一个漂移量，形成"数据在传输"的连续感 */
+let drift = 0;
+const FLOW_SPEED = 0.030;                // 采样点 / 毫秒 → 走完全程约 1.2~1.6s
+function stepChains(dt){
+  if (!chains.length) return;
+  drift += dt * FLOW_SPEED;
+  const off = Math.floor(drift);
+  for (const ch of chains){
+    const { samples, dots, fade, N } = ch;
+    if (!N) continue;
+    for (const d of dots){
+      const idx = ((d.base + off) % N + N) % N;   // 保证恒为有效下标
+      const pt = samples[idx];
+      if (!pt) continue;
+      d.el.style.transform = `translate(${pt.x.toFixed(1)}px,${pt.y.toFixed(1)}px)`;
+      d.el.style.opacity = fade[idx].toFixed(2);
+    }
+  }
+}
+
+/* ============================================================
+   4. 主循环：一个 rAF 驱动全部动画（数字 + 粒子）
+   ============================================================ */
+let last = performance.now();
+/* 调试/截图开关：控制台执行 window.__pause = true 可冻结所有持续动画
+   （自动化截图时尤其有用 —— 否则 rAF 不停会让 fullPage 截图无法稳定） */
+window.__pause = false;
+(function loop(now){
+  const dt = Math.min(64, now - last); last = now;
+  if (!window.__pause){
+    Object.values(C).forEach(c => c.tick());
+    stepChains(dt);                      // 点链流动
+  }
+  requestAnimationFrame(loop);
+})(last);
+
+// 点链自带颜色与流动，无需额外高亮（保留空实现以兼容调用点）
+function markLive(){}
+
+/* ============================================================
+   5. 列表渲染
+   ============================================================ */
+const clientsEl = document.getElementById('clients'), gpusEl = document.getElementById('gpus');
+function renderClients(){
+  clientsEl.innerHTML = '';
+  CLIENTS.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'row' + (c.st === 'dim' ? ' dim' : '');
+    d.style.setProperty('--accent', c.c);
+    d.innerHTML = `<div class="top"><span class="nm">${c.nm}</span><span class="val">${c.val}</span></div>
+                   <div class="meta">${c.meta}</div>`;
+    clientsEl.appendChild(d);
+  });
+}
+function renderGpus(){
+  gpusEl.innerHTML = '';
+  GPUS.forEach(g => {
+    const d = document.createElement('div');
+    d.className = 'row gpu'
+      + (g.st === 'pending' ? ' pending' : '')
+      + (g.st === 'dim' ? ' dim' : '');
+    d.style.setProperty('--bar', g.bar);
+    const dot = g.st === 'pending' ? 'wait' : g.st === 'dim' ? 'none' : 'ok';
+    const nm = g.st === 'pending'
+      ? `${g.nm} <span style="font-size:9px;color:var(--amber)">pending your OK</span>`
+      : g.nm;
+    d.innerHTML = `<div class="top">
+        <span class="nm"><span class="sdot ${dot}"></span>${nm}</span>
+        <span class="bar"><span style="transform:scaleX(${g.pct})"></span></span>
+        <span class="val">${g.val}</span></div>
+      <div class="meta">${g.meta}</div>`;
+    gpusEl.appendChild(d);
+  });
+}
+/* 把某个"暗态占位行 / 待批虚线块"点亮为正式行 */
+function turnOn(arr, key, patch){
+  const it = arr.find(x => x.nm.includes(key));
+  if (it) Object.assign(it, patch);
+}
+renderClients(); renderGpus();
+
+/* ============================================================
+   6. Chip 行
+   ============================================================ */
+const chipsEl = document.getElementById('chips');
+function setChips(list){
+  chipsEl.innerHTML = '';
+  list.forEach(c => {
+    const s = document.createElement('span');
+    s.className = 'chip ' + (c.type || '');
+    s.innerHTML = c.text;
+    chipsEl.appendChild(s);
+  });
+}
+function baseChips(extra){
+  const list = [
+    { text:'scanning 14 clusters' },
+    { text:'blended $' + S.avg.toFixed(2) + ' / 1M' },
+    { text:'watching ' + S.hosts + ' hosts' },
+  ];
+  if (extra) list.push(extra);
+  list.push({ text:'asleep', type:'dim' });
+  list.push({ text:'on call', type:'dim' });
+  setChips(list);
+}
+baseChips();
+
+/* ============================================================
+   7. 日志控制台
+   ============================================================ */
+const logEl = document.getElementById('log');
+function log(tag, msg){
+  const d = document.createElement('div');
+  d.className = 'lrow enter';
+  const t = new Date(Date.now());
+  const hh = String(t.getHours()).padStart(2,'0'), mm = String(t.getMinutes()).padStart(2,'0');
+  d.innerHTML = `<span class="t">${hh}:${mm}</span><span class="g" data-tag="${tag}">${tag}</span>`
+              + `<span class="m">${msg.replace(/(\$[\d,.]+|[\d.]+[kM]?%?)/g, '<b>$1</b>')}</span>`;
+  logEl.appendChild(d);
+  requestAnimationFrame(() => d.classList.remove('enter'));
+  // 注意：leave 是 160ms 后异步移除的，所以必须用快照数组驱动循环——
+  // 直接 while(children.length > 6) 会因 length 不下降而死循环，卡死主线程
+  const rows = [...logEl.children];
+  rows.slice(0, Math.max(0, rows.length - 6)).forEach(old => {
+    if (old.classList.contains('leave')) return;
+    old.classList.add('leave');
+    setTimeout(() => old.remove(), 160);
+  });
+}
+
+/* ============================================================
+   8. 折线图（Catmull-Rom → 三次贝塞尔平滑）
+   ============================================================ */
+const W = 300, H = 120;
+function smooth(pts){
+  if (pts.length < 2) return '';
+  let d = `M${pts[0][0]},${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++){
+    const p0 = pts[i-1] || pts[i], p1 = pts[i], p2 = pts[i+1], p3 = pts[i+2] || p2;
+    const c1x = p1[0] + (p2[0]-p0[0])/6, c1y = p1[1] + (p2[1]-p0[1])/6;
+    const c2x = p2[0] - (p3[0]-p1[0])/6, c2y = p2[1] - (p3[1]-p1[1])/6;
+    d += ` C${c1x},${c1y} ${c2x},${c2y} ${p2[0]},${p2[1]}`;
+  }
+  return d;
+}
+const tipEl = document.getElementById('tipRev');
+// 实测折线是"直段连接"（有明显折角），不是贝塞尔平滑曲线
+function poly(pts){ return pts.map((p,i) => (i?'L':'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' '); }
+function drawChart(){
+  if (S.revSeries.length < 2) return;
+  const max = Math.max(...S.revSeries, ...S.costSeries) * 1.10 || 1;
+  const n = S.revSeries.length;
+  const step = W / Math.max(6, n - 1);
+  const toPts = arr => arr.map((v,i) => [i*step, H - (v/max)*(H-16) - 8]);
+  const rp = toPts(S.revSeries), cp = toPts(S.costSeries);
+  const dRev = poly(rp), dCost = poly(cp);
+  document.getElementById('lineRev').setAttribute('d', dRev);
+  document.getElementById('lineCost').setAttribute('d', dCost);
+  document.getElementById('areaRev').setAttribute('d',
+    dRev + ` L${rp[n-1][0]},${H} L${rp[0][0]},${H} Z`);
+  // 末端当前值指示点
+  tipEl.style.left = (rp[n-1][0] / W * 100).toFixed(2) + '%';
+  tipEl.style.top  = (rp[n-1][1] / H * 100).toFixed(2) + '%';
+}
+
+/* ============================================================
+   9. 审批弹窗（非模态浮层）
+   ============================================================ */
+const actionEl = document.getElementById('action');
+let pending = null;
+function showAction(cfg){
+  pending = cfg;
+  document.getElementById('acTitle').textContent = cfg.title;
+  document.getElementById('acL1').textContent = cfg.l1;
+  document.getElementById('acL2').innerHTML = cfg.l2;
+  const b = document.getElementById('btnApprove');
+  b.className = 'btn primary'; b.textContent = 'approve';
+  b.style.color = ''; b.style.background = ''; b.style.borderColor = '';  // 清掉上一次结果态
+  actionEl.classList.remove('out');
+  actionEl.classList.add('show');           /* 实测入场 <66ms，此处 180ms 更顺滑 */
+  baseChips({ text: cfg.chip, type:'todo' });
+  markLive(cfg.live || []);
+}
+function closeAction(){
+  actionEl.classList.add('out');
+  setTimeout(() => actionEl.classList.remove('show','out'), 220);
+  markLive([]);
+}
+function resolve(ok){
+  if (!pending) return;
+  const cfg = pending;
+  const b = document.getElementById('btnApprove');
+  b.textContent = ok ? '✓ approved' : '✕ denied';
+  b.className = 'btn done';
+  b.style.color = ok ? 'var(--green)' : 'var(--red)';
+  b.style.background = ok ? 'var(--green-bg)' : 'var(--red-bg)';
+  b.style.borderColor = ok ? 'var(--green-line)' : 'var(--red-bg)';
+  setTimeout(closeAction, 320);
+  cfg.resolve(ok);                          /* 同步驱动：列表 / 日志 / 数字 / 图表 */
+  pending = null;
+}
+document.getElementById('btnApprove').onclick = () => resolve(true);
+document.getElementById('btnDeny').onclick    = () => resolve(false);
+
+/* ============================================================
+   10. 心跳 + 事件剧本（11 秒可完整重放）
+   ============================================================ */
+// 初始两条曲线
+for (let i = 0; i < 8; i++){ S.revSeries.push(120 + i*70 + Math.random()*30); S.costSeries.push(40 + i*22 + Math.random()*14); }
+drawChart(); syncCounters();
+
+setInterval(() => {
+  S.tokens += 14_000_000 + (Math.random()*4e6 - 2e6);
+  S.rate   = Math.min(20, Math.max(12, S.rate + (Math.random()*1.6 - .8)));
+  S.revenue += 18 + Math.random()*28;
+  S.cost    += 6 + Math.random()*12;
+  S.profit   = S.revenue - S.cost;
+  S.avg      = S.revenue / (S.tokens/1e6);
+  S.revSeries.push(S.revenue); S.costSeries.push(S.cost);
+  if (S.revSeries.length > 40){ S.revSeries.shift(); S.costSeries.shift(); }
+  drawChart(); syncCounters();
+  if (!pending) baseChips();          // 有待审批弹窗时保留 todo chip，别被心跳冲掉
+}, 1000);
+
+// ---- 剧本 ----
+const SCRIPT = [
+  { at:0,    run:() => showAction({
+      title:'RENT 6×H100 · Dallas', l1:'$11.28/h · till 07:00', l2:'queue 2.4k tok/s · RISK: <b>PASS</b>',
+      chip:'need Dallas + <span class="you">&gt; YOU</span>', live:[5,6],
+      resolve:(ok)=>{
+        if(!ok){ log('you','denied Dallas — keep 5 hosts'); return; }
+        // 待批的虚线块 → 点亮为正式节点行（行位本就存在，不是插入新行）
+        turnOn(GPUS,'Dallas',{ st:'ok', val:'3.1k', pct:.64, bar:'var(--blue)' });
+        S.hosts = Math.min(8, S.hosts+1); S.alerts = 0;
+        renderGpus(); syncCounters();
+        log('you','approved <b>N6 · Dallas</b> · 6×H100 online');
+        log('router','routing ' + S.rate.toFixed(1) + 'k tok/s → ' + S.hosts + ' hosts');
+      }}) },
+  { at:2450, run:() => showAction({
+      title:'SIGN – translator', l1:'contract pending your OK', l2:'pays upfront · uses anytime · RISK: <b>PASS</b>',
+      chip:'sign translator? <span class="you">&gt; YOU</span>', live:[0,1],
+      resolve:(ok)=>{
+        if(!ok){ log('you','declined translator — 99.99% SLA unreachable'); return; }
+        turnOn(CLIENTS,'translator',{ st:'ok' });
+        renderClients();
+        log('you','signed translator · upfront credited');
+        log('scout','found H100×8 @ $11.68/h in Reno');
+      }}) },
+  { at:4300, run:() => {
+      S.alerts = 1;
+      baseChips({ text:'Kill - price spiked 2x', type:'warn' });
+      document.querySelector('.role.risk').classList.add('active');   /* RISK 图标脉冲 */
+      log('risk','Kill Warsaw — price spiked <b>2.1x</b> in 1h');
+      setTimeout(()=>{ document.querySelector('.role.risk').classList.remove('active');
+                       baseChips({ text:'PASS - clean', type:'ok' }); S.alerts = 0; syncCounters(); }, 2200);
+    } },
+  { at:7500, run:() => showAction({
+      title:'RENT 8×H100 · Reno', l1:'$11.68/h · till 07:00', l2:'queue 2.4k tok/s · RISK: <b>PASS</b>',
+      chip:'need Reno + <span class="you">&gt; YOU</span>', live:[7,8],
+      resolve:(ok)=>{
+        if(!ok) return;
+        turnOn(GPUS,'Reno',{ st:'ok', val:'3.6k', pct:.78, bar:'var(--amber)' });
+        S.hosts = Math.min(8, S.hosts+1); renderGpus(); syncCounters();
+        log('you','approved <b>N7 · Reno</b> · 8×H100 online');
+      }}) },
+  { at:9500, run:() => showAction({
+      title:'RENT 8×H100 · Paris', l1:'$12.72/h · till 07:00', l2:'queue 2.4k tok/s · RISK: <b>PASS</b>',
+      chip:'need Paris + <span class="you">&gt; YOU</span>', live:[9,6],
+      resolve:(ok)=>{
+        if(!ok) return;
+        turnOn(GPUS,'Paris',{ st:'ok', val:'3.3k', pct:.70, bar:'var(--blue)' });
+        S.hosts = Math.min(8, S.hosts+1); renderGpus(); syncCounters();
+        log('you','approved <b>N8 · Paris</b> · 8×H100 online');
+        log('scribe','checkpoint · ' + (S.tokens/1e6).toFixed(1) + 'M tokens · +$' + S.profit.toFixed(2) + ' so far');
+      }}) },
+];
+// 演示模式：弹窗出现 900ms 后自动批准（录制视频即此行为）
+SCRIPT.forEach(s => setTimeout(() => { s.run(); if (s.auto !== false) setTimeout(() => resolve(true), 900); }, s.at));
+
+log('router','routing 15.3k tok/s → 5 hosts');
+log('scout','found H100×8 @ $11.20/h in Dallas');
+log('risk','PASS Dallas host · uptime 99.9%');
+log('you','denied voice agent — $500 penalty');
+log('scribe','checkpoint · 191.3M tokens · +$553.88 so far');
+</script>
+</body>
+</html>

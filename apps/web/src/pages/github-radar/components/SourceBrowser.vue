@@ -1,6 +1,6 @@
 <template>
-  <!-- 源码浏览器：文件树 + 代码查看（轻量语法着色） -->
-  <div class="source-browser">
+  <!-- 源码浏览器：真递归文件树 + 代码查看（轻量语法着色） -->
+  <div class="source-browser" data-cy="source-browser">
     <div v-if="loadingTree" class="source-browser__loading">
       <q-spinner-dots size="28px" color="primary" />
       <span class="text-caption q-ml-sm" style="color: var(--color-text-secondary)">{{
@@ -11,33 +11,57 @@
     <div v-else class="source-browser__layout">
       <div class="source-browser__tree">
         <div class="source-browser__tree-head">
-          <span class="text-caption text-weight-medium">{{ repoName }}</span>
-          <q-badge v-if="defaultBranch" outline color="grey-7" class="q-ml-xs">{{ defaultBranch }}</q-badge>
+          <span class="text-caption text-weight-medium ellipsis">{{ repoName }}</span>
+          <q-badge v-if="effectiveBranch" outline color="grey-7" class="q-ml-xs">{{ effectiveBranch }}</q-badge>
           <q-space />
           <q-btn flat dense round size="sm" icon="refresh" :aria-label="t('githubRadar.refreshTree')" @click="loadTree">
             <q-tooltip>{{ t('githubRadar.refreshTree') }}</q-tooltip>
           </q-btn>
         </div>
+        <div class="source-browser__tree-filter">
+          <q-input
+            v-model="filter"
+            dense
+            outlined
+            clearable
+            debounce="200"
+            :placeholder="t('githubRadar.treeFilterPlaceholder')"
+          >
+            <template #prepend><q-icon name="filter_alt" size="15px" /></template>
+          </q-input>
+        </div>
+        <q-banner v-if="treeError" dense rounded class="q-ma-sm bg-negative text-white">
+          {{ treeError }}
+          <template #action>
+            <q-btn flat dense :label="t('common.retry')" @click="loadTree" />
+          </template>
+        </q-banner>
         <q-banner v-if="truncated" dense class="bg-warning text-white q-ma-sm">
           {{ t('githubRadar.treeTruncated') }}
         </q-banner>
-        <div class="source-browser__tree-body scroll">
+        <div class="source-browser__tree-body scroll" role="tree" :aria-label="repoName">
           <div
-            v-for="node in treeNodes"
-            :key="node.path"
+            v-for="row in visibleRows"
+            :key="row.path"
             class="source-browser__node"
-            :class="{ 'is-active': activePath === node.path }"
-            role="button"
+            :class="{ 'is-active': activePath === row.path }"
+            :style="{ paddingLeft: `${row.depth * 14 + 8}px` }"
+            role="treeitem"
+            :aria-expanded="row.type === 'tree' ? isOpen(row.path) : undefined"
             tabindex="0"
-            @click="onNodeClick(node)"
-            @keydown.enter="onNodeClick(node)"
+            @click="onNodeClick(row)"
+            @keydown.enter="onNodeClick(row)"
+            @keydown.space.prevent="onNodeClick(row)"
           >
             <q-icon
-              :name="node.type === 'tree' ? (isOpen(node) ? 'folder_open' : 'folder') : 'insert_drive_file'"
+              :name="row.type === 'tree' ? (isOpen(row.path) ? 'folder_open' : 'folder') : 'insert_drive_file'"
               size="15px"
               class="q-mr-xs"
             />
-            <span class="ellipsis">{{ node.name }}</span>
+            <span class="ellipsis">{{ row.name }}</span>
+          </div>
+          <div v-if="!visibleRows.length" class="text-caption q-pa-sm" style="color: var(--color-text-secondary)">
+            {{ t('githubRadar.treeNoMatch') }}
           </div>
         </div>
       </div>
@@ -53,9 +77,41 @@
 
         <template v-else>
           <div class="source-browser__viewer-head">
-            <span class="text-caption ellipsis">{{ activePath }}</span>
+            <div class="source-browser__crumbs ellipsis">
+              <template v-for="(seg, i) in crumbs">
+                <a
+                  v-if="i < crumbs.length - 1"
+                  :key="`link-${i}`"
+                  class="source-browser__crumb-link"
+                  href="#"
+                  @click.prevent="openDirBySegment(i)"
+                  >{{ seg }}</a
+                >
+                <span v-else :key="`cur-${i}`" class="source-browser__crumb-current">{{ seg }}</span>
+                <q-icon
+                  v-if="i < crumbs.length - 1"
+                  :key="`sep-${i}`"
+                  name="chevron_right"
+                  size="12px"
+                  class="source-browser__crumb-sep"
+                />
+              </template>
+            </div>
+            <q-badge v-if="fileLanguage" outline color="grey-7" class="q-ml-xs">{{ fileLanguage }}</q-badge>
             <q-badge v-if="fileSize" outline color="grey-7" class="q-ml-xs">{{ fileSize }}</q-badge>
             <q-space />
+            <q-btn
+              v-if="isTextFile && codeLines.length"
+              flat
+              dense
+              round
+              size="sm"
+              icon="content_copy"
+              :aria-label="t('githubRadar.copy')"
+              @click="copyCode"
+            >
+              <q-tooltip>{{ t('githubRadar.copy') }}</q-tooltip>
+            </q-btn>
             <q-btn
               v-if="fileHtmlUrl"
               flat
@@ -78,6 +134,9 @@
 
           <q-banner v-else-if="contentError" dense rounded class="q-ma-sm bg-negative text-white">
             {{ contentError }}
+            <template #action>
+              <q-btn flat dense :label="t('common.retry')" @click="loadContent(activePath)" />
+            </template>
           </q-banner>
 
           <q-banner v-else-if="!isTextFile" dense rounded class="q-ma-sm bg-info text-white">
@@ -112,25 +171,43 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Notify } from 'quasar';
+import { useQuasar } from 'quasar';
 import { radarRepoService } from '../../../services';
 import { formatBytes, splitFullName, type TreeNode } from '../types';
 
 const { t } = useI18n();
+const $q = useQuasar();
 
-const props = defineProps<{ fullName: string }>();
+const props = defineProps<{ fullName: string; branch?: string }>();
 
 interface FlatNode extends TreeNode {
   name: string;
 }
 
+interface RowNode {
+  path: string;
+  name: string;
+  type: 'blob' | 'tree';
+  depth: number;
+  size: number;
+}
+
+interface Dir {
+  path: string;
+  name: string;
+  dirs: Map<string, Dir>;
+  files: FlatNode[];
+}
+
 const loadingTree = ref(false);
+const treeError = ref('');
 const truncated = ref(false);
 const defaultBranch = ref('');
 const flatNodes = ref<FlatNode[]>([]);
 const openDirs = ref<Set<string>>(new Set());
+const filter = ref('');
 const activePath = ref('');
 const loadingContent = ref(false);
 const contentError = ref('');
@@ -139,37 +216,82 @@ const contentTruncated = ref(false);
 const fileHtmlUrl = ref('');
 const fileDownloadUrl = ref('');
 const fileSize = ref('');
+const fileLanguage = ref('');
 const codeLines = ref<string[]>([]);
 
 const repoName = computed(() => splitFullName(props.fullName).name || props.fullName);
+const effectiveBranch = computed(() => props.branch || defaultBranch.value);
 
-// 只展开根目录：过滤掉深层路径（目录取第一段）
-const treeNodes = computed(() => {
-  const out: FlatNode[] = [];
-  for (const n of flatNodes.value) {
-    const depth = n.path.split('/').length;
-    if (depth === 1) {
-      out.push(n);
-    } else if (openDirs.value.has(n.path.split('/')[0])) {
-      // 展示二级（更深层折叠为目录项）
-      const second = n.path.split('/').slice(0, 2).join('/');
-      if (!out.some((x) => x.path === second)) {
-        const isDir = n.type === 'tree' || depth > 2;
-        out.push({ ...n, path: second, name: second.split('/').slice(1).join('/'), type: isDir ? 'tree' : 'blob' });
+// ── 真递归树：一次构树 + 扁平缩进渲染；openDirs 记完整路径（修两层/串态 bug）
+const visibleRows = computed<RowNode[]>(() => {
+  const q = filter.value.trim().toLowerCase();
+  const src = q ? flatNodes.value.filter((n) => n.path.toLowerCase().includes(q)) : flatNodes.value;
+
+  // 构树（单次遍历，目录树节点按需创建；显式 tree 条目也归位）
+  const root: Dir = { path: '', name: '', dirs: new Map(), files: [] };
+  for (const n of src) {
+    const parts = n.path.split('/');
+    let acc = '';
+    let cur = root;
+    for (let i = 0; i < parts.length - 1; i++) {
+      acc = acc ? `${acc}/${parts[i]}` : parts[i];
+      let d = cur.dirs.get(parts[i]);
+      if (!d) {
+        d = { path: acc, name: parts[i], dirs: new Map(), files: [] };
+        cur.dirs.set(parts[i], d);
       }
+      cur = d;
+    }
+    const selfName = parts[parts.length - 1];
+    if (n.type === 'tree') {
+      if (!cur.dirs.has(selfName)) {
+        cur.dirs.set(selfName, { path: n.path, name: selfName, dirs: new Map(), files: [] });
+      }
+    } else {
+      cur.files.push(n);
     }
   }
-  return out;
+
+  const rows: RowNode[] = [];
+  if (q) {
+    // 过滤态：扁平列表，目录匹配时其子树自然保留（路径前缀含查词）
+    const push = (dir: Dir) => {
+      for (const d of [...dir.dirs.values()].sort((a, b) => a.name.localeCompare(b.name))) {
+        rows.push({ path: d.path, name: d.name, type: 'tree', depth: d.path.split('/').length - 1, size: 0 });
+        push(d);
+      }
+      for (const f of [...dir.files].sort((a, b) => a.name.localeCompare(b.name))) {
+        rows.push({ path: f.path, name: f.name, type: 'blob', depth: f.path.split('/').length - 1, size: f.size });
+      }
+    };
+    push(root);
+  } else {
+    // 常态：目录优先 + 按 openDirs 决定是否下探
+    const walk = (dir: Dir, depth: number) => {
+      for (const d of [...dir.dirs.values()].sort((a, b) => a.name.localeCompare(b.name))) {
+        rows.push({ path: d.path, name: d.name, type: 'tree', depth, size: 0 });
+        if (openDirs.value.has(d.path)) walk(d, depth + 1);
+      }
+      for (const f of [...dir.files].sort((a, b) => a.name.localeCompare(b.name))) {
+        rows.push({ path: f.path, name: f.name, type: 'blob', depth, size: f.size });
+      }
+    };
+    walk(root, 0);
+  }
+  return rows;
 });
 
-function isOpen(node: FlatNode): boolean {
-  return openDirs.value.has(node.path.split('/')[0]);
+const crumbs = computed(() => activePath.value.split('/'));
+
+function isOpen(path: string): boolean {
+  return openDirs.value.has(path);
 }
 
 async function loadTree() {
   loadingTree.value = true;
+  treeError.value = '';
   try {
-    const res = await radarRepoService.getTree(props.fullName);
+    const res = await radarRepoService.getTree(props.fullName, props.branch || undefined);
     defaultBranch.value = res.defaultBranch || '';
     truncated.value = !!res.truncated;
     flatNodes.value = (res.nodes || []).map((n) => {
@@ -181,24 +303,51 @@ async function loadTree() {
         name: path.split('/').pop() || path,
       };
     });
-    // 默认展开首层目录中的第一个（无操作，保持根层）
   } catch (e) {
-    Notify.create({ type: 'negative', message: t('githubRadar.treeLoadFailed', { msg: (e as Error).message }) });
+    treeError.value = t('githubRadar.treeLoadFailed', { msg: (e as Error).message });
   } finally {
     loadingTree.value = false;
   }
 }
 
-async function onNodeClick(node: FlatNode) {
-  if (node.type === 'tree') {
-    const root = node.path.split('/')[0];
+async function onNodeClick(row: RowNode) {
+  if (row.type === 'tree') {
     const next = new Set(openDirs.value);
-    if (next.has(root)) next.delete(root);
-    else next.add(root);
+    if (filter.value) {
+      // 过滤态点目录：展开它并回到常态树（带它全部祖先）
+      openChain(row.path, next);
+      filter.value = '';
+    } else if (next.has(row.path)) {
+      next.delete(row.path);
+    } else {
+      next.add(row.path);
+    }
     openDirs.value = next;
     return;
   }
-  activePath.value = node.path;
+  await loadContent(row.path, row.size);
+}
+
+/** 展开某路径及其全部祖先目录 */
+function openChain(path: string, target: Set<string>) {
+  const parts = path.split('/');
+  let acc = '';
+  for (let i = 0; i < parts.length; i++) {
+    acc = acc ? `${acc}/${parts[i]}` : parts[i];
+    target.add(acc);
+  }
+}
+
+/** 面包屑目录段点击：在树中展开该目录（连同祖先） */
+function openDirBySegment(i: number) {
+  const path = crumbs.value.slice(0, i + 1).join('/');
+  const next = new Set(openDirs.value);
+  openChain(path, next);
+  openDirs.value = next;
+}
+
+async function loadContent(path: string, sizeHint?: number) {
+  activePath.value = path;
   loadingContent.value = true;
   contentError.value = '';
   isTextFile.value = true;
@@ -206,11 +355,13 @@ async function onNodeClick(node: FlatNode) {
   codeLines.value = [];
   fileHtmlUrl.value = '';
   fileDownloadUrl.value = '';
-  fileSize.value = node.size ? formatBytes(node.size) : '';
+  fileLanguage.value = '';
+  fileSize.value = sizeHint ? formatBytes(sizeHint) : '';
   try {
-    const res = await radarRepoService.getContent(props.fullName, node.path, defaultBranch.value);
+    const res = await radarRepoService.getContent(props.fullName, path, effectiveBranch.value || undefined);
     fileHtmlUrl.value = res.htmlUrl || '';
     fileDownloadUrl.value = res.downloadUrl || '';
+    fileLanguage.value = res.language || '';
     if (res.size) fileSize.value = formatBytes(res.size);
     contentTruncated.value = !!res.truncated;
     if (res.encoding === 'binary') {
@@ -225,6 +376,27 @@ async function onNodeClick(node: FlatNode) {
     loadingContent.value = false;
   }
 }
+
+async function copyCode() {
+  try {
+    await navigator.clipboard.writeText(codeLines.value.join('\n'));
+    $q.notify({ type: 'positive', message: t('githubRadar.copied'), position: 'top' });
+  } catch {
+    $q.notify({ type: 'negative', message: t('githubRadar.copyFailed') });
+  }
+}
+
+// 分支切换：重置树/内容/选中态后重拉
+watch(
+  () => props.branch,
+  () => {
+    activePath.value = '';
+    codeLines.value = [];
+    openDirs.value = new Set();
+    filter.value = '';
+    void loadTree();
+  },
+);
 
 // ── 轻量语法着色（注释/字符串/数字/关键字），颜色走平台 token ──
 const KEYWORDS = new Set([
@@ -346,6 +518,10 @@ onMounted(loadTree);
   padding: var(--space-2) var(--space-3)
   border-bottom: 1px solid var(--glass-border)
 
+.source-browser__tree-filter
+  padding: var(--space-2)
+  border-bottom: 1px solid var(--glass-border)
+
 .source-browser__tree-body
   overflow: auto
   padding: var(--space-1)
@@ -361,6 +537,9 @@ onMounted(loadTree);
   &:hover
     background: var(--glass-surface-hover)
     color: var(--color-text-primary)
+  &:focus-visible
+    outline: 2px solid var(--color-accent)
+    outline-offset: -2px
   &.is-active
     background: var(--color-accent-soft)
     color: var(--color-accent)
@@ -378,6 +557,27 @@ onMounted(loadTree);
   align-items: center
   padding: var(--space-2) var(--space-3)
   border-bottom: 1px solid var(--glass-border)
+
+.source-browser__crumbs
+  display: inline-flex
+  align-items: center
+  gap: 2px
+  font-size: var(--text-xs)
+  color: var(--color-text-secondary)
+  min-width: 0
+
+.source-browser__crumb-link
+  color: var(--color-accent)
+  text-decoration: none
+  &:hover
+    text-decoration: underline
+
+.source-browser__crumb-current
+  color: var(--color-text-primary)
+  font-weight: 600
+
+.source-browser__crumb-sep
+  color: var(--color-text-tertiary, var(--color-text-secondary))
 
 .source-browser__code
   margin: 0

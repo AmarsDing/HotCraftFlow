@@ -9,6 +9,7 @@ import (
 	"framework/app/admin/internal/data/ent/systemconfig"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -18,6 +19,7 @@ type SystemConfigCreate struct {
 	config
 	mutation *SystemConfigMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateBy sets the "create_by" field.
@@ -248,6 +250,7 @@ func (_c *SystemConfigCreate) createSpec() (*SystemConfig, *sqlgraph.CreateSpec)
 		_node = &SystemConfig{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(systemconfig.Table, sqlgraph.NewFieldSpec(systemconfig.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -291,11 +294,444 @@ func (_c *SystemConfigCreate) createSpec() (*SystemConfig, *sqlgraph.CreateSpec)
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.SystemConfig.Create().
+//		SetCreateBy(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.SystemConfigUpsert) {
+//			SetCreateBy(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *SystemConfigCreate) OnConflict(opts ...sql.ConflictOption) *SystemConfigUpsertOne {
+	_c.conflict = opts
+	return &SystemConfigUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.SystemConfig.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *SystemConfigCreate) OnConflictColumns(columns ...string) *SystemConfigUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &SystemConfigUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// SystemConfigUpsertOne is the builder for "upsert"-ing
+	//  one SystemConfig node.
+	SystemConfigUpsertOne struct {
+		create *SystemConfigCreate
+	}
+
+	// SystemConfigUpsert is the "OnConflict" setter.
+	SystemConfigUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetCreateBy sets the "create_by" field.
+func (u *SystemConfigUpsert) SetCreateBy(v uint32) *SystemConfigUpsert {
+	u.Set(systemconfig.FieldCreateBy, v)
+	return u
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *SystemConfigUpsert) UpdateCreateBy() *SystemConfigUpsert {
+	u.SetExcluded(systemconfig.FieldCreateBy)
+	return u
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *SystemConfigUpsert) AddCreateBy(v uint32) *SystemConfigUpsert {
+	u.Add(systemconfig.FieldCreateBy, v)
+	return u
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *SystemConfigUpsert) ClearCreateBy() *SystemConfigUpsert {
+	u.SetNull(systemconfig.FieldCreateBy)
+	return u
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *SystemConfigUpsert) SetUpdateBy(v uint32) *SystemConfigUpsert {
+	u.Set(systemconfig.FieldUpdateBy, v)
+	return u
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *SystemConfigUpsert) UpdateUpdateBy() *SystemConfigUpsert {
+	u.SetExcluded(systemconfig.FieldUpdateBy)
+	return u
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *SystemConfigUpsert) AddUpdateBy(v uint32) *SystemConfigUpsert {
+	u.Add(systemconfig.FieldUpdateBy, v)
+	return u
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *SystemConfigUpsert) ClearUpdateBy() *SystemConfigUpsert {
+	u.SetNull(systemconfig.FieldUpdateBy)
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *SystemConfigUpsert) SetUpdateTime(v time.Time) *SystemConfigUpsert {
+	u.Set(systemconfig.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *SystemConfigUpsert) UpdateUpdateTime() *SystemConfigUpsert {
+	u.SetExcluded(systemconfig.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *SystemConfigUpsert) ClearUpdateTime() *SystemConfigUpsert {
+	u.SetNull(systemconfig.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *SystemConfigUpsert) SetDeleteTime(v time.Time) *SystemConfigUpsert {
+	u.Set(systemconfig.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *SystemConfigUpsert) UpdateDeleteTime() *SystemConfigUpsert {
+	u.SetExcluded(systemconfig.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *SystemConfigUpsert) ClearDeleteTime() *SystemConfigUpsert {
+	u.SetNull(systemconfig.FieldDeleteTime)
+	return u
+}
+
+// SetConfigKey sets the "config_key" field.
+func (u *SystemConfigUpsert) SetConfigKey(v string) *SystemConfigUpsert {
+	u.Set(systemconfig.FieldConfigKey, v)
+	return u
+}
+
+// UpdateConfigKey sets the "config_key" field to the value that was provided on create.
+func (u *SystemConfigUpsert) UpdateConfigKey() *SystemConfigUpsert {
+	u.SetExcluded(systemconfig.FieldConfigKey)
+	return u
+}
+
+// SetConfigValue sets the "config_value" field.
+func (u *SystemConfigUpsert) SetConfigValue(v string) *SystemConfigUpsert {
+	u.Set(systemconfig.FieldConfigValue, v)
+	return u
+}
+
+// UpdateConfigValue sets the "config_value" field to the value that was provided on create.
+func (u *SystemConfigUpsert) UpdateConfigValue() *SystemConfigUpsert {
+	u.SetExcluded(systemconfig.FieldConfigValue)
+	return u
+}
+
+// SetConfigType sets the "config_type" field.
+func (u *SystemConfigUpsert) SetConfigType(v string) *SystemConfigUpsert {
+	u.Set(systemconfig.FieldConfigType, v)
+	return u
+}
+
+// UpdateConfigType sets the "config_type" field to the value that was provided on create.
+func (u *SystemConfigUpsert) UpdateConfigType() *SystemConfigUpsert {
+	u.SetExcluded(systemconfig.FieldConfigType)
+	return u
+}
+
+// SetDescription sets the "description" field.
+func (u *SystemConfigUpsert) SetDescription(v string) *SystemConfigUpsert {
+	u.Set(systemconfig.FieldDescription, v)
+	return u
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *SystemConfigUpsert) UpdateDescription() *SystemConfigUpsert {
+	u.SetExcluded(systemconfig.FieldDescription)
+	return u
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *SystemConfigUpsert) ClearDescription() *SystemConfigUpsert {
+	u.SetNull(systemconfig.FieldDescription)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.SystemConfig.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(systemconfig.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *SystemConfigUpsertOne) UpdateNewValues() *SystemConfigUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(systemconfig.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(systemconfig.FieldCreateTime)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.SystemConfig.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *SystemConfigUpsertOne) Ignore() *SystemConfigUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *SystemConfigUpsertOne) DoNothing() *SystemConfigUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the SystemConfigCreate.OnConflict
+// documentation for more info.
+func (u *SystemConfigUpsertOne) Update(set func(*SystemConfigUpsert)) *SystemConfigUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&SystemConfigUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *SystemConfigUpsertOne) SetCreateBy(v uint32) *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *SystemConfigUpsertOne) AddCreateBy(v uint32) *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *SystemConfigUpsertOne) UpdateCreateBy() *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *SystemConfigUpsertOne) ClearCreateBy() *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *SystemConfigUpsertOne) SetUpdateBy(v uint32) *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *SystemConfigUpsertOne) AddUpdateBy(v uint32) *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *SystemConfigUpsertOne) UpdateUpdateBy() *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *SystemConfigUpsertOne) ClearUpdateBy() *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *SystemConfigUpsertOne) SetUpdateTime(v time.Time) *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *SystemConfigUpsertOne) UpdateUpdateTime() *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *SystemConfigUpsertOne) ClearUpdateTime() *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *SystemConfigUpsertOne) SetDeleteTime(v time.Time) *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *SystemConfigUpsertOne) UpdateDeleteTime() *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *SystemConfigUpsertOne) ClearDeleteTime() *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetConfigKey sets the "config_key" field.
+func (u *SystemConfigUpsertOne) SetConfigKey(v string) *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.SetConfigKey(v)
+	})
+}
+
+// UpdateConfigKey sets the "config_key" field to the value that was provided on create.
+func (u *SystemConfigUpsertOne) UpdateConfigKey() *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.UpdateConfigKey()
+	})
+}
+
+// SetConfigValue sets the "config_value" field.
+func (u *SystemConfigUpsertOne) SetConfigValue(v string) *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.SetConfigValue(v)
+	})
+}
+
+// UpdateConfigValue sets the "config_value" field to the value that was provided on create.
+func (u *SystemConfigUpsertOne) UpdateConfigValue() *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.UpdateConfigValue()
+	})
+}
+
+// SetConfigType sets the "config_type" field.
+func (u *SystemConfigUpsertOne) SetConfigType(v string) *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.SetConfigType(v)
+	})
+}
+
+// UpdateConfigType sets the "config_type" field to the value that was provided on create.
+func (u *SystemConfigUpsertOne) UpdateConfigType() *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.UpdateConfigType()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *SystemConfigUpsertOne) SetDescription(v string) *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *SystemConfigUpsertOne) UpdateDescription() *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *SystemConfigUpsertOne) ClearDescription() *SystemConfigUpsertOne {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// Exec executes the query.
+func (u *SystemConfigUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for SystemConfigCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *SystemConfigUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *SystemConfigUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *SystemConfigUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // SystemConfigCreateBulk is the builder for creating many SystemConfig entities in bulk.
 type SystemConfigCreateBulk struct {
 	config
 	err      error
 	builders []*SystemConfigCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the SystemConfig entities in the database.
@@ -325,6 +761,7 @@ func (_c *SystemConfigCreateBulk) Save(ctx context.Context) ([]*SystemConfig, er
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -375,6 +812,284 @@ func (_c *SystemConfigCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *SystemConfigCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.SystemConfig.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.SystemConfigUpsert) {
+//			SetCreateBy(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *SystemConfigCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemConfigUpsertBulk {
+	_c.conflict = opts
+	return &SystemConfigUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.SystemConfig.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *SystemConfigCreateBulk) OnConflictColumns(columns ...string) *SystemConfigUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &SystemConfigUpsertBulk{
+		create: _c,
+	}
+}
+
+// SystemConfigUpsertBulk is the builder for "upsert"-ing
+// a bulk of SystemConfig nodes.
+type SystemConfigUpsertBulk struct {
+	create *SystemConfigCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.SystemConfig.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(systemconfig.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *SystemConfigUpsertBulk) UpdateNewValues() *SystemConfigUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(systemconfig.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(systemconfig.FieldCreateTime)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.SystemConfig.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *SystemConfigUpsertBulk) Ignore() *SystemConfigUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *SystemConfigUpsertBulk) DoNothing() *SystemConfigUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the SystemConfigCreateBulk.OnConflict
+// documentation for more info.
+func (u *SystemConfigUpsertBulk) Update(set func(*SystemConfigUpsert)) *SystemConfigUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&SystemConfigUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *SystemConfigUpsertBulk) SetCreateBy(v uint32) *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *SystemConfigUpsertBulk) AddCreateBy(v uint32) *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *SystemConfigUpsertBulk) UpdateCreateBy() *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *SystemConfigUpsertBulk) ClearCreateBy() *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *SystemConfigUpsertBulk) SetUpdateBy(v uint32) *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *SystemConfigUpsertBulk) AddUpdateBy(v uint32) *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *SystemConfigUpsertBulk) UpdateUpdateBy() *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *SystemConfigUpsertBulk) ClearUpdateBy() *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *SystemConfigUpsertBulk) SetUpdateTime(v time.Time) *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *SystemConfigUpsertBulk) UpdateUpdateTime() *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *SystemConfigUpsertBulk) ClearUpdateTime() *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *SystemConfigUpsertBulk) SetDeleteTime(v time.Time) *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *SystemConfigUpsertBulk) UpdateDeleteTime() *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *SystemConfigUpsertBulk) ClearDeleteTime() *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetConfigKey sets the "config_key" field.
+func (u *SystemConfigUpsertBulk) SetConfigKey(v string) *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.SetConfigKey(v)
+	})
+}
+
+// UpdateConfigKey sets the "config_key" field to the value that was provided on create.
+func (u *SystemConfigUpsertBulk) UpdateConfigKey() *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.UpdateConfigKey()
+	})
+}
+
+// SetConfigValue sets the "config_value" field.
+func (u *SystemConfigUpsertBulk) SetConfigValue(v string) *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.SetConfigValue(v)
+	})
+}
+
+// UpdateConfigValue sets the "config_value" field to the value that was provided on create.
+func (u *SystemConfigUpsertBulk) UpdateConfigValue() *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.UpdateConfigValue()
+	})
+}
+
+// SetConfigType sets the "config_type" field.
+func (u *SystemConfigUpsertBulk) SetConfigType(v string) *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.SetConfigType(v)
+	})
+}
+
+// UpdateConfigType sets the "config_type" field to the value that was provided on create.
+func (u *SystemConfigUpsertBulk) UpdateConfigType() *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.UpdateConfigType()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *SystemConfigUpsertBulk) SetDescription(v string) *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *SystemConfigUpsertBulk) UpdateDescription() *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *SystemConfigUpsertBulk) ClearDescription() *SystemConfigUpsertBulk {
+	return u.Update(func(s *SystemConfigUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// Exec executes the query.
+func (u *SystemConfigUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the SystemConfigCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for SystemConfigCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *SystemConfigUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

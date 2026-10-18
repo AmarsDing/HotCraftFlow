@@ -9,6 +9,7 @@ import (
 	"framework/app/admin/internal/data/ent/resourcegroup"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -18,6 +19,7 @@ type ResourceGroupCreate struct {
 	config
 	mutation *ResourceGroupMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -203,6 +205,7 @@ func (_c *ResourceGroupCreate) createSpec() (*ResourceGroup, *sqlgraph.CreateSpe
 		_node = &ResourceGroup{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(resourcegroup.Table, sqlgraph.NewFieldSpec(resourcegroup.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -234,11 +237,327 @@ func (_c *ResourceGroupCreate) createSpec() (*ResourceGroup, *sqlgraph.CreateSpe
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ResourceGroup.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ResourceGroupUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ResourceGroupCreate) OnConflict(opts ...sql.ConflictOption) *ResourceGroupUpsertOne {
+	_c.conflict = opts
+	return &ResourceGroupUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ResourceGroup.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ResourceGroupCreate) OnConflictColumns(columns ...string) *ResourceGroupUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ResourceGroupUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// ResourceGroupUpsertOne is the builder for "upsert"-ing
+	//  one ResourceGroup node.
+	ResourceGroupUpsertOne struct {
+		create *ResourceGroupCreate
+	}
+
+	// ResourceGroupUpsert is the "OnConflict" setter.
+	ResourceGroupUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ResourceGroupUpsert) SetUpdateTime(v time.Time) *ResourceGroupUpsert {
+	u.Set(resourcegroup.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ResourceGroupUpsert) UpdateUpdateTime() *ResourceGroupUpsert {
+	u.SetExcluded(resourcegroup.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *ResourceGroupUpsert) ClearUpdateTime() *ResourceGroupUpsert {
+	u.SetNull(resourcegroup.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *ResourceGroupUpsert) SetDeleteTime(v time.Time) *ResourceGroupUpsert {
+	u.Set(resourcegroup.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *ResourceGroupUpsert) UpdateDeleteTime() *ResourceGroupUpsert {
+	u.SetExcluded(resourcegroup.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *ResourceGroupUpsert) ClearDeleteTime() *ResourceGroupUpsert {
+	u.SetNull(resourcegroup.FieldDeleteTime)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *ResourceGroupUpsert) SetStatus(v resourcegroup.Status) *ResourceGroupUpsert {
+	u.Set(resourcegroup.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *ResourceGroupUpsert) UpdateStatus() *ResourceGroupUpsert {
+	u.SetExcluded(resourcegroup.FieldStatus)
+	return u
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *ResourceGroupUpsert) ClearStatus() *ResourceGroupUpsert {
+	u.SetNull(resourcegroup.FieldStatus)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *ResourceGroupUpsert) SetName(v string) *ResourceGroupUpsert {
+	u.Set(resourcegroup.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ResourceGroupUpsert) UpdateName() *ResourceGroupUpsert {
+	u.SetExcluded(resourcegroup.FieldName)
+	return u
+}
+
+// SetDescription sets the "description" field.
+func (u *ResourceGroupUpsert) SetDescription(v string) *ResourceGroupUpsert {
+	u.Set(resourcegroup.FieldDescription, v)
+	return u
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *ResourceGroupUpsert) UpdateDescription() *ResourceGroupUpsert {
+	u.SetExcluded(resourcegroup.FieldDescription)
+	return u
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *ResourceGroupUpsert) ClearDescription() *ResourceGroupUpsert {
+	u.SetNull(resourcegroup.FieldDescription)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.ResourceGroup.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(resourcegroup.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ResourceGroupUpsertOne) UpdateNewValues() *ResourceGroupUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(resourcegroup.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(resourcegroup.FieldCreateTime)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ResourceGroup.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *ResourceGroupUpsertOne) Ignore() *ResourceGroupUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ResourceGroupUpsertOne) DoNothing() *ResourceGroupUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ResourceGroupCreate.OnConflict
+// documentation for more info.
+func (u *ResourceGroupUpsertOne) Update(set func(*ResourceGroupUpsert)) *ResourceGroupUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ResourceGroupUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ResourceGroupUpsertOne) SetUpdateTime(v time.Time) *ResourceGroupUpsertOne {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ResourceGroupUpsertOne) UpdateUpdateTime() *ResourceGroupUpsertOne {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *ResourceGroupUpsertOne) ClearUpdateTime() *ResourceGroupUpsertOne {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *ResourceGroupUpsertOne) SetDeleteTime(v time.Time) *ResourceGroupUpsertOne {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *ResourceGroupUpsertOne) UpdateDeleteTime() *ResourceGroupUpsertOne {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *ResourceGroupUpsertOne) ClearDeleteTime() *ResourceGroupUpsertOne {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *ResourceGroupUpsertOne) SetStatus(v resourcegroup.Status) *ResourceGroupUpsertOne {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *ResourceGroupUpsertOne) UpdateStatus() *ResourceGroupUpsertOne {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *ResourceGroupUpsertOne) ClearStatus() *ResourceGroupUpsertOne {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *ResourceGroupUpsertOne) SetName(v string) *ResourceGroupUpsertOne {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ResourceGroupUpsertOne) UpdateName() *ResourceGroupUpsertOne {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *ResourceGroupUpsertOne) SetDescription(v string) *ResourceGroupUpsertOne {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *ResourceGroupUpsertOne) UpdateDescription() *ResourceGroupUpsertOne {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *ResourceGroupUpsertOne) ClearDescription() *ResourceGroupUpsertOne {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// Exec executes the query.
+func (u *ResourceGroupUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ResourceGroupCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ResourceGroupUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *ResourceGroupUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *ResourceGroupUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // ResourceGroupCreateBulk is the builder for creating many ResourceGroup entities in bulk.
 type ResourceGroupCreateBulk struct {
 	config
 	err      error
 	builders []*ResourceGroupCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the ResourceGroup entities in the database.
@@ -268,6 +587,7 @@ func (_c *ResourceGroupCreateBulk) Save(ctx context.Context) ([]*ResourceGroup, 
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -318,6 +638,221 @@ func (_c *ResourceGroupCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *ResourceGroupCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ResourceGroup.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ResourceGroupUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ResourceGroupCreateBulk) OnConflict(opts ...sql.ConflictOption) *ResourceGroupUpsertBulk {
+	_c.conflict = opts
+	return &ResourceGroupUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ResourceGroup.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ResourceGroupCreateBulk) OnConflictColumns(columns ...string) *ResourceGroupUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ResourceGroupUpsertBulk{
+		create: _c,
+	}
+}
+
+// ResourceGroupUpsertBulk is the builder for "upsert"-ing
+// a bulk of ResourceGroup nodes.
+type ResourceGroupUpsertBulk struct {
+	create *ResourceGroupCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.ResourceGroup.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(resourcegroup.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ResourceGroupUpsertBulk) UpdateNewValues() *ResourceGroupUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(resourcegroup.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(resourcegroup.FieldCreateTime)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ResourceGroup.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *ResourceGroupUpsertBulk) Ignore() *ResourceGroupUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ResourceGroupUpsertBulk) DoNothing() *ResourceGroupUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ResourceGroupCreateBulk.OnConflict
+// documentation for more info.
+func (u *ResourceGroupUpsertBulk) Update(set func(*ResourceGroupUpsert)) *ResourceGroupUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ResourceGroupUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ResourceGroupUpsertBulk) SetUpdateTime(v time.Time) *ResourceGroupUpsertBulk {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ResourceGroupUpsertBulk) UpdateUpdateTime() *ResourceGroupUpsertBulk {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *ResourceGroupUpsertBulk) ClearUpdateTime() *ResourceGroupUpsertBulk {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *ResourceGroupUpsertBulk) SetDeleteTime(v time.Time) *ResourceGroupUpsertBulk {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *ResourceGroupUpsertBulk) UpdateDeleteTime() *ResourceGroupUpsertBulk {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *ResourceGroupUpsertBulk) ClearDeleteTime() *ResourceGroupUpsertBulk {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *ResourceGroupUpsertBulk) SetStatus(v resourcegroup.Status) *ResourceGroupUpsertBulk {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *ResourceGroupUpsertBulk) UpdateStatus() *ResourceGroupUpsertBulk {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *ResourceGroupUpsertBulk) ClearStatus() *ResourceGroupUpsertBulk {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *ResourceGroupUpsertBulk) SetName(v string) *ResourceGroupUpsertBulk {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ResourceGroupUpsertBulk) UpdateName() *ResourceGroupUpsertBulk {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *ResourceGroupUpsertBulk) SetDescription(v string) *ResourceGroupUpsertBulk {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *ResourceGroupUpsertBulk) UpdateDescription() *ResourceGroupUpsertBulk {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *ResourceGroupUpsertBulk) ClearDescription() *ResourceGroupUpsertBulk {
+	return u.Update(func(s *ResourceGroupUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// Exec executes the query.
+func (u *ResourceGroupUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the ResourceGroupCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ResourceGroupCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ResourceGroupUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

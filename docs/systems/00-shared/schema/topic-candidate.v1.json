@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hotcraftflow.dev/schema/topic-candidate.v1.json",
+  "title": "TopicCandidate",
+  "description": "② TT → ④ MME / ③ MIA 的选题交接契约（契约 §6）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version", "candidate_id", "topic_id", "route", "score",
+    "suggested_angles", "state"
+  ],
+  "properties": {
+    "api_version": { "const": "1.0" },
+    "candidate_id": { "type": "string", "pattern": "^tc_[0-9A-HJKMNP-TV-Z]{26}$" },
+    "topic_id": { "type": "string", "pattern": "^tp_[0-9A-HJKMNP-TV-Z]{26}$" },
+    "route": {
+      "type": "string",
+      "enum": ["mme", "mia", "both"],
+      "description": "PRD §1.2「不得混为同一按钮」的技术实现点"
+    },
+    "score": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hot", "freshness", "workability", "compliance", "total"],
+      "description": "total 仅用于排序，不作为自动采纳依据",
+      "properties": {
+        "hot": { "type": "number", "minimum": 0, "maximum": 1 },
+        "freshness": { "type": "number", "minimum": 0, "maximum": 1 },
+        "workability": { "type": "number", "minimum": 0, "maximum": 1 },
+        "compliance": { "type": "number", "minimum": 0, "maximum": 1 },
+        "total": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "suggested_angles": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "建议切入角度；空数组合法（A-18 兜底）"
+    },
+    "material_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "maxItems": 10
+    },
+    "state": {
+      "type": "string",
+      "enum": ["pending", "adopted", "rejected", "snoozed"]
+    },
+    "reject_reason": { "type": ["string", "null"] }
+  }
+}

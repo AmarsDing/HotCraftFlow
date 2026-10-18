@@ -5,10 +5,15 @@ import (
 	"flag"
 	"os"
 
+	bizpublish "framework/app/admin/internal/biz/publish"
+	biztt "framework/app/admin/internal/biz/tt"
 	"framework/app/admin/internal/conf"
 	"framework/app/admin/internal/core"
+	"framework/app/admin/internal/publishadapters"
 	"framework/app/admin/internal/server"
 	"framework/app/admin/internal/worker"
+	miaworker "framework/app/admin/internal/worker/mia"
+	ttworker "framework/app/admin/internal/worker/tt"
 	pkglog "framework/pkg/log"
 	"framework/pkg/observability"
 
@@ -53,9 +58,17 @@ func newApp(
 	siteMsgSub *worker.SiteMsgSubscriber,
 	logRetentionWorker *worker.LogRetentionWorker,
 	radarEventRetentionWorker *worker.RadarEventRetentionWorker,
+	ttIngestSub *ttworker.IngestSubscriber,
+	ttSnapshotWriter *ttworker.SnapshotWriter,
+	ttBufferReplay *ttworker.BufferReplay,
+	miaIntelSub *miaworker.IntelSubscriber,
+	miaEquitySched *miaworker.MiaEquityScheduler,
+	miaCryptoSched *miaworker.MiaCryptoScheduler,
 ) *kratos.App {
 	// asynq 未启用时 NewAsynqServer 返回 nil，勿注册以免 nil 接口调用 Start panic。
-	servers := []transport.Server{hs, coreSrv, taskWorker, siteMsgSub, logRetentionWorker, radarEventRetentionWorker}
+	// TT/MIA 各件套内部均以 conf.Enabled 自己把关，此处无条件注册。
+	servers := []transport.Server{hs, coreSrv, taskWorker, siteMsgSub, logRetentionWorker, radarEventRetentionWorker,
+		ttIngestSub, ttSnapshotWriter, ttBufferReplay, miaIntelSub, miaEquitySched, miaCryptoSched}
 	if asynqSrv != nil {
 		servers = append(servers, asynqSrv)
 	}
@@ -93,6 +106,30 @@ func main() {
 		panic(err)
 	}
 
+	// TT 子系统配置（独立 tt.yaml，避免 conf.pb.go 再生成重链）。
+	// 扫描 → 补默认 → 判红线；无效配置直接终止（fail-fast 胜过错配静默运行）。
+	var ttb biztt.Conf
+	if err := c.Value("tt").Scan(&ttb); err != nil {
+		panic(err)
+	}
+	ttb.Normalize()
+	if err := ttb.Validate(); err != nil {
+		panic(err)
+	}
+
+	// ⑤ MAP 子系统配置（独立 map.yaml；🔴 安全红线判据——禁自批/禁自动审批发布/默认私密）。
+	// 以 DefaultConf 打底（缺 map.yaml 时仍保持安全默认：私密 + 熔断全开，绝不松）。
+	mc := bizpublish.DefaultConf()
+	_ = c.Value("map").Scan(&mc) // 键缺失时保留默认；解析错误由 Validate 判出或容忍默认兜底
+	mc.Normalize()
+	if err := mc.Validate(); err != nil {
+		panic(err) // 🔴 红线违例（如 allow_public 而禁自批被关）直接终止
+	}
+
+	// MAP 平台能力配置（platforms.yaml；键缺失 → 空目录，发布时按 ADAPTER_NOT_FOUND 明确报错）
+	var mpconfs publishadapters.PlatformConfMap
+	_ = c.Value("map_platforms").Scan(&mpconfs)
+
 	// discovery 实例权重（写入注册元数据，供权重选择器；未配置时为空串）
 	weight = bc.GetDiscovery().GetWeight()
 
@@ -117,7 +154,7 @@ func main() {
 		defer tp.Shutdown(context.Background())
 	}
 
-	app, cleanup, err := wireApp(&bc, logger, tp)
+	app, cleanup, err := wireApp(&bc, &ttb, &mc, mpconfs, logger, tp)
 	if err != nil {
 		panic(err)
 	}

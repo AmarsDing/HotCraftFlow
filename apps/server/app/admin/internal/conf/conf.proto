@@ -20,6 +20,9 @@ message Bootstrap {
   framework.conf.v1.Trace trace = 8;
   License license = 9;
   framework.conf.v1.Discovery discovery = 10;
+  Mia mia = 11;
+  Ic ic = 12;
+  Mme mme = 13;
 }
 
 // ---------- Server（私有） ----------
@@ -121,4 +124,284 @@ message License {
   string public_key_path = 1;
   // 许可证到期检查 cron 表达式（每日执行，默认 "0 2 * * *" 即每日 02:00）
   string check_expiring_cron = 2;
+}
+
+// ---------- Mia（③ 市场影响分析，私有） ----------
+// 对齐 docs/systems/03-MIA/03-详细设计.md §4。
+// 合规：disclaimer 不可为空；allow_guess 恒 false；read_only 恒 true；enable_trading 恒 false。
+message Mia {
+  message Output {
+    bool internal_only = 1;      // 待决策 Q2；true = 仅内部
+    string disclaimer = 2;       // 不可为空
+    double min_score_to_push = 3; // 高分推送阈值
+  }
+  message Schedule {
+    message Equity {
+      string cron_trading = 1;      // 交易时段密集轮询
+      string cron_after_close = 2;  // 盘后摘要
+      string timezone = 3;          // IANA 时区名，不用固定偏移（NFR-MIA-07）
+    }
+    message Crypto {
+      string cron = 1;              // 7x24 固定短周期（5-15 分钟）
+      bool enabled = 2;
+    }
+    Equity equity = 1;
+    Crypto crypto = 2;
+  }
+  message Sentiment {
+    string finbert_url = 1;                  // 自托管推理服务
+    google.protobuf.Duration finbert_timeout = 2;
+    message Llm {
+      string provider = 1;          // cloud
+      string fallback = 2;          // ollama
+      string cloud_base_url = 3;    // OpenAI 兼容端点
+      string cloud_api_key = 4;
+      string cloud_model = 5;
+      string ollama_url = 6;
+      string ollama_model = 7;
+      int32 daily_call_cap = 8;     // 硬上限，超限熔断（NFR-MIA-09）
+    }
+    Llm llm = 3;
+    bool allow_guess = 4;           // 恒为 false
+  }
+  message Quote {
+    repeated string providers = 1;     // openbb 许可证待核实前不得启用
+    bool read_only = 2;                // 恒为 true
+    bool enable_trading = 3;           // 恒为 false
+    google.protobuf.Duration cache_ttl = 4;
+    string ccxt_sidecar_url = 5;       // ccxt Python 侧车（只读）
+  }
+  message Scoring {
+    map<string, int32> default_ttl_hours = 1; // equity/macro 24，crypto/fx 12
+    double source_weight_base = 2;
+    double source_weight_log_coef = 3;
+    double min_entity_confidence = 4;
+  }
+  message Clustering {
+    double similarity_threshold = 1;
+    int32 window_hours = 2;
+  }
+  message Verify {
+    bool enabled = 1;                  // P2，Phase 3 开启
+    repeated string offsets = 2;       // 1h / 24h / 72h
+    double move_threshold_pct = 3;
+    int32 min_sample_for_report = 4;
+  }
+  message Notify {
+    string webhook_url = 1;            // 高分推送（Webhook / 企业微信）
+    google.protobuf.Duration timeout = 2;
+  }
+
+  bool enabled = 1;
+  Output output = 2;
+  Schedule schedule = 3;
+  Sentiment sentiment = 4;
+  Quote quote = 5;
+  Scoring scoring = 6;
+  Clustering clustering = 7;
+  Verify verify = 8;
+  Notify notify = 9;
+}
+
+// ---------- Ic（① 情报收集，私有） ----------
+// 对齐 docs/systems/01-IC/03-详细设计.md §7 + 深度评审 B-10/B-11 补齐项。
+// 纪律：
+//  - 调度以信源级 interval_minutes 为唯一真值（B-11），此处的 cron 仅为未配置时的默认档位。
+//  - 凭据（平台 token/Cookie）不写 yaml，走 credential_ref + 加密存储（NFR-IC-06）。
+//  - NATS 复用 Bootstrap.nats；stream 名常量见 pkg/mediacontract envelope.go。
+message Ic {
+  message Newsnow {
+    string base_url = 1;                    // 自部署实例，禁止指向公共实例（02 §5）
+    google.protobuf.Duration timeout = 2;
+  }
+  message Rsshub {
+    string base_url = 1;                    // 自部署独立服务（AGPL 边界：禁止 fork/嵌入进主仓）
+    google.protobuf.Duration timeout = 2;
+  }
+  message Crawl4ai {
+    string base_url = 1;
+    google.protobuf.Duration timeout = 2;
+    int32 retry_attempts = 3;               // 含首次的 max_attempts 语义（B-12 统一为 3）
+  }
+  message Dedup {
+    int32 simhash_threshold = 1;            // 汉明距离阈值（默认 3）
+    double embedding_threshold = 2;         // 余弦相似度阈值（默认 0.86）
+    int32 embedding_window_hours = 3;       // L3 比对窗口（默认 24h 原始向量；centroid 比对 72h，S-5）
+    message Embedding {
+      string provider = 1;                  // local | cloud
+      string model = 2;                     // 固定模型名 bge-small-zh-v1.5；更换须重算全量向量
+      int32 dim = 3;
+      string endpoint = 4;                  // 本地推理服务（进程外 HTTP）
+      google.protobuf.Duration timeout = 5;
+      int32 daily_cap = 6;                  // 日调用硬上限（防成本失控，B-7）
+      string store = 7;                     // redis_vss | pgvector | none（none = L3 停用并公告）
+    }
+    Embedding embedding = 4;
+  }
+  message Evidence {
+    int32 retain_days = 1;                  // 默认 90（NFR-IC-08）
+    string storage_dir = 2;                 // 默认 apps/server/storage/ic/evidence（S-27：V1 本机目录）
+    int64 raw_max_bytes = 3;                // 单条原始片段内存上限（默认 4MB，B-21）
+    int64 raw_truncate_bytes = 4;           // NATS 载荷截断上限（默认 256KB，B-21）
+  }
+  message RateLimit {
+    int32 default_per_min = 1;              // 默认令牌桶速率
+    google.protobuf.Duration backoff_max = 2; // 退避上限（默认 15m）
+  }
+  message Llm {
+    bool enabled = 1;                       // false = 理解层纯规则降级（ADR-IC-07）
+    string provider = 2;                    // ollama | none
+    bool fallback_to_rule = 3;
+    string endpoint = 4;
+    google.protobuf.Duration timeout = 5;
+    int32 daily_call_cap = 6;               // 硬熔断
+  }
+  message Robots {
+    string user_agent = 1;                  // 如 FrameWorkBot/1.0
+    google.protobuf.Duration timeout = 2;
+    google.protobuf.Duration cache_ttl = 3; // 默认 24h
+    bool respect_crawl_delay = 4;           // 提取 Crawl-delay 指令（S-7）
+  }
+  message Shortlink {
+    bool enabled = 1;
+    int32 max_redirects = 2;                // 默认 5（S-6）
+    google.protobuf.Duration timeout = 3;
+    bool block_private_ip = 4;              // SSRF 防护：禁解析私网/回环/链路本地/保留段
+  }
+  message Breaker {
+    int32 fail_threshold = 1;               // 连续失败阈值（默认 5）
+    google.protobuf.Duration cooldown = 2;  // 自动暂停时长（默认 30m，S-12）
+  }
+  message Retention {
+    int32 evidence_days = 1;
+    int32 intel_days = 2;                   // 默认 365（NFR-IC-08）
+    int32 cluster_idle_close_hours = 3;     // 默认 48（S-2）
+    string sweep_cron = 4;                  // 默认 "0 3 * * *"
+  }
+  message Asynq {
+    int32 concurrency = 1;                  // 默认 8（NFR-IC-07）
+    int32 max_retry = 2;                    // 仅 IC_UPSTREAM_TIMEOUT / IC_RATE_LIMITED 可重试
+    google.protobuf.Duration task_timeout = 3;
+  }
+  message Collectors {                      // 每路可独立启用（FR-INT-03，评审 M-5）
+    bool hotlist = 1;
+    bool api = 2;
+    bool rss = 3;
+    bool crawl = 4;
+    bool sidecar = 5;
+  }
+
+  bool enabled = 1;
+  int32 concurrency = 2;                    // 采集并发（默认 8，NFR-IC-07）
+  double workability_min_score = 3;         // MME 准入阈值（S-26：IC 配置，MME 只读）
+  int64 raw_queue_capacity = 4;             // 背压 inflight 上限（默认 5000，B-20）
+  Newsnow newsnow = 5;
+  Rsshub rsshub = 6;
+  Crawl4ai crawl4ai = 7;
+  Dedup dedup = 8;
+  Evidence evidence = 9;
+  RateLimit rate_limit = 10;
+  Llm llm = 11;
+  Robots robots = 12;
+  Shortlink shortlink = 13;
+  Breaker breaker = 14;
+  Retention retention = 15;
+  Asynq asynq = 16;
+  Collectors collectors = 17;
+}
+
+// ---------- ④ MME 短视频矩阵混剪（docs/systems/04-MME/03-详细设计.md §4）----------
+// 诚实边界：
+//  - 无 GPU 时 reframe 只能中心/规则裁切，UI 必须标注质量下降，不得宣称「AI 智能重构」。
+//  - 凭据（Cookie）不写 yaml，走文件路径引用。
+//  - QC block_on_* 为硬门禁：任一为 true 且检测失败时变体不得进入审批门。
+message Mme {
+  // 下载（yt-dlp）
+  message Download {
+    string ytdlp_path = 1;                    // yt-dlp 可执行文件（默认 PATH 查找）
+    string cookies_path = 2;                  // Cookie 文件（风控/需登录平台）
+    google.protobuf.Duration timeout = 3;     // 单任务下载超时
+  }
+  // 渲染（FFmpeg CLI）
+  message Render {
+    int32 concurrency = 1;                    // 渲染并发（CPU 密集，默认 2）
+    string ffmpeg_path = 2;
+    string ffprobe_path = 3;
+    string preset = 4;                        // x264 preset（medium）
+    int32 crf = 5;                            // 默认 23
+    int32 max_duration_sec = 6;               // 成片时长上限
+    int32 min_duration_sec = 7;               // 成片时长下限
+    bool keep_intermediate_on_fail = 8;       // NFR-MME-08 失败保留中间产物
+  }
+  // 矩阵展开
+  message Matrix {
+    int32 max_variants_per_set = 1;           // 规模上限保护（默认 60）
+    repeated string default_aspects = 2;      // ["9:16","1:1","16:9"]
+    int32 default_hook_count = 3;             // 默认 Hook 数（≥2）
+  }
+  // 产物缓存（FR-MIX-02）
+  message Cache {
+    bool enabled = 1;
+    int32 ttl_days = 2;                       // 默认 90
+    int32 transcript_ttl_days = 3;            // 转写产物 180
+    int64 max_cache_bytes = 4;                // 缓存总量帽
+  }
+  // 差异化检查（FR-MIX-05，强提示不硬阻断）
+  message DiffCheck {
+    bool enabled = 1;
+    double warn_threshold = 2;                // 综合阈值 0.90
+    double hook_threshold = 3;                // 0.85
+    double copy_threshold = 4;                // 0.92
+    int32 sample_frames = 5;                  // 抽帧数
+  }
+  // 渲染自检（硬门禁）
+  message Qc {
+    message SafetyMargin {
+      int32 bottom = 1;
+      int32 top = 2;
+    }
+    map<string, SafetyMargin> safety_margin = 1; // 按画幅区分（"9:16"/"1:1"/"16:9"）
+    bool block_on_boundary_fail = 2;          // 🔴 硬门禁
+    bool block_on_subtitle_fail = 3;          // 🔴 硬门禁
+  }
+  // 转写（M3：源字幕 > 本地 Whisper/FunASR > 云）
+  message Asr {
+    string engine = 1;                        // whisper（source_subtitle 优先自动判）
+    string model = 2;                         // whisper 模型档位（base）
+    bool funasr_enabled = 3;
+    bool cloud_fallback = 4;
+  }
+  // LLM（云优先、Ollama 降级；日调用帽 NFR-MME-05）
+  message Llm {
+    string provider = 1;                      // cloud
+    string fallback = 2;                      // ollama
+    string ollama_url = 3;                    // http://127.0.0.1:11434
+    string ollama_model = 4;                  // qwen2.5:7b 等
+    google.protobuf.Duration timeout = 5;
+    int32 daily_call_cap = 6;                 // 日调用总量帽
+  }
+  // 媒体存储
+  message Storage {
+    string media_dir = 1;                     // 素材与变体产物
+    string export_dir = 2;                    // ZIP 发布包
+    int32 retention_days = 3;                 // 保留期（配合 FR-MIX-07 回收）
+  }
+  // 剪映草稿（M15，[待测] 版本兼容性未验证）
+  message Jianying {
+    bool enabled = 1;
+    string py_draft_url = 2;                  // Python 侧车（pyJianYingDraft）
+    string version_note = 3;                  // 诚实声明文本
+  }
+  bool enabled = 1;
+  string prompt_version = 2;                  // 分析提示词版本（缓存 key 组成）
+  Download download = 3;
+  Render render = 4;
+  Matrix matrix = 5;
+  Cache cache = 6;
+  DiffCheck diff_check = 7;
+  Qc qc = 8;
+  Asr asr = 9;
+  Llm llm = 10;
+  Storage storage = 11;
+  Jianying jianying = 12;
 }

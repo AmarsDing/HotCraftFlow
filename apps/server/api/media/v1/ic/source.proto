@@ -1,0 +1,176 @@
+syntax = "proto3";
+
+package media.ic.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+// ============================================================================
+// IntelSource —— 信源注册表（FR-INT-01，文档 01-IC/03 §1）。
+// 约定（评审 B-2/B-3 修复）：
+//  - 契约枚举字段一律 string + 注释列合法值，service 层校验（protojson 禁用 enum
+//    承载契约字段，否则序列化为 COLLECT_METHOD_HOTLIST 违约）。
+//  - 本文件枚举 SourceKind 仅内部管理面使用，不出现在 IntelItem 契约中。
+//  - 所有字段显式 json_name = snake_case；时间一律 Timestamp（UTC 带 Z）。
+// ============================================================================
+
+// IntelSource 信源。
+message IntelSource {
+  string id         = 1 [json_name = "id"];      // src_ 前缀 ULID
+  string platform   = 2 [json_name = "platform"]; // 契约 §1 平台枚举
+  string region     = 3 [json_name = "region"];   // cn | intl | global
+  // kind ∈ {hotlist, keyword, creator, rss, competitor}（采什么）
+  string kind       = 4 [json_name = "kind"];
+  // method ∈ {hotlist, api, rss, crawl, sidecar}（怎么采；与 kind 组合受矩阵约束 S-20）
+  string method     = 5 [json_name = "method"];
+  string config_json = 6 [json_name = "config_json"]; // 采集器私有配置（JSON 原文，写入前 json.Valid）
+  string config_schema_hint = 7 [json_name = "config_schema_hint"]; // 前端动态表单 hint
+  bool   enabled    = 8 [json_name = "enabled"];
+  int32  interval_minutes = 9 [json_name = "interval_minutes"]; // 2~1440；按 method 分级下限（S-18）
+  int32  rate_limit_per_min = 10 [json_name = "rate_limit_per_min"];
+  int32  priority   = 11 [json_name = "priority"];
+  string credential_ref = 12 [json_name = "credential_ref"]; // 凭据引用，非明文
+  double weight     = 13 [json_name = "weight"]; // 选题权重 0.5~2.0（FR-INT-16 回流更新）
+  bool   robots_exempt = 14 [json_name = "robots_exempt"];
+  string robots_exempt_reason = 15 [json_name = "robots_exempt_reason"]; // exempt=true 时必填（S-8）
+
+  // 熔断状态（S-12）
+  string status     = 16 [json_name = "status"]; // active | paused | disabled
+  google.protobuf.Timestamp paused_until = 17 [json_name = "paused_until"];
+  int32  fail_streak = 18 [json_name = "fail_streak"];
+
+  // 健康度（NFR-IC-05）
+  SourceHealth health = 19 [json_name = "health"];
+
+  google.protobuf.Timestamp last_run_at = 20 [json_name = "last_run_at"];
+  google.protobuf.Timestamp create_time = 21 [json_name = "create_time"];
+  google.protobuf.Timestamp update_time = 22 [json_name = "update_time"];
+}
+
+message SourceHealth {
+  string status      = 1 [json_name = "status"]; // healthy | degraded | down
+  double success_rate_7d = 2 [json_name = "success_rate_7d"];
+  google.protobuf.Timestamp last_success_at = 3 [json_name = "last_success_at"];
+  string last_error  = 4 [json_name = "last_error"];
+  int64  quota_used  = 5 [json_name = "quota_used"];
+  int64  quota_limit = 6 [json_name = "quota_limit"];
+}
+
+// ---------- CRUD ----------
+
+message ListIntelSourcesRequest {
+  int32  page = 1 [json_name = "page"];
+  int32  page_size = 2 [json_name = "page_size"];
+  string platform = 3 [json_name = "platform"];
+  string kind = 4 [json_name = "kind"];
+  bool   enabled_only = 5 [json_name = "enabled_only"];
+}
+
+message ListIntelSourcesResponse {
+  repeated IntelSource items = 1 [json_name = "items"];
+  int32 total = 2 [json_name = "total"];
+}
+
+message GetIntelSourceRequest { string id = 1 [json_name = "id"]; }
+
+message CreateIntelSourceRequest {
+  IntelSource data = 1 [json_name = "data"];
+}
+
+message UpdateIntelSourceRequest {
+  string id = 1 [json_name = "id"];
+  IntelSource data = 2 [json_name = "data"];
+}
+
+message DeleteIntelSourceRequest  { string id = 1 [json_name = "id"]; }
+message DeleteIntelSourceResponse { bool ok = 1 [json_name = "ok"]; }
+
+message ToggleIntelSourceRequest {
+  string id = 1 [json_name = "id"];
+  bool   enabled = 2 [json_name = "enabled"];
+}
+message ToggleIntelSourceResponse { bool ok = 1 [json_name = "ok"]; }
+
+message RunCollectorRequest {
+  string source_id = 1 [json_name = "source_id"];
+  bool   force = 2 [json_name = "force"]; // 忽略限流/熔断（人工补采）
+}
+message RunCollectorResponse {
+  int32  collected = 1 [json_name = "collected"];
+  int32  normalized = 2 [json_name = "normalized"];
+  string run_id = 3 [json_name = "run_id"];
+}
+
+// ---------- ComplianceRule CRUD（闸门判据，M4）----------
+
+message ComplianceRule {
+  string id = 1 [json_name = "id"]; // rule_ 前缀
+  // rule_type ∈ {sensitive_category, rights_holder_blacklist, authorization, robots, platform_tos}
+  string rule_type = 2 [json_name = "rule_type"];
+  string pattern = 3 [json_name = "pattern"];
+  string action = 4 [json_name = "action"]; // pass | review | block
+  int32  priority = 5 [json_name = "priority"];
+  bool   enabled = 6 [json_name = "enabled"];
+  google.protobuf.Timestamp effective_from = 7 [json_name = "effective_from"];
+  google.protobuf.Timestamp effective_until = 8 [json_name = "effective_until"];
+  int64  hit_count = 9 [json_name = "hit_count"];
+  string scope = 10 [json_name = "scope"]; // global | platform
+  string platform = 11 [json_name = "platform"];
+  string remark = 12 [json_name = "remark"];
+}
+
+message ListComplianceRulesRequest {
+  int32  page = 1 [json_name = "page"];
+  int32  page_size = 2 [json_name = "page_size"];
+  string rule_type = 3 [json_name = "rule_type"];
+  bool   enabled_only = 4 [json_name = "enabled_only"];
+}
+message ListComplianceRulesResponse {
+  repeated ComplianceRule items = 1 [json_name = "items"];
+  int32 total = 2 [json_name = "total"];
+}
+message CreateComplianceRuleRequest { ComplianceRule data = 1 [json_name = "data"]; }
+message UpdateComplianceRuleRequest {
+  string id = 1 [json_name = "id"];
+  ComplianceRule data = 2 [json_name = "data"];
+}
+message DeleteComplianceRuleRequest  { string id = 1 [json_name = "id"]; }
+message DeleteComplianceRuleResponse { bool ok = 1 [json_name = "ok"]; }
+
+// IntelSourceService 信源注册表与合规规则管理。
+service IntelSourceService {
+  rpc ListIntelSources(ListIntelSourcesRequest) returns (ListIntelSourcesResponse) {
+    option (google.api.http) = { get: "/api/v1/media/ic/sources" };
+  }
+  rpc GetIntelSource(GetIntelSourceRequest) returns (IntelSource) {
+    option (google.api.http) = { get: "/api/v1/media/ic/sources/{id}" };
+  }
+  rpc CreateIntelSource(CreateIntelSourceRequest) returns (IntelSource) {
+    option (google.api.http) = { post: "/api/v1/media/ic/sources" body: "*" };
+  }
+  rpc UpdateIntelSource(UpdateIntelSourceRequest) returns (IntelSource) {
+    option (google.api.http) = { patch: "/api/v1/media/ic/sources/{id}" body: "*" };
+  }
+  rpc DeleteIntelSource(DeleteIntelSourceRequest) returns (DeleteIntelSourceResponse) {
+    option (google.api.http) = { delete: "/api/v1/media/ic/sources/{id}" };
+  }
+  rpc ToggleIntelSource(ToggleIntelSourceRequest) returns (ToggleIntelSourceResponse) {
+    option (google.api.http) = { post: "/api/v1/media/ic/sources/{id}/toggle" body: "*" };
+  }
+  rpc RunCollector(RunCollectorRequest) returns (RunCollectorResponse) {
+    option (google.api.http) = { post: "/api/v1/media/ic/sources/{source_id}/run" body: "*" };
+  }
+
+  rpc ListComplianceRules(ListComplianceRulesRequest) returns (ListComplianceRulesResponse) {
+    option (google.api.http) = { get: "/api/v1/media/ic/rules" };
+  }
+  rpc CreateComplianceRule(CreateComplianceRuleRequest) returns (ComplianceRule) {
+    option (google.api.http) = { post: "/api/v1/media/ic/rules" body: "*" };
+  }
+  rpc UpdateComplianceRule(UpdateComplianceRuleRequest) returns (ComplianceRule) {
+    option (google.api.http) = { patch: "/api/v1/media/ic/rules/{id}" body: "*" };
+  }
+  rpc DeleteComplianceRule(DeleteComplianceRuleRequest) returns (DeleteComplianceRuleResponse) {
+    option (google.api.http) = { delete: "/api/v1/media/ic/rules/{id}" };
+  }
+}

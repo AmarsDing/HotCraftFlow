@@ -4,10 +4,12 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"framework/app/admin/internal/data/ent/toollink"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -17,6 +19,7 @@ type ToolLinkCreate struct {
 	config
 	mutation *ToolLinkMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -457,6 +460,7 @@ func (_c *ToolLinkCreate) createSpec() (*ToolLink, *sqlgraph.CreateSpec) {
 		_node = &ToolLink{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(toollink.Table, sqlgraph.NewFieldSpec(toollink.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -552,11 +556,1029 @@ func (_c *ToolLinkCreate) createSpec() (*ToolLink, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ToolLink.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ToolLinkUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ToolLinkCreate) OnConflict(opts ...sql.ConflictOption) *ToolLinkUpsertOne {
+	_c.conflict = opts
+	return &ToolLinkUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ToolLink.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ToolLinkCreate) OnConflictColumns(columns ...string) *ToolLinkUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ToolLinkUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// ToolLinkUpsertOne is the builder for "upsert"-ing
+	//  one ToolLink node.
+	ToolLinkUpsertOne struct {
+		create *ToolLinkCreate
+	}
+
+	// ToolLinkUpsert is the "OnConflict" setter.
+	ToolLinkUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ToolLinkUpsert) SetUpdateTime(v time.Time) *ToolLinkUpsert {
+	u.Set(toollink.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateUpdateTime() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *ToolLinkUpsert) ClearUpdateTime() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *ToolLinkUpsert) SetDeleteTime(v time.Time) *ToolLinkUpsert {
+	u.Set(toollink.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateDeleteTime() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *ToolLinkUpsert) ClearDeleteTime() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldDeleteTime)
+	return u
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *ToolLinkUpsert) SetCreateBy(v uint32) *ToolLinkUpsert {
+	u.Set(toollink.FieldCreateBy, v)
+	return u
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateCreateBy() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldCreateBy)
+	return u
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *ToolLinkUpsert) AddCreateBy(v uint32) *ToolLinkUpsert {
+	u.Add(toollink.FieldCreateBy, v)
+	return u
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *ToolLinkUpsert) ClearCreateBy() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldCreateBy)
+	return u
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *ToolLinkUpsert) SetUpdateBy(v uint32) *ToolLinkUpsert {
+	u.Set(toollink.FieldUpdateBy, v)
+	return u
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateUpdateBy() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldUpdateBy)
+	return u
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *ToolLinkUpsert) AddUpdateBy(v uint32) *ToolLinkUpsert {
+	u.Add(toollink.FieldUpdateBy, v)
+	return u
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *ToolLinkUpsert) ClearUpdateBy() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldUpdateBy)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *ToolLinkUpsert) SetStatus(v toollink.Status) *ToolLinkUpsert {
+	u.Set(toollink.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateStatus() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldStatus)
+	return u
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *ToolLinkUpsert) ClearStatus() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldStatus)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *ToolLinkUpsert) SetName(v string) *ToolLinkUpsert {
+	u.Set(toollink.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateName() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldName)
+	return u
+}
+
+// ClearName clears the value of the "name" field.
+func (u *ToolLinkUpsert) ClearName() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldName)
+	return u
+}
+
+// SetURL sets the "url" field.
+func (u *ToolLinkUpsert) SetURL(v string) *ToolLinkUpsert {
+	u.Set(toollink.FieldURL, v)
+	return u
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateURL() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldURL)
+	return u
+}
+
+// ClearURL clears the value of the "url" field.
+func (u *ToolLinkUpsert) ClearURL() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldURL)
+	return u
+}
+
+// SetIconType sets the "icon_type" field.
+func (u *ToolLinkUpsert) SetIconType(v toollink.IconType) *ToolLinkUpsert {
+	u.Set(toollink.FieldIconType, v)
+	return u
+}
+
+// UpdateIconType sets the "icon_type" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateIconType() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldIconType)
+	return u
+}
+
+// ClearIconType clears the value of the "icon_type" field.
+func (u *ToolLinkUpsert) ClearIconType() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldIconType)
+	return u
+}
+
+// SetIconValue sets the "icon_value" field.
+func (u *ToolLinkUpsert) SetIconValue(v string) *ToolLinkUpsert {
+	u.Set(toollink.FieldIconValue, v)
+	return u
+}
+
+// UpdateIconValue sets the "icon_value" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateIconValue() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldIconValue)
+	return u
+}
+
+// ClearIconValue clears the value of the "icon_value" field.
+func (u *ToolLinkUpsert) ClearIconValue() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldIconValue)
+	return u
+}
+
+// SetCategory sets the "category" field.
+func (u *ToolLinkUpsert) SetCategory(v string) *ToolLinkUpsert {
+	u.Set(toollink.FieldCategory, v)
+	return u
+}
+
+// UpdateCategory sets the "category" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateCategory() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldCategory)
+	return u
+}
+
+// ClearCategory clears the value of the "category" field.
+func (u *ToolLinkUpsert) ClearCategory() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldCategory)
+	return u
+}
+
+// SetDescription sets the "description" field.
+func (u *ToolLinkUpsert) SetDescription(v string) *ToolLinkUpsert {
+	u.Set(toollink.FieldDescription, v)
+	return u
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateDescription() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldDescription)
+	return u
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *ToolLinkUpsert) ClearDescription() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldDescription)
+	return u
+}
+
+// SetSort sets the "sort" field.
+func (u *ToolLinkUpsert) SetSort(v int32) *ToolLinkUpsert {
+	u.Set(toollink.FieldSort, v)
+	return u
+}
+
+// UpdateSort sets the "sort" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateSort() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldSort)
+	return u
+}
+
+// AddSort adds v to the "sort" field.
+func (u *ToolLinkUpsert) AddSort(v int32) *ToolLinkUpsert {
+	u.Add(toollink.FieldSort, v)
+	return u
+}
+
+// ClearSort clears the value of the "sort" field.
+func (u *ToolLinkUpsert) ClearSort() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldSort)
+	return u
+}
+
+// SetExternal sets the "external" field.
+func (u *ToolLinkUpsert) SetExternal(v bool) *ToolLinkUpsert {
+	u.Set(toollink.FieldExternal, v)
+	return u
+}
+
+// UpdateExternal sets the "external" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateExternal() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldExternal)
+	return u
+}
+
+// ClearExternal clears the value of the "external" field.
+func (u *ToolLinkUpsert) ClearExternal() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldExternal)
+	return u
+}
+
+// SetCategoryID sets the "category_id" field.
+func (u *ToolLinkUpsert) SetCategoryID(v uint32) *ToolLinkUpsert {
+	u.Set(toollink.FieldCategoryID, v)
+	return u
+}
+
+// UpdateCategoryID sets the "category_id" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateCategoryID() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldCategoryID)
+	return u
+}
+
+// AddCategoryID adds v to the "category_id" field.
+func (u *ToolLinkUpsert) AddCategoryID(v uint32) *ToolLinkUpsert {
+	u.Add(toollink.FieldCategoryID, v)
+	return u
+}
+
+// ClearCategoryID clears the value of the "category_id" field.
+func (u *ToolLinkUpsert) ClearCategoryID() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldCategoryID)
+	return u
+}
+
+// SetHealthStatus sets the "health_status" field.
+func (u *ToolLinkUpsert) SetHealthStatus(v toollink.HealthStatus) *ToolLinkUpsert {
+	u.Set(toollink.FieldHealthStatus, v)
+	return u
+}
+
+// UpdateHealthStatus sets the "health_status" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateHealthStatus() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldHealthStatus)
+	return u
+}
+
+// ClearHealthStatus clears the value of the "health_status" field.
+func (u *ToolLinkUpsert) ClearHealthStatus() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldHealthStatus)
+	return u
+}
+
+// SetLastCheckAt sets the "last_check_at" field.
+func (u *ToolLinkUpsert) SetLastCheckAt(v time.Time) *ToolLinkUpsert {
+	u.Set(toollink.FieldLastCheckAt, v)
+	return u
+}
+
+// UpdateLastCheckAt sets the "last_check_at" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateLastCheckAt() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldLastCheckAt)
+	return u
+}
+
+// ClearLastCheckAt clears the value of the "last_check_at" field.
+func (u *ToolLinkUpsert) ClearLastCheckAt() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldLastCheckAt)
+	return u
+}
+
+// SetClickCount sets the "click_count" field.
+func (u *ToolLinkUpsert) SetClickCount(v uint32) *ToolLinkUpsert {
+	u.Set(toollink.FieldClickCount, v)
+	return u
+}
+
+// UpdateClickCount sets the "click_count" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateClickCount() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldClickCount)
+	return u
+}
+
+// AddClickCount adds v to the "click_count" field.
+func (u *ToolLinkUpsert) AddClickCount(v uint32) *ToolLinkUpsert {
+	u.Add(toollink.FieldClickCount, v)
+	return u
+}
+
+// ClearClickCount clears the value of the "click_count" field.
+func (u *ToolLinkUpsert) ClearClickCount() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldClickCount)
+	return u
+}
+
+// SetVisibleRoles sets the "visible_roles" field.
+func (u *ToolLinkUpsert) SetVisibleRoles(v []string) *ToolLinkUpsert {
+	u.Set(toollink.FieldVisibleRoles, v)
+	return u
+}
+
+// UpdateVisibleRoles sets the "visible_roles" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateVisibleRoles() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldVisibleRoles)
+	return u
+}
+
+// ClearVisibleRoles clears the value of the "visible_roles" field.
+func (u *ToolLinkUpsert) ClearVisibleRoles() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldVisibleRoles)
+	return u
+}
+
+// SetLinkType sets the "link_type" field.
+func (u *ToolLinkUpsert) SetLinkType(v toollink.LinkType) *ToolLinkUpsert {
+	u.Set(toollink.FieldLinkType, v)
+	return u
+}
+
+// UpdateLinkType sets the "link_type" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateLinkType() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldLinkType)
+	return u
+}
+
+// ClearLinkType clears the value of the "link_type" field.
+func (u *ToolLinkUpsert) ClearLinkType() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldLinkType)
+	return u
+}
+
+// SetNameI18n sets the "name_i18n" field.
+func (u *ToolLinkUpsert) SetNameI18n(v map[string]string) *ToolLinkUpsert {
+	u.Set(toollink.FieldNameI18n, v)
+	return u
+}
+
+// UpdateNameI18n sets the "name_i18n" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateNameI18n() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldNameI18n)
+	return u
+}
+
+// ClearNameI18n clears the value of the "name_i18n" field.
+func (u *ToolLinkUpsert) ClearNameI18n() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldNameI18n)
+	return u
+}
+
+// SetDescriptionI18n sets the "description_i18n" field.
+func (u *ToolLinkUpsert) SetDescriptionI18n(v map[string]string) *ToolLinkUpsert {
+	u.Set(toollink.FieldDescriptionI18n, v)
+	return u
+}
+
+// UpdateDescriptionI18n sets the "description_i18n" field to the value that was provided on create.
+func (u *ToolLinkUpsert) UpdateDescriptionI18n() *ToolLinkUpsert {
+	u.SetExcluded(toollink.FieldDescriptionI18n)
+	return u
+}
+
+// ClearDescriptionI18n clears the value of the "description_i18n" field.
+func (u *ToolLinkUpsert) ClearDescriptionI18n() *ToolLinkUpsert {
+	u.SetNull(toollink.FieldDescriptionI18n)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.ToolLink.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(toollink.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ToolLinkUpsertOne) UpdateNewValues() *ToolLinkUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(toollink.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(toollink.FieldCreateTime)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ToolLink.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *ToolLinkUpsertOne) Ignore() *ToolLinkUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ToolLinkUpsertOne) DoNothing() *ToolLinkUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ToolLinkCreate.OnConflict
+// documentation for more info.
+func (u *ToolLinkUpsertOne) Update(set func(*ToolLinkUpsert)) *ToolLinkUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ToolLinkUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ToolLinkUpsertOne) SetUpdateTime(v time.Time) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateUpdateTime() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *ToolLinkUpsertOne) ClearUpdateTime() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *ToolLinkUpsertOne) SetDeleteTime(v time.Time) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateDeleteTime() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *ToolLinkUpsertOne) ClearDeleteTime() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *ToolLinkUpsertOne) SetCreateBy(v uint32) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *ToolLinkUpsertOne) AddCreateBy(v uint32) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateCreateBy() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *ToolLinkUpsertOne) ClearCreateBy() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *ToolLinkUpsertOne) SetUpdateBy(v uint32) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *ToolLinkUpsertOne) AddUpdateBy(v uint32) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateUpdateBy() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *ToolLinkUpsertOne) ClearUpdateBy() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *ToolLinkUpsertOne) SetStatus(v toollink.Status) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateStatus() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *ToolLinkUpsertOne) ClearStatus() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *ToolLinkUpsertOne) SetName(v string) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateName() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateName()
+	})
+}
+
+// ClearName clears the value of the "name" field.
+func (u *ToolLinkUpsertOne) ClearName() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearName()
+	})
+}
+
+// SetURL sets the "url" field.
+func (u *ToolLinkUpsertOne) SetURL(v string) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetURL(v)
+	})
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateURL() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateURL()
+	})
+}
+
+// ClearURL clears the value of the "url" field.
+func (u *ToolLinkUpsertOne) ClearURL() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearURL()
+	})
+}
+
+// SetIconType sets the "icon_type" field.
+func (u *ToolLinkUpsertOne) SetIconType(v toollink.IconType) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetIconType(v)
+	})
+}
+
+// UpdateIconType sets the "icon_type" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateIconType() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateIconType()
+	})
+}
+
+// ClearIconType clears the value of the "icon_type" field.
+func (u *ToolLinkUpsertOne) ClearIconType() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearIconType()
+	})
+}
+
+// SetIconValue sets the "icon_value" field.
+func (u *ToolLinkUpsertOne) SetIconValue(v string) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetIconValue(v)
+	})
+}
+
+// UpdateIconValue sets the "icon_value" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateIconValue() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateIconValue()
+	})
+}
+
+// ClearIconValue clears the value of the "icon_value" field.
+func (u *ToolLinkUpsertOne) ClearIconValue() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearIconValue()
+	})
+}
+
+// SetCategory sets the "category" field.
+func (u *ToolLinkUpsertOne) SetCategory(v string) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetCategory(v)
+	})
+}
+
+// UpdateCategory sets the "category" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateCategory() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateCategory()
+	})
+}
+
+// ClearCategory clears the value of the "category" field.
+func (u *ToolLinkUpsertOne) ClearCategory() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearCategory()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *ToolLinkUpsertOne) SetDescription(v string) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateDescription() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *ToolLinkUpsertOne) ClearDescription() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetSort sets the "sort" field.
+func (u *ToolLinkUpsertOne) SetSort(v int32) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetSort(v)
+	})
+}
+
+// AddSort adds v to the "sort" field.
+func (u *ToolLinkUpsertOne) AddSort(v int32) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.AddSort(v)
+	})
+}
+
+// UpdateSort sets the "sort" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateSort() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateSort()
+	})
+}
+
+// ClearSort clears the value of the "sort" field.
+func (u *ToolLinkUpsertOne) ClearSort() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearSort()
+	})
+}
+
+// SetExternal sets the "external" field.
+func (u *ToolLinkUpsertOne) SetExternal(v bool) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetExternal(v)
+	})
+}
+
+// UpdateExternal sets the "external" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateExternal() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateExternal()
+	})
+}
+
+// ClearExternal clears the value of the "external" field.
+func (u *ToolLinkUpsertOne) ClearExternal() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearExternal()
+	})
+}
+
+// SetCategoryID sets the "category_id" field.
+func (u *ToolLinkUpsertOne) SetCategoryID(v uint32) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetCategoryID(v)
+	})
+}
+
+// AddCategoryID adds v to the "category_id" field.
+func (u *ToolLinkUpsertOne) AddCategoryID(v uint32) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.AddCategoryID(v)
+	})
+}
+
+// UpdateCategoryID sets the "category_id" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateCategoryID() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateCategoryID()
+	})
+}
+
+// ClearCategoryID clears the value of the "category_id" field.
+func (u *ToolLinkUpsertOne) ClearCategoryID() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearCategoryID()
+	})
+}
+
+// SetHealthStatus sets the "health_status" field.
+func (u *ToolLinkUpsertOne) SetHealthStatus(v toollink.HealthStatus) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetHealthStatus(v)
+	})
+}
+
+// UpdateHealthStatus sets the "health_status" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateHealthStatus() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateHealthStatus()
+	})
+}
+
+// ClearHealthStatus clears the value of the "health_status" field.
+func (u *ToolLinkUpsertOne) ClearHealthStatus() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearHealthStatus()
+	})
+}
+
+// SetLastCheckAt sets the "last_check_at" field.
+func (u *ToolLinkUpsertOne) SetLastCheckAt(v time.Time) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetLastCheckAt(v)
+	})
+}
+
+// UpdateLastCheckAt sets the "last_check_at" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateLastCheckAt() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateLastCheckAt()
+	})
+}
+
+// ClearLastCheckAt clears the value of the "last_check_at" field.
+func (u *ToolLinkUpsertOne) ClearLastCheckAt() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearLastCheckAt()
+	})
+}
+
+// SetClickCount sets the "click_count" field.
+func (u *ToolLinkUpsertOne) SetClickCount(v uint32) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetClickCount(v)
+	})
+}
+
+// AddClickCount adds v to the "click_count" field.
+func (u *ToolLinkUpsertOne) AddClickCount(v uint32) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.AddClickCount(v)
+	})
+}
+
+// UpdateClickCount sets the "click_count" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateClickCount() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateClickCount()
+	})
+}
+
+// ClearClickCount clears the value of the "click_count" field.
+func (u *ToolLinkUpsertOne) ClearClickCount() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearClickCount()
+	})
+}
+
+// SetVisibleRoles sets the "visible_roles" field.
+func (u *ToolLinkUpsertOne) SetVisibleRoles(v []string) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetVisibleRoles(v)
+	})
+}
+
+// UpdateVisibleRoles sets the "visible_roles" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateVisibleRoles() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateVisibleRoles()
+	})
+}
+
+// ClearVisibleRoles clears the value of the "visible_roles" field.
+func (u *ToolLinkUpsertOne) ClearVisibleRoles() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearVisibleRoles()
+	})
+}
+
+// SetLinkType sets the "link_type" field.
+func (u *ToolLinkUpsertOne) SetLinkType(v toollink.LinkType) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetLinkType(v)
+	})
+}
+
+// UpdateLinkType sets the "link_type" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateLinkType() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateLinkType()
+	})
+}
+
+// ClearLinkType clears the value of the "link_type" field.
+func (u *ToolLinkUpsertOne) ClearLinkType() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearLinkType()
+	})
+}
+
+// SetNameI18n sets the "name_i18n" field.
+func (u *ToolLinkUpsertOne) SetNameI18n(v map[string]string) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetNameI18n(v)
+	})
+}
+
+// UpdateNameI18n sets the "name_i18n" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateNameI18n() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateNameI18n()
+	})
+}
+
+// ClearNameI18n clears the value of the "name_i18n" field.
+func (u *ToolLinkUpsertOne) ClearNameI18n() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearNameI18n()
+	})
+}
+
+// SetDescriptionI18n sets the "description_i18n" field.
+func (u *ToolLinkUpsertOne) SetDescriptionI18n(v map[string]string) *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetDescriptionI18n(v)
+	})
+}
+
+// UpdateDescriptionI18n sets the "description_i18n" field to the value that was provided on create.
+func (u *ToolLinkUpsertOne) UpdateDescriptionI18n() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateDescriptionI18n()
+	})
+}
+
+// ClearDescriptionI18n clears the value of the "description_i18n" field.
+func (u *ToolLinkUpsertOne) ClearDescriptionI18n() *ToolLinkUpsertOne {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearDescriptionI18n()
+	})
+}
+
+// Exec executes the query.
+func (u *ToolLinkUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ToolLinkCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ToolLinkUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *ToolLinkUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *ToolLinkUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // ToolLinkCreateBulk is the builder for creating many ToolLink entities in bulk.
 type ToolLinkCreateBulk struct {
 	config
 	err      error
 	builders []*ToolLinkCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the ToolLink entities in the database.
@@ -586,6 +1608,7 @@ func (_c *ToolLinkCreateBulk) Save(ctx context.Context) ([]*ToolLink, error) {
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -636,6 +1659,599 @@ func (_c *ToolLinkCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *ToolLinkCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ToolLink.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ToolLinkUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ToolLinkCreateBulk) OnConflict(opts ...sql.ConflictOption) *ToolLinkUpsertBulk {
+	_c.conflict = opts
+	return &ToolLinkUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ToolLink.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ToolLinkCreateBulk) OnConflictColumns(columns ...string) *ToolLinkUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ToolLinkUpsertBulk{
+		create: _c,
+	}
+}
+
+// ToolLinkUpsertBulk is the builder for "upsert"-ing
+// a bulk of ToolLink nodes.
+type ToolLinkUpsertBulk struct {
+	create *ToolLinkCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.ToolLink.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(toollink.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ToolLinkUpsertBulk) UpdateNewValues() *ToolLinkUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(toollink.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(toollink.FieldCreateTime)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ToolLink.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *ToolLinkUpsertBulk) Ignore() *ToolLinkUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ToolLinkUpsertBulk) DoNothing() *ToolLinkUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ToolLinkCreateBulk.OnConflict
+// documentation for more info.
+func (u *ToolLinkUpsertBulk) Update(set func(*ToolLinkUpsert)) *ToolLinkUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ToolLinkUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ToolLinkUpsertBulk) SetUpdateTime(v time.Time) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateUpdateTime() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *ToolLinkUpsertBulk) ClearUpdateTime() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *ToolLinkUpsertBulk) SetDeleteTime(v time.Time) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateDeleteTime() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *ToolLinkUpsertBulk) ClearDeleteTime() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *ToolLinkUpsertBulk) SetCreateBy(v uint32) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *ToolLinkUpsertBulk) AddCreateBy(v uint32) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateCreateBy() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *ToolLinkUpsertBulk) ClearCreateBy() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *ToolLinkUpsertBulk) SetUpdateBy(v uint32) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *ToolLinkUpsertBulk) AddUpdateBy(v uint32) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateUpdateBy() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *ToolLinkUpsertBulk) ClearUpdateBy() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *ToolLinkUpsertBulk) SetStatus(v toollink.Status) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateStatus() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *ToolLinkUpsertBulk) ClearStatus() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *ToolLinkUpsertBulk) SetName(v string) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateName() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateName()
+	})
+}
+
+// ClearName clears the value of the "name" field.
+func (u *ToolLinkUpsertBulk) ClearName() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearName()
+	})
+}
+
+// SetURL sets the "url" field.
+func (u *ToolLinkUpsertBulk) SetURL(v string) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetURL(v)
+	})
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateURL() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateURL()
+	})
+}
+
+// ClearURL clears the value of the "url" field.
+func (u *ToolLinkUpsertBulk) ClearURL() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearURL()
+	})
+}
+
+// SetIconType sets the "icon_type" field.
+func (u *ToolLinkUpsertBulk) SetIconType(v toollink.IconType) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetIconType(v)
+	})
+}
+
+// UpdateIconType sets the "icon_type" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateIconType() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateIconType()
+	})
+}
+
+// ClearIconType clears the value of the "icon_type" field.
+func (u *ToolLinkUpsertBulk) ClearIconType() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearIconType()
+	})
+}
+
+// SetIconValue sets the "icon_value" field.
+func (u *ToolLinkUpsertBulk) SetIconValue(v string) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetIconValue(v)
+	})
+}
+
+// UpdateIconValue sets the "icon_value" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateIconValue() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateIconValue()
+	})
+}
+
+// ClearIconValue clears the value of the "icon_value" field.
+func (u *ToolLinkUpsertBulk) ClearIconValue() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearIconValue()
+	})
+}
+
+// SetCategory sets the "category" field.
+func (u *ToolLinkUpsertBulk) SetCategory(v string) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetCategory(v)
+	})
+}
+
+// UpdateCategory sets the "category" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateCategory() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateCategory()
+	})
+}
+
+// ClearCategory clears the value of the "category" field.
+func (u *ToolLinkUpsertBulk) ClearCategory() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearCategory()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *ToolLinkUpsertBulk) SetDescription(v string) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateDescription() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *ToolLinkUpsertBulk) ClearDescription() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetSort sets the "sort" field.
+func (u *ToolLinkUpsertBulk) SetSort(v int32) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetSort(v)
+	})
+}
+
+// AddSort adds v to the "sort" field.
+func (u *ToolLinkUpsertBulk) AddSort(v int32) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.AddSort(v)
+	})
+}
+
+// UpdateSort sets the "sort" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateSort() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateSort()
+	})
+}
+
+// ClearSort clears the value of the "sort" field.
+func (u *ToolLinkUpsertBulk) ClearSort() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearSort()
+	})
+}
+
+// SetExternal sets the "external" field.
+func (u *ToolLinkUpsertBulk) SetExternal(v bool) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetExternal(v)
+	})
+}
+
+// UpdateExternal sets the "external" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateExternal() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateExternal()
+	})
+}
+
+// ClearExternal clears the value of the "external" field.
+func (u *ToolLinkUpsertBulk) ClearExternal() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearExternal()
+	})
+}
+
+// SetCategoryID sets the "category_id" field.
+func (u *ToolLinkUpsertBulk) SetCategoryID(v uint32) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetCategoryID(v)
+	})
+}
+
+// AddCategoryID adds v to the "category_id" field.
+func (u *ToolLinkUpsertBulk) AddCategoryID(v uint32) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.AddCategoryID(v)
+	})
+}
+
+// UpdateCategoryID sets the "category_id" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateCategoryID() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateCategoryID()
+	})
+}
+
+// ClearCategoryID clears the value of the "category_id" field.
+func (u *ToolLinkUpsertBulk) ClearCategoryID() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearCategoryID()
+	})
+}
+
+// SetHealthStatus sets the "health_status" field.
+func (u *ToolLinkUpsertBulk) SetHealthStatus(v toollink.HealthStatus) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetHealthStatus(v)
+	})
+}
+
+// UpdateHealthStatus sets the "health_status" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateHealthStatus() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateHealthStatus()
+	})
+}
+
+// ClearHealthStatus clears the value of the "health_status" field.
+func (u *ToolLinkUpsertBulk) ClearHealthStatus() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearHealthStatus()
+	})
+}
+
+// SetLastCheckAt sets the "last_check_at" field.
+func (u *ToolLinkUpsertBulk) SetLastCheckAt(v time.Time) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetLastCheckAt(v)
+	})
+}
+
+// UpdateLastCheckAt sets the "last_check_at" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateLastCheckAt() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateLastCheckAt()
+	})
+}
+
+// ClearLastCheckAt clears the value of the "last_check_at" field.
+func (u *ToolLinkUpsertBulk) ClearLastCheckAt() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearLastCheckAt()
+	})
+}
+
+// SetClickCount sets the "click_count" field.
+func (u *ToolLinkUpsertBulk) SetClickCount(v uint32) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetClickCount(v)
+	})
+}
+
+// AddClickCount adds v to the "click_count" field.
+func (u *ToolLinkUpsertBulk) AddClickCount(v uint32) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.AddClickCount(v)
+	})
+}
+
+// UpdateClickCount sets the "click_count" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateClickCount() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateClickCount()
+	})
+}
+
+// ClearClickCount clears the value of the "click_count" field.
+func (u *ToolLinkUpsertBulk) ClearClickCount() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearClickCount()
+	})
+}
+
+// SetVisibleRoles sets the "visible_roles" field.
+func (u *ToolLinkUpsertBulk) SetVisibleRoles(v []string) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetVisibleRoles(v)
+	})
+}
+
+// UpdateVisibleRoles sets the "visible_roles" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateVisibleRoles() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateVisibleRoles()
+	})
+}
+
+// ClearVisibleRoles clears the value of the "visible_roles" field.
+func (u *ToolLinkUpsertBulk) ClearVisibleRoles() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearVisibleRoles()
+	})
+}
+
+// SetLinkType sets the "link_type" field.
+func (u *ToolLinkUpsertBulk) SetLinkType(v toollink.LinkType) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetLinkType(v)
+	})
+}
+
+// UpdateLinkType sets the "link_type" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateLinkType() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateLinkType()
+	})
+}
+
+// ClearLinkType clears the value of the "link_type" field.
+func (u *ToolLinkUpsertBulk) ClearLinkType() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearLinkType()
+	})
+}
+
+// SetNameI18n sets the "name_i18n" field.
+func (u *ToolLinkUpsertBulk) SetNameI18n(v map[string]string) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetNameI18n(v)
+	})
+}
+
+// UpdateNameI18n sets the "name_i18n" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateNameI18n() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateNameI18n()
+	})
+}
+
+// ClearNameI18n clears the value of the "name_i18n" field.
+func (u *ToolLinkUpsertBulk) ClearNameI18n() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearNameI18n()
+	})
+}
+
+// SetDescriptionI18n sets the "description_i18n" field.
+func (u *ToolLinkUpsertBulk) SetDescriptionI18n(v map[string]string) *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.SetDescriptionI18n(v)
+	})
+}
+
+// UpdateDescriptionI18n sets the "description_i18n" field to the value that was provided on create.
+func (u *ToolLinkUpsertBulk) UpdateDescriptionI18n() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.UpdateDescriptionI18n()
+	})
+}
+
+// ClearDescriptionI18n clears the value of the "description_i18n" field.
+func (u *ToolLinkUpsertBulk) ClearDescriptionI18n() *ToolLinkUpsertBulk {
+	return u.Update(func(s *ToolLinkUpsert) {
+		s.ClearDescriptionI18n()
+	})
+}
+
+// Exec executes the query.
+func (u *ToolLinkUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the ToolLinkCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ToolLinkCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ToolLinkUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

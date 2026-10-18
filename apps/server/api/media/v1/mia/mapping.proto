@@ -1,0 +1,163 @@
+syntax = "proto3";
+
+package media.mia.v1;
+
+// go_package 由 buf managed 注入，勿手写。
+
+import "google/api/annotations.proto";
+
+// ============================================================================
+// ③ MIA 映射表管理（FR-MIA-01 表 A / FR-MIA-02 表 B）。
+// 枚举用 string（服务层校验），字段显式 json_name = snake_case。
+// ============================================================================
+
+// EntityAssetMappingItem 映射表 A 的一行（实体 → 标的）。
+message EntityAssetMappingItem {
+  int64 id = 1 [json_name = "id"];
+  string entity_name = 2 [json_name = "entity_name"];
+  repeated string entity_alias = 3 [json_name = "entity_alias"]; // 「美联储」/「Fed」/「FOMC」
+  string entity_type = 4 [json_name = "entity_type"];   // person|org|policy|tech|place|topic
+  string asset_class = 5 [json_name = "asset_class"];   // equity|index|fx|commodity|crypto
+  string symbol = 6 [json_name = "symbol"];             // SPY / ^GSPC / EURUSD / BTC/USDT
+  string direction_bias = 7 [json_name = "direction_bias"]; // bullish|bearish|neutral
+  double confidence = 8 [json_name = "confidence"];     // 0–1
+  string source = 9 [json_name = "source"];             // manual|rule_gen|import
+  string notes = 10 [json_name = "notes"];              // 🔴 必填，无理由的映射不可信
+  bool enabled = 11 [json_name = "enabled"];
+  string updated_at = 12 [json_name = "updated_at"];
+}
+
+message ListEntityMappingsRequest {
+  int32 page = 1 [json_name = "page"];
+  int32 page_size = 2 [json_name = "page_size"];
+  string keyword = 3 [json_name = "keyword"];           // 匹配 entity_name / alias / symbol
+  string entity_type = 4 [json_name = "entity_type"];
+  string asset_class = 5 [json_name = "asset_class"];
+  bool enabled_only = 6 [json_name = "enabled_only"];
+}
+
+message ListEntityMappingsResponse {
+  repeated EntityAssetMappingItem items = 1 [json_name = "items"];
+  int32 total = 2 [json_name = "total"];
+}
+
+message CreateEntityMappingRequest {
+  EntityAssetMappingItem item = 1 [json_name = "item"];
+}
+
+message UpdateEntityMappingRequest {
+  int64 id = 1 [json_name = "id"];
+  EntityAssetMappingItem item = 2 [json_name = "item"];
+}
+
+message DeleteEntityMappingRequest {
+  int64 id = 1 [json_name = "id"];
+}
+
+message EmptyResponse {}
+
+message ImportEntityMappingsRequest {
+  string csv = 1 [json_name = "csv"]; // CSV 文本（前端读文件后整体传入）
+}
+
+message ImportEntityMappingsResponse {
+  int32 created = 1 [json_name = "created"];
+  int32 updated = 2 [json_name = "updated"];
+  int32 skipped = 3 [json_name = "skipped"];
+  repeated string errors = 4 [json_name = "errors"];
+}
+
+message ExportEntityMappingsRequest {}
+
+message ExportEntityMappingsResponse {
+  string csv = 1 [json_name = "csv"];
+}
+
+// NarrativeCoinMappingItem 映射表 B 的一行（叙事 → 币种）。
+message NarrativeCoinMappingItem {
+  int64 id = 1 [json_name = "id"];
+  string narrative = 2 [json_name = "narrative"];       // 如「现货 ETF 获批」
+  repeated string keywords = 3 [json_name = "keywords"];
+  repeated string coins = 4 [json_name = "coins"];      // 如 [BTC, ETH]
+  string default_sentiment_hint = 5 [json_name = "default_sentiment_hint"]; // bullish|bearish|neutral
+  int32 ttl_hours = 6 [json_name = "ttl_hours"];        // 叙事影响衰减时长（加密常 6h）
+  double confidence = 7 [json_name = "confidence"];
+  bool enabled = 8 [json_name = "enabled"];
+  string updated_at = 9 [json_name = "updated_at"];
+}
+
+message ListNarrativeMappingsRequest {
+  int32 page = 1 [json_name = "page"];
+  int32 page_size = 2 [json_name = "page_size"];
+  string keyword = 3 [json_name = "keyword"];
+  bool enabled_only = 4 [json_name = "enabled_only"];
+}
+
+message ListNarrativeMappingsResponse {
+  repeated NarrativeCoinMappingItem items = 1 [json_name = "items"];
+  int32 total = 2 [json_name = "total"];
+}
+
+message CreateNarrativeMappingRequest {
+  NarrativeCoinMappingItem item = 1 [json_name = "item"];
+}
+
+message UpdateNarrativeMappingRequest {
+  int64 id = 1 [json_name = "id"];
+  NarrativeCoinMappingItem item = 2 [json_name = "item"];
+}
+
+message DeleteNarrativeMappingRequest {
+  int64 id = 1 [json_name = "id"];
+}
+
+message ImportNarrativeMappingsRequest {
+  string csv = 1 [json_name = "csv"];
+}
+
+message ExportNarrativeMappingsRequest {}
+
+message ExportNarrativeMappingsResponse {
+  string csv = 1 [json_name = "csv"];
+}
+
+// MappingService 映射表 CRUD + CSV 导入导出。
+service MappingService {
+  rpc ListEntityMappings(ListEntityMappingsRequest) returns (ListEntityMappingsResponse) {
+    option (google.api.http) = { get: "/api/v1/media/mia/mappings/entity" };
+  }
+  rpc CreateEntityMapping(CreateEntityMappingRequest) returns (EntityAssetMappingItem) {
+    option (google.api.http) = { post: "/api/v1/media/mia/mappings/entity" body: "*" };
+  }
+  rpc UpdateEntityMapping(UpdateEntityMappingRequest) returns (EntityAssetMappingItem) {
+    option (google.api.http) = { put: "/api/v1/media/mia/mappings/entity/{id}" body: "*" };
+  }
+  rpc DeleteEntityMapping(DeleteEntityMappingRequest) returns (EmptyResponse) {
+    option (google.api.http) = { delete: "/api/v1/media/mia/mappings/entity/{id}" };
+  }
+  rpc ImportEntityMappings(ImportEntityMappingsRequest) returns (ImportEntityMappingsResponse) {
+    option (google.api.http) = { post: "/api/v1/media/mia/mappings/entity/import" body: "*" };
+  }
+  rpc ExportEntityMappings(ExportEntityMappingsRequest) returns (ExportEntityMappingsResponse) {
+    option (google.api.http) = { get: "/api/v1/media/mia/mappings/entity/export" };
+  }
+
+  rpc ListNarrativeMappings(ListNarrativeMappingsRequest) returns (ListNarrativeMappingsResponse) {
+    option (google.api.http) = { get: "/api/v1/media/mia/mappings/narrative" };
+  }
+  rpc CreateNarrativeMapping(CreateNarrativeMappingRequest) returns (NarrativeCoinMappingItem) {
+    option (google.api.http) = { post: "/api/v1/media/mia/mappings/narrative" body: "*" };
+  }
+  rpc UpdateNarrativeMapping(UpdateNarrativeMappingRequest) returns (NarrativeCoinMappingItem) {
+    option (google.api.http) = { put: "/api/v1/media/mia/mappings/narrative/{id}" body: "*" };
+  }
+  rpc DeleteNarrativeMapping(DeleteNarrativeMappingRequest) returns (EmptyResponse) {
+    option (google.api.http) = { delete: "/api/v1/media/mia/mappings/narrative/{id}" };
+  }
+  rpc ImportNarrativeMappings(ImportNarrativeMappingsRequest) returns (ImportEntityMappingsResponse) {
+    option (google.api.http) = { post: "/api/v1/media/mia/mappings/narrative/import" body: "*" };
+  }
+  rpc ExportNarrativeMappings(ExportNarrativeMappingsRequest) returns (ExportNarrativeMappingsResponse) {
+    option (google.api.http) = { get: "/api/v1/media/mia/mappings/narrative/export" };
+  }
+}

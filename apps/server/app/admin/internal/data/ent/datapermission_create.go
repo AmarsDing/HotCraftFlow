@@ -9,6 +9,7 @@ import (
 	"framework/app/admin/internal/data/ent/datapermission"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -18,6 +19,7 @@ type DataPermissionCreate struct {
 	config
 	mutation *DataPermissionMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -286,6 +288,7 @@ func (_c *DataPermissionCreate) createSpec() (*DataPermission, *sqlgraph.CreateS
 		_node = &DataPermission{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(datapermission.Table, sqlgraph.NewFieldSpec(datapermission.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -333,11 +336,421 @@ func (_c *DataPermissionCreate) createSpec() (*DataPermission, *sqlgraph.CreateS
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DataPermission.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DataPermissionUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *DataPermissionCreate) OnConflict(opts ...sql.ConflictOption) *DataPermissionUpsertOne {
+	_c.conflict = opts
+	return &DataPermissionUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DataPermission.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *DataPermissionCreate) OnConflictColumns(columns ...string) *DataPermissionUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &DataPermissionUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// DataPermissionUpsertOne is the builder for "upsert"-ing
+	//  one DataPermission node.
+	DataPermissionUpsertOne struct {
+		create *DataPermissionCreate
+	}
+
+	// DataPermissionUpsert is the "OnConflict" setter.
+	DataPermissionUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *DataPermissionUpsert) SetUpdateTime(v time.Time) *DataPermissionUpsert {
+	u.Set(datapermission.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *DataPermissionUpsert) UpdateUpdateTime() *DataPermissionUpsert {
+	u.SetExcluded(datapermission.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *DataPermissionUpsert) ClearUpdateTime() *DataPermissionUpsert {
+	u.SetNull(datapermission.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *DataPermissionUpsert) SetDeleteTime(v time.Time) *DataPermissionUpsert {
+	u.Set(datapermission.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *DataPermissionUpsert) UpdateDeleteTime() *DataPermissionUpsert {
+	u.SetExcluded(datapermission.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *DataPermissionUpsert) ClearDeleteTime() *DataPermissionUpsert {
+	u.SetNull(datapermission.FieldDeleteTime)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *DataPermissionUpsert) SetStatus(v datapermission.Status) *DataPermissionUpsert {
+	u.Set(datapermission.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *DataPermissionUpsert) UpdateStatus() *DataPermissionUpsert {
+	u.SetExcluded(datapermission.FieldStatus)
+	return u
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *DataPermissionUpsert) ClearStatus() *DataPermissionUpsert {
+	u.SetNull(datapermission.FieldStatus)
+	return u
+}
+
+// SetRoleID sets the "role_id" field.
+func (u *DataPermissionUpsert) SetRoleID(v uint32) *DataPermissionUpsert {
+	u.Set(datapermission.FieldRoleID, v)
+	return u
+}
+
+// UpdateRoleID sets the "role_id" field to the value that was provided on create.
+func (u *DataPermissionUpsert) UpdateRoleID() *DataPermissionUpsert {
+	u.SetExcluded(datapermission.FieldRoleID)
+	return u
+}
+
+// AddRoleID adds v to the "role_id" field.
+func (u *DataPermissionUpsert) AddRoleID(v uint32) *DataPermissionUpsert {
+	u.Add(datapermission.FieldRoleID, v)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *DataPermissionUpsert) SetName(v string) *DataPermissionUpsert {
+	u.Set(datapermission.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *DataPermissionUpsert) UpdateName() *DataPermissionUpsert {
+	u.SetExcluded(datapermission.FieldName)
+	return u
+}
+
+// SetField sets the "field" field.
+func (u *DataPermissionUpsert) SetField(v string) *DataPermissionUpsert {
+	u.Set(datapermission.FieldField, v)
+	return u
+}
+
+// UpdateField sets the "field" field to the value that was provided on create.
+func (u *DataPermissionUpsert) UpdateField() *DataPermissionUpsert {
+	u.SetExcluded(datapermission.FieldField)
+	return u
+}
+
+// SetScope sets the "scope" field.
+func (u *DataPermissionUpsert) SetScope(v datapermission.Scope) *DataPermissionUpsert {
+	u.Set(datapermission.FieldScope, v)
+	return u
+}
+
+// UpdateScope sets the "scope" field to the value that was provided on create.
+func (u *DataPermissionUpsert) UpdateScope() *DataPermissionUpsert {
+	u.SetExcluded(datapermission.FieldScope)
+	return u
+}
+
+// SetRuleJSON sets the "rule_json" field.
+func (u *DataPermissionUpsert) SetRuleJSON(v string) *DataPermissionUpsert {
+	u.Set(datapermission.FieldRuleJSON, v)
+	return u
+}
+
+// UpdateRuleJSON sets the "rule_json" field to the value that was provided on create.
+func (u *DataPermissionUpsert) UpdateRuleJSON() *DataPermissionUpsert {
+	u.SetExcluded(datapermission.FieldRuleJSON)
+	return u
+}
+
+// ClearRuleJSON clears the value of the "rule_json" field.
+func (u *DataPermissionUpsert) ClearRuleJSON() *DataPermissionUpsert {
+	u.SetNull(datapermission.FieldRuleJSON)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.DataPermission.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(datapermission.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *DataPermissionUpsertOne) UpdateNewValues() *DataPermissionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(datapermission.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(datapermission.FieldCreateTime)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(datapermission.FieldTenantID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.DataPermission.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *DataPermissionUpsertOne) Ignore() *DataPermissionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DataPermissionUpsertOne) DoNothing() *DataPermissionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DataPermissionCreate.OnConflict
+// documentation for more info.
+func (u *DataPermissionUpsertOne) Update(set func(*DataPermissionUpsert)) *DataPermissionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DataPermissionUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *DataPermissionUpsertOne) SetUpdateTime(v time.Time) *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *DataPermissionUpsertOne) UpdateUpdateTime() *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *DataPermissionUpsertOne) ClearUpdateTime() *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *DataPermissionUpsertOne) SetDeleteTime(v time.Time) *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *DataPermissionUpsertOne) UpdateDeleteTime() *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *DataPermissionUpsertOne) ClearDeleteTime() *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *DataPermissionUpsertOne) SetStatus(v datapermission.Status) *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *DataPermissionUpsertOne) UpdateStatus() *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *DataPermissionUpsertOne) ClearStatus() *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetRoleID sets the "role_id" field.
+func (u *DataPermissionUpsertOne) SetRoleID(v uint32) *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.SetRoleID(v)
+	})
+}
+
+// AddRoleID adds v to the "role_id" field.
+func (u *DataPermissionUpsertOne) AddRoleID(v uint32) *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.AddRoleID(v)
+	})
+}
+
+// UpdateRoleID sets the "role_id" field to the value that was provided on create.
+func (u *DataPermissionUpsertOne) UpdateRoleID() *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.UpdateRoleID()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *DataPermissionUpsertOne) SetName(v string) *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *DataPermissionUpsertOne) UpdateName() *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetField sets the "field" field.
+func (u *DataPermissionUpsertOne) SetField(v string) *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.SetField(v)
+	})
+}
+
+// UpdateField sets the "field" field to the value that was provided on create.
+func (u *DataPermissionUpsertOne) UpdateField() *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.UpdateField()
+	})
+}
+
+// SetScope sets the "scope" field.
+func (u *DataPermissionUpsertOne) SetScope(v datapermission.Scope) *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.SetScope(v)
+	})
+}
+
+// UpdateScope sets the "scope" field to the value that was provided on create.
+func (u *DataPermissionUpsertOne) UpdateScope() *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.UpdateScope()
+	})
+}
+
+// SetRuleJSON sets the "rule_json" field.
+func (u *DataPermissionUpsertOne) SetRuleJSON(v string) *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.SetRuleJSON(v)
+	})
+}
+
+// UpdateRuleJSON sets the "rule_json" field to the value that was provided on create.
+func (u *DataPermissionUpsertOne) UpdateRuleJSON() *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.UpdateRuleJSON()
+	})
+}
+
+// ClearRuleJSON clears the value of the "rule_json" field.
+func (u *DataPermissionUpsertOne) ClearRuleJSON() *DataPermissionUpsertOne {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.ClearRuleJSON()
+	})
+}
+
+// Exec executes the query.
+func (u *DataPermissionUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DataPermissionCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DataPermissionUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *DataPermissionUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *DataPermissionUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // DataPermissionCreateBulk is the builder for creating many DataPermission entities in bulk.
 type DataPermissionCreateBulk struct {
 	config
 	err      error
 	builders []*DataPermissionCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the DataPermission entities in the database.
@@ -367,6 +780,7 @@ func (_c *DataPermissionCreateBulk) Save(ctx context.Context) ([]*DataPermission
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -417,6 +831,273 @@ func (_c *DataPermissionCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *DataPermissionCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DataPermission.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DataPermissionUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *DataPermissionCreateBulk) OnConflict(opts ...sql.ConflictOption) *DataPermissionUpsertBulk {
+	_c.conflict = opts
+	return &DataPermissionUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DataPermission.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *DataPermissionCreateBulk) OnConflictColumns(columns ...string) *DataPermissionUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &DataPermissionUpsertBulk{
+		create: _c,
+	}
+}
+
+// DataPermissionUpsertBulk is the builder for "upsert"-ing
+// a bulk of DataPermission nodes.
+type DataPermissionUpsertBulk struct {
+	create *DataPermissionCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.DataPermission.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(datapermission.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *DataPermissionUpsertBulk) UpdateNewValues() *DataPermissionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(datapermission.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(datapermission.FieldCreateTime)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(datapermission.FieldTenantID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.DataPermission.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *DataPermissionUpsertBulk) Ignore() *DataPermissionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DataPermissionUpsertBulk) DoNothing() *DataPermissionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DataPermissionCreateBulk.OnConflict
+// documentation for more info.
+func (u *DataPermissionUpsertBulk) Update(set func(*DataPermissionUpsert)) *DataPermissionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DataPermissionUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *DataPermissionUpsertBulk) SetUpdateTime(v time.Time) *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *DataPermissionUpsertBulk) UpdateUpdateTime() *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *DataPermissionUpsertBulk) ClearUpdateTime() *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *DataPermissionUpsertBulk) SetDeleteTime(v time.Time) *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *DataPermissionUpsertBulk) UpdateDeleteTime() *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *DataPermissionUpsertBulk) ClearDeleteTime() *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *DataPermissionUpsertBulk) SetStatus(v datapermission.Status) *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *DataPermissionUpsertBulk) UpdateStatus() *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *DataPermissionUpsertBulk) ClearStatus() *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetRoleID sets the "role_id" field.
+func (u *DataPermissionUpsertBulk) SetRoleID(v uint32) *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.SetRoleID(v)
+	})
+}
+
+// AddRoleID adds v to the "role_id" field.
+func (u *DataPermissionUpsertBulk) AddRoleID(v uint32) *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.AddRoleID(v)
+	})
+}
+
+// UpdateRoleID sets the "role_id" field to the value that was provided on create.
+func (u *DataPermissionUpsertBulk) UpdateRoleID() *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.UpdateRoleID()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *DataPermissionUpsertBulk) SetName(v string) *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *DataPermissionUpsertBulk) UpdateName() *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetField sets the "field" field.
+func (u *DataPermissionUpsertBulk) SetField(v string) *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.SetField(v)
+	})
+}
+
+// UpdateField sets the "field" field to the value that was provided on create.
+func (u *DataPermissionUpsertBulk) UpdateField() *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.UpdateField()
+	})
+}
+
+// SetScope sets the "scope" field.
+func (u *DataPermissionUpsertBulk) SetScope(v datapermission.Scope) *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.SetScope(v)
+	})
+}
+
+// UpdateScope sets the "scope" field to the value that was provided on create.
+func (u *DataPermissionUpsertBulk) UpdateScope() *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.UpdateScope()
+	})
+}
+
+// SetRuleJSON sets the "rule_json" field.
+func (u *DataPermissionUpsertBulk) SetRuleJSON(v string) *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.SetRuleJSON(v)
+	})
+}
+
+// UpdateRuleJSON sets the "rule_json" field to the value that was provided on create.
+func (u *DataPermissionUpsertBulk) UpdateRuleJSON() *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.UpdateRuleJSON()
+	})
+}
+
+// ClearRuleJSON clears the value of the "rule_json" field.
+func (u *DataPermissionUpsertBulk) ClearRuleJSON() *DataPermissionUpsertBulk {
+	return u.Update(func(s *DataPermissionUpsert) {
+		s.ClearRuleJSON()
+	})
+}
+
+// Exec executes the query.
+func (u *DataPermissionUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the DataPermissionCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DataPermissionCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DataPermissionUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

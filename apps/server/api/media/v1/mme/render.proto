@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package media.mme.v1;
+
+// go_package 由 buf managed (go_package_prefix: framework/api/gen/go) 注入，勿手写。
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "pagination/v1/pagination.proto";
+import "media/v1/mme/variant.proto";
+
+// ============================================================================
+// ④ MME 渲染任务队列（文档 04-MME §3.2/§5.3）。
+// asynq 消费（独立队列 mme_render，默认并发 2，CPU 密集）；
+// 失败保留中间产物（NFR-MME-08）可断点重试；进度+ETA 必须可见（不得让用户以为卡死）。
+// ============================================================================
+
+service MmeRenderService {
+  // 渲染任务列表（全局队列视图，可按 variant_id 过滤：formValues.variant_id）
+  rpc ListJobs(pagination.PagingRequest) returns (ListRenderJobsResponse) {
+    option (google.api.http) = { get: "/api/v1/media/mme/render/jobs" };
+  }
+  // 某变体簇的渲染进度（含 ETA）
+  rpc GetSetProgress(GetVariantSetRequest) returns (SetRenderProgress) {
+    option (google.api.http) = { get: "/api/v1/media/mme/variant-sets/{id}/render-progress" };
+  }
+  // 失败任务重试（attempt+1，重新入队；保留上次中间产物供排查）
+  rpc RetryJob(RetryJobRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/media/mme/render/jobs/{id}:retry"
+      body: "*"
+    };
+  }
+  // 取消排队中/运行中的任务
+  rpc CancelJob(RetryJobRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/media/mme/render/jobs/{id}:cancel"
+      body: "*"
+    };
+  }
+}
+
+// RenderJob 渲染任务（Ent mme_render_jobs 的 API 视图）。
+message RenderJob {
+  string id = 1;     // job_ 前缀
+  string variant_id = 2;
+  string state = 3;  // queued | running | done | failed | cancelled
+  double progress = 4; // 0–1
+  string started_at = 5;
+  string finished_at = 6;
+  string worker_id = 7;
+  string error_code = 8; // MME_RENDER_FAIL 等
+  string error_msg = 9;  // ffmpeg stderr 摘要
+  string intermediate_path = 10; // 失败保留的中间产物
+  int32 attempt = 11;
+  int32 eta_sec = 12;    // 预估剩余秒（由进度与已耗时推算）
+  // —— 联表展示字段（UI 免二次查询）——
+  string aspect = 13;
+  string content_version = 14;
+  double duration_sec = 15;
+  string set_id = 16;
+}
+
+message ListRenderJobsResponse {
+  repeated RenderJob items = 1;
+  uint32 total = 2;
+}
+
+message RetryJobRequest {
+  string id = 1; // job_id
+}
+
+// SetRenderProgress 变体簇级渲染进度聚合。
+message SetRenderProgress {
+  string set_id = 1;
+  int32 total = 2;
+  int32 queued = 3;
+  int32 running = 4;
+  int32 done = 5;
+  int32 failed = 6;
+  int32 cancelled = 7;
+  double overall_progress = 8; // 0–1（已完成 + 进行中进度折算）
+  int32 eta_sec = 9;           // 整体预估剩余秒
+  repeated RenderJob jobs = 10;
+}

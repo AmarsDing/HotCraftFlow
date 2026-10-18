@@ -35,6 +35,111 @@ var (
 	_ = sort.Sort
 )
 
+// Validate checks the field values on LanguageStat with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *LanguageStat) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on LanguageStat with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in LanguageStatMultiError, or
+// nil if none found.
+func (m *LanguageStat) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *LanguageStat) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Name
+
+	// no validation rules for Bytes
+
+	// no validation rules for Percent
+
+	if len(errors) > 0 {
+		return LanguageStatMultiError(errors)
+	}
+
+	return nil
+}
+
+// LanguageStatMultiError is an error wrapping multiple validation errors
+// returned by LanguageStat.ValidateAll() if the designated constraints aren't met.
+type LanguageStatMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m LanguageStatMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m LanguageStatMultiError) AllErrors() []error { return m }
+
+// LanguageStatValidationError is the validation error returned by
+// LanguageStat.Validate if the designated constraints aren't met.
+type LanguageStatValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e LanguageStatValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e LanguageStatValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e LanguageStatValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e LanguageStatValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e LanguageStatValidationError) ErrorName() string { return "LanguageStatValidationError" }
+
+// Error satisfies the builtin error interface
+func (e LanguageStatValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sLanguageStat.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = LanguageStatValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = LanguageStatValidationError{}
+
 // Validate checks the field values on RepoItem with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -76,6 +181,66 @@ func (m *RepoItem) validate(all bool) error {
 	// no validation rules for IsNew
 
 	// no validation rules for HtmlUrl
+
+	// no validation rules for License
+
+	// no validation rules for LicenseSpdx
+
+	// no validation rules for Homepage
+
+	// no validation rules for OpenIssues
+
+	// no validation rules for Watchers
+
+	// no validation rules for CreatedAt
+
+	// no validation rules for UpdatedAt
+
+	// no validation rules for PushedAt
+
+	// no validation rules for CloneUrl
+
+	// no validation rules for SshUrl
+
+	// no validation rules for ZipUrl
+
+	// no validation rules for DefaultBranch
+
+	for idx, item := range m.GetLanguages() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, RepoItemValidationError{
+						field:  fmt.Sprintf("Languages[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, RepoItemValidationError{
+						field:  fmt.Sprintf("Languages[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return RepoItemValidationError{
+					field:  fmt.Sprintf("Languages[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for ReadmeExcerpt
 
 	if len(errors) > 0 {
 		return RepoItemMultiError(errors)
@@ -187,6 +352,12 @@ func (m *ListTrendingRequest) validate(all bool) error {
 	// no validation rules for Page
 
 	// no validation rules for PageSize
+
+	// no validation rules for Sort
+
+	// no validation rules for Query
+
+	// no validation rules for License
 
 	if len(errors) > 0 {
 		return ListTrendingRequestMultiError(errors)
@@ -335,6 +506,12 @@ func (m *ListTrendingResponse) validate(all bool) error {
 	// no validation rules for RisingCount
 
 	// no validation rules for NewCount
+
+	// no validation rules for LicenseTop
+
+	// no validation rules for Window
+
+	// no validation rules for Total
 
 	if len(errors) > 0 {
 		return ListTrendingResponseMultiError(errors)
@@ -587,6 +764,8 @@ func (m *SearchRisingResponse) validate(all bool) error {
 	// no validation rules for StaleReason
 
 	// no validation rules for RefreshedAt
+
+	// no validation rules for Total
 
 	if len(errors) > 0 {
 		return SearchRisingResponseMultiError(errors)

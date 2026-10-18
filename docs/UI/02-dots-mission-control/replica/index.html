@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DOTS + GPT-6.1 UI 复刻验证</title>
+<style>
+/* ============ 设计 Token（指南 7.2） ============ */
+:root{
+  --bg-0:#000000; --bg-1:#0c1514; --bg-2:#182220;
+  --panel:#182220; --panel-2:#131c1a; --border:#303a36;
+  --text:#ccd8ca; --text-hi:#dee3d4; --text-dim:#7d8c82;
+  --mint:#afe0d9; --teal:#225d6e; --cyan:#5eead4;
+  --amber:#c09d70; --coral:#e36e59; --red:#ab3d42;
+  --sage:#aec86a; --indigo:#4747b9;
+  --wr-bg:#080d13; --wr-panel:#16181d; --wr-panel-2:#2c3339;
+  --wr-red:#a81024; --wr-red-hi:#b4152b; --wr-red-deep:#5e212a;
+  --wr-gold:#bf9442; --wr-teal:#3593b4; --wr-jade:#51b4a6;
+  --wr-text:#f2f0f1; --wr-text-dim:#9aa3ab;
+  --wr-green:#3ddc84;
+  --font-mono:"JetBrains Mono","IBM Plex Mono",ui-monospace,SFMono-Regular,Consolas,monospace;
+  --font-cond:"D-DIN","Oswald","Arial Narrow",Impact,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#05070a;}
+body{font-family:var(--font-mono);color:var(--text);}
+button{font-family:inherit;cursor:pointer;}
+
+/* ============ 手机外壳（1320×2868） ============ */
+.stage{display:flex;justify-content:center;padding:24px 0 120px;}
+.phone{width:1320px;height:2868px;background:#000;position:relative;overflow:hidden;
+  box-shadow:0 0 0 2px #1a1f24, 0 0 80px rgba(0,0,0,.9);flex:none;}
+
+/* 状态栏 */
+.statusbar{height:146px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 44px;color:#fff;font-size:34px;font-weight:600;letter-spacing:.02em;}
+.statusbar .icons{display:flex;align-items:center;gap:18px;}
+.statusbar .sig{display:flex;align-items:flex-end;gap:5px;height:34px;}
+.statusbar .sig i{width:7px;background:#fff;border-radius:2px;}
+.statusbar .sig i:nth-child(1){height:12px}.statusbar .sig i:nth-child(2){height:18px}
+.statusbar .sig i:nth-child(3){height:24px}.statusbar .sig i:nth-child(4){height:30px}
+.statusbar .wifi{width:42px;height:32px;position:relative;overflow:hidden;}
+.statusbar .wifi::before{content:"";position:absolute;left:50%;top:-18px;width:44px;height:44px;
+  border:6px solid #fff;border-radius:50%;clip-path:polygon(0 0,100% 0,100% 55%,0 55%);
+  transform:translateX(-50%);}
+.statusbar .batt{width:64px;height:34px;border:4px solid #fff;border-radius:9px;position:relative;}
+.statusbar .batt::after{content:"";position:absolute;right:-12px;top:9px;width:6px;height:16px;background:#fff;border-radius:2px;}
+.statusbar .batt i{position:absolute;inset:4px;background:#3ddc84;border-radius:4px;}
+
+/* ============ 屏幕切换 ============ */
+.screen{display:none;height:calc(100% - 146px);position:relative;}
+.screen.on{display:block;}
+
+/* ============ 图谱视图（指南 7.3 布局骨架） ============ */
+.graph-app{display:grid;grid-template-rows:226px 904px 135px 385px;
+  background:linear-gradient(180deg,var(--bg-1),#0e1817);position:relative;}
+/* 146–480 的黑区（复刻录屏构图） */
+.graph-gap{height:334px;background:#000;}
+
+/* ---- ① 顶部指标条（v3：字号收紧，对齐原版密度） ---- */
+.g-top{display:flex;flex-direction:column;background:#0c1514;}
+.g-metrics{display:flex;align-items:center;gap:15px;height:46px;padding:0 24px;
+  font-size:13px;color:var(--text);white-space:nowrap;letter-spacing:.01em;}
+.g-metrics .app{color:var(--text-hi);font-weight:700;font-size:14px;}
+.g-metrics .lbl{color:#66786f;font-size:11.5px;letter-spacing:.08em;}
+.g-metrics .val{color:var(--text-hi);font-variant-numeric:tabular-nums;}
+.g-metrics .view .v{color:var(--cyan);font-weight:700;}
+.g-metrics .cost .v{color:#4ade80;font-weight:700;}
+.g-metrics .dec .v b{color:var(--coral);font-weight:700;}
+.g-metrics .kiosa{margin-left:auto;color:#e0455f;font-size:13px;font-weight:700;letter-spacing:.05em;}
+/* 参数区（v4）：4 列 × 3 行；每行 = 青绿填充条内嵌标签（条长∝数值）+ 右对齐数值。
+   依据原帧 y498–580 放大复核：标签确实写在一条可变长度的青绿填充条内，
+   条长与数值正相关——既是标签也是条形图。 */
+.g-params{display:flex;height:150px;padding:4px 24px 22px;align-items:center;gap:0;}
+.pcol{display:flex;flex-direction:column;justify-content:center;gap:9px;flex:1;min-width:0;
+  padding-right:20px;}
+.pcol+.pcol{border-left:1px solid #34473f;padding-left:20px;}
+.prow{display:flex;align-items:center;gap:10px;}
+.prow .pl{flex:none;height:19px;display:flex;align-items:center;padding:0 9px;border-radius:3px;
+  background:linear-gradient(90deg,#22615a,#1a4a48);color:#d6f2ec;font-size:10.5px;
+  letter-spacing:.05em;white-space:nowrap;}
+.prow .pl.plain{background:none;padding:0 2px;color:#8fa39b;}
+.prow .pl.warn{background:linear-gradient(90deg,#5a4a1c,#3d3417);color:#ecdc9e;}
+.prow .pv{margin-left:auto;font-size:11.5px;color:#dfeae5;font-weight:600;
+  font-variant-numeric:tabular-nums;white-space:nowrap;}
+/* 时间轴：悬浮在画布底部内侧（指南 4.3） */
+.g-axis{position:absolute;left:0;right:0;bottom:0;height:26px;pointer-events:none;
+  background:linear-gradient(180deg,transparent,#0a1211cc 60%);}
+.g-axis .tk{position:absolute;top:4px;width:1px;height:6px;background:#42564f;}
+.g-axis .tl{position:absolute;top:12px;transform:translateX(-50%);font-size:10.5px;
+  color:#677d74;font-variant-numeric:tabular-nums;}
+.g-axis .tl.now{color:#cfe3d9;font-weight:700;}
+
+/* ---- ② 画布 ---- */
+.g-canvas{position:relative;overflow:hidden;
+  background:
+    radial-gradient(1200px 500px at 50% -10%, rgba(45,212,191,.05), transparent 60%),
+    repeating-linear-gradient(0deg,transparent 0 89px,rgba(255,255,255,.022) 89px 90px),
+    repeating-linear-gradient(90deg,transparent 0 89px,rgba(255,255,255,.022) 89px 90px),
+    #0a1211;}
+.g-svg{position:absolute;inset:0;width:100%;height:100%;}
+/* 节点卡（指南 7.4） */
+.node{position:absolute;width:220px;background:var(--panel);border:1px solid var(--border);
+  border-radius:6px;padding:8px 10px 9px;z-index:3;
+  box-shadow:0 4px 18px rgba(0,0,0,.5);}
+.node .nh{height:5px;border-radius:5px 5px 0 0;margin:-8px -10px 7px;}
+.node .nt{font-size:12.5px;color:var(--text-hi);font-weight:600;letter-spacing:.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.node .nr{display:flex;align-items:center;gap:8px;margin-top:5px;font-size:11px;}
+.node .nr .k{color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
+.node .nr .v{color:var(--text);font-variant-numeric:tabular-nums;}
+.node .nr .mb{width:44px;height:3px;background:#22302c;border-radius:2px;overflow:hidden;flex:none;}
+.node .nr .mb i{display:block;height:100%;background:#3f8f88;}
+.node .port{position:absolute;width:7px;height:7px;border-radius:50%;background:#4b5f58;
+  border:1px solid #0a1211;}
+.node .port.l{left:-4px;top:50%;transform:translateY(-50%);}
+.node .port.r{right:-4px;top:50%;transform:translateY(-50%);}
+.node.sel{border-color:var(--mint);box-shadow:0 0 0 1px var(--mint),0 0 22px rgba(175,224,217,.25);}
+/* HEAT 徽标 */
+.node .heat-badge{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+  font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;
+  text-shadow:0 2px 10px rgba(0,0,0,.8);}
+.heat .node .heat-badge{display:flex;}
+.heat .node .nr,.heat .node .nt{opacity:.35;}
+.heat .node{transition:border-color .3s,background .3s;}
+/* 泳道芯片 */
+.lane{position:absolute;display:flex;align-items:center;gap:10px;height:34px;padding:0 16px;
+  border-radius:17px;font-size:13px;font-weight:700;letter-spacing:.06em;color:#0b1412;z-index:2;}
+.lane .dot{width:9px;height:9px;border-radius:50%;box-shadow:0 0 8px currentColor;}
+.lane.teal{background:#1d4d4a;color:#9fe8dd;border:1px solid #2f6f68;}
+.lane.olive{background:#42481f;color:#d5e39a;border:1px solid #5d6a2c;}
+.lane.gray{background:#232c29;color:#a9bcb2;border:1px solid #38443f;font-weight:500;}
+/* 视图分段控件 */
+.viewtabs{position:absolute;left:50%;transform:translateX(-50%);top:14px;display:flex;
+  background:#131c1a;border:1px solid var(--border);border-radius:22px;padding:5px;z-index:6;}
+.viewtabs button{border:0;background:transparent;color:#8fa79c;font-size:15px;font-weight:700;
+  letter-spacing:.14em;padding:9px 34px;border-radius:17px;transition:all .18s;}
+.viewtabs button.on{background:var(--cyan);color:#06251f;box-shadow:0 0 18px rgba(94,234,212,.35);}
+
+/* ---- ③ 阶段字幕条 ---- */
+.g-caption{display:flex;align-items:center;gap:18px;padding:0 26px;
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  background:linear-gradient(90deg,#101a18,#0d1513);}
+.g-caption .cbar{width:5px;height:44px;border-radius:3px;transition:background .3s;}
+.g-caption .cmain{font-size:26px;font-weight:800;letter-spacing:.06em;color:var(--text-hi);}
+.g-caption .csub{font-size:15px;color:var(--amber);letter-spacing:.04em;margin-top:2px;}
+.g-caption .cstage{margin-left:auto;font-size:12px;color:var(--text-dim);letter-spacing:.12em;}
+
+/* ---- ④ 底部 Dock（指南 7.3 三栏） ---- */
+.g-dock{display:grid;grid-template-columns:520px 490px 1fr;gap:1px;background:var(--border);}
+.dock-panel{background:#0d1513;display:flex;flex-direction:column;min-width:0;position:relative;}
+.dp-head{display:flex;align-items:center;gap:10px;height:38px;padding:0 14px;
+  border-bottom:1px solid #1c2624;font-size:12px;letter-spacing:.12em;color:var(--text-dim);
+  text-transform:uppercase;flex:none;}
+.dp-head .t{color:var(--text);font-weight:700;}
+.dp-head .rate{margin-left:auto;color:#5f7a72;font-size:11px;}
+.dp-head .live{margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--amber);font-size:11px;}
+.dp-head .live i{width:7px;height:7px;border-radius:50%;background:var(--amber);animation:pulse 1.6s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.dp-body{flex:1;overflow:hidden;position:relative;}
+.dp-foot{height:30px;display:flex;align-items:center;padding:0 14px;font-size:11px;
+  color:#5f7a72;border-top:1px solid #1c2624;letter-spacing:.08em;flex:none;}
+
+/* 代码面板 */
+.code-lines{position:absolute;inset:0;padding:10px 0;font-size:12.5px;line-height:19px;
+  overflow:hidden;}
+.code-line{display:flex;white-space:pre;min-height:19px;}
+.code-line.cur{background:rgba(94,234,212,.06);}
+.code-line .ln{width:34px;text-align:right;padding-right:12px;color:#3d4f49;flex:none;
+  font-variant-numeric:tabular-nums;user-select:none;}
+.code-line .lt{color:#c7d4cb;}
+.tok-key{color:#7dd3fc;} .tok-str{color:#e8a07a;} .tok-num{color:#aec86a;}
+.ttok-com{color:#6b7a72;font-style:italic;} .tok-punct{color:#8fa79c;}
+.tok-kw{color:#c09d70;} .tok-fn{color:#afe0d9;}
+.caret{display:inline-block;width:8px;height:15px;background:#9fe8dd;vertical-align:-2px;
+  animation:blink 1s steps(2) infinite;}
+@keyframes blink{50%{opacity:0}}
+
+/* 日志流 */
+.log-stream{position:absolute;inset:0;padding:8px 14px;overflow:hidden;
+  display:flex;flex-direction:column;gap:5px;font-size:12px;}
+.log-line{display:flex;align-items:center;gap:9px;animation:slidein .22s ease both;color:#b6c4bb;}
+@keyframes slidein{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.log-line .ld{width:8px;height:8px;border-radius:50%;flex:none;}
+.log-line.ok .ld{background:#4ade80;box-shadow:0 0 6px #4ade8088;}
+.log-line.fail .ld{background:#e36e59;box-shadow:0 0 6px #e36e5988;}
+.log-line.hold .ld{background:#e8b86d;box-shadow:0 0 6px #e8b86d88;}
+.log-line .lt2{color:#7d8c82;font-variant-numeric:tabular-nums;margin-left:auto;font-size:11px;}
+
+/* NODE LOAD */
+.load-wrap{padding:10px 14px;display:flex;flex-direction:column;gap:6px;}
+.load-row{display:flex;align-items:center;gap:9px;font-size:11.5px;}
+.load-row .ln2{width:118px;color:#a9bcb2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.load-row .lb{flex:1;height:9px;background:#1a2422;border-radius:2px;overflow:hidden;}
+.load-row .lb i{display:block;height:100%;border-radius:2px;}
+.load-row .lv{width:38px;text-align:right;color:var(--text-hi);font-variant-numeric:tabular-nums;font-weight:600;}
+.minibars{display:flex;align-items:flex-end;gap:3px;height:44px;padding:0 14px;margin-top:8px;}
+.minibars i{flex:1;border-radius:1px 1px 0 0;min-height:2px;}
+
+/* GRAPH COST */
+.cost-body{padding:12px 16px;display:flex;flex-direction:column;gap:8px;}
+.cost-mets{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;font-size:11.5px;}
+.cost-mets .m{display:flex;justify-content:space-between;gap:8px;}
+.cost-mets .mk{color:#7d8c82;}
+.cost-mets .mv{font-variant-numeric:tabular-nums;}
+.cost-big{margin-top:2px;}
+.cost-big .cl{font-size:11px;color:#7d8c82;letter-spacing:.12em;text-transform:uppercase;}
+.cost-big .cv{font-size:52px;font-weight:800;color:#4ade80;line-height:1.05;
+  font-variant-numeric:tabular-nums;text-shadow:0 0 24px rgba(74,222,128,.25);}
+.cmp-row{display:flex;align-items:center;gap:9px;font-size:11px;}
+.cmp-row .cn{width:34px;color:#a9bcb2;}
+.cmp-row .cb{flex:1;height:8px;background:#1a2422;border-radius:2px;overflow:hidden;}
+.cmp-row .cb i{display:block;height:100%;}
+
+/* ============ 作战室（指南 7.3 布局骨架） ============ */
+.war-room{display:flex;flex-direction:column;background:#000;position:relative;height:100%;}
+/* X 应用顶栏（返回 / •••），原帧 y146–407 = 261px 黑区 */
+.wr-xbar{height:261px;display:flex;align-items:flex-start;justify-content:space-between;
+  padding:52px 36px 0;background:#000;flex:none;}
+.wr-xbtn{width:88px;height:88px;border-radius:50%;background:#1c1f24;border:0;color:#fff;
+  font-size:42px;display:flex;align-items:center;justify-content:center;}
+
+/* ---- 红色容器框（v3 新增：原帧 y407–2212 有 #b81027 描边）----
+   左右竖条各 16px、底部红条 18px；顶部红色标题带即 .wr-nav（62px 高）。 */
+.wr-frame{position:relative;flex:none;display:flex;flex-direction:column;height:1805px;
+  border-left:16px solid #b81027;border-right:16px solid #b81027;
+  border-bottom:18px solid #b81027;background:var(--wr-bg);
+  box-shadow:inset 0 0 60px rgba(184,16,39,.10);}
+
+/* 红色标题带（原帧 y407–469 = 62px） */
+.wr-nav{height:62px;background:linear-gradient(180deg,#c01330,#a81024);display:flex;
+  align-items:center;padding:0 22px;position:relative;overflow:hidden;flex:none;}
+.wr-nav::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(600px 120px at 30% 100%,rgba(255,80,80,.25),transparent 70%);}
+.wr-nav .brand{display:flex;align-items:center;gap:9px;color:#fff;font-family:var(--font-cond);
+  font-size:26px;font-weight:800;letter-spacing:.03em;}
+.wr-nav .brand .dots{display:grid;grid-template-columns:repeat(3,7px);gap:4px;}
+.wr-nav .brand .dots i{width:7px;height:7px;border-radius:2px;background:#fff;}
+.wr-nav .task{position:absolute;left:405px;color:#ffc9d0;font-size:13px;
+  letter-spacing:.14em;font-weight:600;}
+.wr-nav .mid{position:absolute;left:790px;color:#ffd3d8;font-size:13px;letter-spacing:.1em;}
+.wr-nav .badge{margin-left:auto;background:#1c0509;color:#fff;font-size:14px;font-weight:700;
+  letter-spacing:.1em;padding:7px 20px;border-radius:20px;border:1px solid #d44055;}
+
+/* ---- 8 张 Agent 卡（4×2 统一网格；原帧为单一网格，非两套卡片）---- */
+.wr-agents{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);
+  gap:8px;padding:12px 14px 0;flex:none;height:244px;}
+.dotcard{background:#0f1419;border:1px solid #232a33;border-radius:6px;
+  padding:7px 11px 6px;position:relative;overflow:hidden;display:flex;flex-direction:column;
+  gap:2px;justify-content:space-between;}
+.dotcard.active{border-color:#c9a24d;box-shadow:0 0 22px rgba(201,162,77,.16);}
+.dotcard .dh{display:flex;align-items:center;gap:8px;}
+.dotcard .av{width:22px;height:22px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;line-height:1;background:var(--ac,#444);flex:none;
+  box-shadow:0 0 12px var(--ac,#444);}
+.dotcard .dn{font-size:15.5px;font-weight:800;letter-spacing:.06em;color:var(--ac,#fff);}
+.dotcard .dno{margin-left:auto;font-size:9.5px;color:#6b727b;letter-spacing:.12em;}
+.dotcard .ds{font-size:10px;color:#7d868f;letter-spacing:.06em;text-transform:uppercase;}
+.dotcard .dv{font-size:21px;font-weight:800;color:var(--ac,#fff);text-align:right;
+  font-variant-numeric:tabular-nums;line-height:1.05;}
+.dotcard .db{height:3px;background:#1c222a;border-radius:2px;overflow:hidden;}
+.dotcard .db i{display:block;height:100%;background:var(--ac,#666);border-radius:2px;
+  animation:groww 2.4s ease-in-out infinite alternate;}
+@keyframes groww{from{width:38%}to{width:86%}}
+.dotcard .df{font-size:8.5px;color:#565e66;letter-spacing:.05em;text-transform:uppercase;}
+/* 主场景 */
+.wr-scene{position:relative;overflow:hidden;margin:8px 14px 0;border-radius:8px;flex:none;height:740px;
+  background:
+    radial-gradient(900px 420px at 50% 0%,rgba(168,16,36,.16),transparent 65%),
+    linear-gradient(180deg,#0d1015 0%,#10141a 55%,#0a0d11 100%);
+  border:1px solid #1d222a;}
+.scene-svg{position:absolute;inset:0;width:100%;height:100%;}
+.scene-lbl{position:absolute;bottom:16px;font-size:13px;letter-spacing:.14em;color:#9aa3ab;
+  text-transform:uppercase;font-weight:600;}
+.scene-lbl b{color:#e8e6ea;display:block;font-size:15px;letter-spacing:.1em;margin-bottom:2px;}
+/* 余额行 */
+.wr-balrow{display:grid;grid-template-columns:1fr 1.35fr;gap:14px;padding:14px 14px 0;
+  flex:none;height:222px;}
+.wr-card{background:var(--wr-panel);border:1px solid #262b33;border-radius:10px;position:relative;overflow:hidden;}
+.wr-card .ch{display:flex;align-items:center;height:44px;padding:0 16px;font-size:12px;
+  letter-spacing:.16em;color:#8b9299;text-transform:uppercase;border-bottom:1px solid #22262e;}
+.wr-card .ch .tag{margin-left:auto;color:var(--wr-teal);font-size:11px;letter-spacing:.1em;}
+.wr-card .cb2{padding:14px 16px;}
+.bal-journey{display:flex;align-items:center;gap:10px;font-size:15px;color:#aeb4bb;
+  font-variant-numeric:tabular-nums;justify-content:flex-end;}
+.bal-journey .arr{color:#5f666e;}
+.bal-journey .last{color:#fff;font-weight:700;}
+.bal-big{font-size:64px;font-weight:800;color:var(--wr-green);text-align:right;line-height:1.15;
+  font-variant-numeric:tabular-nums;text-shadow:0 0 30px rgba(61,220,132,.28);}
+.bal-sub{display:flex;justify-content:space-between;font-size:12.5px;letter-spacing:.14em;
+  color:#8b9299;text-transform:uppercase;margin-top:6px;}
+.bal-sub .start{color:#e8e6ea;font-weight:700;}
+/* 面板行 2 */
+.wr-panels{display:grid;grid-template-columns:1fr 1.25fr;gap:14px;padding:14px 14px 14px;
+  flex:1;min-height:0;}
+.await-btn{background:linear-gradient(180deg,#d3a950,#b98a35);color:#241a05;font-size:15px;
+  font-weight:800;letter-spacing:.16em;padding:11px 26px;border:0;border-radius:8px;
+  box-shadow:0 0 0 1px #e8c877, 0 0 22px rgba(191,148,66,.35);animation:breathe 2.2s ease-in-out infinite;}
+@keyframes breathe{0%,100%{box-shadow:0 0 0 1px #e8c877,0 0 14px rgba(191,148,66,.25)}
+  50%{box-shadow:0 0 0 1px #f0d89a,0 0 30px rgba(191,148,66,.5)}}
+.kv-lbl{font-size:10.5px;letter-spacing:.14em;color:#6b727b;text-transform:uppercase;}
+.router-node{position:absolute;transform:translate(-50%,-50%);text-align:center;}
+.router-node .rn{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;letter-spacing:.06em;border:2px solid;background:#12151b;}
+.router-node .rl{font-size:10px;color:#8b9299;letter-spacing:.12em;margin-top:6px;text-transform:uppercase;}
+.router-node .halo{position:absolute;inset:-9px;border-radius:50%;border:1px solid;opacity:.5;
+  animation:halo 1.8s ease-out infinite;}
+@keyframes halo{0%{transform:scale(.8);opacity:.6}100%{transform:scale(1.5);opacity:0}}
+/* X 帖子（v3：原帧中帖子头部压在媒体框下缘之上，属 X 应用 chrome 叠加） */
+.xpost{position:relative;z-index:6;margin-top:-126px;background:transparent;
+  padding:0 30px;display:flex;flex-direction:column;gap:14px;}
+.xp-head{display:flex;align-items:center;gap:22px;background:rgba(10,10,12,.90);
+  border-radius:18px;padding:12px 24px;}
+.xp-av{width:132px;height:132px;border-radius:50%;background:linear-gradient(135deg,#e8a23c,#b8611f);
+  display:flex;align-items:center;justify-content:center;font-size:76px;flex:none;
+  border:4px solid #2a2020;overflow:hidden;}
+.xp-name{display:flex;align-items:center;gap:14px;color:#f2f0f1;font-size:44px;font-weight:800;
+  letter-spacing:-.01em;}
+.xp-vf{width:40px;height:40px;border-radius:50%;background:#1d9bf0;display:flex;align-items:center;
+  justify-content:center;color:#fff;font-size:22px;font-weight:800;}
+.xp-handle{color:#8b9299;font-size:30px;margin-top:2px;}
+.xp-follow{margin-left:auto;background:#e8e6ea;color:#0f1419;border:0;font-size:26px;font-weight:800;
+  padding:14px 44px;border-radius:34px;letter-spacing:.04em;}
+.xp-trans{color:#8b9299;font-size:20px;padding-left:4px;}
+.xp-trans u{color:#1d9bf0;text-decoration:none;}
+.xp-body{color:#f2f0f1;font-size:27px;line-height:1.45;font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;
+  padding-left:4px;}
+.xp-acts{display:flex;align-items:center;gap:56px;color:#8b9299;font-size:19px;
+  font-variant-numeric:tabular-nums;padding:6px 0;}
+.xp-acts .a{display:flex;align-items:center;gap:10px;}
+.xp-acts .a svg{opacity:.75}
+/* 播放条 */
+.player{background:#000;display:flex;align-items:center;gap:22px;padding:16px 36px 26px;
+  margin-top:auto;}
+.player .prog{flex:1;height:5px;background:#2a2f36;border-radius:3px;position:relative;}
+.player .prog i{position:absolute;left:0;top:0;bottom:0;width:62%;background:#e8e6ea;border-radius:3px;}
+.player .prog i::after{content:"";position:absolute;right:-7px;top:-4px;width:13px;height:13px;
+  border-radius:50%;background:#fff;}
+.player .pi{color:#e8e6ea;font-size:22px;background:none;border:0;font-variant-numeric:tabular-nums;}
+
+/* 循环动画关键帧 */
+.edge-flow{animation-name:flow;animation-timing-function:linear;animation-iteration-count:infinite;}
+@keyframes flow{to{stroke-dashoffset:-198}}
+.node-pop{animation:pop .5s cubic-bezier(.34,1.56,.64,1) both;transform-box:fill-box;transform-origin:center;}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.candle{animation:candle .45s cubic-bezier(.34,1.56,.64,1) both;transform-box:fill-box;transform-origin:bottom;}
+@keyframes candle{from{transform:scaleY(0);opacity:0}to{transform:scaleY(1);opacity:1}}
+.halo-c{animation:halo 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center;}
+@keyframes bob{from{transform:translateY(0)}to{transform:translateY(-5px)}}
+.demo-bar{position:fixed;left:0;right:0;bottom:0;height:64px;background:#0d1117ee;
+  border-top:1px solid #22262e;display:flex;align-items:center;gap:10px;padding:0 20px;z-index:99;
+  backdrop-filter:blur(8px);}
+.demo-bar .grp{display:flex;gap:6px;align-items:center;}
+.demo-bar .grp .lb{color:#8b9299;font-size:12px;letter-spacing:.1em;margin-right:4px;}
+.demo-bar button{background:#1a2028;border:1px solid #2a323c;color:#c9d1d9;font-size:13px;
+  padding:8px 16px;border-radius:6px;letter-spacing:.05em;}
+.demo-bar button.on{background:#5eead4;color:#06251f;border-color:#5eead4;font-weight:700;}
+.demo-bar .sp{flex:1;}
+body.nochrome .demo-bar{display:none;}
+body.nochrome .stage{padding:0;}
+body.nochrome .phone{box-shadow:none;}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="phone">
+
+    <!-- 手机状态栏 -->
+    <div class="statusbar">
+      <span>22:56</span>
+      <div class="icons">
+        <div class="sig"><i></i><i></i><i></i><i></i></div>
+        <div class="wifi"></div>
+        <div class="batt"><i></i></div>
+      </div>
+    </div>
+
+    <!-- ================= 图谱视图 ================= -->
+    <div class="screen on" id="screen-graph">
+      <div class="graph-gap"></div>
+      <div class="graph-app" id="graphApp">
+        <!-- ① 指标条 -->
+        <div class="g-top">
+          <div class="g-metrics">
+            <span class="lbl">GRAPH</span><span class="app">jev-cascade-02</span>
+            <span><span class="lbl">NODES</span> <span class="val" id="mNodes">20</span></span>
+            <span><span class="lbl">EDGES</span> <span class="val">350</span></span>
+            <span class="view"><span class="lbl">VIEW</span> <span class="v" id="mView">graph</span></span>
+            <span class="dec"><span class="lbl">DECISIONS</span> <span class="val"><span id="mDecPre">7</span> <b id="mDec">024</b></span></span>
+            <span class="cost"><span class="lbl">COST</span> <span class="v" id="mCost">$0.295</span></span>
+            <span><span class="lbl">T</span> <span class="val" id="mT">20.65</span></span>
+            <span><span class="lbl">FRAME</span> <span class="val" id="mFrame">1239</span></span>
+            <span class="kiosa">kiosa · @thegreatest_sv</span>
+          </div>
+          <div class="g-params" id="paramsRow"></div>
+          <div class="g-axis" id="axisRow"></div>
+        </div>
+        <!-- ② 画布 -->
+        <div class="g-canvas" id="gCanvas">
+          <svg class="g-svg" id="gSvg"></svg>
+          <div class="viewtabs" id="viewTabs">
+            <button data-v="graph" class="on">GRAPH</button>
+            <button data-v="flow">FLOW</button>
+            <button data-v="heat">HEAT</button>
+          </div>
+        </div>
+        <!-- ③ 字幕 -->
+        <div class="g-caption">
+          <div class="cbar" id="capBar" style="background:#4ade80"></div>
+          <div>
+            <div class="cmain" id="capMain">CHOICE → WRITE</div>
+            <div class="csub" id="capSub">confidence 0.93</div>
+          </div>
+          <div class="cstage" id="capStage">STAGE 03</div>
+        </div>
+        <!-- ④ Dock -->
+        <div class="g-dock">
+          <div class="dock-panel">
+            <div class="dp-head"><span class="t">questions.py</span><span class="rate" id="codeRate">12 l/s</span></div>
+            <div class="dp-body"><div class="code-lines" id="codeLines"></div></div>
+            <div class="dp-foot" id="codeFoot">def gate(answer): return score &gt;= FLOOR</div>
+          </div>
+          <div class="dock-panel">
+            <div class="dp-head"><span class="t">RUN LOG</span><span class="rate" id="logRate">10 l/s</span></div>
+            <div class="dp-body"><div class="log-stream" id="logStream"></div></div>
+            <div class="dp-head" style="height:34px;border-top:1px solid #1c2624;">
+              <span class="t">NODE LOAD</span><span class="live"><i></i>live</span>
+            </div>
+            <div class="load-wrap" id="loadWrap"></div>
+            <div class="minibars" id="miniBars"></div>
+          </div>
+          <div class="dock-panel">
+            <div class="dp-head"><span class="t">GRAPH COST</span><span class="live"><i></i>live</span></div>
+            <div class="dp-body cost-body">
+              <div class="cost-mets">
+                <div class="m"><span class="mk">edges</span><span class="mv">350</span></div>
+                <div class="m"><span class="mk">bus pins</span><span class="mv">48</span></div>
+                <div class="m"><span class="mk">decisions</span><span class="mv" style="color:#e36e59" id="cDec">7 026</span></div>
+                <div class="m"><span class="mk">input / M tokens</span><span class="mv" style="color:#4ade80">$0.042</span></div>
+                <div class="m"><span class="mk">output</span><span class="mv" style="color:#7d8c82">free</span></div>
+                <div class="m"><span class="mk">median</span><span class="mv" style="color:#5eead4">256 ms</span></div>
+                <div class="m"><span class="mk">held at gate</span><span class="mv" style="color:#e36e59">26</span></div>
+                <div class="m"><span class="mk">nodes</span><span class="mv">220</span></div>
+              </div>
+              <div class="cost-big">
+                <div class="cl">10 000 decisions</div>
+                <div class="cv" id="costBig">$0.29</div>
+              </div>
+              <div class="cmp-row"><span class="cn">jev</span><div class="cb"><i style="width:22%;background:#4ade80"></i></div></div>
+              <div class="cmp-row"><span class="cn">LLM</span><div class="cb"><i style="width:86%;background:#e36e59"></i></div></div>
+            </div>
+            <div class="dp-foot">LLM writes · Jev decides · code acts</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 作战室 ================= -->
+    <div class="screen" id="screen-war">
+      <div class="war-room">
+        <!-- X 顶栏 -->
+        <div class="wr-xbar">
+          <button class="wr-xbtn">←</button>
+          <button class="wr-xbtn">•••</button>
+        </div>
+        <!-- ===== 红色容器框（v3：原帧 y407–2212 有 #b81027 描边 + 顶部红标题带） ===== -->
+        <div class="wr-frame">
+        <!-- 红色导航条 -->
+        <div class="wr-nav">
+          <div class="brand"><span class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></span>DOTS + GPT-6.1</div>
+          <div class="task">CRAWLER / NIGHT 03</div>
+          <div class="mid">X · immortalhowwl</div>
+          <div class="badge">3-NIGHT RUN</div>
+        </div>
+        <!-- 8 张 Agent 卡（4×2 统一网格，v3 修正：原版并非两套不同卡片） -->
+        <div class="wr-agents" id="agentCards"></div>
+        <!-- 主场景 -->
+        <div class="wr-scene" id="wrScene">
+          <svg class="scene-svg" id="sceneSvg" viewBox="0 0 1248 700" preserveAspectRatio="xMidYMid slice"></svg>
+          <div class="scene-lbl" style="left:28px;"><b>THREE NIGHTS</b>STARTED WITH $63</div>
+          <div class="scene-lbl" style="right:28px;text-align:right;"><b>POST REPLAY</b>SITES · UPDATES · POSTS</div>
+        </div>
+        <!-- 余额行 -->
+        <div class="wr-balrow">
+          <div class="wr-card">
+            <div class="ch">ACCOUNT / THREE NIGHTS</div>
+            <div class="cb2" style="display:flex;flex-direction:column;gap:6px;padding:8px 14px;">
+              <svg id="constelSvg" viewBox="0 0 560 118" style="width:100%;height:118px;"></svg>
+              <svg id="barSvg" viewBox="0 0 560 42" style="width:100%;height:42px;"></svg>
+            </div>
+          </div>
+          <div class="wr-card">
+            <div class="cb2" style="padding:16px 20px 10px;">
+              <div class="bal-journey" id="balJourney">
+                <span>$63</span><span class="arr">→</span><span>$740</span><span class="arr">→</span>
+                <span>$2,810</span><span class="arr">→</span><span class="last">$8,980</span>
+              </div>
+              <div class="bal-big" id="balBig">$1,896.84</div>
+              <div class="bal-sub"><span>USD BALANCE</span><span class="start">NIGHT 03&nbsp;&nbsp;$63 START</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- 面板行 2 -->
+        <div class="wr-panels">
+          <div class="wr-card">
+            <div class="ch">NIGHT 03 / POSITION REPLAY
+              <span class="tag" style="color:#e36e59;">2 EXITS / 1 STOP</span></div>
+            <div class="cb2" style="display:flex;flex-direction:column;gap:10px;height:100%;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <button class="await-btn">AWAIT USER</button>
+                <div><div class="kv-lbl">EXIT LIQUIDITY</div>
+                  <div style="color:#e8e6ea;font-size:14px;font-variant-numeric:tabular-nums;">deep · 2 412 fills</div></div>
+                <div style="margin-left:auto;text-align:right;"><div class="kv-lbl">PRICE PATH / SCHEMATIC</div>
+                  <div style="color:#e8e6ea;font-size:14px;">2 exits / 1 stop</div></div>
+              </div>
+              <div style="display:flex;gap:12px;flex:1;min-height:0;">
+                <svg id="klineSvg" viewBox="0 0 470 230" preserveAspectRatio="none"
+                  style="flex:1;min-width:0;height:auto;"></svg>
+                <div style="width:112px;display:flex;flex-direction:column;gap:9px;flex:none;">
+                  <svg class="spark" id="sp1"></svg><svg class="spark" id="sp2"></svg>
+                  <svg class="spark" id="sp3"></svg><svg class="spark" id="sp4"></svg>
+                </div>
+              </div>
+              <div style="display:flex;align-items:flex-end;gap:16px;">
+                <div>
+                  <div class="kv-lbl">MOMENTUM</div>
+                  <svg id="momentumSvg" viewBox="0 0 300 90" style="width:300px;height:90px;"></svg>
+                </div>
+                <div style="margin-left:auto;text-align:right;">
+                  <div class="kv-lbl">NET P&amp;L</div>
+                  <div style="color:#3ddc84;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;">+$4,320</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="wr-card">
+            <div class="ch">EVIDENCE ROUTER / DOTS<span class="tag">GPT-6.1</span></div>
+            <div class="cb2" style="display:flex;flex-direction:column;gap:10px;">
+              <div style="display:flex;gap:12px;">
+                <div style="flex:1;background:#0e1a22;border:1px solid #1e3a48;border-radius:7px;
+                  padding:9px 14px;color:#51b4a6;font-size:15px;font-weight:700;letter-spacing:.08em;">76 LAUNCHES</div>
+                <div style="flex:1;background:#0e1a14;border:1px solid #1e4830;border-radius:7px;
+                  padding:9px 14px;color:#3ddc84;font-size:15px;font-weight:700;letter-spacing:.08em;">3 SOURCES</div>
+                <div style="flex:1;background:#1a0e10;border:1px solid #481e26;border-radius:7px;
+                  padding:9px 14px;color:#e36e59;font-size:15px;font-weight:700;letter-spacing:.08em;">2 REJECTED</div>
+              </div>
+              <div style="position:relative;flex:1;min-height:300px;" id="routerWrap">
+                <svg id="routerSvg" viewBox="0 0 700 320" style="width:100%;height:100%;"></svg>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;letter-spacing:.12em;
+                color:#6b727b;text-transform:uppercase;">
+                <span>RECYCLED ANNOUNCEMENTS</span><span style="color:#bf9442;">AWAIT USER</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div><!-- /wr-frame -->
+        <!-- X 帖子 -->
+        <div class="xpost">
+          <div class="xp-head">
+            <div class="xp-av">🤠</div>
+            <div>
+              <div class="xp-name">Logics<span class="xp-vf">✓</span></div>
+              <div class="xp-handle">@immortalhowwl</div>
+            </div>
+            <button class="xp-follow">关注</button>
+          </div>
+          <div class="xp-trans">翻译<u>自英语</u> <u>显示原文</u></div>
+          <div class="xp-body">天啊，我给我的终端加了个网络爬虫，结果它一夜之间收盘在 $8,980...</div>
+          <div class="xp-acts">
+            <span class="a">💬 51</span><span class="a">🔁 36</span><span class="a">❤ 328</span>
+            <span class="a">🔖</span><span class="a">📤</span>
+          </div>
+        </div>
+        <!-- 播放条 -->
+        <div class="player">
+          <button class="pi">▶</button>
+          <div class="prog"><i></i></div>
+          <span class="pi">-0:19</span>
+          <span class="pi">1x</span>
+          <span class="pi">🔊</span>
+          <span class="pi">⛶</span>
+          <span class="pi">🗖</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 演示控制条 -->
+<div class="demo-bar" id="demoBar">
+  <div class="grp">
+    <span class="lb">视图</span>
+    <button id="btnGraph" class="on">图谱视图</button>
+    <button id="btnWar">作战室</button>
+  </div>
+  <div class="grp" id="graphStates">
+    <span class="lb">图谱状态</span>
+    <button data-s="stage03">03 CHOICE</button>
+    <button data-s="stage05" class="on">05 ESCALATE</button>
+    <button data-s="flow">FLOW</button>
+    <button data-s="heat">HEAT</button>
+    <button data-s="stage06">06 CODE ACTS</button>
+  </div>
+  <div class="grp" id="warStates" style="display:none;">
+    <span class="lb">作战室状态</span>
+    <button data-s="war-start">起跑 $74</button>
+    <button data-s="war-mid" class="on">中途 $1,896</button>
+    <button data-s="war-final">定格 $2,810</button>
+  </div>
+  <div class="sp"></div>
+  <button id="btnChrome">隐藏边框</button>
+</div>
+
+<script>
+/* ================= 工具 ================= */
+const $ = s => document.querySelector(s);
+const NS = "http://www.w3.org/2000/svg";
+const el = (t, attrs = {}, parent) => {
+  const e = document.createElementNS(NS, t);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+};
+// 确定性伪随机（保证截图可复现）
+let _seed = 42;
+const rnd = () => { _seed = (_seed * 1103515245 + 12345) % 2147483648; return _seed / 2147483648; };
+const fmt = (n, d = 0) => n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+const heatColor = p => p >= .9 ? "#e36e59" : p >= .6 ? "#f0a04b" : "#aec86a";
+// 路径绘制动画（按真实路径长度设置 dash，避免短路径提前画完）
+function animateDraw(root) {
+  root.querySelectorAll(".draw-line").forEach(p => {
+    let L; try { L = p.getTotalLength(); } catch (e) { return; }
+    if (!L || !isFinite(L)) return;
+    const delay = parseFloat(p.style.animationDelay || 0) * 1000;
+    p.style.strokeDasharray = L; p.style.strokeDashoffset = L;
+    p.animate([{ strokeDashoffset: L }, { strokeDashoffset: 0 }],
+      { duration: 1300, delay, easing: "ease-in-out", fill: "forwards" });
+  });
+}
+
+/* ================= URL 参数 ================= */
+const Q = new URLSearchParams(location.search);
+if (Q.get("chrome") === "0") document.body.classList.add("nochrome");
+
+/* ============================================================
+   一、图谱视图
+============================================================ */
+/* ---- 节点数据（指南 4.3） ---- */
+const NODES = [
+  { id:"sys",   t:"jev-1.13.0 · system_one", x:36,  y:150, c:"#4747b9", load:1.00,
+    rows:[["state_tokens","0.164",.4],["bus pins","48",.3]] },
+  { id:"safe",  t:"Noul · safe_to_run",     x:36,  y:330, c:"#225d6e", load:.33,
+    rows:[["gate","0.71",.71]] },
+  { id:"urg",   t:"Score · urgency",        x:36,  y:500, c:"#c09d70", load:.61,
+    rows:[["score","0.93",.93]] },
+  { id:"write", t:"write",                  x:36,  y:680, c:"#4d7a3a", load:.45,
+    rows:[["draft","ready",.5]] },
+  { id:"f1",    t:"ask · followup",         x:300, y:96,  c:"#225d6e", load:.52, rows:[["q","2",.2]] },
+  { id:"f2",    t:"ask · followup",         x:300, y:236, c:"#225d6e", load:.48, rows:[["q","2",.2]] },
+  { id:"f3",    t:"bus · attach",           x:300, y:560, c:"#3a6a4a", load:.40, rows:[["pins","48",.48]] },
+  { id:"rev",   t:"review",                 x:570, y:236, c:"#a03a3f", load:.99,
+    rows:[["checks","3",.75]] },
+  { id:"gate",  t:"gate ≥ 0.85",            x:570, y:420, c:"#a03a3f", load:.95,
+    rows:[["score","0.71",.71],["held","26",.26]] },
+  { id:"cho",   t:"choices",                x:570, y:610, c:"#6a4a9e", load:.96,
+    rows:[["n","4",.4]] },
+  { id:"rs",    t:"result.scores",          x:850, y:330, c:"#7a8a3a", load:.88,
+    rows:[["median","256 ms",.5]] },
+  { id:"rn",    t:"result.nouls",           x:850, y:520, c:"#7a8a3a", load:.72,
+    rows:[["kept","3 / 76",.04]] },
+  { id:"q1",    t:"queue/…",                x:850, y:700, c:"#7a8a3a", load:.82,
+    rows:[["depth","12",.3]] },
+  { id:"pub",   t:"human · publish",        x:1044,y:420, c:"#c09d70", load:.74,
+    rows:[["approval","YOU",.1]] },
+  { id:"h2",    t:"human · publish",        x:1044,y:640, c:"#c09d70", load:.60, rows:[["wait","1",.1]] },
+  { id:"esc",   t:"escalate",               x:1044,y:150, c:"#e36e59", load:.97, rows:[["route","human",.9]] },
+  { id:"g1",    t:"graph.load",             x:300, y:400, c:"#225d6e", load:.55, rows:[["nodes","220",.55]] },
+  { id:"g2",    t:"graph.save",             x:850, y:120, c:"#225d6e", load:.50, rows:[["fmt","json",.3]] },
+  { id:"n1",    t:"ask · clarify",          x:300, y:170, c:"#225d6e", load:.50, rows:[["q","1",.1]] },
+  { id:"n2",    t:"noul · rank",            x:570, y:96,  c:"#6a4a9e", load:.90, rows:[["top","3",.3]] },
+  { id:"n3",    t:"score · blend",          x:850, y:236, c:"#c09d70", load:.80, rows:[["w","0.6",.6]] },
+  { id:"n4",    t:"write · draft",          x:300, y:700, c:"#4d7a3a", load:.42, rows:[["n","1",.1]] },
+  { id:"n5",    t:"gate · retry",           x:570, y:520, c:"#a03a3f", load:.93, rows:[["n","2",.2]] },
+  { id:"n6",    t:"human · review",         x:1044,y:520, c:"#c09d70", load:.70, rows:[["queue","2",.2]] },
+  { id:"n7",    t:"bus · emit",             x:850, y:420, c:"#3a6a4a", load:.60, rows:[["topic","graph",.5]] },
+  { id:"n8",    t:"jev · loop",             x:36,  y:560, c:"#4747b9", load:.98, rows:[["iter","9",.9]] },
+  { id:"n9",    t:"ask · retry",            x:570, y:690, c:"#225d6e", load:.58, rows:[["n","1",.1]] },
+  { id:"n10",   t:"noul · keep",            x:850, y:600, c:"#7a8a3a", load:.77, rows:[["kept","3",.3]] },
+  { id:"n11",   t:"score · trim",           x:300, y:500, c:"#c09d70", load:.66, rows:[["drop","2",.2]] },
+  { id:"n12",   t:"gate · pass",            x:1044,y:300, c:"#a03a3f", load:.91, rows:[["ok","18",.9]] },
+];
+const NODE_BY_ID = Object.fromEntries(NODES.map(n => [n.id, n]));
+const EDGES = [
+  ["sys","f1","cyan"],["sys","f2","base"],["safe","rev","base"],["urg","rev","base"],
+  ["f1","rev","cyan"],["f2","rev","base"],["rev","gate","amber"],["gate","cho","amber"],
+  ["urg","cho","base"],["write","f3","base"],["f3","cho","base"],["cho","rs","cyan"],
+  ["cho","rn","base"],["cho","q1","base"],["rs","pub","cyan"],["rn","h2","base"],
+  ["q1","h2","base"],["gate","esc","coral"],["rev","esc","coral"],["g1","rev","base"],
+  ["g2","rs","base"],["sys","g1","base"],["safe","f3","base"],["write","gate","base"],
+  ["n1","rev","cyan"],["n2","cho","base"],["n3","rs","base"],["n4","f3","base"],
+  ["n5","cho","base"],["n6","pub","base"],["n7","cho","cyan"],["n8","rev","base"],
+  ["n8","gate","coral"],["n2","n3","base"],["n3","pub","base"],["n5","esc","coral"],
+  ["n1","gate","base"],["n4","n5","base"],["f1","n2","base"],["rs","esc","coral"],
+  ["g2","n7","base"],["h2","n6","base"],["q1","esc","base"],["rev","n6","amber"],
+  ["n9","q1","base"],["n10","pub","cyan"],["n11","rev","base"],["n12","pub","amber"],
+  ["n9","n5","base"],["n11","gate","base"],["n10","h2","base"],["n12","esc","coral"],
+];
+/* 长距离「幽灵边」：极淡平行曲线，复刻原版毛球质感 */
+const GHOSTS = [
+  ["sys","rs"],["safe","cho"],["urg","q1"],["write","rev"],["n8","pub"],
+  ["f2","rs"],["g1","n7"],["n1","esc"],["n4","gate"],["n2","esc"],
+  ["f1","cho"],["safe","rs"],["urg","h2"],["write","n6"],["n3","cho"],
+  ["n11","n7"],["n9","esc"],["g2","pub"],["n8","n12"],["safe","n10"],
+];
+/* 画布尺寸 */
+const CW = 1320, CH = 910;
+const gSvg = $("#gSvg"), gCanvas = $("#gCanvas");
+gSvg.setAttribute("viewBox", `0 0 ${CW} ${CH}`);
+
+function edgePath(a, b, spread = 0) {
+  const x1 = a.x + 220, y1 = a.y + 45 + spread;
+  const x2 = b.x,       y2 = b.y + 45 + spread;
+  const dx = Math.max(60, (x2 - x1) * .45);
+  return `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`;
+}
+const EDGE_COLOR = { base:"rgba(200,220,210,.22)", cyan:"#3fae9c", amber:"#c09d70", coral:"#e0705f" };
+
+function renderGraph() {
+  gSvg.innerHTML = "";
+  // ---- 边（bundle：同源同目标的平行曲线） ----
+  const bundles = {};
+  EDGES.forEach(([a, b, k]) => {
+    const key = a + ">" + b;
+    (bundles[key] = bundles[key] || []).push(k);
+  });
+  const gEdges = el("g", {}, gSvg);
+  /* ---- ① 幽灵边（最底层，极淡） ---- */
+  GHOSTS.forEach(([ai, bi]) => {
+    const a = NODE_BY_ID[ai], b = NODE_BY_ID[bi];
+    for (let i = 0; i < 3; i++) {
+      const spread = (rnd() - .5) * 110;
+      el("path", { d: edgePath(a, b, spread), fill:"none",
+        stroke:"rgba(200,220,210,.06)", "stroke-width":1 }, gEdges);
+    }
+  });
+  /* ---- ② 密集线束（v4 新增，复刻原版「毛球」；原版 NODES 20 / EDGES 350）----
+     随机节点对 → 长距离贝塞尔，细白灰为底，再叠少量彩色粗束带辉光。 */
+  const ids = NODES.map(n => n.id);
+  const pick = () => NODES[(rnd() * NODES.length) | 0];
+  const WIRE_N = 420;
+  for (let i = 0; i < WIRE_N; i++) {
+    const a = pick(), b = pick();
+    if (a === b) continue;
+    const d = edgePath(a, b, (rnd() - .5) * 190);
+    el("path", { d, fill:"none",
+      stroke:`rgba(216,234,226,${(.10 + rnd() * .24).toFixed(2)})`,
+      "stroke-width": rnd() < .18 ? 1.3 : .8 }, gEdges);
+  }
+  const BUNDLE_COLORS = ["#c9d94a", "#3fae9c", "#f07aa0", "#e0705f", "#c9d94a", "#3fae9c"];
+  for (let i = 0; i < 14; i++) {
+    const a = pick(), b = pick();
+    if (a === b) continue;
+    const col = BUNDLE_COLORS[i % BUNDLE_COLORS.length];
+    for (let k = 0; k < 3; k++) {
+      const d = edgePath(a, b, (k - 1) * 11);
+      el("path", { d, fill:"none", stroke:col, "stroke-width":3, "stroke-opacity":.72,
+        style:`filter:drop-shadow(0 0 7px ${col})` }, gEdges);
+    }
+  }
+  /* ---- ③ 主干 bundle（同源同目标多条平行曲线 + 流动光点） ---- */
+  Object.entries(bundles).forEach(([key, kinds]) => {
+    const [ai, bi] = key.split(">");
+    const a = NODE_BY_ID[ai], b = NODE_BY_ID[bi];
+    const kind = kinds[0];
+    const n = Math.max(4, Math.min(12, kinds.length + 5)); // 流束：同目标多条平行曲线
+    for (let i = 0; i < n; i++) {
+      const spread = (i - (n - 1) / 2) * 6;
+      const d = edgePath(a, b, spread);
+      el("path", { d, fill:"none", stroke:EDGE_COLOR[kind] || EDGE_COLOR.base,
+        "stroke-width": kind === "base" ? 1 : 2, "stroke-opacity": kind === "base" ? .8 : .5 }, gEdges);
+      if (kind !== "base") {
+        el("path", { d, fill:"none", stroke:EDGE_COLOR[kind],
+          "stroke-width": kind === "coral" ? 3 : 2.6, "stroke-linecap":"round", "stroke-dasharray":"8 190",
+          class:"edge-flow", style:`animation-duration:${(1.8 + rnd() * 1.6).toFixed(2)}s;
+          filter:drop-shadow(0 0 5px ${EDGE_COLOR[kind]})` }, gEdges);
+      }
+    }
+  });
+  // ---- 节点 ----
+  NODES.forEach((n, i) => {
+    const g = document.createElement("div");
+    g.className = "node";
+    g.dataset.id = n.id;
+    g.style.cssText += `left:${n.x}px;top:${n.y}px;border-top:4px solid ${n.c};`;
+    g.innerHTML = `
+      <div class="port l"></div><div class="port r"></div>
+      <div class="nt">${n.t}</div>
+      ${n.rows.map(([k, v, p]) => `
+        <div class="nr"><span class="k">${k}</span><span class="v">${v}</span>
+        <span class="mb"><i style="width:${p * 100}%"></i></span></div>`).join("")}
+      <div class="heat-badge" style="color:${heatColor(n.load)}">${Math.round(n.load * 100)}%</div>`;
+    gCanvas.appendChild(g);
+    // 弹入动画（指南 4.3）
+    g.animate([{ transform:"scale(.9)", opacity:0 }, { transform:"scale(1)", opacity:1 }],
+      { duration: 200, delay: 60 + i * 45, easing:"cubic-bezier(0.34,1.56,0.64,1)", fill:"backwards" });
+  });
+  // ---- 泳道芯片 ----
+  const lanesTop = [["completed_work","teal","#2f6f68"],["sources","teal","#2f6f68"],["gaps","olive","#5d6a2c"]];
+  lanesTop.forEach(([t, cls, c], i) => {
+    const l = document.createElement("div");
+    l.className = `lane ${cls}`;
+    l.style.cssText = `left:${36 + i * 300}px;top:86px;`;
+    l.innerHTML = `<span class="dot" style="background:${c};color:${c}"></span>${t}`;
+    gCanvas.appendChild(l);
+  });
+  const lanesBot = [["result.scores","olive"],["result.nouls","olive"],["queue/…","olive"]];
+  lanesBot.forEach(([t, cls], i) => {
+    const l = document.createElement("div");
+    l.className = `lane ${cls}`;
+    l.style.cssText = `left:${36 + i * 300}px;top:${CH - 56}px;`;
+    l.innerHTML = `<span class="dot" style="background:#8fa84a;color:#8fa84a"></span>${t}`;
+    gCanvas.appendChild(l);
+  });
+  const sb = document.createElement("div");
+  sb.className = "lane gray";
+  sb.style.cssText = `right:36px;top:${CH - 56}px;`;
+  sb.textContent = "state bus · JSON";
+  gCanvas.appendChild(sb);
+}
+renderGraph();
+
+/* ---- 参数区（v3）：一整块暗面板，4 列 × 3 行键名胶囊 + 右对齐数值 ----
+   依据原帧 y490–660 复核：无独立小卡边框、无迷你进度条；
+   部分键名是实心胶囊底（cap），部分为裸文本（warn 用琥珀底）。 */
+const PARAM_COLS = [
+  [ ["input","0.371",0], ["steps","1.227",0], ["weight","0.825",2] ],
+  [ ["notes","0.264",1], ["fresh","0.468",0], ["open","0.633",0] ],
+  [ ["strict","0.499",0],["retries","0.312",1],["window","1.048",0] ],
+  [ ["seeded","0.775",0],["budget","0.612",0],["risk","0.264",1] ],
+];
+(function renderParams() {
+  const row = $("#paramsRow");
+  PARAM_COLS.forEach(col => {
+    const c = document.createElement("div");
+    c.className = "pcol";
+    const mx = Math.max(...col.map(x => parseFloat(x[1])));
+    col.forEach(([l, v, kind]) => {
+      const r = document.createElement("div");
+      r.className = "prow";
+      const ratio = parseFloat(v) / mx;
+      let cls = "", style = "";
+      if (kind === 1) cls = " plain";
+      else if (kind === 2) cls = " warn";
+      else style = `width:${(32 + ratio * 92).toFixed(0)}px;`;
+      r.innerHTML = `<span class="pl${cls}" style="${style}">${l}</span>
+        <span class="pv">${v}</span>`;
+      c.appendChild(r);
+    });
+    row.appendChild(c);
+  });
+})();
+setInterval(() => { // 数值跳动（条长随之伸缩）
+  document.querySelectorAll(".pcol").forEach((col, ci) => {
+    const src = PARAM_COLS[ci]; if (!src) return;
+    const vals = [...col.querySelectorAll(".prow .pv")];
+    const mx = Math.max(...src.map(x => parseFloat(x[1])));
+    vals.forEach((pv, i) => {
+      const v = Math.max(0.05, parseFloat(src[i][1]) + (rnd() - .5) * .18);
+      pv.textContent = v.toFixed(3);
+      const bar = col.querySelectorAll(".prow .pl")[i];
+      if (bar && !bar.classList.contains("plain") && !bar.classList.contains("warn"))
+        bar.style.width = (32 + (v / mx) * 92).toFixed(0) + "px";
+    });
+  });
+}, 420);
+
+/* ---- 时间轴 ---- */
+(function axis() {
+  const row = $("#axisRow");
+  for (let t = 2; t <= 48; t += 2) {
+    const pct = (t - 2) / 46 * 100;
+    const tk = document.createElement("div");
+    tk.className = "tk"; tk.style.left = pct + "%";
+    const tl = document.createElement("div");
+    tl.className = "tl"; tl.style.left = pct + "%";
+    tl.textContent = String(t).padStart(2, "0");
+    row.append(tk, tl);
+  }
+})();
+
+/* ---- 视图切换（指南 4.4 / 7.5） ---- */
+const CAPTIONS = {
+  stage03: { main:"CHOICE → WRITE", sub:"confidence 0.93",            bar:"#4ade80", stage:"STAGE 03" },
+  stage04: { main:"GATE HOLDS",     sub:"0.71 < 0.85 → review",       bar:"#e36e59", stage:"STAGE 04" },
+  stage05: { main:"ESCALATE",       sub:"human owns the post",        bar:"#e8b86d", stage:"STAGE 05" },
+  flow:    { main:"VIEW · FLOW",    sub:"where decisions travel",     bar:"#5eead4", stage:"VIEW" },
+  heat:    { main:"VIEW · HEAT",    sub:"load per node",              bar:"#e8b86d", stage:"VIEW" },
+  stage06: { main:"CODE ACTS",      sub:"10 000 decisions = $0.42",   bar:"#4ade80", stage:"STAGE 06" },
+};
+let curView = "graph", curStage = "stage05";
+function setView(v) {
+  curView = v;
+  $("#mView").textContent = v;
+  document.querySelectorAll("#viewTabs button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
+  gCanvas.classList.toggle("heat", v === "heat");
+  // FLOW：增强流带；GRAPH：默认；HEAT：节点按负载染色
+  gSvg.querySelectorAll(".edge-flow").forEach(p => {
+    p.style.opacity = v === "graph" ? .9 : 1;
+    p.setAttribute("stroke-width", v === "flow" ? 3.4 : 2.6);
+    p.setAttribute("stroke-dasharray", v === "flow" ? "10 150" : "8 190");
+  });
+  document.querySelectorAll(".node").forEach(nd => {
+    const n = NODES.find(x => x.id === nd.dataset.id);
+    if (!n) return;
+    if (v === "heat") {
+      const c = heatColor(n.load);
+      nd.style.borderTopColor = c;
+      nd.style.background = hexA(c, .14);
+      nd.style.borderColor = hexA(c, .5);
+    } else {
+      nd.style.borderTopColor = n.c;
+      nd.style.background = "";
+      nd.style.borderColor = "";
+    }
+  });
+}
+function hexA(hex, a) {
+  const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function setStage(s) {
+  curStage = s;
+  const c = CAPTIONS[s];
+  $("#capMain").textContent = c.main;
+  $("#capSub").textContent = c.sub;
+  $("#capBar").style.background = c.bar;
+  $("#capStage").textContent = c.stage;
+  if (s === "flow" || s === "heat") setView(s);
+  else if (curView !== "graph") setView("graph");
+}
+document.querySelectorAll("#viewTabs button").forEach(b =>
+  b.addEventListener("click", () => {
+    const v = b.dataset.v;
+    if (v === "graph") setStage(curStage === "flow" || curStage === "heat" ? "stage05" : curStage);
+    else setStage(v);
+  }));
+// 自动阶段循环（演示模式）
+const STAGE_SEQ = ["stage03", "stage04", "stage05", "flow", "heat", "stage06"];
+let stageTimer = setInterval(() => {
+  const i = (STAGE_SEQ.indexOf(curStage) + 1) % STAGE_SEQ.length;
+  setStage(STAGE_SEQ[i]);
+}, 4200);
+setStage("stage05");
+
+/* ---- 代码打字机（指南 4.6 / 7.7） ---- */
+const CODE = [
+  [["kw","criteria"],["punct"," = {"]],
+  [["str",'"research"'],["punct",": "],["str",'"Missing evidence."'],["punct",","]],
+  [["str",'"urgency"'],["punct",": "],["str",'"Missing a deadline."'],["punct",","]],
+  [["punct","}"]],
+  [["com","# floor: only cheap decisions pass"]],
+  [["kw","FLOOR"],["punct"," = "],["num","0.85"]],
+  [],
+  [["kw","def "],["fn","gate"],["punct","("],["var","answer"],["punct","):"]],
+  [["var","    score"],["punct"," = "],["fn","ask"],["punct","("],["var","answer"],["punct",")"]],
+  [["kw","    if "],["var","score"],["punct"," >= "],["var","FLOOR"],["punct",":"]],
+  [["kw","        return"],["str",' "publish"']],
+  [["kw","    return"],["str",' "review"']],
+  [],
+  [["com","# three answers, one cheap de…"]],
+  [["kw","def "],["fn","cascade"],["punct","("],["var","goal"],["punct","):"]],
+  [["var","    q"],["punct"," = "],["fn","queue"],["punct","("],["var","goal"],["punct",")"]],
+  [["kw","    while "],["var","q"],["punct",":"]],
+  [["var","        node"],["punct"," = "],["var","q"],["punct",".pop()"]],
+  [["kw","        if "],["fn","gate"],["punct","("],["var","node"],["punct","):"]],
+  [["var","            publish"],["punct","("],["var","node"],["punct",")"]],
+  [["kw","        else"],["punct",":"]],
+  [["var","            review"],["punct","("],["var","node"],["punct",")"]],
+];
+const TOK_CLASS = { kw:"tok-kw", str:"tok-str", num:"tok-num", punct:"tok-punct", com:"ttok-com", fn:"tok-fn", var:"" };
+let codeLi = 0, codeTok = 0, codeLines = [];
+const codeBox = $("#codeLines");
+function codeReset() {
+  codeBox.innerHTML = ""; codeLi = 0; codeTok = 0; codeLines = [];
+  for (let i = 0; i < 16; i++) {
+    const d = document.createElement("div");
+    d.className = "code-line";
+    d.innerHTML = `<span class="ln">${i + 1}</span><span class="lt"></span>`;
+    codeBox.appendChild(d); codeLines.push(d);
+  }
+}
+codeReset();
+function codeTick() {
+  if (codeLi >= CODE.length) { setTimeout(codeReset, 900); return; }
+  const line = codeLines[Math.min(codeLi, codeLines.length - 1)];
+  line.classList.add("cur");
+  const toks = CODE[codeLi];
+  if (!toks.length) {
+    line.classList.remove("cur"); codeLi++; codeTok = 0;
+    setTimeout(codeTick, 1000 / 12);
+    return;
+  }
+  if (codeTok < toks.length) {
+    const [t, v] = toks[codeTok];
+    const span = document.createElement("span");
+    span.className = TOK_CLASS[t];
+    span.textContent = v;
+    line.querySelector(".lt").appendChild(span);
+    codeTok++;
+    setTimeout(codeTick, t === "com" ? 26 : 34);
+  } else {
+    line.classList.remove("cur"); codeLi++; codeTok = 0;
+    setTimeout(codeTick, 1000 / 12);
+  }
+}
+codeTick();
+
+/* ---- RUN LOG（指南 4.6 / 7.8） ---- */
+const LOGS = [
+  ["ok",   "jev jev-1.13.0 attached"],
+  ["ok",   "ask urgency 0.93"],
+  ["hold", "gate 0.71 < 0.85 → review"],
+  ["ok",   "queue push result.scores"],
+  ["ok",   "node.drag review → gate"],
+  ["ok",   "graph.load 220 nodes / 350 edges"],
+  ["ok",   "bus.attach pins 48"],
+  ["fail", "escalate human · publish"],
+  ["ok",   "choices 4 → result.nouls"],
+  ["hold", "held at gate 26"],
+  ["ok",   "write draft ready"],
+  ["ok",   "sources kept 3 / 76"],
+  ["fail", "missing evidence → recycle"],
+  ["ok",   "graph.save json"],
+  ["hold", "approval · YOU"],
+];
+let logI = 0;
+const logBox = $("#logStream");
+setInterval(() => {
+  const [st, txt] = LOGS[logI % LOGS.length]; logI++;
+  const d = document.createElement("div");
+  d.className = `log-line ${st}`;
+  d.innerHTML = `<span class="ld"></span><span>${txt}</span>
+    <span class="lt2">${(20.6 + logI * .11).toFixed(2)}</span>`;
+  logBox.appendChild(d);
+  while (logBox.children.length > 7) logBox.firstChild.remove();
+}, 380);
+
+/* ---- NODE LOAD（指南 4.6） ---- */
+const LOADS = [
+  ["jev-1.13.0", 1.00], ["review", .99], ["result.choices", .96], ["gate ≥ 0.85", .95],
+  ["result.nouls", .88], ["queue/…", .82], ["human · publish", .74],
+  ["Score · urgency", .61], ["write", .45], ["Noul · safe_to_run", .33],
+];
+(function loads() {
+  const w = $("#loadWrap");
+  LOADS.forEach(([n, p]) => {
+    const d = document.createElement("div");
+    d.className = "load-row";
+    d.innerHTML = `<span class="ln2">${n}</span>
+      <div class="lb"><i style="width:${p * 100}%;background:linear-gradient(90deg,${heatColor(p)}bb,${heatColor(p)})"></i></div>
+      <span class="lv">${Math.round(p * 100)}%</span>`;
+    w.appendChild(d);
+  });
+  const mb = $("#miniBars");
+  for (let i = 0; i < 30; i++) {
+    const h = .15 + rnd() * .85;
+    const c = h > .85 ? "#e36e59" : h > .55 ? "#e8b86d" : "#4d7a3a";
+    const b = document.createElement("i");
+    b.style.height = (h * 100) + "%"; b.style.background = c;
+    mb.appendChild(b);
+  }
+})();
+
+/* ---- 计数器（指南 6.1） ---- */
+let cost = 0.156, T = 20.65, frame = 1239, dec = 7024;
+setInterval(() => {
+  cost = Math.min(0.42, cost + 0.01);
+  T += 0.11; frame += 6; dec += 13 + Math.floor(rnd() * 9);
+  $("#mCost").textContent = "$" + cost.toFixed(3);
+  $("#mT").textContent = T.toFixed(2);
+  $("#mFrame").textContent = frame;
+  $("#mDec").textContent = fmt(dec).replace(/,/g, " ").split(" ").pop();
+  $("#mDecPre").textContent = fmt(dec).replace(/,/g, " ").split(" ").slice(0, -1).join(" ");
+  $("#costBig").textContent = "$" + cost.toFixed(2);
+  $("#cDec").textContent = fmt(dec + 2).replace(/,/g, " ").split(" ").slice(-2).join(" ");
+}, 1000);
+
+/* ============================================================
+   二、作战室
+============================================================ */
+/* ---- 8 张 Agent 卡（v3：4×2 统一网格，还原原帧的全部 8 个角色）---- */
+const AGENTS = [
+  { ic:"🐸", n:"SCOUT",    no:"DOT 01", ac:"#8fd35a", s:"SOURCES · RAW MATERIAL", v:"3 / 76",  f:"3 SOURCES · FIRST HAND" },
+  { ic:"🐣", n:"ANALYST",  no:"DOT 02", ac:"#e8b86d", s:"EVIDENCE + CONTEXT",     v:"GPT-6.1", f:"THESIS + OBJECTION" },
+  { ic:"👾", n:"SKEPTIC",  no:"DOT 03", ac:"#f07aa0", s:"RECYCLED / REJECTED",    v:"CHECKING",f:"CHECK ORIGINAL DATE" },
+  { ic:"🐳", n:"QUANT",    no:"DOT 04", ac:"#5aa7e8", s:"ENTRY RECALC",           v:"WAIT",    f:"FEES / EXIT / INVALIDATION" },
+  { ic:"🐬", n:"RISK",     no:"DOT 05", ac:"#6ec2e8", s:"SIZE LIMIT",             v:"REVIEW",  f:"STOP LIMITS + SIZE" },
+  { ic:"🦊", n:"JOURNAL",  no:"DOT 06", ac:"#e08a4b", s:"CLOSED P&L",             v:"TRACKING",f:"AFTER ACTION LOG" },
+  { ic:"🐢", n:"CRAWLER",  no:"INPUT",  ac:"#51b4a6", s:"LAUNCHES SCANNED",       v:"64",      f:"SITES · UPDATES · POSTS" },
+  { ic:"👽", n:"APPROVAL", no:"INPUT",  ac:"#e0455f", s:"ENTRY AUTHORITY",        v:"YOU",     f:"ENTRIES REQUIRE YOUR APPROVAL" },
+];
+(function agentCards() {
+  const box = $("#agentCards");
+  AGENTS.forEach(d => {
+    const c = document.createElement("div");
+    c.className = "dotcard";
+    c.style.setProperty("--ac", d.ac);
+    c.innerHTML = `
+      <div class="dh"><span class="av">${d.ic}</span><span class="dn">${d.n}</span>
+        <span class="dno">${d.no}</span></div>
+      <div class="ds">${d.s}</div>
+      <div class="dv">${d.v}</div>
+      <div class="db"><i></i></div>
+      <div class="df">${d.f}</div>`;
+    box.appendChild(c);
+  });
+})();
+
+/* ---- 主场景 SVG（指南 5.4 / 7.9） ---- */
+(function scene() {
+  const svg = $("#sceneSvg");
+  const W = 1248, H = 700;
+  // 背景墙 + 地板
+  el("rect", { x:0, y:0, width:W, height:H, fill:"#0d1015" }, svg);
+  el("rect", { x:0, y:0, width:W, height:330, fill:"#11151c" }, svg);
+  el("rect", { x:0, y:330, width:W, height:8, fill:"#1a2029" }, svg);
+  el("rect", { x:0, y:338, width:W, height:H - 338, fill:"#0a0d12" }, svg);
+  // 红色辉光
+  const glow = el("radialGradient", { id:"wallglow" }, svg);
+  el("stop", { offset:"0%",  "stop-color":"#a81024", "stop-opacity":".28" }, glow);
+  el("stop", { offset:"100%","stop-color":"#a81024", "stop-opacity":"0" }, glow);
+  el("ellipse", { cx:W / 2, cy:60, rx:520, ry:180, fill:"url(#wallglow)" }, svg);
+  // 地板网格线（透视）
+  for (let i = 0; i < 7; i++) {
+    const y = 350 + i * i * 9 + i * 22;
+    el("line", { x1:0, y1:y, x2:W, y2:y, stroke:"#161c24", "stroke-width":1 }, svg);
+  }
+  // ---- 大图表面板（场景叠加层） ----
+  const panel = el("g", {}, svg);
+  el("rect", { x:330, y:26, width:640, height:250, rx:10, fill:"#0f1319",
+    stroke:"#242b35", "stroke-width":1.5 }, panel);
+  const txt = (x, y, t, s, f, w = "500") => {
+    const e = el("text", { x, y, "font-size":s, fill:f, "font-weight":w,
+      "font-family":"var(--font-mono)", "letter-spacing":".12em" }, panel);
+    e.textContent = t; return e;
+  };
+  txt(352, 54, "SELECTED TOKEN / RESEARCH REPLAY", 13, "#8b9299");
+  const tag = el("g", {}, panel);
+  el("rect", { x:812, y:40, width:86, height:24, rx:12, fill:"#12303c", stroke:"#2b5a6e" }, tag);
+  const tt = el("text", { x:855, y:56, "font-size":12, fill:"#51b4a6", "text-anchor":"middle",
+    "font-weight":"700", "letter-spacing":".1em" }, tag); tt.textContent = "GPT-6.1";
+  // 双色折线（价格走势）
+  const N = 46, x0 = 352, x1 = 952, yb = 210;
+  let g1 = "", g2 = "";
+  for (let i = 0; i < N; i++) {
+    const p = i / (N - 1), x = x0 + p * (x1 - x0);
+    const y1v = yb - 40 - Math.sin(p * 5.2) * 34 - p * 46 - rnd() * 8;
+    const y2v = yb - 20 - Math.cos(p * 4.1) * 26 - p * 18 - rnd() * 8;
+    g1 += (i ? "L" : "M") + x.toFixed(1) + "," + y1v.toFixed(1) + " ";
+    g2 += (i ? "L" : "M") + x.toFixed(1) + "," + y2v.toFixed(1) + " ";
+  }
+  el("path", { d:g1, fill:"none", stroke:"#3ddc84", "stroke-width":2,
+    class:"draw-line", style:"filter:drop-shadow(0 0 6px #3ddc8488)" }, panel);
+  el("path", { d:g2, fill:"none", stroke:"#f07aa0", "stroke-width":1.6,
+    class:"draw-line", style:"animation-delay:.4s;filter:drop-shadow(0 0 6px #f07aa088)" }, panel);
+  txt(352, 258, "SOURCES · OBJECTIONS · SIZE · YOUR APPROVAL", 11, "#5f666e");
+  // ---- DOTS 品牌墙 ----
+  const logo = el("g", {}, svg);
+  for (let i = 0; i < 3; i++)
+    el("circle", { cx:70 + i * 26, cy:70, r:10, fill:"#e8e6ea" }, logo);
+  const lt = el("text", { x:70, y:116, "font-size":26, fill:"#e8e6ea", "font-weight":"800",
+    "letter-spacing":".14em", "font-family":"var(--font-cond)" }, logo); lt.textContent = "DOTS";
+  const ls = el("text", { x:70, y:140, "font-size":10, fill:"#6b727b", "letter-spacing":".2em" }, logo);
+  ls.textContent = "RESEARCH CRAWLER";
+  // ---- 工位 ----
+  const desks = [
+    { x:190,  y:300, av:"🌊", n:"QUANT",   c:"#5aa7e8" },
+    { x:520,  y:290, av:"🤓", n:"ANALYST", c:"#e8b86d" },
+    { x:850,  y:300, av:"🧗", n:"RISK",    c:"#e08a4b" },
+    { x:340,  y:500, av:"😏", n:"SKEPTIC", c:"#f07aa0" },
+    { x:680,  y:510, av:"📓", n:"JOURNAL", c:"#7d9bd4" },
+    { x:1010, y:500, av:"🐸", n:"SCOUT",   c:"#7bc96f" },
+  ];
+  desks.forEach((d, i) => {
+    const g = el("g", {}, svg);
+    g.style.animation = `bob 3s ease-in-out ${(i * .4).toFixed(1)}s infinite alternate`;
+    g.style.transformBox = "fill-box"; g.style.transformOrigin = "center";
+    // 显示器
+    el("rect", { x:d.x - 78, y:d.y - 66, width:156, height:64, rx:5, fill:"#0b0e13",
+      stroke:"#232a34", "stroke-width":1.5 }, g);
+    // 屏内迷你条形图
+    for (let b = 0; b < 12; b++) {
+      const h = 6 + rnd() * 40;
+      el("rect", { x:d.x - 66 + b * 12, y:d.y - 22 - h, width:7, height:h, rx:1.5,
+        fill: b % 3 === 0 ? "#2b5a6e" : "#1f4a3a" }, g);
+    }
+    el("rect", { x:d.x - 10, y:d.y - 2, width:20, height:12, fill:"#1a2029" }, g);
+    el("rect", { x:d.x - 44, y:d.y + 10, width:88, height:7, rx:3, fill:"#161c24" }, g);
+    // 工位桌面
+    el("rect", { x:d.x - 70, y:d.y + 34, width:140, height:10, rx:4, fill:"#131922",
+      stroke:"#222a35" }, g);
+    el("rect", { x:d.x - 58, y:d.y + 44, width:10, height:34, fill:"#10151d" }, g);
+    el("rect", { x:d.x + 48, y:d.y + 44, width:10, height:34, fill:"#10151d" }, g);
+    // 椅子
+    el("rect", { x:d.x - 20, y:d.y + 84, width:40, height:14, rx:6, fill:"#171d26" }, g);
+    el("rect", { x:d.x - 18, y:d.y + 52, width:36, height:34, rx:8, fill:"#1c232e" }, g);
+    // 吉祥物
+    const av = el("g", {}, g);
+    el("circle", { cx:d.x, cy:d.y + 26, r:21, fill:"#12161d", stroke:d.c, "stroke-width":2 }, av);
+    const em = el("text", { x:d.x, y:d.y + 35, "font-size":22, "text-anchor":"middle" }, av);
+    em.textContent = d.av;
+    const nm = el("text", { x:d.x, y:d.y - 78, "font-size":11, fill:d.c, "text-anchor":"middle",
+      "letter-spacing":".16em", "font-weight":"700" }, g); nm.textContent = d.n;
+  });
+  // ---- 道具：盆栽 / 服务器 / 卫星碟 / 火箭 ----
+  const prop = (x, y, type, c) => {
+    const g = el("g", {}, svg);
+    if (type === "plant") {
+      el("path", { d:`M${x},${y} l-16,26 h32 z`, fill:"#2a2118", stroke:"#3d3025" }, g);
+      for (let i = 0; i < 5; i++) {
+        const a = -Math.PI / 2 + (i - 2) * .42;
+        el("path", { d:`M${x},${y - 2} q${Math.cos(a) * 26},${Math.sin(a) * 26 - 10} ${Math.cos(a) * 34},${Math.sin(a) * 34}`,
+          stroke:c, "stroke-width":3, fill:"none", "stroke-linecap":"round" }, g);
+      }
+    } else if (type === "rack") {
+      el("rect", { x, y, width:64, height:120, rx:4, fill:"#0c0f14", stroke:"#232a34" }, g);
+      for (let i = 0; i < 6; i++) {
+        el("rect", { x:x + 7, y:y + 10 + i * 18, width:50, height:10, rx:2, fill:"#141a22" }, g);
+        el("circle", { cx:x + 14, cy:y + 15 + i * 18, r:2.4, fill:i % 2 ? "#3ddc84" : "#e8b86d" }, g);
+      }
+    } else if (type === "dish") {
+      el("ellipse", { cx:x, cy:y, rx:30, ry:12, fill:"#141a22", stroke:"#2b3440", transform:`rotate(-28 ${x} ${y})` }, g);
+      el("line", { x1:x, y1:y, x2:x + 4, y2:y + 44, stroke:"#2b3440", "stroke-width":4 }, g);
+      el("rect", { x:x - 12, y:y + 44, width:32, height:8, rx:3, fill:"#1a2029" }, g);
+    } else if (type === "rocket") {
+      el("path", { d:`M${x},${y - 46} q14,26 14,44 q0,18 -14,18 q-14,0 -14,-18 q0,-18 14,-44 z`,
+        fill:"#c9ccd4", stroke:"#8a8f9a" }, g);
+      el("circle", { cx:x, cy:y - 22, r:6, fill:"#2b5a6e" }, g);
+      el("path", { d:`M${x - 14},${y + 4} l-12,20 h12 z M${x + 14},${y + 4} l12,20 h-12 z`, fill:"#e0455f" }, g);
+      el("path", { d:`M${x - 6},${y + 16} q6,26 12,0 q-6,-8 -12,0 z`, fill:"#e8b86d", opacity:".9" }, g);
+    }
+  };
+  prop(96, 560, "plant", "#3f7a4a");
+  prop(640, 640, "plant", "#3f7a4a");
+  prop(52, 420, "rack");
+  prop(1170, 470, "rack");
+  prop(1096, 400, "dish");
+  prop(1216, 330, "rocket");
+  // 墙上的小屏幕
+  [[1060, 90], [1140, 130]].forEach(([x, y]) => {
+    el("rect", { x, y, width:70, height:46, rx:4, fill:"#0b0e13", stroke:"#232a34" }, svg);
+    el("polyline", { points:`${x + 8},${y + 34} ${x + 24},${y + 20} ${x + 40},${y + 28} ${x + 62},${y + 10}`,
+      fill:"none", stroke:"#51b4a6", "stroke-width":1.6 }, svg);
+  });
+  animateDraw(svg);
+})();
+
+/* ---- ACCOUNT 星座网络（指南 5.5：原帧为逐节点绘制的星座图，非折线）---- */
+(function constellation() {
+  const svg = $("#constelSvg");
+  const NODES = [
+    [280, 58, "#f07aa0", 7], [232, 34, "#5aa7e8", 4], [330, 30, "#5aa7e8", 4],
+    [196, 74, "#5aa7e8", 3.4], [368, 70, "#f07aa0", 3.4], [150, 46, "#5aa7e8", 3],
+    [420, 44, "#f07aa0", 3], [258, 96, "#5aa7e8", 3], [312, 98, "#f07aa0", 3],
+    [110, 88, "#5aa7e8", 2.6], [452, 88, "#f07aa0", 2.6], [70, 34, "#5aa7e8", 2.4],
+    [492, 34, "#f07aa0", 2.4], [40, 70, "#5aa7e8", 2.2], [520, 68, "#f07aa0", 2.2],
+  ];
+  const EDGES = [[0,1],[0,2],[0,3],[0,4],[1,5],[2,6],[3,9],[4,10],[5,11],[6,12],[7,9],[8,10],
+                 [7,13],[8,14],[1,3],[2,4],[5,13],[6,14]];
+  const gE = el("g", {}, svg), gN = el("g", {}, svg);
+  EDGES.forEach(([a, b], i) => {
+    const A = NODES[a], B = NODES[b];
+    el("line", { x1:A[0], y1:A[1], x2:B[0], y2:B[1], stroke:A[2], "stroke-width":.9,
+      "stroke-opacity":.6, class:"node-pop", style:`animation-delay:${(.5 + i * .06).toFixed(2)}s` }, gE);
+  });
+  NODES.forEach(([x, y, c, r], i) => {
+    el("circle", { cx:x, cy:y, r:r * 2.6, fill:c, opacity:.12, class:"node-pop",
+      style:`animation-delay:${(i * .09).toFixed(2)}s` }, gN);
+    el("circle", { cx:x, cy:y, r:r, fill:"#0d1114", stroke:c, "stroke-width":1.6,
+      class:"node-pop", style:`animation-delay:${(i * .09).toFixed(2)}s` }, gN);
+  });
+  // 逐节点重绘循环
+  setInterval(() => {
+    gN.querySelectorAll("circle").forEach((c, i) => {
+      c.style.animation = "none"; void c.offsetWidth;
+      c.style.animation = `pop .5s ease-out ${(i * .07).toFixed(2)}s both`;
+    });
+  }, 4200);
+})();
+/* ---- ACCOUNT mini 柱状图（原帧面板底部横贯的细柱条）---- */
+(function miniBars() {
+  const svg = $("#barSvg");
+  const n = 128, w = 560 / n;
+  for (let i = 0; i < n; i++) {
+    const h = 4 + Math.abs(Math.sin(i * .7) * Math.cos(i * .21)) * 30 + rnd() * 6;
+    el("rect", { x:(i * w).toFixed(2), y:(36 - h).toFixed(2), width:(w * .6).toFixed(2),
+      height:h.toFixed(2), rx:.8, fill:i % 7 === 0 ? "#f07aa0" : "#2f7d6a", opacity:.9 }, svg);
+  }
+})();
+
+/* ---- 余额大计数器（指南 5.5 / 6.2） ---- */
+const BAL_KEYS = [
+  { v: 63,      t: 0    },
+  { v: 74.37,   t: 400  },
+  { v: 279.01,  t: 1400 },
+  { v: 620.86,  t: 2400 },
+  { v: 1896.84, t: 3400 },
+  { v: 2810.00, t: 4400 },
+];
+const easeOutQuart = t => 1 - Math.pow(1 - t, 4);
+let balRaf = null, balGen = 0;
+function balanceTo(target, dur = 1200) {
+  const from = parseFloat(($("#balBig").textContent || "0").replace(/[$,]/g, "")) || 0;
+  const t0 = performance.now();
+  cancelAnimationFrame(balRaf);
+  const tick = now => {
+    const p = Math.min((now - t0) / dur, 1);
+    const v = from + (target - from) * easeOutQuart(p);
+    $("#balBig").textContent = "$" + fmt(v, 2);
+    if (p < 1) balRaf = requestAnimationFrame(tick);
+  };
+  balRaf = requestAnimationFrame(tick);
+}
+function balancePlay() {
+  const my = ++balGen;
+  let i = 0;
+  const step = () => {
+    if (my !== balGen) return; // 被 setState 中断
+    if (i >= BAL_KEYS.length) return;
+    const k = BAL_KEYS[i++];
+    balanceTo(k.v, i === 1 ? 400 : 1000);
+    if (i < BAL_KEYS.length) setTimeout(step, 1000);
+  };
+  step();
+}
+function balanceStop(v) {
+  balGen++; cancelAnimationFrame(balRaf);
+  $("#balBig").textContent = "$" + fmt(v, 2);
+}
+balancePlay();
+
+/* ---- K 线图（指南 5.6，涨绿跌红） ---- */
+(function kline() {
+  const svg = $("#klineSvg");
+  const W = 470, H = 230, n = 26;
+  let price = 100; const data = [];
+  for (let i = 0; i < n; i++) {
+    const o = price, c = price + (rnd() - .46) * 9;
+    const h = Math.max(o, c) + rnd() * 4, l = Math.min(o, c) - rnd() * 4;
+    data.push({ o, c, h, l }); price = c;
+  }
+  const min = Math.min(...data.map(d => d.l)) - 4, max = Math.max(...data.map(d => d.h)) + 4;
+  const Y = v => 20 + (max - v) / (max - min) * (H - 46);
+  const bw = W / n;
+  // 网格
+  for (let i = 0; i < 4; i++) {
+    const y = 20 + i * (H - 46) / 3;
+    el("line", { x1:0, y1:y, x2:W, y2:y, stroke:"#1c222b", "stroke-width":1 }, svg);
+  }
+  data.forEach((d, i) => {
+    const x = i * bw + bw / 2, up = d.c >= d.o;
+    const col = up ? "#3ddc84" : "#e36e59";
+    const g = el("g", { class:"candle", style:`animation-delay:${(i * .07).toFixed(2)}s` }, svg);
+    el("line", { x1:x, y1:Y(d.h), x2:x, y2:Y(d.l), stroke:col, "stroke-width":1.4 }, g);
+    el("rect", { x:x - bw * .28, y:Y(Math.max(d.o, d.c)), width:bw * .56,
+      height:Math.max(2, Math.abs(Y(d.o) - Y(d.c))), fill:col, rx:1 }, g);
+  });
+})();
+
+/* ---- POSITION REPLAY 右侧 4 条 sparkline（原帧面板右侧一列迷你走势） ---- */
+["sp1","sp2","sp3","sp4"].forEach((id, k) => {
+  const svg = $("#" + id);
+  svg.setAttribute("viewBox", "0 0 112 46");
+  svg.style.width = "100%"; svg.style.height = "46px";
+  const lbl = ["SIZE","EXPOSURE","HEDGE","DRAWDOWN"][k];
+  const col = ["#51b4a6","#e8b86d","#5aa7e8","#f07aa0"][k];
+  const t = el("text", { x:0, y:9, "font-size":7, fill:"#6b727b", "letter-spacing":".14em" }, svg);
+  t.textContent = lbl;
+  el("line", { x1:0, y1:26, x2:112, y2:26, stroke:"#1c222b", "stroke-width":1 }, svg);
+  let d = "";
+  for (let i = 0; i <= 22; i++) {
+    const x = i / 22 * 112;
+    const y = 24 - Math.sin(i * .45 + k) * 8 - i * .22 + rnd() * 2.4;
+    d += (i ? "L" : "M") + x.toFixed(1) + "," + y.toFixed(1) + " ";
+  }
+  el("path", { d, fill:"none", stroke:col, "stroke-width":1.5, class:"draw-line",
+    style:`animation-delay:${(k * .15).toFixed(2)}s` }, svg);
+});
+
+/* ---- MOMENTUM 迷你走势（指南 5.6） ---- */
+(function momentum() {
+  const svg = $("#momentumSvg");
+  let d = "";
+  for (let i = 0; i <= 40; i++) {
+    const x = i / 40 * 300, y = 62 - Math.sin(i * .34) * 20 - i * .5 + rnd() * 6;
+    d += (i ? "L" : "M") + x.toFixed(1) + "," + y.toFixed(1) + " ";
+  }
+  el("path", { d, fill:"none", stroke:"#e8b86d", "stroke-width":2, class:"draw-line" }, svg);
+  [[62, "100"], [38, "80"]].forEach(([y, t]) => {
+    el("line", { x1:0, y1:y, x2:300, y2:y, stroke:"#1c222b", "stroke-dasharray":"3 5" }, svg);
+    const e = el("text", { x:296, y:y - 5, "font-size":10, fill:"#5f666e", "text-anchor":"end" }, svg);
+    e.textContent = t;
+  });
+})();
+
+/* ---- EVIDENCE ROUTER 辐射网络（指南 5.6 / 7.9） ---- */
+const routerSvg = $("#routerSvg");
+const ROUTER = {
+  cx: 350, cy: 158,
+  nodes: [
+    { id:"src",   n:"SOURCE", x:350, y:26,  c:"#51b4a6" },
+    { id:"scout", n:"SCOUT",  x:620, y:108, c:"#7bc96f" },
+    { id:"you",   n:"YOU",    x:62,  y:118, c:"#bf9442" },
+    { id:"skep",  n:"SKEPTIC",x:578, y:262, c:"#f07aa0" },
+    { id:"risk",  n:"RISK",   x:150, y:264, c:"#e08a4b" },
+    { id:"quant", n:"QUANT",  x:350, y:300, c:"#5aa7e8" },
+  ],
+};
+function routerDraw() {
+  routerSvg.innerHTML = "";
+  const { cx, cy } = ROUTER;
+  // 椭圆轨道（原帧中心外有一圈细椭圆）
+  el("ellipse", { cx, cy, rx:250, ry:120, fill:"none", stroke:"#2c4a52",
+    "stroke-width":1, "stroke-dasharray":"4 7" }, routerSvg);
+  el("ellipse", { cx, cy, rx:180, ry:86, fill:"none", stroke:"#22404a",
+    "stroke-width":1 }, routerSvg);
+  // 连线（曲线，pathLength 绘制动画）
+  ROUTER.nodes.forEach((nd, i) => {
+    const mx = (cx + nd.x) / 2, my = (cy + nd.y) / 2 - 34;
+    const d = `M${cx},${cy} Q${mx},${my} ${nd.x},${nd.y}`;
+    const p = el("path", { d, fill:"none", stroke:nd.c, "stroke-width":1.6, opacity:".75",
+      class:"draw-line", style:`animation-delay:${(i * .18).toFixed(2)}s` }, routerSvg);
+    // 沿线运动的光点
+    const dot = el("circle", { r:3.4, fill:nd.c, style:"filter:drop-shadow(0 0 5px " + nd.c + ")" },
+      el("g", {}, routerSvg));
+    const anim = () => {
+      const L = p.getTotalLength();
+      let t0 = null;
+      const step = ts => {
+        if (!t0) t0 = ts;
+        const k = ((ts - t0) / 2200) % 1;
+        const pt = p.getPointAtLength(k * L);
+        dot.setAttribute("cx", pt.x); dot.setAttribute("cy", pt.y);
+        dot.parentNode.style.display = "";
+        dot._raf = requestAnimationFrame(step);
+      };
+      dot._raf = requestAnimationFrame(step);
+    };
+    setTimeout(anim, 400 + i * 180);
+  });
+  // 中心节点
+  const cg = el("g", { class:"node-pop", style:"animation-delay:0s" }, routerSvg);
+  el("rect", { x:cx - 70, y:cy - 29, width:140, height:58, rx:12, fill:"#12151b",
+    stroke:"#51b4a6", "stroke-width":2.2 }, cg);
+  el("rect", { x:cx - 78, y:cy - 37, width:156, height:74, rx:16, fill:"none",
+    stroke:"#51b4a6", "stroke-width":1, opacity:".45", class:"halo-c" }, cg);
+  const ct = el("text", { x:cx, y:cy - 2, "font-size":11, fill:"#e8e6ea", "text-anchor":"middle",
+    "font-weight":"800", "letter-spacing":".08em" }, cg); ct.textContent = "GPT-6.1";
+  const ct2 = el("text", { x:cx, y:cy + 13, "font-size":8.5, fill:"#8b9299", "text-anchor":"middle",
+    "letter-spacing":".1em" }, cg); ct2.textContent = "CHECK + REASON";
+  // 卫星节点
+  ROUTER.nodes.forEach((nd, i) => {
+    const g = el("g", { class:"node-pop", style:`animation-delay:${(.25 + i * .18).toFixed(2)}s` }, routerSvg);
+    el("circle", { cx:nd.x, cy:nd.y, r:26, fill:"#12151b", stroke:nd.c, "stroke-width":2 }, g);
+    el("circle", { cx:nd.x, cy:nd.y, r:33, fill:"none", stroke:nd.c, "stroke-width":1,
+      opacity:".45", class:"halo-c", style:`animation-delay:${(i * .3).toFixed(1)}s` }, g);
+    const t = el("text", { x:nd.x, y:nd.y + 4, "font-size":10, fill:nd.c, "text-anchor":"middle",
+      "font-weight":"800", "letter-spacing":".06em" }, g); t.textContent = nd.n;
+    const l = el("text", { x:nd.x, y:nd.y + 44, "font-size":9, fill:"#6b727b", "text-anchor":"middle",
+      "letter-spacing":".14em" }, g);
+    l.textContent = { src:"3 SOURCES", risk:"SIZE LIMIT", quant:"ENTRY RECALC",
+      skep:"RECYCLED", scout:"LAUNCH FEED", you:"APPROVAL" }[nd.id];
+  });
+  animateDraw(routerSvg);
+}
+routerDraw();
+setInterval(() => { // 循环重绘（指南 5.5）
+  routerSvg.querySelectorAll("[_raf]").forEach(d => cancelAnimationFrame(d._raf));
+  routerSvg.style.transition = "opacity .4s"; routerSvg.style.opacity = "0";
+  setTimeout(() => { routerDraw(); routerSvg.style.opacity = "1"; }, 420);
+}, 6500);
+
+/* ============================================================
+   三、演示控制 / 状态机
+============================================================ */
+function showView(v) {
+  $("#screen-graph").classList.toggle("on", v === "graph");
+  $("#screen-war").classList.toggle("on", v === "war");
+  $("#btnGraph").classList.toggle("on", v === "graph");
+  $("#btnWar").classList.toggle("on", v === "war");
+  $("#graphStates").style.display = v === "graph" ? "" : "none";
+  $("#warStates").style.display = v === "war" ? "" : "none";
+}
+$("#btnGraph").onclick = () => showView("graph");
+$("#btnWar").onclick = () => showView("war");
+$("#btnChrome").onclick = () => document.body.classList.toggle("nochrome");
+
+document.querySelectorAll("#graphStates button").forEach(b => b.addEventListener("click", () => {
+  clearInterval(stageTimer);
+  document.querySelectorAll("#graphStates button").forEach(x => x.classList.remove("on"));
+  b.classList.add("on");
+  setStage(b.dataset.s);
+}));
+document.querySelectorAll("#warStates button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll("#warStates button").forEach(x => x.classList.remove("on"));
+  b.classList.add("on");
+  balanceStop({ "war-start": 74.37, "war-mid": 1896.84, "war-final": 2810.00 }[b.dataset.s]);
+}));
+
+// URL 直达状态（供截图使用）
+window.__setState = function (name) {
+  if (CAPTIONS[name]) {
+    clearInterval(stageTimer);
+    setStage(name);
+  }
+  if (name.startsWith("war-")) {
+    balanceStop({ "war-start": 74.37, "war-mid": 1896.84, "war-final": 2810.00 }[name]);
+  }
+};
+window.__showView = showView;
+const qView = Q.get("view"), qState = Q.get("state");
+if (qView) showView(qView);
+if (qState) window.__setState(qState);
+</script>
+</body>
+</html>

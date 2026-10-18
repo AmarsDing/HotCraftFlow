@@ -5,12 +5,20 @@ package main
 
 import (
 	"framework/app/admin/internal/biz"
+	bizmia "framework/app/admin/internal/biz/mia"
+	bizpublish "framework/app/admin/internal/biz/publish"
+	biztt "framework/app/admin/internal/biz/tt"
 	"framework/app/admin/internal/conf"
 	"framework/app/admin/internal/core"
 	"framework/app/admin/internal/data"
+	pubdata "framework/app/admin/internal/data/publish"
+	ttdata "framework/app/admin/internal/data/tt"
+	"framework/app/admin/internal/publishadapters"
 	"framework/app/admin/internal/server"
 	"framework/app/admin/internal/service"
 	"framework/app/admin/internal/worker"
+	miaworker "framework/app/admin/internal/worker/mia"
+	ttworker "framework/app/admin/internal/worker/tt"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
@@ -21,7 +29,7 @@ import (
 // wireApp init kratos application.
 // 公共配置类型（Data/Nats/Registry/Trace/Log）已在根 conf/pb 包定义，
 // core.NewCoreServer 直接接收 *conf.Bootstrap，内部取 bc.GetNats()，无需额外 provider。
-func wireApp(bc *conf.Bootstrap, logger log.Logger, tp *tracesdk.TracerProvider) (*kratos.App, func(), error) {
+func wireApp(bc *conf.Bootstrap, ttb *biztt.Conf, mc *bizpublish.Conf, mpconfs publishadapters.PlatformConfMap, logger log.Logger, tp *tracesdk.TracerProvider) (*kratos.App, func(), error) {
 	panic(wire.Build(
 		server.ProviderSet,
 		service.ProviderSet,
@@ -29,6 +37,17 @@ func wireApp(bc *conf.Bootstrap, logger log.Logger, tp *tracesdk.TracerProvider)
 		data.ProviderSet,
 		core.ProviderSet,
 		worker.ProviderSet,
+		// ② TT 热点追踪（M1：接入消费 / 时序写入 / 缓冲重放）
+		biztt.ProviderSet,
+		ttdata.ProviderSet,
+		ttworker.ProviderSet,
+		// ③ MIA 市场影响（查询服务链 + NATS 消费/双调度）
+		bizmia.ProviderSet,
+		miaworker.ProviderSet,
+		// ⑤ MAP 媒体发布矩阵（审批门/账号池/适配器注册表；mc/mpconfs 由 main 从 map.yaml/platforms.yaml scan）
+		bizpublish.ProviderSet,
+		pubdata.ProviderSet,
+		publishadapters.ProviderSet,
 		newApp,
 	))
 }

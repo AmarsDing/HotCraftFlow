@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package media.ic.v1;
 
+import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
 // ============================================================================
@@ -86,4 +87,120 @@ message IntelCompliance {
 message IntelWorkability {
   double score  = 1 [json_name = "score"];
   string reason = 2 [json_name = "reason"];
+}
+
+// ============================================================================
+// 情报检索 / 详情 / 证据导出 / 手贴续跑 / 簇操作（文档 01-IC/02 §6.2、评审 B-13/S-23）。
+// ============================================================================
+
+message ListIntelsRequest {
+  int32  page = 1 [json_name = "page"];
+  int32  page_size = 2 [json_name = "page_size"];
+  string platform = 3 [json_name = "platform"];
+  string region = 4 [json_name = "region"];
+  string category = 5 [json_name = "category"];   // A_hot | B_material | C_market | D_compliance
+  string cluster_id = 6 [json_name = "cluster_id"];
+  string collect_method = 7 [json_name = "collect_method"];
+  // FR-INT-14：全文检索（V1 降级 ILIKE，评审 B-19）+ 实体值过滤 + 时间范围（UTC RFC3339）
+  string keyword = 8 [json_name = "keyword"];
+  string entity = 9 [json_name = "entity"];
+  google.protobuf.Timestamp collected_from = 10 [json_name = "collected_from"];
+  google.protobuf.Timestamp collected_to = 11 [json_name = "collected_to"];
+  // 合规复核队列过滤：gate = pass | review | block
+  string gate = 12 [json_name = "gate"];
+}
+
+message ListIntelsResponse {
+  repeated IntelItem items = 1 [json_name = "items"];
+  int32 total = 2 [json_name = "total"];
+}
+
+message GetIntelRequest { string id = 1 [json_name = "id"]; }
+
+// SupplementIntelRequest 手贴正文续跑（FR-INT-04 降级路径）。
+// 评审 C-12：手贴不新建 IntelItem，而是对既有条目 UPDATE payload.text。
+message SupplementIntelRequest {
+  string id = 1 [json_name = "id"];
+  string text = 2 [json_name = "text"];
+}
+message SupplementIntelResponse { bool ok = 1 [json_name = "ok"]; }
+
+// EvidenceExport 证据包元数据（ZIP 字节流走独立下载 handler，03 §6）。
+message EvidenceExport {
+  string intel_id = 1 [json_name = "intel_id"];
+  string evidence_id = 2 [json_name = "evidence_id"];
+  string download_url = 3 [json_name = "download_url"];
+  string chain_hash = 4 [json_name = "chain_hash"];
+  string prev_hash  = 5 [json_name = "prev_hash"];
+  string raw_hash   = 6 [json_name = "raw_hash"];
+}
+message ExportEvidenceRequest {
+  string id = 1 [json_name = "id"];
+  string operator = 2 [json_name = "operator"]; // 导出审计（评审 M-19，必填）
+}
+
+// ---------- 簇管理（S-23） ----------
+
+message IntelCluster {
+  string id = 1 [json_name = "id"]; // cl_ 前缀
+  string label = 2 [json_name = "label"];
+  int32 member_count = 3 [json_name = "member_count"];
+  int32 platform_count = 4 [json_name = "platform_count"];
+  string representative_id = 5 [json_name = "representative_id"];
+  string region = 6 [json_name = "region"];
+  string merged_by = 7 [json_name = "merged_by"]; // url | fingerprint | embedding | manual
+  string status = 8 [json_name = "status"];       // open | closed
+  google.protobuf.Timestamp first_seen_at = 9 [json_name = "first_seen_at"];
+  google.protobuf.Timestamp last_seen_at = 10 [json_name = "last_seen_at"];
+}
+
+message ListClustersRequest {
+  int32  page = 1 [json_name = "page"];
+  int32  page_size = 2 [json_name = "page_size"];
+  string region = 3 [json_name = "region"];
+  string status = 4 [json_name = "status"];
+}
+message ListClustersResponse {
+  repeated IntelCluster items = 1 [json_name = "items"];
+  int32 total = 2 [json_name = "total"];
+}
+
+message SplitClusterRequest {
+  string id = 1 [json_name = "id"];
+  repeated string intel_ids = 2 [json_name = "intel_ids"]; // 要劈出的条目
+  string operator = 3 [json_name = "operator"];
+}
+message SplitClusterResponse { string new_cluster_id = 1 [json_name = "new_cluster_id"]; }
+
+message MergeClusterRequest {
+  repeated string from_cluster_ids = 1 [json_name = "from_cluster_ids"];
+  string to_cluster_id = 2 [json_name = "to_cluster_id"];
+  string reason = 3 [json_name = "reason"];
+  string operator = 4 [json_name = "operator"];
+}
+message MergeClusterResponse { bool ok = 1 [json_name = "ok"]; }
+
+// IntelService 情报查询与治理操作。
+service IntelService {
+  rpc ListIntels(ListIntelsRequest) returns (ListIntelsResponse) {
+    option (google.api.http) = { get: "/api/v1/media/ic/intels" };
+  }
+  rpc GetIntel(GetIntelRequest) returns (IntelItem) {
+    option (google.api.http) = { get: "/api/v1/media/ic/intels/{id}" };
+  }
+  rpc SupplementIntel(SupplementIntelRequest) returns (SupplementIntelResponse) {
+    option (google.api.http) = { post: "/api/v1/media/ic/intels/{id}/supplement" body: "*" };
+  }
+  rpc ExportEvidence(ExportEvidenceRequest) returns (EvidenceExport) {
+    option (google.api.http) = { get: "/api/v1/media/ic/intels/{id}/evidence" };
+  }
+  rpc ListClusters(ListClustersRequest) returns (ListClustersResponse) {
+    option (google.api.http) = { get: "/api/v1/media/ic/clusters" };
+  }
+  rpc SplitCluster(SplitClusterRequest) returns (SplitClusterResponse) {
+    option (google.api.http) = { post: "/api/v1/media/ic/clusters/{id}/split" body: "*" };
+  }
+  rpc MergeCluster(MergeClusterRequest) returns (MergeClusterResponse) {
+    option (google.api.http) = { post: "/api/v1/media/ic/clusters/merge" body: "*" };
+  }
 }

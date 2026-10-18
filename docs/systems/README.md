@@ -7,7 +7,7 @@
 
 ---
 
-## 1. 五子系统速览
+## 1. 子系统速览
 
 | # | 目录 | 子系统 | 全称 | 一句话职责 | PRD 章节 |
 |---|------|--------|------|-----------|---------|
@@ -16,6 +16,7 @@
 | ③ | [`03-MIA`](./03-MIA/) | **MIA** | Market Impact Analysis 市场影响分析 | 判断消息对股市/汇市/数字货币的影响面，产出 `ImpactCard` | §5 |
 | ④ | [`04-MME`](./04-MME/) | **MME** | Matrix Montage Engine 短视频矩阵混剪 | 一源 N 版 × 多画幅 × 多变体批量成片 | §6 |
 | ⑤ | [`05-MAP`](./05-MAP/) | **MAP** | Media Auto-Publisher 媒体自动化发布矩阵 | 适配器矩阵 + 审批门 + 排期发布 + 数据回流 | §7 |
+| ⑥ | [`06-RADAR`](./06-RADAR/) | **RADAR** | GitHub Hotspot Analysis GitHub 热点分析 | GitHub 热门榜/新星/AI 解读/源码速览/克隆 + 个人盯盘与变更通知（菜单「github热门追踪」） | —（独立迁入模块，文档按 as-built 口径） |
 
 **数据流（单向主干 + 回流旁路）**：
 
@@ -27,6 +28,7 @@
 ```
 
 > **纪律**：MIA 产出**分析结论**，MME 产出**可发布内容**，二者目标不同，**不得混为同一按钮**。
+> **⑥ RADAR 不在主干**：它是独立 GitHub 开源情报工具（迁入自独立项目 github-radar），**不产出/消费七份契约消息**，仅复用平台 JWT、菜单、加密与 retention 基建。
 
 ---
 
@@ -83,7 +85,7 @@ apps/server/api/media/v1/
 
 `option go_package` 统一前缀：`framework/api/gen/go/media/v1/<pkg>;<pkgalias>`
 
-**HTTP 前缀**：`/api/v1/media/{ic|tt|mia|mme|map}/...`
+**HTTP 前缀**：`/api/v1/media/{ic|tt|mia|mme|map}/...`；⑥ RADAR 独立前缀 `/api/v1/radar/...`（proto package `radar.service.v1`，见 `06-RADAR/02-概要设计.md` §6）
 
 ---
 
@@ -96,8 +98,9 @@ apps/server/api/media/v1/
 | ③ | MIA | ✅ | ✅ | ✅ | ✅ | **未启动**（Phase 2） |
 | ④ | MME | ✅ | ✅ | ✅ | ✅ | **MVP 0.8 执行中**（2026-10-20 → 12-12） |
 | ⑤ | MAP | ✅ | ✅ | ✅ | ✅ | **未启动**（Phase 2） |
+| ⑥ | RADAR | ✅ | ✅ | ✅ | ✅ | **已嵌入投产**（v2 功能全集；API Resource 挂载等待办见 `06-RADAR/04` §4） |
 
-> **状态口径**：截至 2026-10-17，五子系统均无生产代码。`04-MME` 的 MVP 0.8 排期已冻结并即将启动，是本体系的**地基**，其余子系统在其后接续。
+> **状态口径**：截至 2026-10-17，①~⑤子系统均无生产代码。`04-MME` 的 MVP 0.8 排期已冻结并即将启动，是本体系的**地基**，其余子系统在其后接续。⑥ RADAR 是例外——代码先行（迁入 + v2 迭代已完成），文档为 2026-10-18 补建的 as-built 描述。
 
 ---
 

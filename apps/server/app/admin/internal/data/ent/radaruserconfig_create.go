@@ -9,6 +9,7 @@ import (
 	"framework/app/admin/internal/data/ent/radaruserconfig"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -18,6 +19,7 @@ type RadarUserConfigCreate struct {
 	config
 	mutation *RadarUserConfigMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -264,6 +266,7 @@ func (_c *RadarUserConfigCreate) createSpec() (*RadarUserConfig, *sqlgraph.Creat
 		_node = &RadarUserConfig{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(radaruserconfig.Table, sqlgraph.NewFieldSpec(radaruserconfig.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -315,11 +318,509 @@ func (_c *RadarUserConfigCreate) createSpec() (*RadarUserConfig, *sqlgraph.Creat
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.RadarUserConfig.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.RadarUserConfigUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *RadarUserConfigCreate) OnConflict(opts ...sql.ConflictOption) *RadarUserConfigUpsertOne {
+	_c.conflict = opts
+	return &RadarUserConfigUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.RadarUserConfig.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *RadarUserConfigCreate) OnConflictColumns(columns ...string) *RadarUserConfigUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &RadarUserConfigUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// RadarUserConfigUpsertOne is the builder for "upsert"-ing
+	//  one RadarUserConfig node.
+	RadarUserConfigUpsertOne struct {
+		create *RadarUserConfigCreate
+	}
+
+	// RadarUserConfigUpsert is the "OnConflict" setter.
+	RadarUserConfigUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *RadarUserConfigUpsert) SetUpdateTime(v time.Time) *RadarUserConfigUpsert {
+	u.Set(radaruserconfig.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *RadarUserConfigUpsert) UpdateUpdateTime() *RadarUserConfigUpsert {
+	u.SetExcluded(radaruserconfig.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *RadarUserConfigUpsert) ClearUpdateTime() *RadarUserConfigUpsert {
+	u.SetNull(radaruserconfig.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *RadarUserConfigUpsert) SetDeleteTime(v time.Time) *RadarUserConfigUpsert {
+	u.Set(radaruserconfig.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *RadarUserConfigUpsert) UpdateDeleteTime() *RadarUserConfigUpsert {
+	u.SetExcluded(radaruserconfig.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *RadarUserConfigUpsert) ClearDeleteTime() *RadarUserConfigUpsert {
+	u.SetNull(radaruserconfig.FieldDeleteTime)
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *RadarUserConfigUpsert) SetUserID(v uint32) *RadarUserConfigUpsert {
+	u.Set(radaruserconfig.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *RadarUserConfigUpsert) UpdateUserID() *RadarUserConfigUpsert {
+	u.SetExcluded(radaruserconfig.FieldUserID)
+	return u
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *RadarUserConfigUpsert) AddUserID(v uint32) *RadarUserConfigUpsert {
+	u.Add(radaruserconfig.FieldUserID, v)
+	return u
+}
+
+// SetGithubTokenEnc sets the "github_token_enc" field.
+func (u *RadarUserConfigUpsert) SetGithubTokenEnc(v string) *RadarUserConfigUpsert {
+	u.Set(radaruserconfig.FieldGithubTokenEnc, v)
+	return u
+}
+
+// UpdateGithubTokenEnc sets the "github_token_enc" field to the value that was provided on create.
+func (u *RadarUserConfigUpsert) UpdateGithubTokenEnc() *RadarUserConfigUpsert {
+	u.SetExcluded(radaruserconfig.FieldGithubTokenEnc)
+	return u
+}
+
+// ClearGithubTokenEnc clears the value of the "github_token_enc" field.
+func (u *RadarUserConfigUpsert) ClearGithubTokenEnc() *RadarUserConfigUpsert {
+	u.SetNull(radaruserconfig.FieldGithubTokenEnc)
+	return u
+}
+
+// SetLlmEnabled sets the "llm_enabled" field.
+func (u *RadarUserConfigUpsert) SetLlmEnabled(v bool) *RadarUserConfigUpsert {
+	u.Set(radaruserconfig.FieldLlmEnabled, v)
+	return u
+}
+
+// UpdateLlmEnabled sets the "llm_enabled" field to the value that was provided on create.
+func (u *RadarUserConfigUpsert) UpdateLlmEnabled() *RadarUserConfigUpsert {
+	u.SetExcluded(radaruserconfig.FieldLlmEnabled)
+	return u
+}
+
+// SetLlmBaseURL sets the "llm_base_url" field.
+func (u *RadarUserConfigUpsert) SetLlmBaseURL(v string) *RadarUserConfigUpsert {
+	u.Set(radaruserconfig.FieldLlmBaseURL, v)
+	return u
+}
+
+// UpdateLlmBaseURL sets the "llm_base_url" field to the value that was provided on create.
+func (u *RadarUserConfigUpsert) UpdateLlmBaseURL() *RadarUserConfigUpsert {
+	u.SetExcluded(radaruserconfig.FieldLlmBaseURL)
+	return u
+}
+
+// ClearLlmBaseURL clears the value of the "llm_base_url" field.
+func (u *RadarUserConfigUpsert) ClearLlmBaseURL() *RadarUserConfigUpsert {
+	u.SetNull(radaruserconfig.FieldLlmBaseURL)
+	return u
+}
+
+// SetLlmAPIKeyEnc sets the "llm_api_key_enc" field.
+func (u *RadarUserConfigUpsert) SetLlmAPIKeyEnc(v string) *RadarUserConfigUpsert {
+	u.Set(radaruserconfig.FieldLlmAPIKeyEnc, v)
+	return u
+}
+
+// UpdateLlmAPIKeyEnc sets the "llm_api_key_enc" field to the value that was provided on create.
+func (u *RadarUserConfigUpsert) UpdateLlmAPIKeyEnc() *RadarUserConfigUpsert {
+	u.SetExcluded(radaruserconfig.FieldLlmAPIKeyEnc)
+	return u
+}
+
+// ClearLlmAPIKeyEnc clears the value of the "llm_api_key_enc" field.
+func (u *RadarUserConfigUpsert) ClearLlmAPIKeyEnc() *RadarUserConfigUpsert {
+	u.SetNull(radaruserconfig.FieldLlmAPIKeyEnc)
+	return u
+}
+
+// SetLlmModel sets the "llm_model" field.
+func (u *RadarUserConfigUpsert) SetLlmModel(v string) *RadarUserConfigUpsert {
+	u.Set(radaruserconfig.FieldLlmModel, v)
+	return u
+}
+
+// UpdateLlmModel sets the "llm_model" field to the value that was provided on create.
+func (u *RadarUserConfigUpsert) UpdateLlmModel() *RadarUserConfigUpsert {
+	u.SetExcluded(radaruserconfig.FieldLlmModel)
+	return u
+}
+
+// ClearLlmModel clears the value of the "llm_model" field.
+func (u *RadarUserConfigUpsert) ClearLlmModel() *RadarUserConfigUpsert {
+	u.SetNull(radaruserconfig.FieldLlmModel)
+	return u
+}
+
+// SetCloneEnabled sets the "clone_enabled" field.
+func (u *RadarUserConfigUpsert) SetCloneEnabled(v bool) *RadarUserConfigUpsert {
+	u.Set(radaruserconfig.FieldCloneEnabled, v)
+	return u
+}
+
+// UpdateCloneEnabled sets the "clone_enabled" field to the value that was provided on create.
+func (u *RadarUserConfigUpsert) UpdateCloneEnabled() *RadarUserConfigUpsert {
+	u.SetExcluded(radaruserconfig.FieldCloneEnabled)
+	return u
+}
+
+// SetCloneDir sets the "clone_dir" field.
+func (u *RadarUserConfigUpsert) SetCloneDir(v string) *RadarUserConfigUpsert {
+	u.Set(radaruserconfig.FieldCloneDir, v)
+	return u
+}
+
+// UpdateCloneDir sets the "clone_dir" field to the value that was provided on create.
+func (u *RadarUserConfigUpsert) UpdateCloneDir() *RadarUserConfigUpsert {
+	u.SetExcluded(radaruserconfig.FieldCloneDir)
+	return u
+}
+
+// ClearCloneDir clears the value of the "clone_dir" field.
+func (u *RadarUserConfigUpsert) ClearCloneDir() *RadarUserConfigUpsert {
+	u.SetNull(radaruserconfig.FieldCloneDir)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.RadarUserConfig.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(radaruserconfig.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *RadarUserConfigUpsertOne) UpdateNewValues() *RadarUserConfigUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(radaruserconfig.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(radaruserconfig.FieldCreateTime)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.RadarUserConfig.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *RadarUserConfigUpsertOne) Ignore() *RadarUserConfigUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *RadarUserConfigUpsertOne) DoNothing() *RadarUserConfigUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the RadarUserConfigCreate.OnConflict
+// documentation for more info.
+func (u *RadarUserConfigUpsertOne) Update(set func(*RadarUserConfigUpsert)) *RadarUserConfigUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&RadarUserConfigUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *RadarUserConfigUpsertOne) SetUpdateTime(v time.Time) *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertOne) UpdateUpdateTime() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *RadarUserConfigUpsertOne) ClearUpdateTime() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *RadarUserConfigUpsertOne) SetDeleteTime(v time.Time) *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertOne) UpdateDeleteTime() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *RadarUserConfigUpsertOne) ClearDeleteTime() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *RadarUserConfigUpsertOne) SetUserID(v uint32) *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *RadarUserConfigUpsertOne) AddUserID(v uint32) *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.AddUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertOne) UpdateUserID() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetGithubTokenEnc sets the "github_token_enc" field.
+func (u *RadarUserConfigUpsertOne) SetGithubTokenEnc(v string) *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetGithubTokenEnc(v)
+	})
+}
+
+// UpdateGithubTokenEnc sets the "github_token_enc" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertOne) UpdateGithubTokenEnc() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateGithubTokenEnc()
+	})
+}
+
+// ClearGithubTokenEnc clears the value of the "github_token_enc" field.
+func (u *RadarUserConfigUpsertOne) ClearGithubTokenEnc() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.ClearGithubTokenEnc()
+	})
+}
+
+// SetLlmEnabled sets the "llm_enabled" field.
+func (u *RadarUserConfigUpsertOne) SetLlmEnabled(v bool) *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetLlmEnabled(v)
+	})
+}
+
+// UpdateLlmEnabled sets the "llm_enabled" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertOne) UpdateLlmEnabled() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateLlmEnabled()
+	})
+}
+
+// SetLlmBaseURL sets the "llm_base_url" field.
+func (u *RadarUserConfigUpsertOne) SetLlmBaseURL(v string) *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetLlmBaseURL(v)
+	})
+}
+
+// UpdateLlmBaseURL sets the "llm_base_url" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertOne) UpdateLlmBaseURL() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateLlmBaseURL()
+	})
+}
+
+// ClearLlmBaseURL clears the value of the "llm_base_url" field.
+func (u *RadarUserConfigUpsertOne) ClearLlmBaseURL() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.ClearLlmBaseURL()
+	})
+}
+
+// SetLlmAPIKeyEnc sets the "llm_api_key_enc" field.
+func (u *RadarUserConfigUpsertOne) SetLlmAPIKeyEnc(v string) *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetLlmAPIKeyEnc(v)
+	})
+}
+
+// UpdateLlmAPIKeyEnc sets the "llm_api_key_enc" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertOne) UpdateLlmAPIKeyEnc() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateLlmAPIKeyEnc()
+	})
+}
+
+// ClearLlmAPIKeyEnc clears the value of the "llm_api_key_enc" field.
+func (u *RadarUserConfigUpsertOne) ClearLlmAPIKeyEnc() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.ClearLlmAPIKeyEnc()
+	})
+}
+
+// SetLlmModel sets the "llm_model" field.
+func (u *RadarUserConfigUpsertOne) SetLlmModel(v string) *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetLlmModel(v)
+	})
+}
+
+// UpdateLlmModel sets the "llm_model" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertOne) UpdateLlmModel() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateLlmModel()
+	})
+}
+
+// ClearLlmModel clears the value of the "llm_model" field.
+func (u *RadarUserConfigUpsertOne) ClearLlmModel() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.ClearLlmModel()
+	})
+}
+
+// SetCloneEnabled sets the "clone_enabled" field.
+func (u *RadarUserConfigUpsertOne) SetCloneEnabled(v bool) *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetCloneEnabled(v)
+	})
+}
+
+// UpdateCloneEnabled sets the "clone_enabled" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertOne) UpdateCloneEnabled() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateCloneEnabled()
+	})
+}
+
+// SetCloneDir sets the "clone_dir" field.
+func (u *RadarUserConfigUpsertOne) SetCloneDir(v string) *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetCloneDir(v)
+	})
+}
+
+// UpdateCloneDir sets the "clone_dir" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertOne) UpdateCloneDir() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateCloneDir()
+	})
+}
+
+// ClearCloneDir clears the value of the "clone_dir" field.
+func (u *RadarUserConfigUpsertOne) ClearCloneDir() *RadarUserConfigUpsertOne {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.ClearCloneDir()
+	})
+}
+
+// Exec executes the query.
+func (u *RadarUserConfigUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for RadarUserConfigCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *RadarUserConfigUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *RadarUserConfigUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *RadarUserConfigUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // RadarUserConfigCreateBulk is the builder for creating many RadarUserConfig entities in bulk.
 type RadarUserConfigCreateBulk struct {
 	config
 	err      error
 	builders []*RadarUserConfigCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the RadarUserConfig entities in the database.
@@ -349,6 +850,7 @@ func (_c *RadarUserConfigCreateBulk) Save(ctx context.Context) ([]*RadarUserConf
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -399,6 +901,319 @@ func (_c *RadarUserConfigCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *RadarUserConfigCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.RadarUserConfig.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.RadarUserConfigUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *RadarUserConfigCreateBulk) OnConflict(opts ...sql.ConflictOption) *RadarUserConfigUpsertBulk {
+	_c.conflict = opts
+	return &RadarUserConfigUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.RadarUserConfig.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *RadarUserConfigCreateBulk) OnConflictColumns(columns ...string) *RadarUserConfigUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &RadarUserConfigUpsertBulk{
+		create: _c,
+	}
+}
+
+// RadarUserConfigUpsertBulk is the builder for "upsert"-ing
+// a bulk of RadarUserConfig nodes.
+type RadarUserConfigUpsertBulk struct {
+	create *RadarUserConfigCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.RadarUserConfig.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(radaruserconfig.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *RadarUserConfigUpsertBulk) UpdateNewValues() *RadarUserConfigUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(radaruserconfig.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(radaruserconfig.FieldCreateTime)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.RadarUserConfig.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *RadarUserConfigUpsertBulk) Ignore() *RadarUserConfigUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *RadarUserConfigUpsertBulk) DoNothing() *RadarUserConfigUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the RadarUserConfigCreateBulk.OnConflict
+// documentation for more info.
+func (u *RadarUserConfigUpsertBulk) Update(set func(*RadarUserConfigUpsert)) *RadarUserConfigUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&RadarUserConfigUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *RadarUserConfigUpsertBulk) SetUpdateTime(v time.Time) *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertBulk) UpdateUpdateTime() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *RadarUserConfigUpsertBulk) ClearUpdateTime() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *RadarUserConfigUpsertBulk) SetDeleteTime(v time.Time) *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertBulk) UpdateDeleteTime() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *RadarUserConfigUpsertBulk) ClearDeleteTime() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *RadarUserConfigUpsertBulk) SetUserID(v uint32) *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *RadarUserConfigUpsertBulk) AddUserID(v uint32) *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.AddUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertBulk) UpdateUserID() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetGithubTokenEnc sets the "github_token_enc" field.
+func (u *RadarUserConfigUpsertBulk) SetGithubTokenEnc(v string) *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetGithubTokenEnc(v)
+	})
+}
+
+// UpdateGithubTokenEnc sets the "github_token_enc" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertBulk) UpdateGithubTokenEnc() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateGithubTokenEnc()
+	})
+}
+
+// ClearGithubTokenEnc clears the value of the "github_token_enc" field.
+func (u *RadarUserConfigUpsertBulk) ClearGithubTokenEnc() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.ClearGithubTokenEnc()
+	})
+}
+
+// SetLlmEnabled sets the "llm_enabled" field.
+func (u *RadarUserConfigUpsertBulk) SetLlmEnabled(v bool) *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetLlmEnabled(v)
+	})
+}
+
+// UpdateLlmEnabled sets the "llm_enabled" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertBulk) UpdateLlmEnabled() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateLlmEnabled()
+	})
+}
+
+// SetLlmBaseURL sets the "llm_base_url" field.
+func (u *RadarUserConfigUpsertBulk) SetLlmBaseURL(v string) *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetLlmBaseURL(v)
+	})
+}
+
+// UpdateLlmBaseURL sets the "llm_base_url" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertBulk) UpdateLlmBaseURL() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateLlmBaseURL()
+	})
+}
+
+// ClearLlmBaseURL clears the value of the "llm_base_url" field.
+func (u *RadarUserConfigUpsertBulk) ClearLlmBaseURL() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.ClearLlmBaseURL()
+	})
+}
+
+// SetLlmAPIKeyEnc sets the "llm_api_key_enc" field.
+func (u *RadarUserConfigUpsertBulk) SetLlmAPIKeyEnc(v string) *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetLlmAPIKeyEnc(v)
+	})
+}
+
+// UpdateLlmAPIKeyEnc sets the "llm_api_key_enc" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertBulk) UpdateLlmAPIKeyEnc() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateLlmAPIKeyEnc()
+	})
+}
+
+// ClearLlmAPIKeyEnc clears the value of the "llm_api_key_enc" field.
+func (u *RadarUserConfigUpsertBulk) ClearLlmAPIKeyEnc() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.ClearLlmAPIKeyEnc()
+	})
+}
+
+// SetLlmModel sets the "llm_model" field.
+func (u *RadarUserConfigUpsertBulk) SetLlmModel(v string) *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetLlmModel(v)
+	})
+}
+
+// UpdateLlmModel sets the "llm_model" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertBulk) UpdateLlmModel() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateLlmModel()
+	})
+}
+
+// ClearLlmModel clears the value of the "llm_model" field.
+func (u *RadarUserConfigUpsertBulk) ClearLlmModel() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.ClearLlmModel()
+	})
+}
+
+// SetCloneEnabled sets the "clone_enabled" field.
+func (u *RadarUserConfigUpsertBulk) SetCloneEnabled(v bool) *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetCloneEnabled(v)
+	})
+}
+
+// UpdateCloneEnabled sets the "clone_enabled" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertBulk) UpdateCloneEnabled() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateCloneEnabled()
+	})
+}
+
+// SetCloneDir sets the "clone_dir" field.
+func (u *RadarUserConfigUpsertBulk) SetCloneDir(v string) *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.SetCloneDir(v)
+	})
+}
+
+// UpdateCloneDir sets the "clone_dir" field to the value that was provided on create.
+func (u *RadarUserConfigUpsertBulk) UpdateCloneDir() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.UpdateCloneDir()
+	})
+}
+
+// ClearCloneDir clears the value of the "clone_dir" field.
+func (u *RadarUserConfigUpsertBulk) ClearCloneDir() *RadarUserConfigUpsertBulk {
+	return u.Update(func(s *RadarUserConfigUpsert) {
+		s.ClearCloneDir()
+	})
+}
+
+// Exec executes the query.
+func (u *RadarUserConfigUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the RadarUserConfigCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for RadarUserConfigCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *RadarUserConfigUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

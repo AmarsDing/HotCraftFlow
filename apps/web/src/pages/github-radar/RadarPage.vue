@@ -2,12 +2,20 @@
   <div class="app-standard-page radar-page">
     <header class="app-page-hero app-page-hero--feature">
       <div>
-        <div class="app-page-kicker">GitHub Radar</div>
+        <div class="app-page-kicker">{{ t('githubRadar.kicker') }}</div>
         <h1 class="app-page-title">{{ t('githubRadar.title') }}</h1>
         <p class="app-page-subtitle">{{ t('githubRadar.subtitle') }}</p>
       </div>
       <div class="row items-center q-gutter-sm">
-        <q-btn flat dense round icon="refresh" :aria-label="t('common.refresh')" @click="reload">
+        <q-btn
+          flat
+          dense
+          round
+          icon="refresh"
+          :aria-label="t('common.refresh')"
+          :loading="loading || sideLoading"
+          @click="reload"
+        >
           <q-tooltip>{{ t('common.refresh') }}</q-tooltip>
         </q-btn>
         <q-btn
@@ -94,7 +102,7 @@
         dense
         outlined
         clearable
-        placeholder="Topic"
+        :placeholder="t('githubRadar.topicPlaceholder')"
         debounce="400"
       />
       <q-select
@@ -183,81 +191,94 @@
     </div>
 
     <div class="radar-page__body row no-wrap">
-      <div class="radar-page__main col">
-        <div class="row items-center q-mb-sm">
-          <div class="text-caption" style="color: var(--color-text-secondary)">
-            <template v-if="refreshedLabel">{{ t('githubRadar.refreshedAt', { time: refreshedLabel }) }}</template>
-            <template v-else>{{ t('githubRadar.notRefreshed') }}</template>
+      <!-- 窄屏启用下拉刷新包裹主区（宽屏降级为纯容器 div，避免桌面误触） -->
+      <component :is="isWide ? 'div' : QPullToRefresh" class="radar-page__wrap col" @refresh="onPullRefresh">
+        <div class="radar-page__main col">
+          <div class="row items-center q-mb-sm">
+            <div class="text-caption" style="color: var(--color-text-secondary)">
+              <template v-if="refreshedLabel">{{ t('githubRadar.refreshedAt', { time: refreshedLabel }) }}</template>
+              <template v-else>{{ t('githubRadar.notRefreshed') }}</template>
+            </div>
+            <q-space />
+            <span class="text-caption" style="color: var(--color-text-secondary)">{{ boardCaption }}</span>
           </div>
-          <q-space />
-          <span class="text-caption" style="color: var(--color-text-secondary)">{{ boardCaption }}</span>
-        </div>
 
-        <div v-if="loading && !items.length" class="radar-grid">
-          <div v-for="n in 6" :key="n" class="dash-card radar-skeleton" />
-        </div>
-        <div v-else-if="items.length" class="radar-grid">
-          <RepoCard
-            v-for="repo in items"
-            :key="repo.id || repo.full_name"
-            :repo="repo"
-            :watched="watchedNames.has(repo.full_name)"
-            :since="since"
-            @open="onOpen"
-            @watch="onWatch"
-          />
-        </div>
-        <div v-else class="dash-card">
-          <div class="dash-card__empty app-empty-state-center--sm">
-            <q-icon name="travel_explore" size="48px" />
-            <div class="text-h6">{{ emptyTitle }}</div>
-            <div class="text-caption" style="color: var(--color-text-secondary)">{{ emptyHint }}</div>
-            <q-btn
-              v-if="hasFilters"
-              class="q-mt-md"
-              outline
+          <div v-if="loading && !items.length" class="radar-grid">
+            <div v-for="n in 6" :key="n" class="dash-card radar-skeleton" />
+          </div>
+          <div v-else-if="items.length" class="radar-grid">
+            <RepoCard
+              v-for="repo in items"
+              :key="repo.id || repo.full_name"
+              :repo="repo"
+              :watched="watchedNames.has(repo.full_name)"
+              :since="since"
+              @open="onOpen"
+              @watch="onWatch"
+            />
+          </div>
+          <div v-else class="dash-card">
+            <div class="dash-card__empty app-empty-state-center--sm">
+              <q-icon name="travel_explore" size="48px" />
+              <div class="text-h6">{{ emptyTitle }}</div>
+              <div class="text-caption" style="color: var(--color-text-secondary)">{{ emptyHint }}</div>
+              <q-btn
+                v-if="hasFilters"
+                class="q-mt-md"
+                outline
+                color="primary"
+                :label="t('githubRadar.clearFilters')"
+                @click="clearFilters"
+              />
+            </div>
+          </div>
+
+          <div v-if="pageCount > 1" class="row justify-center q-mt-md">
+            <q-pagination
+              v-model="page"
+              :max="pageCount"
+              :max-pages="7"
+              boundary-numbers
+              direction-links
               color="primary"
-              :label="t('githubRadar.clearFilters')"
-              @click="clearFilters"
+              active-color="primary"
             />
           </div>
         </div>
-
-        <div v-if="pageCount > 1" class="row justify-center q-mt-md">
-          <q-pagination
-            v-model="page"
-            :max="pageCount"
-            :max-pages="7"
-            boundary-numbers
-            direction-links
-            color="primary"
-            active-color="primary"
-          />
-        </div>
-      </div>
+      </component>
 
       <div v-if="isWide" class="radar-page__rail">
         <WatchRail
+          :unread-only="eventsUnreadOnly"
           :items="watches"
           :unread="unreadEvents"
           :events="events"
           :marking-read="markingRead"
+          :loading="sideLoading && !watches.length"
           @add="openAddWatch"
           @remove="onRemoveWatch"
+          @open="onOpenWatch"
+          @read="markEventRead"
           @mark-all-read="markAllEventsRead"
+          @update:unread-only="onUnreadOnlyChange"
         />
       </div>
     </div>
 
     <q-drawer v-if="!isWide" v-model="railOpen" side="right" overlay bordered :width="320">
       <WatchRail
+        :unread-only="eventsUnreadOnly"
         :items="watches"
         :unread="unreadEvents"
         :events="events"
         :marking-read="markingRead"
+        :loading="sideLoading && !watches.length"
         @add="openAddWatch"
         @remove="onRemoveWatch"
+        @open="onOpenWatch"
+        @read="markEventRead"
         @mark-all-read="markAllEventsRead"
+        @update:unread-only="onUnreadOnlyChange"
       />
     </q-drawer>
 
@@ -273,9 +294,6 @@
       @open-settings="settingsOpen = true"
     />
 
-    <!-- 克隆（卡片快捷入口） -->
-    <CloneDialog v-model="cloneOpen" :full-name="cloneTarget" :clone-enabled="cloneEnabled" />
-
     <!-- 通知 -->
     <q-dialog v-model="notifyOpen">
       <q-card class="app-dialog-card app-dialog-card--sm app-glass-dialog">
@@ -285,7 +303,13 @@
         </q-card-section>
         <q-card-section class="app-glass-dialog__scroll app-dialog-body">
           <div v-for="n in notifications" :key="n.id" class="q-py-sm" :class="{ 'radar-notify--read': n.read }">
-            <div class="text-body2 text-weight-medium">{{ n.title }}</div>
+            <div class="row items-center no-wrap q-gutter-xs">
+              <q-icon :name="radarKindIcon(n.kind)" size="13px" style="color: var(--color-text-secondary)" />
+              <div class="text-body2 text-weight-medium col" style="min-width: 0">{{ n.title }}</div>
+              <span class="text-caption" style="color: var(--color-text-tertiary, var(--color-text-secondary))">{{
+                relTime(n.created_at, t)
+              }}</span>
+            </div>
             <div class="text-caption" style="color: var(--color-text-secondary)">{{ n.body }}</div>
           </div>
           <div v-if="!notifications.length" class="text-caption" style="color: var(--color-text-secondary)">
@@ -420,19 +444,29 @@
  * github热门追踪 — FrameWork 壳内页面（v2）
  * UI：.app-standard-page / .app-page-hero / .app-filter-bar / .dash-card / .app-stat-strip /
  *     .app-glass-dialog / FormDrawer + CSS tokens（禁止旧 radar-* 独立色板）
- * API：radar*Service (kratos gen) + 本地类型；snake/camel 双读适配
- * v2：日/周/月窗口 · 排序（热度/总星/更新/新晋）· License 过滤 · AI 三级总结 · 源码查看 · 一键克隆
+ * API：radar*Service (kratos gen)；入口统一经 types.ts normalize* 归一化为 snake_case 本地类型
+ * v2：日/周/月窗口 · 排序（热度/总星/更新/新晋）· License 过滤 · AI 三级总结 · 源码查看 · 一键克隆 · 盯盘 toggle
  */
 import { ref, computed, watch, onMounted } from 'vue';
-import { useQuasar, Notify } from 'quasar';
+import { useQuasar, Notify, QPullToRefresh } from 'quasar';
 import { useI18n } from 'vue-i18n';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { radarTrendingService, radarWatchService, radarNotifyService, radarConfigService } from '../../services';
 import RepoCard from './components/RepoCard.vue';
 import WatchRail from './components/WatchRail.vue';
 import RepoDetailPanel from './components/RepoDetailPanel.vue';
-import CloneDialog from './components/CloneDialog.vue';
-import type { RepoItem, WatchItem, WatchEvent, RadarNotification } from './types';
+import {
+  normalizeRepo,
+  normalizeWatch,
+  normalizeWatchEvent,
+  normalizeNotification,
+  radarKindIcon,
+  relTime,
+  type RepoItem,
+  type WatchItem,
+  type WatchEvent,
+  type RadarNotification,
+} from './types';
 
 const $q = useQuasar();
 const { t } = useI18n();
@@ -474,8 +508,6 @@ const cloneEnabled = ref(false);
 const detailOpen = ref(false);
 const detailRepo = ref<RepoItem | null>(null);
 const detailTab = ref('overview');
-const cloneOpen = ref(false);
-const cloneTarget = ref('');
 const settingsOpen = ref(false);
 const notifyOpen = ref(false);
 const railOpen = ref(false);
@@ -483,6 +515,8 @@ const addWatchOpen = ref(false);
 const addWatchName = ref('');
 const addingWatch = ref(false);
 const markingRead = ref(false);
+const sideLoading = ref(false);
+const eventsUnreadOnly = ref(false);
 
 // ── 设置表单 ──
 const savingConfig = ref(false);
@@ -498,6 +532,9 @@ const cloneDirInput = ref('');
 const isWide = computed(() => $q.screen.width >= 1200);
 
 const watchedNames = computed(() => new Set(watches.value.map((w) => w.full_name)));
+
+// full_name → watch id：盯盘 toggle（取消盯盘走 REMOVE 需要 id）
+const watchIdByName = computed(() => new Map(watches.value.map((w) => [w.full_name, w.id])));
 
 const unreadEvents = computed(() => events.value.filter((e) => !e.read).length);
 
@@ -588,76 +625,6 @@ function formatRefreshed(iso: string): string {
   return `${hh}:${mm}`;
 }
 
-function asRepo(r: Record<string, unknown>): RepoItem {
-  return {
-    id: String(r.id ?? ''),
-    full_name: String(r.full_name ?? r.fullName ?? ''),
-    description: String(r.description ?? ''),
-    language: String(r.language ?? ''),
-    topics: (r.topics as string[]) || [],
-    stars: Number(r.stars ?? 0),
-    forks: Number(r.forks ?? 0),
-    rank: Number(r.rank ?? 0),
-    stars_delta: Number(r.stars_delta ?? r.starsDelta ?? 0),
-    is_new: Boolean(r.is_new ?? r.isNew),
-    html_url: String(r.html_url ?? r.htmlUrl ?? ''),
-    sparkline: ((r.sparkline as number[]) || []).map(Number),
-    license: String(r.license ?? '') || undefined,
-    license_spdx: String(r.license_spdx ?? r.licenseSpdx ?? '') || undefined,
-    homepage: String(r.homepage ?? '') || undefined,
-    open_issues: Number(r.open_issues ?? r.openIssues ?? 0) || undefined,
-    watchers: Number(r.watchers ?? 0) || undefined,
-    contributors: (r.contributors as string[]) || undefined,
-    created_at: String(r.created_at ?? r.createdAt ?? '') || undefined,
-    updated_at: String(r.updated_at ?? r.updatedAt ?? '') || undefined,
-    pushed_at: String(r.pushed_at ?? r.pushedAt ?? '') || undefined,
-    clone_url: String(r.clone_url ?? r.cloneUrl ?? '') || undefined,
-    ssh_url: String(r.ssh_url ?? r.sshUrl ?? '') || undefined,
-    zip_url: String(r.zip_url ?? r.zipUrl ?? '') || undefined,
-    default_branch: String(r.default_branch ?? r.defaultBranch ?? '') || undefined,
-    languages: ((r.languages as Array<Record<string, unknown>>) || []).map((l) => ({
-      name: String(l.name ?? ''),
-      bytes: Number(l.bytes ?? 0),
-      percent: Number(l.percent ?? 0),
-    })),
-    readme_excerpt: String(r.readme_excerpt ?? r.readmeExcerpt ?? '') || undefined,
-  };
-}
-
-function asWatch(r: Record<string, unknown>): WatchItem {
-  return {
-    id: String(r.id ?? ''),
-    full_name: String(r.full_name ?? r.fullName ?? ''),
-    stars: Number(r.stars ?? 0),
-    stars_delta: Number(r.stars_delta ?? r.starsDelta ?? 0),
-    unread_count: Number(r.unread_count ?? r.unreadCount ?? 0),
-    sparkline: ((r.sparkline as number[]) || []).map(Number),
-    html_url: String(r.html_url ?? r.htmlUrl ?? ''),
-  };
-}
-
-function asEvent(r: Record<string, unknown>): WatchEvent {
-  return {
-    id: String(r.id ?? ''),
-    full_name: String(r.full_name ?? r.fullName ?? ''),
-    kind: String(r.kind ?? ''),
-    message: String(r.message ?? ''),
-    created_at: String(r.created_at ?? r.createdAt ?? ''),
-    read: Boolean(r.read),
-  };
-}
-
-function asNotify(r: Record<string, unknown>): RadarNotification {
-  return {
-    id: String(r.id ?? ''),
-    title: String(r.title ?? ''),
-    body: String(r.body ?? ''),
-    kind: String(r.kind ?? ''),
-    created_at: String(r.created_at ?? r.createdAt ?? ''),
-    read: Boolean(r.read),
-  };
-}
-
 // loadBoardSeq 竞态防护：快速连续切换筛选时，只采纳最后一次请求的响应。
 let loadBoardSeq = 0;
 
@@ -673,7 +640,7 @@ async function loadBoard() {
         pageSize,
       });
       const raw = data as unknown as Record<string, unknown>;
-      items.value = ((raw.items as unknown[]) || []).map((x) => asRepo(x as Record<string, unknown>));
+      items.value = ((raw.items as unknown[]) || []).map((x) => normalizeRepo(x as Record<string, unknown>));
       stale.value = Boolean(raw.stale);
       staleReason.value = String(raw.stale_reason ?? raw.staleReason ?? '');
       refreshedAt.value = String(raw.refreshed_at ?? raw.refreshedAt ?? '');
@@ -691,7 +658,7 @@ async function loadBoard() {
         pageSize,
       });
       const raw = data as unknown as Record<string, unknown>;
-      items.value = ((raw.items as unknown[]) || []).map((x) => asRepo(x as Record<string, unknown>));
+      items.value = ((raw.items as unknown[]) || []).map((x) => normalizeRepo(x as Record<string, unknown>));
       stale.value = Boolean(raw.stale);
       staleReason.value = String(raw.stale_reason ?? raw.staleReason ?? '');
       refreshedAt.value = String(raw.refreshed_at ?? raw.refreshedAt ?? '');
@@ -711,10 +678,11 @@ async function loadBoard() {
 }
 
 async function loadSide() {
+  sideLoading.value = true;
   try {
     const [w, ev, n, cfg] = await Promise.all([
       radarWatchService.list(),
-      radarWatchService.listEvents(),
+      radarWatchService.listEvents(eventsUnreadOnly.value || undefined),
       radarNotifyService.list(),
       radarConfigService.get(),
     ]);
@@ -722,9 +690,11 @@ async function loadSide() {
     const er = ev as unknown as Record<string, unknown>;
     const nr = n as unknown as Record<string, unknown>;
     const cr = cfg as unknown as Record<string, unknown>;
-    watches.value = ((wr.items as unknown[]) || []).map((x) => asWatch(x as Record<string, unknown>));
-    events.value = ((er.items as unknown[]) || []).map((x) => asEvent(x as Record<string, unknown>));
-    notifications.value = ((nr.items as unknown[]) || []).map((x) => asNotify(x as Record<string, unknown>));
+    watches.value = ((wr.items as unknown[]) || []).map((x) => normalizeWatch(x as Record<string, unknown>));
+    events.value = ((er.items as unknown[]) || []).map((x) => normalizeWatchEvent(x as Record<string, unknown>));
+    notifications.value = ((nr.items as unknown[]) || []).map((x) =>
+      normalizeNotification(x as Record<string, unknown>),
+    );
     configMasked.value = String(cr.github_token_masked ?? cr.githubTokenMasked ?? '');
     llmReady.value = Boolean(cr.llm_enabled ?? cr.llmEnabled) && Boolean(cr.llm_api_key_masked ?? cr.llmApiKeyMasked);
     llmKeyMasked.value = String(cr.llm_api_key_masked ?? cr.llmApiKeyMasked ?? '');
@@ -737,12 +707,34 @@ async function loadSide() {
     cloneDirInput.value = String(cr.clone_dir ?? cr.cloneDir ?? '');
   } catch {
     /* side panel optional during early wire */
+  } finally {
+    sideLoading.value = false;
+  }
+}
+
+// 仅未读切换：只增量重拉事件列表
+async function onUnreadOnlyChange(v: boolean) {
+  eventsUnreadOnly.value = v;
+  try {
+    const er = (await radarWatchService.listEvents(v || undefined)) as unknown as Record<string, unknown>;
+    events.value = ((er.items as unknown[]) || []).map((x) => normalizeWatchEvent(x as Record<string, unknown>));
+  } catch {
+    /* 事件列表可降级，不弹错 */
   }
 }
 
 function reload() {
   void loadBoard();
   void loadSide();
+}
+
+/** 窄屏 QPullToRefresh 回调：等主榜与侧栏双双落地后结束下拉动画 */
+async function onPullRefresh(done: () => void) {
+  try {
+    await Promise.all([loadBoard(), loadSide()]);
+  } finally {
+    done();
+  }
 }
 
 // openNotifications 打开通知弹窗时顺带刷新（保证未读数与事件视图一致）。
@@ -799,12 +791,19 @@ function onOpen(repo: RepoItem, tab = 'overview') {
   detailOpen.value = true;
 }
 
+// onWatch 为 toggle：卡片/详情面板再点一次即取消盯盘（REMOVE 需 id，经 watchIdByName 取）。
 async function onWatch(repo: RepoItem) {
-  if (watchedNames.value.has(repo.full_name)) return;
+  const existingId = watchIdByName.value.get(repo.full_name);
   try {
-    await radarWatchService.add(repo.full_name);
-    await loadSide();
-    Notify.create({ type: 'positive', message: t('githubRadar.watched', { name: repo.full_name }) });
+    if (existingId) {
+      await radarWatchService.remove(existingId);
+      await loadSide();
+      Notify.create({ type: 'positive', message: t('githubRadar.unwatched', { name: repo.full_name }) });
+    } else {
+      await radarWatchService.add(repo.full_name);
+      await loadSide();
+      Notify.create({ type: 'positive', message: t('githubRadar.watched', { name: repo.full_name }) });
+    }
   } catch (e) {
     Notify.create({ type: 'negative', message: (e as Error).message });
   }
@@ -836,6 +835,35 @@ async function onRemoveWatch(id: string) {
   try {
     await radarWatchService.remove(id);
     await loadSide();
+  } catch (e) {
+    Notify.create({ type: 'negative', message: (e as Error).message });
+  }
+}
+
+// 盯盘行点击：用 WatchItem 合成最小 RepoItem 开详情（面板会自行拉全量详情补全元数据）
+function onOpenWatch(w: WatchItem) {
+  onOpen({
+    id: w.id,
+    full_name: w.full_name,
+    description: '',
+    language: '',
+    topics: [],
+    stars: w.stars,
+    forks: 0,
+    rank: 0,
+    stars_delta: w.stars_delta,
+    is_new: false,
+    html_url: w.html_url || '',
+    sparkline: w.sparkline || [],
+  });
+}
+
+// 单条事件已读：事件视图与通知视图同步置位（后端复用事件 ids 拒绝空集合，故传具体 id）
+async function markEventRead(id: string) {
+  try {
+    await radarWatchService.markEventsRead([id]);
+    events.value = events.value.map((e) => (e.id === id ? { ...e, read: true } : e));
+    notifications.value = notifications.value.map((n) => (n.id === id ? { ...n, read: true } : n));
   } catch (e) {
     Notify.create({ type: 'negative', message: (e as Error).message });
   }
@@ -893,6 +921,9 @@ onMounted(() => {
   gap: var(--space-4)
   align-items: stretch
 
+.radar-page__wrap
+  min-width: 0
+
 .radar-page__main
   min-width: 0
 
@@ -910,5 +941,6 @@ onMounted(() => {
   opacity: 0.55
 
 .radar-notify--read
-  opacity: 0.55
+  .text-body2
+    color: var(--color-text-tertiary, var(--color-text-secondary))
 </style>

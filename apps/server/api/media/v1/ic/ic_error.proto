@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package media.ic.v1;
+
+import "errors/errors.proto";
+
+// IntelErrorReason IC 错误码（文档 01-IC/03 §8 + 评审 B-12）。
+// protoc-gen-go-errors 生成 ErrorXxx 构造函数，前端与网关依赖 reason 做分支。
+enum IntelErrorReason {
+  option (errors.default_code) = 500;
+
+  // 信源不存在
+  IC_SRC_NOT_FOUND      = 0  [(errors.code) = 404];
+  // 信源已停用
+  IC_SRC_DISABLED       = 1  [(errors.code) = 409];
+  // robots 禁止采集
+  IC_ROBOTS_DISALLOWED  = 2  [(errors.code) = 403];
+  // 令牌不足（跳过本轮）
+  IC_RATE_LIMITED       = 3  [(errors.code) = 429];
+  // 上游超时（可重试，max_attempts=3）
+  IC_UPSTREAM_TIMEOUT   = 4  [(errors.code) = 504];
+  // 反爬拦截（不重试，提示手贴）
+  IC_ANTI_BOT           = 5  [(errors.code) = 422];
+  // 空正文（疑似 JS 渲染页，建议 API 路）
+  IC_EMPTY_CONTENT      = 6  [(errors.code) = 422];
+  // 归一化 schema 校验失败（落死信）
+  IC_SCHEMA_INVALID     = 7  [(errors.code) = 500];
+  // 凭据失效（停用信源 + 告警）
+  IC_CREDENTIAL_INVALID = 8  [(errors.code) = 401];
+  // 短链/最终 URL 命中私网黑名单（SSRF 防护，评审 S-6）
+  IC_URL_BLOCKED        = 9  [(errors.code) = 403];
+  // 证据哈希链断裂（critical 告警，评审 B-17）
+  IC_EVIDENCE_CHAIN_BROKEN = 10 [(errors.code) = 500];
+  // 配置非法（kind×method 矩阵违例、周期低于下限等）
+  IC_CONFIG_INVALID     = 11 [(errors.code) = 400];
+  // 上游不可用（newsnow/RSSHub/Crawl4AI 连接失败）
+  IC_UPSTREAM_UNAVAILABLE = 12 [(errors.code) = 502];
+}

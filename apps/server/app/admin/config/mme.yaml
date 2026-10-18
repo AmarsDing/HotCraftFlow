@@ -1,0 +1,59 @@
+# ④ MME 短视频矩阵混剪（docs/systems/04-MME/03-详细设计.md §4）
+mme:
+  enabled: true
+  prompt_version: "v1.0"               # 分析提示词版本（缓存 key 组成；改版本即使旧分析缓存失效）
+  download:
+    ytdlp_path: "yt-dlp"
+    cookies_path: ""                   # 需要登录/风控平台时配置 Cookie 文件
+    timeout: 30m
+  render:
+    concurrency: 2                     # CPU 密集，默认 2（ADR-MME-05）
+    ffmpeg_path: "ffmpeg"
+    ffprobe_path: "ffprobe"
+    preset: "medium"
+    crf: 23
+    max_duration_sec: 300
+    min_duration_sec: 5
+    keep_intermediate_on_fail: true    # NFR-MME-08
+  matrix:
+    max_variants_per_set: 60           # 规模上限保护
+    default_aspects: ["9:16", "1:1", "16:9"]
+    default_hook_count: 2
+  cache:
+    enabled: true
+    ttl_days: 90
+    transcript_ttl_days: 180
+    max_cache_bytes: 53687091200       # 50GB
+  diff_check:
+    enabled: true
+    warn_threshold: 0.90
+    hook_threshold: 0.85
+    copy_threshold: 0.92
+    sample_frames: 12
+  qc:
+    safety_margin:                     # 概要设计 §5.2 字幕安全区
+      "9:16":  { bottom: 380, top: 130 }
+      "1:1":   { bottom: 180, top: 100 }
+      "16:9":  { bottom: 120, top: 80 }
+    block_on_boundary_fail: true       # 🔴 硬门禁
+    block_on_subtitle_fail: true       # 🔴 硬门禁
+  asr:
+    engine: "whisper"                  # source_subtitle 优先（自动判）
+    model: "base"
+    funasr_enabled: false
+    cloud_fallback: false
+  llm:
+    provider: "cloud"
+    fallback: "ollama"
+    ollama_url: "http://127.0.0.1:11434"
+    ollama_model: "qwen2.5:7b"
+    timeout: 120s
+    daily_call_cap: 800
+  storage:
+    media_dir: "./storage/mme/media"
+    export_dir: "./storage/mme/export"
+    retention_days: 180
+  jianying:
+    enabled: true
+    py_draft_url: "http://127.0.0.1:8901"
+    version_note: "[待测] 剪映版本兼容性未全面验证"

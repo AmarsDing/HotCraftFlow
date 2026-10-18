@@ -79,5 +79,941 @@ export type IntelWorkability = {
   reason: string | undefined;
 };
 
+export type ListIntelsRequest = {
+  page: number | undefined;
+  page_size: number | undefined;
+  platform: string | undefined;
+  region: string | undefined;
+  category: string | undefined;
+  cluster_id: string | undefined;
+  collect_method: string | undefined;
+  // FR-INT-14：全文检索（V1 降级 ILIKE，评审 B-19）+ 实体值过滤 + 时间范围（UTC RFC3339）
+  keyword: string | undefined;
+  entity: string | undefined;
+  collected_from: wellKnownTimestamp | undefined;
+  collected_to: wellKnownTimestamp | undefined;
+  // 合规复核队列过滤：gate = pass | review | block
+  gate: string | undefined;
+};
+
+export type ListIntelsResponse = {
+  items: IntelItem[] | undefined;
+  total: number | undefined;
+};
+
+export type GetIntelRequest = {
+  id: string | undefined;
+};
+
+// SupplementIntelRequest 手贴正文续跑（FR-INT-04 降级路径）。
+// 评审 C-12：手贴不新建 IntelItem，而是对既有条目 UPDATE payload.text。
+export type SupplementIntelRequest = {
+  id: string | undefined;
+  text: string | undefined;
+};
+
+export type SupplementIntelResponse = {
+  ok: boolean | undefined;
+};
+
+// EvidenceExport 证据包元数据（ZIP 字节流走独立下载 handler，03 §6）。
+export type EvidenceExport = {
+  intel_id: string | undefined;
+  evidence_id: string | undefined;
+  download_url: string | undefined;
+  chain_hash: string | undefined;
+  prev_hash: string | undefined;
+  raw_hash: string | undefined;
+};
+
+export type ExportEvidenceRequest = {
+  id: string | undefined;
+  operator: string | undefined;
+};
+
+export type IntelCluster = {
+  id: string | undefined;
+  label: string | undefined;
+  member_count: number | undefined;
+  platform_count: number | undefined;
+  representative_id: string | undefined;
+  region: string | undefined;
+  merged_by: string | undefined;
+  status: string | undefined;
+  first_seen_at: wellKnownTimestamp | undefined;
+  last_seen_at: wellKnownTimestamp | undefined;
+};
+
+export type ListClustersRequest = {
+  page: number | undefined;
+  page_size: number | undefined;
+  region: string | undefined;
+  status: string | undefined;
+};
+
+export type ListClustersResponse = {
+  items: IntelCluster[] | undefined;
+  total: number | undefined;
+};
+
+export type SplitClusterRequest = {
+  id: string | undefined;
+  intel_ids: string[] | undefined;
+  operator: string | undefined;
+};
+
+export type SplitClusterResponse = {
+  new_cluster_id: string | undefined;
+};
+
+export type MergeClusterRequest = {
+  from_cluster_ids: string[] | undefined;
+  to_cluster_id: string | undefined;
+  reason: string | undefined;
+  operator: string | undefined;
+};
+
+export type MergeClusterResponse = {
+  ok: boolean | undefined;
+};
+
+// IntelService 情报查询与治理操作。
+export interface IntelService {
+  ListIntels(request: ListIntelsRequest): Promise<ListIntelsResponse>;
+  GetIntel(request: GetIntelRequest): Promise<IntelItem>;
+  SupplementIntel(request: SupplementIntelRequest): Promise<SupplementIntelResponse>;
+  ExportEvidence(request: ExportEvidenceRequest): Promise<EvidenceExport>;
+  ListClusters(request: ListClustersRequest): Promise<ListClustersResponse>;
+  SplitCluster(request: SplitClusterRequest): Promise<SplitClusterResponse>;
+  MergeCluster(request: MergeClusterRequest): Promise<MergeClusterResponse>;
+}
+
+type RequestType = {
+  path: string;
+  method: string;
+  body: string | null;
+};
+
+type RequestHandler = (request: RequestType, meta: { service: string, method: string }) => Promise<unknown>;
+
+export function createIntelServiceClient(
+  handler: RequestHandler
+): IntelService {
+  return {
+    ListIntels(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/ic/intels`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.page_size) {
+        queryParams.push(`page_size=${encodeURIComponent(request.page_size.toString())}`)
+      }
+      if (request.platform) {
+        queryParams.push(`platform=${encodeURIComponent(request.platform.toString())}`)
+      }
+      if (request.region) {
+        queryParams.push(`region=${encodeURIComponent(request.region.toString())}`)
+      }
+      if (request.category) {
+        queryParams.push(`category=${encodeURIComponent(request.category.toString())}`)
+      }
+      if (request.cluster_id) {
+        queryParams.push(`cluster_id=${encodeURIComponent(request.cluster_id.toString())}`)
+      }
+      if (request.collect_method) {
+        queryParams.push(`collect_method=${encodeURIComponent(request.collect_method.toString())}`)
+      }
+      if (request.keyword) {
+        queryParams.push(`keyword=${encodeURIComponent(request.keyword.toString())}`)
+      }
+      if (request.entity) {
+        queryParams.push(`entity=${encodeURIComponent(request.entity.toString())}`)
+      }
+      if (request.collected_from) {
+        queryParams.push(`collected_from=${encodeURIComponent(request.collected_from.toString())}`)
+      }
+      if (request.collected_to) {
+        queryParams.push(`collected_to=${encodeURIComponent(request.collected_to.toString())}`)
+      }
+      if (request.gate) {
+        queryParams.push(`gate=${encodeURIComponent(request.gate.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "IntelService",
+        method: "ListIntels",
+      }) as Promise<ListIntelsResponse>;
+    },
+    GetIntel(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/ic/intels/${request.id}`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "IntelService",
+        method: "GetIntel",
+      }) as Promise<IntelItem>;
+    },
+    SupplementIntel(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/ic/intels/${request.id}/supplement`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "IntelService",
+        method: "SupplementIntel",
+      }) as Promise<SupplementIntelResponse>;
+    },
+    ExportEvidence(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/ic/intels/${request.id}/evidence`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.operator) {
+        queryParams.push(`operator=${encodeURIComponent(request.operator.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "IntelService",
+        method: "ExportEvidence",
+      }) as Promise<EvidenceExport>;
+    },
+    ListClusters(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/ic/clusters`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.page_size) {
+        queryParams.push(`page_size=${encodeURIComponent(request.page_size.toString())}`)
+      }
+      if (request.region) {
+        queryParams.push(`region=${encodeURIComponent(request.region.toString())}`)
+      }
+      if (request.status) {
+        queryParams.push(`status=${encodeURIComponent(request.status.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "IntelService",
+        method: "ListClusters",
+      }) as Promise<ListClustersResponse>;
+    },
+    SplitCluster(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/ic/clusters/${request.id}/split`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "IntelService",
+        method: "SplitCluster",
+      }) as Promise<SplitClusterResponse>;
+    },
+    MergeCluster(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/ic/clusters/merge`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "IntelService",
+        method: "MergeCluster",
+      }) as Promise<MergeClusterResponse>;
+    },
+  };
+}
+// IntelSource 信源。
+export type IntelSource = {
+  id: string | undefined;
+  platform: string | undefined;
+  region: string | undefined;
+  // kind ∈ {hotlist, keyword, creator, rss, competitor}（采什么）
+  kind: string | undefined;
+  // method ∈ {hotlist, api, rss, crawl, sidecar}（怎么采；与 kind 组合受矩阵约束 S-20）
+  method: string | undefined;
+  config_json: string | undefined;
+  config_schema_hint: string | undefined;
+  enabled: boolean | undefined;
+  interval_minutes: number | undefined;
+  rate_limit_per_min: number | undefined;
+  priority: number | undefined;
+  credential_ref: string | undefined;
+  weight: number | undefined;
+  robots_exempt: boolean | undefined;
+  robots_exempt_reason: string | undefined;
+  // 熔断状态（S-12）
+  status: string | undefined;
+  paused_until: wellKnownTimestamp | undefined;
+  fail_streak: number | undefined;
+  // 健康度（NFR-IC-05）
+  health: SourceHealth | undefined;
+  last_run_at: wellKnownTimestamp | undefined;
+  create_time: wellKnownTimestamp | undefined;
+  update_time: wellKnownTimestamp | undefined;
+};
+
+export type SourceHealth = {
+  status: string | undefined;
+  success_rate_7d: number | undefined;
+  last_success_at: wellKnownTimestamp | undefined;
+  last_error: string | undefined;
+  quota_used: number | undefined;
+  quota_limit: number | undefined;
+};
+
+export type ListIntelSourcesRequest = {
+  page: number | undefined;
+  page_size: number | undefined;
+  platform: string | undefined;
+  kind: string | undefined;
+  enabled_only: boolean | undefined;
+};
+
+export type ListIntelSourcesResponse = {
+  items: IntelSource[] | undefined;
+  total: number | undefined;
+};
+
+export type GetIntelSourceRequest = {
+  id: string | undefined;
+};
+
+export type CreateIntelSourceRequest = {
+  data: IntelSource | undefined;
+};
+
+export type UpdateIntelSourceRequest = {
+  id: string | undefined;
+  data: IntelSource | undefined;
+};
+
+export type DeleteIntelSourceRequest = {
+  id: string | undefined;
+};
+
+export type DeleteIntelSourceResponse = {
+  ok: boolean | undefined;
+};
+
+export type ToggleIntelSourceRequest = {
+  id: string | undefined;
+  enabled: boolean | undefined;
+};
+
+export type ToggleIntelSourceResponse = {
+  ok: boolean | undefined;
+};
+
+export type RunCollectorRequest = {
+  source_id: string | undefined;
+  force: boolean | undefined;
+};
+
+export type RunCollectorResponse = {
+  collected: number | undefined;
+  normalized: number | undefined;
+  run_id: string | undefined;
+};
+
+export type ComplianceRule = {
+  id: string | undefined;
+  // rule_type ∈ {sensitive_category, rights_holder_blacklist, authorization, robots, platform_tos}
+  rule_type: string | undefined;
+  pattern: string | undefined;
+  action: string | undefined;
+  priority: number | undefined;
+  enabled: boolean | undefined;
+  effective_from: wellKnownTimestamp | undefined;
+  effective_until: wellKnownTimestamp | undefined;
+  hit_count: number | undefined;
+  scope: string | undefined;
+  platform: string | undefined;
+  remark: string | undefined;
+};
+
+export type ListComplianceRulesRequest = {
+  page: number | undefined;
+  page_size: number | undefined;
+  rule_type: string | undefined;
+  enabled_only: boolean | undefined;
+};
+
+export type ListComplianceRulesResponse = {
+  items: ComplianceRule[] | undefined;
+  total: number | undefined;
+};
+
+export type CreateComplianceRuleRequest = {
+  data: ComplianceRule | undefined;
+};
+
+export type UpdateComplianceRuleRequest = {
+  id: string | undefined;
+  data: ComplianceRule | undefined;
+};
+
+export type DeleteComplianceRuleRequest = {
+  id: string | undefined;
+};
+
+export type DeleteComplianceRuleResponse = {
+  ok: boolean | undefined;
+};
+
+// IntelSourceService 信源注册表与合规规则管理。
+export interface IntelSourceService {
+  ListIntelSources(request: ListIntelSourcesRequest): Promise<ListIntelSourcesResponse>;
+  GetIntelSource(request: GetIntelSourceRequest): Promise<IntelSource>;
+  CreateIntelSource(request: CreateIntelSourceRequest): Promise<IntelSource>;
+  UpdateIntelSource(request: UpdateIntelSourceRequest): Promise<IntelSource>;
+  DeleteIntelSource(request: DeleteIntelSourceRequest): Promise<DeleteIntelSourceResponse>;
+  ToggleIntelSource(request: ToggleIntelSourceRequest): Promise<ToggleIntelSourceResponse>;
+  RunCollector(request: RunCollectorRequest): Promise<RunCollectorResponse>;
+  ListComplianceRules(request: ListComplianceRulesRequest): Promise<ListComplianceRulesResponse>;
+  CreateComplianceRule(request: CreateComplianceRuleRequest): Promise<ComplianceRule>;
+  UpdateComplianceRule(request: UpdateComplianceRuleRequest): Promise<ComplianceRule>;
+  DeleteComplianceRule(request: DeleteComplianceRuleRequest): Promise<DeleteComplianceRuleResponse>;
+}
+
+export function createIntelSourceServiceClient(
+  handler: RequestHandler
+): IntelSourceService {
+  return {
+    ListIntelSources(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/ic/sources`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.page_size) {
+        queryParams.push(`page_size=${encodeURIComponent(request.page_size.toString())}`)
+      }
+      if (request.platform) {
+        queryParams.push(`platform=${encodeURIComponent(request.platform.toString())}`)
+      }
+      if (request.kind) {
+        queryParams.push(`kind=${encodeURIComponent(request.kind.toString())}`)
+      }
+      if (request.enabled_only) {
+        queryParams.push(`enabled_only=${encodeURIComponent(request.enabled_only.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "IntelSourceService",
+        method: "ListIntelSources",
+      }) as Promise<ListIntelSourcesResponse>;
+    },
+    GetIntelSource(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/ic/sources/${request.id}`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "IntelSourceService",
+        method: "GetIntelSource",
+      }) as Promise<IntelSource>;
+    },
+    CreateIntelSource(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/ic/sources`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "IntelSourceService",
+        method: "CreateIntelSource",
+      }) as Promise<IntelSource>;
+    },
+    UpdateIntelSource(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/ic/sources/${request.id}`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "PATCH",
+        body,
+      }, {
+        service: "IntelSourceService",
+        method: "UpdateIntelSource",
+      }) as Promise<IntelSource>;
+    },
+    DeleteIntelSource(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/ic/sources/${request.id}`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "DELETE",
+        body,
+      }, {
+        service: "IntelSourceService",
+        method: "DeleteIntelSource",
+      }) as Promise<DeleteIntelSourceResponse>;
+    },
+    ToggleIntelSource(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/ic/sources/${request.id}/toggle`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "IntelSourceService",
+        method: "ToggleIntelSource",
+      }) as Promise<ToggleIntelSourceResponse>;
+    },
+    RunCollector(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.source_id) {
+        throw new Error("missing required field request.source_id");
+      }
+      const path = `api/v1/media/ic/sources/${request.source_id}/run`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "IntelSourceService",
+        method: "RunCollector",
+      }) as Promise<RunCollectorResponse>;
+    },
+    ListComplianceRules(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/ic/rules`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.page_size) {
+        queryParams.push(`page_size=${encodeURIComponent(request.page_size.toString())}`)
+      }
+      if (request.rule_type) {
+        queryParams.push(`rule_type=${encodeURIComponent(request.rule_type.toString())}`)
+      }
+      if (request.enabled_only) {
+        queryParams.push(`enabled_only=${encodeURIComponent(request.enabled_only.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "IntelSourceService",
+        method: "ListComplianceRules",
+      }) as Promise<ListComplianceRulesResponse>;
+    },
+    CreateComplianceRule(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/ic/rules`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "IntelSourceService",
+        method: "CreateComplianceRule",
+      }) as Promise<ComplianceRule>;
+    },
+    UpdateComplianceRule(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/ic/rules/${request.id}`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "PATCH",
+        body,
+      }, {
+        service: "IntelSourceService",
+        method: "UpdateComplianceRule",
+      }) as Promise<ComplianceRule>;
+    },
+    DeleteComplianceRule(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/ic/rules/${request.id}`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "DELETE",
+        body,
+      }, {
+        service: "IntelSourceService",
+        method: "DeleteComplianceRule",
+      }) as Promise<DeleteComplianceRuleResponse>;
+    },
+  };
+}
+// FetchURLRequest 单 URL 补采（FR-INT-04 手贴续跑入口之一）。
+export type FetchURLRequest = {
+  url: string | undefined;
+  // method ∈ {api, crawl}（service 层校验；hotlist/rss 走周期调度）
+  method: string | undefined;
+};
+
+// SourceHealthEntry 单信源健康度条目（NFR-IC-05）。
+export type SourceHealthEntry = {
+  source_id: string | undefined;
+  platform: string | undefined;
+  method: string | undefined;
+  health: SourceHealth | undefined;
+  circuit_status: string | undefined;
+  last_run_at: wellKnownTimestamp | undefined;
+};
+
+export type GetCollectorHealthRequest = {
+  platform: string | undefined;
+};
+
+export type GetCollectorHealthResponse = {
+  items: SourceHealthEntry[] | undefined;
+};
+
+export type CollectRun = {
+  id: string | undefined;
+  source_id: string | undefined;
+  trigger: string | undefined;
+  started_at: wellKnownTimestamp | undefined;
+  finished_at: wellKnownTimestamp | undefined;
+  fetched: number | undefined;
+  normalized: number | undefined;
+  merged: number | undefined;
+  blocked: number | undefined;
+  skipped: number | undefined;
+  status: string | undefined;
+  error_code: string | undefined;
+};
+
+export type ListCollectRunsRequest = {
+  page: number | undefined;
+  page_size: number | undefined;
+  source_id: string | undefined;
+};
+
+export type ListCollectRunsResponse = {
+  items: CollectRun[] | undefined;
+  total: number | undefined;
+};
+
+export type DeadLetter = {
+  id: string | undefined;
+  task_type: string | undefined;
+  error_code: string | undefined;
+  error_msg: string | undefined;
+  attempt: number | undefined;
+  first_failed_at: wellKnownTimestamp | undefined;
+  last_failed_at: wellKnownTimestamp | undefined;
+  status: string | undefined;
+  replayed_by: string | undefined;
+  replayed_at: wellKnownTimestamp | undefined;
+};
+
+export type ListDeadLettersRequest = {
+  page: number | undefined;
+  page_size: number | undefined;
+  status: string | undefined;
+};
+
+export type ListDeadLettersResponse = {
+  items: DeadLetter[] | undefined;
+  total: number | undefined;
+};
+
+export type ReplayDeadLetterRequest = {
+  id: string | undefined;
+  operator: string | undefined;
+};
+
+export type ReplayDeadLetterResponse = {
+  ok: boolean | undefined;
+};
+
+// IntelCollectorService 采集器管理与健康度。
+export interface IntelCollectorService {
+  FetchURL(request: FetchURLRequest): Promise<IntelItem>;
+  GetCollectorHealth(request: GetCollectorHealthRequest): Promise<GetCollectorHealthResponse>;
+  ListCollectRuns(request: ListCollectRunsRequest): Promise<ListCollectRunsResponse>;
+  ListDeadLetters(request: ListDeadLettersRequest): Promise<ListDeadLettersResponse>;
+  ReplayDeadLetter(request: ReplayDeadLetterRequest): Promise<ReplayDeadLetterResponse>;
+}
+
+export function createIntelCollectorServiceClient(
+  handler: RequestHandler
+): IntelCollectorService {
+  return {
+    FetchURL(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/ic/collector/fetch`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "IntelCollectorService",
+        method: "FetchURL",
+      }) as Promise<IntelItem>;
+    },
+    GetCollectorHealth(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/ic/collector/health`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.platform) {
+        queryParams.push(`platform=${encodeURIComponent(request.platform.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "IntelCollectorService",
+        method: "GetCollectorHealth",
+      }) as Promise<GetCollectorHealthResponse>;
+    },
+    ListCollectRuns(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/ic/runs`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.page_size) {
+        queryParams.push(`page_size=${encodeURIComponent(request.page_size.toString())}`)
+      }
+      if (request.source_id) {
+        queryParams.push(`source_id=${encodeURIComponent(request.source_id.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "IntelCollectorService",
+        method: "ListCollectRuns",
+      }) as Promise<ListCollectRunsResponse>;
+    },
+    ListDeadLetters(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/ic/dead-letters`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.page_size) {
+        queryParams.push(`page_size=${encodeURIComponent(request.page_size.toString())}`)
+      }
+      if (request.status) {
+        queryParams.push(`status=${encodeURIComponent(request.status.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "IntelCollectorService",
+        method: "ListDeadLetters",
+      }) as Promise<ListDeadLettersResponse>;
+    },
+    ReplayDeadLetter(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/ic/dead-letters/${request.id}/replay`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "IntelCollectorService",
+        method: "ReplayDeadLetter",
+      }) as Promise<ReplayDeadLetterResponse>;
+    },
+  };
+}
+// IntelErrorReason IC 错误码（文档 01-IC/03 §8 + 评审 B-12）。
+// protoc-gen-go-errors 生成 ErrorXxx 构造函数，前端与网关依赖 reason 做分支。
+export type IntelErrorReason =
+  // 信源不存在
+  | "IC_SRC_NOT_FOUND"
+  // 信源已停用
+  | "IC_SRC_DISABLED"
+  // robots 禁止采集
+  | "IC_ROBOTS_DISALLOWED"
+  // 令牌不足（跳过本轮）
+  | "IC_RATE_LIMITED"
+  // 上游超时（可重试，max_attempts=3）
+  | "IC_UPSTREAM_TIMEOUT"
+  // 反爬拦截（不重试，提示手贴）
+  | "IC_ANTI_BOT"
+  // 空正文（疑似 JS 渲染页，建议 API 路）
+  | "IC_EMPTY_CONTENT"
+  // 归一化 schema 校验失败（落死信）
+  | "IC_SCHEMA_INVALID"
+  // 凭据失效（停用信源 + 告警）
+  | "IC_CREDENTIAL_INVALID"
+  // 短链/最终 URL 命中私网黑名单（SSRF 防护，评审 S-6）
+  | "IC_URL_BLOCKED"
+  // 证据哈希链断裂（critical 告警，评审 B-17）
+  | "IC_EVIDENCE_CHAIN_BROKEN"
+  // 配置非法（kind×method 矩阵违例、周期低于下限等）
+  | "IC_CONFIG_INVALID"
+  // 上游不可用（newsnow/RSSHub/Crawl4AI 连接失败）
+  | "IC_UPSTREAM_UNAVAILABLE";
 
 // @@protoc_insertion_point(typescript-http-eof)

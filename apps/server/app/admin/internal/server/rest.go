@@ -33,6 +33,8 @@ import (
 	adminV1 "framework/api/gen/go/admin/v1"
 
 	radarV1 "framework/api/gen/go/radar/v1"
+	miaV1 "framework/api/gen/go/media/v1/mia"
+	mapV1 "framework/api/gen/go/media/v1/map"
 
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 
@@ -161,6 +163,10 @@ func NewRESTServer(
 	radarWatchSvc *service.RadarWatchService,
 	radarNotifySvc *service.RadarNotifyService,
 	radarConfigSvc *service.RadarConfigService,
+	miaMappingSvc *service.MiaMappingService,
+	miaEventSvc *service.MiaEventService,
+	miaImpactSvc *service.MiaImpactService,
+	mapSvc *service.MapService,
 	store *storage.LocalStorage,
 ) *http.Server {
 	if cfg == nil || cfg.Server == nil || cfg.Server.Rest == nil {
@@ -207,6 +213,13 @@ func NewRESTServer(
 	radarV1.RegisterWatchServiceHTTPServer(srv, radarWatchSvc)
 	radarV1.RegisterRadarNotifyServiceHTTPServer(srv, radarNotifySvc)
 	radarV1.RegisterRadarConfigServiceHTTPServer(srv, radarConfigSvc)
+
+	miaV1.RegisterMappingServiceHTTPServer(srv, miaMappingSvc)
+	miaV1.RegisterEventServiceHTTPServer(srv, miaEventSvc)
+	miaV1.RegisterImpactServiceHTTPServer(srv, miaImpactSvc)
+
+	// ⑤ MAP 媒体发布矩阵（路由：/api/v1/media/map/**；详细设计 map_service.proto）
+	mapV1.RegisterMapServiceHTTPServer(srv, mapSvc)
 
 	_ = seedSvc
 

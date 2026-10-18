@@ -2,6 +2,175 @@
 /* eslint-disable camelcase */
 // @ts-nocheck
 
+// EventCardItem 事件卡（ec_ 前缀）。
+export type EventCardItem = {
+  id: number | undefined;
+  event_id: string | undefined;
+  title: string | undefined;
+  summary: string | undefined;
+  occurred_at: string | undefined;
+  topic_id: string | undefined;
+  source_intel_ids: string[] | undefined;
+  source_count: number | undefined;
+  domains: string[] | undefined;
+  category: string | undefined;
+  lang: string | undefined;
+  merged_by: string | undefined;
+  split_locked: boolean | undefined;
+};
+
+export type ListEventCardsRequest = {
+  page: number | undefined;
+  page_size: number | undefined;
+  occurred_after: string | undefined;
+  occurred_before: string | undefined;
+  category: string | undefined;
+  keyword: string | undefined;
+};
+
+export type ListEventCardsResponse = {
+  items: EventCardItem[] | undefined;
+  total: number | undefined;
+};
+
+export type GetEventCardRequest = {
+  event_id: string | undefined;
+};
+
+// SplitEventCardRequest 把指定来源指针从原卡拆出为一张新卡（人工干预，锁定两卡）。
+export type SplitEventCardRequest = {
+  event_id: string | undefined;
+  source_intel_ids: string[] | undefined;
+};
+
+export type SplitEventCardResponse = {
+  new_item: EventCardItem | undefined;
+  parent_item: EventCardItem | undefined;
+};
+
+// MergeEventCardsRequest 把多张卡合并到第一张（人工干预，锁定目标卡）。
+export type MergeEventCardsRequest = {
+  event_ids: string[] | undefined;
+};
+
+export type MergeEventCardsResponse = {
+  merged_item: EventCardItem | undefined;
+};
+
+// EventService 事件卡列表与人工聚类干预。
+export interface EventService {
+  ListEventCards(request: ListEventCardsRequest): Promise<ListEventCardsResponse>;
+  GetEventCard(request: GetEventCardRequest): Promise<EventCardItem>;
+  SplitEventCard(request: SplitEventCardRequest): Promise<SplitEventCardResponse>;
+  MergeEventCards(request: MergeEventCardsRequest): Promise<MergeEventCardsResponse>;
+}
+
+type RequestType = {
+  path: string;
+  method: string;
+  body: string | null;
+};
+
+type RequestHandler = (request: RequestType, meta: { service: string, method: string }) => Promise<unknown>;
+
+export function createEventServiceClient(
+  handler: RequestHandler
+): EventService {
+  return {
+    ListEventCards(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mia/events`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.page_size) {
+        queryParams.push(`page_size=${encodeURIComponent(request.page_size.toString())}`)
+      }
+      if (request.occurred_after) {
+        queryParams.push(`occurred_after=${encodeURIComponent(request.occurred_after.toString())}`)
+      }
+      if (request.occurred_before) {
+        queryParams.push(`occurred_before=${encodeURIComponent(request.occurred_before.toString())}`)
+      }
+      if (request.category) {
+        queryParams.push(`category=${encodeURIComponent(request.category.toString())}`)
+      }
+      if (request.keyword) {
+        queryParams.push(`keyword=${encodeURIComponent(request.keyword.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "EventService",
+        method: "ListEventCards",
+      }) as Promise<ListEventCardsResponse>;
+    },
+    GetEventCard(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.event_id) {
+        throw new Error("missing required field request.event_id");
+      }
+      const path = `api/v1/media/mia/event/${request.event_id}`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "EventService",
+        method: "GetEventCard",
+      }) as Promise<EventCardItem>;
+    },
+    SplitEventCard(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.event_id) {
+        throw new Error("missing required field request.event_id");
+      }
+      const path = `api/v1/media/mia/events/${request.event_id}/split`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "EventService",
+        method: "SplitEventCard",
+      }) as Promise<SplitEventCardResponse>;
+    },
+    MergeEventCards(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mia/events/merge`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "EventService",
+        method: "MergeEventCards",
+      }) as Promise<MergeEventCardsResponse>;
+    },
+  };
+}
 // ImpactCard 是 MIA 的输出契约。disclaimer 强制非空（空卡不允许落库）。
 export type ImpactCard = {
   api_version: string | undefined;
@@ -80,5 +249,629 @@ export type TriggerSpec = {
   min_move_pct: number | undefined;
 };
 
+// ImpactCardListItem 影响卡列表视图（摘要字段，详情走 GetImpactCard）。
+export type ImpactCardListItem = {
+  impact_id: string | undefined;
+  event_id: string | undefined;
+  title: string | undefined;
+  sentiment_label: string | undefined;
+  sentiment_score: number | undefined;
+  sentiment_engine: string | undefined;
+  impact_score: number | undefined;
+  direction: string | undefined;
+  ttl_hours: number | undefined;
+  expires_at: string | undefined;
+  occurred_at: string | undefined;
+  created_at: string | undefined;
+  affected_count: number | undefined;
+  pushed: boolean | undefined;
+  no_mapping: boolean | undefined;
+};
+
+export type ListImpactCardsRequest = {
+  page: number | undefined;
+  page_size: number | undefined;
+  direction: string | undefined;
+  min_score: number | undefined;
+  include_expired: boolean | undefined;
+  occurred_after: string | undefined;
+};
+
+export type ListImpactCardsResponse = {
+  items: ImpactCardListItem[] | undefined;
+  total: number | undefined;
+};
+
+export type GetImpactCardRequest = {
+  impact_id: string | undefined;
+};
+
+// GetImpactCardResponse 详情：完整契约卡 + 存储侧附加字段。
+export type GetImpactCardResponse = {
+  card: ImpactCard | undefined;
+  impact_id: string | undefined;
+  event_id: string | undefined;
+  expires_at: string | undefined;
+  created_at: string | undefined;
+  pushed: boolean | undefined;
+  no_mapping: boolean | undefined;
+  rule_version: string | undefined;
+};
+
+// CalibrationBucket 按规则的校准统计桶（FR-MIA-11，P2）。
+export type CalibrationBucket = {
+  rule_id: string | undefined;
+  samples: number | undefined;
+  hit_rate: number | undefined;
+};
+
+export type GetCalibrationRequest = {
+  since: string | undefined;
+  until: string | undefined;
+};
+
+// CalibrationReport 校准报告。固定提示：校准参考，非预测准确率承诺。
+export type CalibrationReport = {
+  buckets: CalibrationBucket[] | undefined;
+  total_samples: number | undefined;
+  window: string | undefined;
+  note: string | undefined;
+  enabled: boolean | undefined;
+};
+
+// TransmissionRuleItem 传导规则列表视图（FR-MIA-08：每条带 confidence 与 note）。
+export type TransmissionRuleItem = {
+  id: number | undefined;
+  rule: TransmissionRule | undefined;
+  enabled: boolean | undefined;
+  hit_count: number | undefined;
+  correct_count: number | undefined;
+};
+
+export type ListTransmissionRulesRequest = {
+  enabled_only: boolean | undefined;
+};
+
+export type ListTransmissionRulesResponse = {
+  items: TransmissionRuleItem[] | undefined;
+};
+
+// GetQuoteRequest 行情只读查询。
+// symbol 走 query（BTC/USDT 含斜杠，不能用路径参数）。
+export type GetQuoteRequest = {
+  symbol: string | undefined;
+};
+
+export type OhlcvBar = {
+  t: string | undefined;
+  open: number | undefined;
+  high: number | undefined;
+  low: number | undefined;
+  close: number | undefined;
+  volume: number | undefined;
+};
+
+export type GetQuoteResponse = {
+  symbol: string | undefined;
+  provider: string | undefined;
+  bars: OhlcvBar[] | undefined;
+  fetched_at: string | undefined;
+  from_cache: boolean | undefined;
+};
+
+// ImpactService 影响卡查询、校准报告、传导规则、行情只读查询。
+export interface ImpactService {
+  ListImpactCards(request: ListImpactCardsRequest): Promise<ListImpactCardsResponse>;
+  GetImpactCard(request: GetImpactCardRequest): Promise<GetImpactCardResponse>;
+  GetCalibration(request: GetCalibrationRequest): Promise<CalibrationReport>;
+  ListTransmissionRules(request: ListTransmissionRulesRequest): Promise<ListTransmissionRulesResponse>;
+  GetQuote(request: GetQuoteRequest): Promise<GetQuoteResponse>;
+}
+
+export function createImpactServiceClient(
+  handler: RequestHandler
+): ImpactService {
+  return {
+    ListImpactCards(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mia/impacts`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.page_size) {
+        queryParams.push(`page_size=${encodeURIComponent(request.page_size.toString())}`)
+      }
+      if (request.direction) {
+        queryParams.push(`direction=${encodeURIComponent(request.direction.toString())}`)
+      }
+      if (request.min_score) {
+        queryParams.push(`min_score=${encodeURIComponent(request.min_score.toString())}`)
+      }
+      if (request.include_expired) {
+        queryParams.push(`include_expired=${encodeURIComponent(request.include_expired.toString())}`)
+      }
+      if (request.occurred_after) {
+        queryParams.push(`occurred_after=${encodeURIComponent(request.occurred_after.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "ImpactService",
+        method: "ListImpactCards",
+      }) as Promise<ListImpactCardsResponse>;
+    },
+    GetImpactCard(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.impact_id) {
+        throw new Error("missing required field request.impact_id");
+      }
+      const path = `api/v1/media/mia/impact/${request.impact_id}`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "ImpactService",
+        method: "GetImpactCard",
+      }) as Promise<GetImpactCardResponse>;
+    },
+    GetCalibration(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mia/calibration`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.since) {
+        queryParams.push(`since=${encodeURIComponent(request.since.toString())}`)
+      }
+      if (request.until) {
+        queryParams.push(`until=${encodeURIComponent(request.until.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "ImpactService",
+        method: "GetCalibration",
+      }) as Promise<CalibrationReport>;
+    },
+    ListTransmissionRules(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mia/rules`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.enabled_only) {
+        queryParams.push(`enabled_only=${encodeURIComponent(request.enabled_only.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "ImpactService",
+        method: "ListTransmissionRules",
+      }) as Promise<ListTransmissionRulesResponse>;
+    },
+    GetQuote(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mia/quotes`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.symbol) {
+        queryParams.push(`symbol=${encodeURIComponent(request.symbol.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "ImpactService",
+        method: "GetQuote",
+      }) as Promise<GetQuoteResponse>;
+    },
+  };
+}
+// EntityAssetMappingItem 映射表 A 的一行（实体 → 标的）。
+export type EntityAssetMappingItem = {
+  id: number | undefined;
+  entity_name: string | undefined;
+  entity_alias: string[] | undefined;
+  entity_type: string | undefined;
+  asset_class: string | undefined;
+  symbol: string | undefined;
+  direction_bias: string | undefined;
+  confidence: number | undefined;
+  source: string | undefined;
+  notes: string | undefined;
+  enabled: boolean | undefined;
+  updated_at: string | undefined;
+};
+
+export type ListEntityMappingsRequest = {
+  page: number | undefined;
+  page_size: number | undefined;
+  keyword: string | undefined;
+  entity_type: string | undefined;
+  asset_class: string | undefined;
+  enabled_only: boolean | undefined;
+};
+
+export type ListEntityMappingsResponse = {
+  items: EntityAssetMappingItem[] | undefined;
+  total: number | undefined;
+};
+
+export type CreateEntityMappingRequest = {
+  item: EntityAssetMappingItem | undefined;
+};
+
+export type UpdateEntityMappingRequest = {
+  id: number | undefined;
+  item: EntityAssetMappingItem | undefined;
+};
+
+export type DeleteEntityMappingRequest = {
+  id: number | undefined;
+};
+
+export type EmptyResponse = {
+};
+
+export type ImportEntityMappingsRequest = {
+  csv: string | undefined;
+};
+
+export type ImportEntityMappingsResponse = {
+  created: number | undefined;
+  updated: number | undefined;
+  skipped: number | undefined;
+  errors: string[] | undefined;
+};
+
+export type ExportEntityMappingsRequest = {
+};
+
+export type ExportEntityMappingsResponse = {
+  csv: string | undefined;
+};
+
+// NarrativeCoinMappingItem 映射表 B 的一行（叙事 → 币种）。
+export type NarrativeCoinMappingItem = {
+  id: number | undefined;
+  narrative: string | undefined;
+  keywords: string[] | undefined;
+  coins: string[] | undefined;
+  default_sentiment_hint: string | undefined;
+  ttl_hours: number | undefined;
+  confidence: number | undefined;
+  enabled: boolean | undefined;
+  updated_at: string | undefined;
+};
+
+export type ListNarrativeMappingsRequest = {
+  page: number | undefined;
+  page_size: number | undefined;
+  keyword: string | undefined;
+  enabled_only: boolean | undefined;
+};
+
+export type ListNarrativeMappingsResponse = {
+  items: NarrativeCoinMappingItem[] | undefined;
+  total: number | undefined;
+};
+
+export type CreateNarrativeMappingRequest = {
+  item: NarrativeCoinMappingItem | undefined;
+};
+
+export type UpdateNarrativeMappingRequest = {
+  id: number | undefined;
+  item: NarrativeCoinMappingItem | undefined;
+};
+
+export type DeleteNarrativeMappingRequest = {
+  id: number | undefined;
+};
+
+export type ImportNarrativeMappingsRequest = {
+  csv: string | undefined;
+};
+
+export type ExportNarrativeMappingsRequest = {
+};
+
+export type ExportNarrativeMappingsResponse = {
+  csv: string | undefined;
+};
+
+// MappingService 映射表 CRUD + CSV 导入导出。
+export interface MappingService {
+  ListEntityMappings(request: ListEntityMappingsRequest): Promise<ListEntityMappingsResponse>;
+  CreateEntityMapping(request: CreateEntityMappingRequest): Promise<EntityAssetMappingItem>;
+  UpdateEntityMapping(request: UpdateEntityMappingRequest): Promise<EntityAssetMappingItem>;
+  DeleteEntityMapping(request: DeleteEntityMappingRequest): Promise<EmptyResponse>;
+  ImportEntityMappings(request: ImportEntityMappingsRequest): Promise<ImportEntityMappingsResponse>;
+  ExportEntityMappings(request: ExportEntityMappingsRequest): Promise<ExportEntityMappingsResponse>;
+  ListNarrativeMappings(request: ListNarrativeMappingsRequest): Promise<ListNarrativeMappingsResponse>;
+  CreateNarrativeMapping(request: CreateNarrativeMappingRequest): Promise<NarrativeCoinMappingItem>;
+  UpdateNarrativeMapping(request: UpdateNarrativeMappingRequest): Promise<NarrativeCoinMappingItem>;
+  DeleteNarrativeMapping(request: DeleteNarrativeMappingRequest): Promise<EmptyResponse>;
+  ImportNarrativeMappings(request: ImportNarrativeMappingsRequest): Promise<ImportEntityMappingsResponse>;
+  ExportNarrativeMappings(request: ExportNarrativeMappingsRequest): Promise<ExportNarrativeMappingsResponse>;
+}
+
+export function createMappingServiceClient(
+  handler: RequestHandler
+): MappingService {
+  return {
+    ListEntityMappings(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mia/mappings/entity`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.page_size) {
+        queryParams.push(`page_size=${encodeURIComponent(request.page_size.toString())}`)
+      }
+      if (request.keyword) {
+        queryParams.push(`keyword=${encodeURIComponent(request.keyword.toString())}`)
+      }
+      if (request.entity_type) {
+        queryParams.push(`entity_type=${encodeURIComponent(request.entity_type.toString())}`)
+      }
+      if (request.asset_class) {
+        queryParams.push(`asset_class=${encodeURIComponent(request.asset_class.toString())}`)
+      }
+      if (request.enabled_only) {
+        queryParams.push(`enabled_only=${encodeURIComponent(request.enabled_only.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MappingService",
+        method: "ListEntityMappings",
+      }) as Promise<ListEntityMappingsResponse>;
+    },
+    CreateEntityMapping(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mia/mappings/entity`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MappingService",
+        method: "CreateEntityMapping",
+      }) as Promise<EntityAssetMappingItem>;
+    },
+    UpdateEntityMapping(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mia/mappings/entity/${request.id}`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "PUT",
+        body,
+      }, {
+        service: "MappingService",
+        method: "UpdateEntityMapping",
+      }) as Promise<EntityAssetMappingItem>;
+    },
+    DeleteEntityMapping(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mia/mappings/entity/${request.id}`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "DELETE",
+        body,
+      }, {
+        service: "MappingService",
+        method: "DeleteEntityMapping",
+      }) as Promise<EmptyResponse>;
+    },
+    ImportEntityMappings(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mia/mappings/entity/import`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MappingService",
+        method: "ImportEntityMappings",
+      }) as Promise<ImportEntityMappingsResponse>;
+    },
+    ExportEntityMappings(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mia/mappings/entity/export`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MappingService",
+        method: "ExportEntityMappings",
+      }) as Promise<ExportEntityMappingsResponse>;
+    },
+    ListNarrativeMappings(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mia/mappings/narrative`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.page_size) {
+        queryParams.push(`page_size=${encodeURIComponent(request.page_size.toString())}`)
+      }
+      if (request.keyword) {
+        queryParams.push(`keyword=${encodeURIComponent(request.keyword.toString())}`)
+      }
+      if (request.enabled_only) {
+        queryParams.push(`enabled_only=${encodeURIComponent(request.enabled_only.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MappingService",
+        method: "ListNarrativeMappings",
+      }) as Promise<ListNarrativeMappingsResponse>;
+    },
+    CreateNarrativeMapping(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mia/mappings/narrative`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MappingService",
+        method: "CreateNarrativeMapping",
+      }) as Promise<NarrativeCoinMappingItem>;
+    },
+    UpdateNarrativeMapping(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mia/mappings/narrative/${request.id}`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "PUT",
+        body,
+      }, {
+        service: "MappingService",
+        method: "UpdateNarrativeMapping",
+      }) as Promise<NarrativeCoinMappingItem>;
+    },
+    DeleteNarrativeMapping(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mia/mappings/narrative/${request.id}`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "DELETE",
+        body,
+      }, {
+        service: "MappingService",
+        method: "DeleteNarrativeMapping",
+      }) as Promise<EmptyResponse>;
+    },
+    ImportNarrativeMappings(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mia/mappings/narrative/import`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MappingService",
+        method: "ImportNarrativeMappings",
+      }) as Promise<ImportEntityMappingsResponse>;
+    },
+    ExportNarrativeMappings(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mia/mappings/narrative/export`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MappingService",
+        method: "ExportNarrativeMappings",
+      }) as Promise<ExportNarrativeMappingsResponse>;
+    },
+  };
+}
 
 // @@protoc_insertion_point(typescript-http-eof)

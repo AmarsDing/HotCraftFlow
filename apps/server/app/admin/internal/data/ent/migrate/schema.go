@@ -198,6 +198,40 @@ var (
 			},
 		},
 	}
+	// IcAuthorizationRecordsColumns holds the columns for the "ic_authorization_records" table.
+	IcAuthorizationRecordsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 30, Comment: "记录 ID（裸 ULID，内部实体）"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "update_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "subject", Type: field.TypeString, Size: 16, Comment: "主体类型：author|domain|asset"},
+		{Name: "subject_key", Type: field.TypeString, Size: 255, Comment: "主体键（作者昵称/域名/asset:// 引用）"},
+		{Name: "status", Type: field.TypeString, Size: 12, Comment: "授权状态：granted|unknown|denied", Default: "unknown"},
+		{Name: "scope", Type: field.TypeString, Nullable: true, Size: 255, Comment: "授权范围（如 可加工/可发布/仅参考）"},
+		{Name: "evidence_ref", Type: field.TypeString, Nullable: true, Size: 255, Comment: "授权凭证引用（合同/邮件/截图存储路径）"},
+		{Name: "valid_until", Type: field.TypeTime, Nullable: true, Comment: "授权有效期，可空（空 = 长期）"},
+	}
+	// IcAuthorizationRecordsTable holds the schema information for the "ic_authorization_records" table.
+	IcAuthorizationRecordsTable = &schema.Table{
+		Name:       "ic_authorization_records",
+		Comment:    "授权记录：作者/域名/素材的授权状态，闸门 authorization 规则判据",
+		Columns:    IcAuthorizationRecordsColumns,
+		PrimaryKey: []*schema.Column{IcAuthorizationRecordsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "authorizationrecord_subject_subject_key",
+				Unique:  false,
+				Columns: []*schema.Column{IcAuthorizationRecordsColumns[6], IcAuthorizationRecordsColumns[7]},
+			},
+			{
+				Name:    "authorizationrecord_status",
+				Unique:  false,
+				Columns: []*schema.Column{IcAuthorizationRecordsColumns[8]},
+			},
+		},
+	}
 	// CasbinRuleColumns holds the columns for the "casbin_rule" table.
 	CasbinRuleColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
@@ -220,6 +254,147 @@ var (
 				Name:    "casbinrule_ptype_v0_v1_v2",
 				Unique:  true,
 				Columns: []*schema.Column{CasbinRuleColumns[1], CasbinRuleColumns[2], CasbinRuleColumns[3], CasbinRuleColumns[4]},
+			},
+		},
+	}
+	// IcClusterMergeEventsColumns holds the columns for the "ic_cluster_merge_events" table.
+	IcClusterMergeEventsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 30, Comment: "事件 ID（裸 ULID，内部实体）"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "from_cluster_id", Type: field.TypeString, Size: 30, Comment: "被并入的簇 ID"},
+		{Name: "to_cluster_id", Type: field.TypeString, Size: 30, Comment: "主簇 ID"},
+		{Name: "reason", Type: field.TypeString, Nullable: true, Size: 255, Comment: "合并理由（命中级 / 人工理由）"},
+		{Name: "member_count", Type: field.TypeInt32, Comment: "迁移的成员数", Default: 0},
+	}
+	// IcClusterMergeEventsTable holds the schema information for the "ic_cluster_merge_events" table.
+	IcClusterMergeEventsTable = &schema.Table{
+		Name:       "ic_cluster_merge_events",
+		Comment:    "簇合并事件：from → to 的合并审计",
+		Columns:    IcClusterMergeEventsColumns,
+		PrimaryKey: []*schema.Column{IcClusterMergeEventsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "clustermergeevent_to_cluster_id",
+				Unique:  false,
+				Columns: []*schema.Column{IcClusterMergeEventsColumns[5]},
+			},
+			{
+				Name:    "clustermergeevent_from_cluster_id",
+				Unique:  false,
+				Columns: []*schema.Column{IcClusterMergeEventsColumns[4]},
+			},
+		},
+	}
+	// IcCollectRunsColumns holds the columns for the "ic_collect_runs" table.
+	IcCollectRunsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 32, Comment: "运行 ID，run_ 前缀 ULID（契约 §0.3 内部实体）"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "source_id", Type: field.TypeString, Size: 30, Comment: "信源 ID"},
+		{Name: "trigger", Type: field.TypeString, Size: 10, Comment: "触发方式：cron|manual|retry", Default: "cron"},
+		{Name: "started_at", Type: field.TypeTime, Comment: "开始时间 UTC"},
+		{Name: "finished_at", Type: field.TypeTime, Nullable: true, Comment: "结束时间 UTC，可空（运行中为空）"},
+		{Name: "fetched", Type: field.TypeInt32, Comment: "采集到原始片段数", Default: 0},
+		{Name: "normalized", Type: field.TypeInt32, Comment: "归一化成功数", Default: 0},
+		{Name: "merged", Type: field.TypeInt32, Comment: "合并进既有簇数", Default: 0},
+		{Name: "blocked", Type: field.TypeInt32, Comment: "闸门阻断数", Default: 0},
+		{Name: "skipped", Type: field.TypeInt32, Comment: "跳过数（限流/熔断/robots）", Default: 0},
+		{Name: "status", Type: field.TypeString, Size: 12, Comment: "运行状态：running|succeeded|failed", Default: "running"},
+		{Name: "error_code", Type: field.TypeString, Nullable: true, Size: 40, Comment: "失败时的错误码（IC_*）"},
+	}
+	// IcCollectRunsTable holds the schema information for the "ic_collect_runs" table.
+	IcCollectRunsTable = &schema.Table{
+		Name:       "ic_collect_runs",
+		Comment:    "采集运行记录：每次采集触发的审计与统计",
+		Columns:    IcCollectRunsColumns,
+		PrimaryKey: []*schema.Column{IcCollectRunsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "collectrun_source_id_started_at",
+				Unique:  false,
+				Columns: []*schema.Column{IcCollectRunsColumns[4], IcCollectRunsColumns[6]},
+			},
+			{
+				Name:    "collectrun_status",
+				Unique:  false,
+				Columns: []*schema.Column{IcCollectRunsColumns[13]},
+			},
+		},
+	}
+	// IcComplianceRulesColumns holds the columns for the "ic_compliance_rules" table.
+	IcComplianceRulesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 32, Comment: "规则 ID，rule_ 前缀 ULID"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "update_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "rule_type", Type: field.TypeString, Size: 32, Comment: "规则类型：sensitive_category|rights_holder_blacklist|authorization|robots|platform_tos（评审 S-8）"},
+		{Name: "pattern", Type: field.TypeString, Size: 512, Comment: "匹配模式：关键词/正则/域名（按 rule_type 解释）"},
+		{Name: "action", Type: field.TypeString, Size: 8, Comment: "命中动作：pass|review|block（多重命中取最严）"},
+		{Name: "priority", Type: field.TypeInt32, Comment: "优先级，仅影响解释展示顺序，不影响最严判定", Default: 0},
+		{Name: "enabled", Type: field.TypeBool, Comment: "是否启用", Default: true},
+		{Name: "effective_from", Type: field.TypeTime, Nullable: true, Comment: "生效起始，可空（空 = 立即生效）"},
+		{Name: "effective_until", Type: field.TypeTime, Nullable: true, Comment: "生效截止，可空（过期规则不参与判定）"},
+		{Name: "hit_count", Type: field.TypeInt64, Comment: "累计命中次数（由闸门异步累加）", Default: 0},
+		{Name: "scope", Type: field.TypeString, Size: 16, Comment: "作用域：global|platform", Default: "global"},
+		{Name: "platform", Type: field.TypeString, Nullable: true, Size: 32, Comment: "作用域为 platform 时的平台标识，可空"},
+		{Name: "remark", Type: field.TypeString, Nullable: true, Size: 512, Comment: "规则说明（审计可读）"},
+	}
+	// IcComplianceRulesTable holds the schema information for the "ic_compliance_rules" table.
+	IcComplianceRulesTable = &schema.Table{
+		Name:       "ic_compliance_rules",
+		Comment:    "合规闸门规则表：敏感类目/权利人黑名单/授权状态/robots/平台条款五类判据",
+		Columns:    IcComplianceRulesColumns,
+		PrimaryKey: []*schema.Column{IcComplianceRulesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "compliancerule_rule_type_enabled",
+				Unique:  false,
+				Columns: []*schema.Column{IcComplianceRulesColumns[6], IcComplianceRulesColumns[10]},
+			},
+			{
+				Name:    "compliancerule_scope_platform",
+				Unique:  false,
+				Columns: []*schema.Column{IcComplianceRulesColumns[14], IcComplianceRulesColumns[15]},
+			},
+		},
+	}
+	// IcCredentialAccountsColumns holds the columns for the "ic_credential_accounts" table.
+	IcCredentialAccountsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 32, Comment: "账号 ID，acc_ 前缀 ULID（契约 §0.3 内部实体）"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "platform", Type: field.TypeString, Size: 32, Comment: "平台标识"},
+		{Name: "account_key", Type: field.TypeString, Size: 64, Comment: "账号槽位名（如 main / a1）；同平台内唯一"},
+		{Name: "credential_ref", Type: field.TypeString, Size: 64, Comment: "凭据引用（加密存储，非明文；NFR-IC-06）"},
+		{Name: "enabled", Type: field.TypeBool, Comment: "是否启用", Default: true},
+		{Name: "quota_used", Type: field.TypeInt64, Comment: "配额已用（日维度，由限流层累加）", Default: 0},
+		{Name: "quota_limit", Type: field.TypeInt64, Comment: "配额上限（0 = 不限）", Default: 0},
+		{Name: "fail_streak", Type: field.TypeInt32, Comment: "连续失败次数", Default: 0},
+		{Name: "paused_until", Type: field.TypeTime, Nullable: true, Comment: "账号暂停截止时间，可空"},
+		{Name: "last_used_at", Type: field.TypeTime, Nullable: true, Comment: "最近使用时间，可空"},
+	}
+	// IcCredentialAccountsTable holds the schema information for the "ic_credential_accounts" table.
+	IcCredentialAccountsTable = &schema.Table{
+		Name:       "ic_credential_accounts",
+		Comment:    "采集账号池：多账号轮询与账号级熔断",
+		Columns:    IcCredentialAccountsColumns,
+		PrimaryKey: []*schema.Column{IcCredentialAccountsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "credentialaccount_platform_account_key",
+				Unique:  true,
+				Columns: []*schema.Column{IcCredentialAccountsColumns[4], IcCredentialAccountsColumns[5]},
+			},
+			{
+				Name:    "credentialaccount_platform_enabled",
+				Unique:  false,
+				Columns: []*schema.Column{IcCredentialAccountsColumns[4], IcCredentialAccountsColumns[7]},
 			},
 		},
 	}
@@ -258,6 +433,79 @@ var (
 				Name:    "datapermission_role_id",
 				Unique:  false,
 				Columns: []*schema.Column{DataPermissionsColumns[6]},
+			},
+		},
+	}
+	// IcDeadLettersColumns holds the columns for the "ic_dead_letters" table.
+	IcDeadLettersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 30, Comment: "死信 ID（裸 ULID，内部实体未注册契约前缀）"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "task_type", Type: field.TypeString, Size: 20, Comment: "失败任务类型：collect|normalize|publish|replay"},
+		{Name: "payload", Type: field.TypeJSON, Comment: "失败时的消息载荷（RawFragment 等）"},
+		{Name: "error_code", Type: field.TypeString, Size: 40, Comment: "错误码（IC_*，03 §8 错误码表）"},
+		{Name: "error_msg", Type: field.TypeString, Nullable: true, Size: 1024, Comment: "错误描述（脱敏）"},
+		{Name: "attempt", Type: field.TypeInt32, Comment: "已尝试次数", Default: 1},
+		{Name: "first_failed_at", Type: field.TypeTime, Comment: "首次失败时间 UTC"},
+		{Name: "last_failed_at", Type: field.TypeTime, Comment: "最近失败时间 UTC"},
+		{Name: "status", Type: field.TypeString, Size: 12, Comment: "处置状态：pending|replayed|discarded", Default: "pending"},
+		{Name: "replayed_by", Type: field.TypeString, Nullable: true, Size: 64, Comment: "重放操作人（审计必填）"},
+		{Name: "replayed_at", Type: field.TypeTime, Nullable: true, Comment: "重放时间，可空"},
+	}
+	// IcDeadLettersTable holds the schema information for the "ic_dead_letters" table.
+	IcDeadLettersTable = &schema.Table{
+		Name:       "ic_dead_letters",
+		Comment:    "死信表：采集/归一化失败消息留存与重放",
+		Columns:    IcDeadLettersColumns,
+		PrimaryKey: []*schema.Column{IcDeadLettersColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "deadletter_status_last_failed_at",
+				Unique:  false,
+				Columns: []*schema.Column{IcDeadLettersColumns[11], IcDeadLettersColumns[10]},
+			},
+			{
+				Name:    "deadletter_task_type",
+				Unique:  false,
+				Columns: []*schema.Column{IcDeadLettersColumns[4]},
+			},
+		},
+	}
+	// IcDedupSamplesColumns holds the columns for the "ic_dedup_samples" table.
+	IcDedupSamplesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 30, Comment: "样本 ID（裸 ULID，内部实体未注册契约前缀）"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "intel_id", Type: field.TypeString, Size: 30, Comment: "涉及情报 ID"},
+		{Name: "cluster_id", Type: field.TypeString, Size: 30, Comment: "涉及簇 ID"},
+		{Name: "action", Type: field.TypeString, Size: 16, Comment: "操作：auto_merge|manual_split|manual_merge"},
+		{Name: "level", Type: field.TypeString, Nullable: true, Size: 16, Comment: "命中级：url|fingerprint|embedding|manual"},
+		{Name: "sim_score", Type: field.TypeFloat64, Comment: "相似度（汉明距离或余弦相似度，随 level 解释）", Default: 0},
+		{Name: "operator", Type: field.TypeString, Size: 64, Comment: "操作人；自动合并记 system", Default: "system"},
+	}
+	// IcDedupSamplesTable holds the schema information for the "ic_dedup_samples" table.
+	IcDedupSamplesTable = &schema.Table{
+		Name:       "ic_dedup_samples",
+		Comment:    "去重调参样本：auto_merge / manual_split / manual_merge 操作留痕",
+		Columns:    IcDedupSamplesColumns,
+		PrimaryKey: []*schema.Column{IcDedupSamplesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "dedupsample_cluster_id",
+				Unique:  false,
+				Columns: []*schema.Column{IcDedupSamplesColumns[5]},
+			},
+			{
+				Name:    "dedupsample_action",
+				Unique:  false,
+				Columns: []*schema.Column{IcDedupSamplesColumns[6]},
+			},
+			{
+				Name:    "dedupsample_intel_id",
+				Unique:  false,
+				Columns: []*schema.Column{IcDedupSamplesColumns[4]},
 			},
 		},
 	}
@@ -375,6 +623,117 @@ var (
 		Columns:    DictCategoryColumns,
 		PrimaryKey: []*schema.Column{DictCategoryColumns[0]},
 	}
+	// MiaEntityAssetMappingsColumns holds the columns for the "mia_entity_asset_mappings" table.
+	MiaEntityAssetMappingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "update_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID"},
+		{Name: "entity_name", Type: field.TypeString, Comment: "实体名（人物/机构/技术/政策），归一化后主名"},
+		{Name: "entity_alias", Type: field.TypeJSON, Nullable: true, Comment: "别名数组（如「美联储」/「Fed」/「FOMC」）"},
+		{Name: "entity_type", Type: field.TypeEnum, Comment: "实体类型：person|org|policy|tech|place|topic", Enums: []string{"person", "org", "policy", "tech", "place", "topic"}},
+		{Name: "asset_class", Type: field.TypeEnum, Comment: "资产类别：equity|index|fx|commodity|crypto（契约 §3）", Enums: []string{"equity", "index", "fx", "commodity", "crypto"}},
+		{Name: "symbol", Type: field.TypeString, Comment: "标的代码：SPY / ^GSPC / EURUSD / BTC/USDT"},
+		{Name: "direction_bias", Type: field.TypeEnum, Comment: "事件命中该实体时的默认偏向：bullish|bearish|neutral", Enums: []string{"bullish", "bearish", "neutral"}, Default: "neutral"},
+		{Name: "confidence", Type: field.TypeFloat64, Comment: "映射可信度 0–1", Default: 0.6},
+		{Name: "source", Type: field.TypeString, Comment: "来源：manual|rule_gen|import", Default: "manual"},
+		{Name: "notes", Type: field.TypeString, Size: 2147483647, Comment: "理由说明（🔴 必填，无理由的映射不可信）"},
+		{Name: "enabled", Type: field.TypeBool, Comment: "是否启用", Default: true},
+	}
+	// MiaEntityAssetMappingsTable holds the schema information for the "mia_entity_asset_mappings" table.
+	MiaEntityAssetMappingsTable = &schema.Table{
+		Name:       "mia_entity_asset_mappings",
+		Comment:    "映射表 A：实体 → 市场标的（FR-MIA-01）",
+		Columns:    MiaEntityAssetMappingsColumns,
+		PrimaryKey: []*schema.Column{MiaEntityAssetMappingsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "entityassetmapping_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{MiaEntityAssetMappingsColumns[6]},
+			},
+			{
+				Name:    "entityassetmapping_entity_name",
+				Unique:  false,
+				Columns: []*schema.Column{MiaEntityAssetMappingsColumns[7]},
+			},
+			{
+				Name:    "entityassetmapping_entity_type",
+				Unique:  false,
+				Columns: []*schema.Column{MiaEntityAssetMappingsColumns[9]},
+			},
+			{
+				Name:    "entityassetmapping_asset_class",
+				Unique:  false,
+				Columns: []*schema.Column{MiaEntityAssetMappingsColumns[10]},
+			},
+			{
+				Name:    "entityassetmapping_symbol",
+				Unique:  false,
+				Columns: []*schema.Column{MiaEntityAssetMappingsColumns[11]},
+			},
+			{
+				Name:    "entityassetmapping_enabled",
+				Unique:  false,
+				Columns: []*schema.Column{MiaEntityAssetMappingsColumns[16]},
+			},
+			{
+				Name:    "entityassetmapping_entity_name_asset_class_symbol",
+				Unique:  true,
+				Columns: []*schema.Column{MiaEntityAssetMappingsColumns[7], MiaEntityAssetMappingsColumns[10], MiaEntityAssetMappingsColumns[11]},
+			},
+		},
+	}
+	// IcEvidenceSnapshotsColumns holds the columns for the "ic_evidence_snapshots" table.
+	IcEvidenceSnapshotsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 30, Comment: "快照 ID，ev_ 前缀 ULID"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "intel_id", Type: field.TypeString, Size: 30, Comment: "所属情报 ID（it_ 前缀；非空外键，与 IntelItem 同事务写入，评审 B-8）"},
+		{Name: "collected_at", Type: field.TypeTime, Comment: "采集时间 UTC"},
+		{Name: "method", Type: field.TypeString, Size: 16, Comment: "采集方法：hotlist|api|rss|crawl|sidecar"},
+		{Name: "request_url", Type: field.TypeString, Comment: "请求 URL"},
+		{Name: "final_url", Type: field.TypeString, Nullable: true, Comment: "重定向后最终 URL（短链展开终点，S-6）；无重定向时同 request_url"},
+		{Name: "http_status", Type: field.TypeInt32, Comment: "HTTP 状态码", Default: 0},
+		{Name: "http_headers", Type: field.TypeJSON, Nullable: true, Comment: "脱敏后的响应头受限集合（去 Set-Cookie/Authorization 等，契约 C-16）"},
+		{Name: "raw_path", Type: field.TypeString, Nullable: true, Comment: "原始片段对象存储路径（只追加文件名 = evidence_id；不存正文进消息体，ADR-IC-04）"},
+		{Name: "raw_hash", Type: field.TypeString, Nullable: true, Size: 64, Comment: "原始片段 SHA-256 hex（完整性校验）"},
+		{Name: "prev_hash", Type: field.TypeString, Size: 64, Comment: "上一条证据的 chain_hash（首条为 64 个 0）"},
+		{Name: "chain_hash", Type: field.TypeString, Size: 64, Comment: "本证据链哈希 sha256(prev_hash||raw_hash||intel_id||collected_at.UnixNano())"},
+		{Name: "robots_checked", Type: field.TypeBool, Comment: "robots.txt 是否完成检查（抓取失败保守放行时记 false → gate=review）", Default: false},
+		{Name: "robots_allowed", Type: field.TypeBool, Comment: "robots 是否允许（checked=true 且有结论时才有效）", Default: true},
+		{Name: "crawl_delay_ms", Type: field.TypeInt32, Comment: "站点要求的 Crawl-delay 毫秒数（S-7；无则 0）", Default: 0},
+		{Name: "retain_until", Type: field.TypeTime, Comment: "留存截止（默认 collected_at + 90d，NFR-IC-08；交 pkg/retention 清理）"},
+		{Name: "raw_size_bytes", Type: field.TypeInt64, Comment: "原始片段字节数", Default: 0},
+	}
+	// IcEvidenceSnapshotsTable holds the schema information for the "ic_evidence_snapshots" table.
+	IcEvidenceSnapshotsTable = &schema.Table{
+		Name:       "ic_evidence_snapshots",
+		Comment:    "取证快照：时间/URL/原始片段指针/响应头/robots 结论 + 哈希链（防篡改审计链）",
+		Columns:    IcEvidenceSnapshotsColumns,
+		PrimaryKey: []*schema.Column{IcEvidenceSnapshotsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "evidencesnapshot_intel_id",
+				Unique:  false,
+				Columns: []*schema.Column{IcEvidenceSnapshotsColumns[4]},
+			},
+			{
+				Name:    "evidencesnapshot_retain_until",
+				Unique:  false,
+				Columns: []*schema.Column{IcEvidenceSnapshotsColumns[18]},
+			},
+			{
+				Name:    "evidencesnapshot_collected_at",
+				Unique:  false,
+				Columns: []*schema.Column{IcEvidenceSnapshotsColumns[5]},
+			},
+		},
+	}
 	// FilesColumns holds the columns for the "files" table.
 	FilesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
@@ -411,6 +770,235 @@ var (
 			},
 		},
 	}
+	// IcIntelClustersColumns holds the columns for the "ic_intel_clusters" table.
+	IcIntelClustersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 30, Comment: "簇 ID，cl_ 前缀 ULID"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "label", Type: field.TypeString, Size: 512, Comment: "代表标题（取最早条目标题）", Default: ""},
+		{Name: "member_count", Type: field.TypeInt32, Comment: "归并条数", Default: 1},
+		{Name: "platform_count", Type: field.TypeInt32, Comment: "覆盖平台数（判断是否真热点而非单平台噪音，US-2）", Default: 1},
+		{Name: "representative_id", Type: field.TypeString, Nullable: true, Size: 30, Comment: "主条目 intel_id（最早条目）"},
+		{Name: "region", Type: field.TypeString, Size: 8, Comment: "区域：cn|intl|global（评审 S-2：跨 region 误合并防护）", Default: "cn"},
+		{Name: "category", Type: field.TypeString, Nullable: true, Size: 16, Comment: "类目（归一后由理解层回填，S-2）"},
+		{Name: "first_seen_at", Type: field.TypeTime, Comment: "首次见时间 UTC"},
+		{Name: "last_seen_at", Type: field.TypeTime, Comment: "最近见时间 UTC（>48h 未更新 → closed，S-2）"},
+		{Name: "merged_by", Type: field.TypeString, Size: 16, Comment: "本次级联级：url|fingerprint|embedding|manual", Default: "url"},
+		{Name: "centroid_ref", Type: field.TypeString, Nullable: true, Size: 64, Comment: "中心向量 Redis key（成员 ≤50 增量更新，>50 冻结，评审 S-4）"},
+		{Name: "status", Type: field.TypeString, Size: 10, Comment: "簇状态：open|closed", Default: "open"},
+		{Name: "closed_at", Type: field.TypeTime, Nullable: true, Comment: "关闭时间，可空"},
+	}
+	// IcIntelClustersTable holds the schema information for the "ic_intel_clusters" table.
+	IcIntelClustersTable = &schema.Table{
+		Name:       "ic_intel_clusters",
+		Comment:    "去重聚类簇：同一事件跨源归并的代表，TT 话题聚类的重要输入",
+		Columns:    IcIntelClustersColumns,
+		PrimaryKey: []*schema.Column{IcIntelClustersColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "intelcluster_status_last_seen_at",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelClustersColumns[14], IcIntelClustersColumns[11]},
+			},
+			{
+				Name:    "intelcluster_region_status",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelClustersColumns[8], IcIntelClustersColumns[14]},
+			},
+			{
+				Name:    "intelcluster_category",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelClustersColumns[9]},
+			},
+		},
+	}
+	// IcIntelItemsColumns holds the columns for the "ic_intel_items" table.
+	IcIntelItemsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 30, Comment: "情报 ID，it_ 前缀 ULID（契约 intel_id，评审 M-20 统一 Prefix+ULID）"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "api_version", Type: field.TypeString, Size: 8, Comment: "契约版本（契约 §0.2，恒为 1.0；演进走契约 §9）", Default: "1.0"},
+		{Name: "platform", Type: field.TypeString, Size: 32, Comment: "来源平台标识（契约 §1 平台枚举表，如 weibo/x/reddit）"},
+		{Name: "region", Type: field.TypeString, Size: 8, Comment: "区域：cn|intl|global（契约 §1 区域枚举）"},
+		{Name: "collect_method", Type: field.TypeString, Size: 16, Comment: "采集方法：hotlist|api|rss|crawl|sidecar（契约 §1，不用 enum 避免跨系统魔法值）"},
+		{Name: "source_url", Type: field.TypeString, Nullable: true, Comment: "来源 URL，可空（如手动录入）"},
+		{Name: "author", Type: field.TypeString, Nullable: true, Size: 128, Comment: "作者公开昵称，可空；禁止存平台用户 ID 与主页 URL（PIPL，评审 M-18）"},
+		{Name: "collected_at", Type: field.TypeTime, Comment: "本地接收时间 UTC（必填，采集端 clock.Now().UTC() 生成，禁止用上游时间兜底）"},
+		{Name: "published_at", Type: field.TypeTime, Nullable: true, Comment: "上游发布时间 UTC，可空（评审 S-15；缺失时不计 NFR-IC-02 指标，不伪造）"},
+		{Name: "published_at_suspect", Type: field.TypeBool, Comment: "发布时间可疑标记：published_at > collected_at + 5min 时置真（评审 S-16），保留原值", Default: false},
+		{Name: "title", Type: field.TypeString, Size: 512, Comment: "标题", Default: ""},
+		{Name: "text", Type: field.TypeString, Nullable: true, Size: 2147483647, Comment: "正文/摘要（可很长）"},
+		{Name: "media_refs", Type: field.TypeJSON, Nullable: true, Comment: "媒体引用：asset:// 可加工；https:// 须先下载（契约 §1 必须区分）"},
+		{Name: "lang", Type: field.TypeString, Size: 16, Comment: "BCP-47 语言码，und 兜底（评审 C-14/S-25）", Default: "und"},
+		{Name: "entities", Type: field.TypeJSON, Nullable: true, Comment: "抽取实体列表；confidence < 0.6 不进 MIA 实体链接（契约 §1）"},
+		{Name: "category", Type: field.TypeString, Size: 16, Comment: "分类：A_hot|B_material|C_market|D_compliance（契约 §1 路由）"},
+		{Name: "rank", Type: field.TypeInt32, Comment: "榜单排名；无榜 = 0（契约 §0.2：0 与 null 语义不同）", Default: 0},
+		{Name: "rank_total", Type: field.TypeInt32, Comment: "榜单总条目数；无榜 = 0（评审 C-3：uint 不可表 null，0 表示未知）", Default: 0},
+		{Name: "views", Type: field.TypeInt64, Comment: "阅读/播放", Default: 0},
+		{Name: "likes", Type: field.TypeInt64, Comment: "点赞", Default: 0},
+		{Name: "comments", Type: field.TypeInt64, Comment: "评论", Default: 0},
+		{Name: "metrics_as_of", Type: field.TypeTime, Nullable: true, Comment: "指标快照时间 UTC（时变数据必须带时间，契约 §1 metrics._as_of）"},
+		{Name: "url_key", Type: field.TypeString, Nullable: true, Size: 64, Comment: "URL 归一化键 sha256 hex（03 §4.1：去追踪参数/尾斜杠/大小写，短链先展开）"},
+		{Name: "cycle_bucket", Type: field.TypeInt64, Comment: "采集周期桶：floor(unix(collected_at)/(interval*60))*(interval*60)（评审 B-6）", Default: 0},
+		{Name: "dedup_key", Type: field.TypeString, Unique: true, Size: 64, Comment: "幂等键 sha256(url_key|source_id|cycle_bucket)（唯一；冲突走 ON CONFLICT 更新，满足 NFR-IC-03）"},
+		{Name: "fingerprint_valid", Type: field.TypeBool, Comment: "指纹是否稳定：tokens<40 或文本过短时为 false，L2 跳过直进 L3（评审 B-9）", Default: false},
+		{Name: "fp_b0", Type: field.TypeInt16, Comment: "SimHash 位段 [63:48]（pigeonhole 倒排，评审 B-26）", Default: 0},
+		{Name: "fp_b1", Type: field.TypeInt16, Comment: "SimHash 位段 [47:32]", Default: 0},
+		{Name: "fp_b2", Type: field.TypeInt16, Comment: "SimHash 位段 [31:16]", Default: 0},
+		{Name: "fp_b3", Type: field.TypeInt16, Comment: "SimHash 位段 [15:0]", Default: 0},
+		{Name: "fingerprint_hex", Type: field.TypeString, Nullable: true, Size: 16, Comment: "SimHash 16 位小写 hex（契约 dedup.fingerprint 是 string，评审 C-4）"},
+		{Name: "embedding_id", Type: field.TypeString, Nullable: true, Size: 64, Comment: "向量库引用（不存向量本体，03 §4.3；V1 用 Redis VSS / pgvector key）"},
+		{Name: "cluster_id", Type: field.TypeString, Nullable: true, Size: 30, Comment: "聚类 ID，cl_ 前缀 ULID（契约 §0.3；多来源指针经 cluster_id 反查获得，评审 C-17）"},
+		{Name: "compliance_gate", Type: field.TypeString, Size: 8, Comment: "合规闸门：pass|review|block（闸门无旁路，评审 B-16）", Default: "review"},
+		{Name: "compliance_reasons", Type: field.TypeJSON, Nullable: true, Comment: "闸门命中原因与规则 ID（可解释，合规审计要求）"},
+		{Name: "workability_score", Type: field.TypeFloat64, Comment: "可加工性评分 [0,1]（03 B-18 公式；MME 准入阈值由 IC 配置，评审 S-26）", Default: 0},
+		{Name: "workability_reason", Type: field.TypeString, Nullable: true, Size: 255, Comment: "评分理由：素材不足|无明确观点|时长不足|语言不支持（必填）"},
+		{Name: "source_id", Type: field.TypeString, Nullable: true, Size: 30, Comment: "信源 ID（ic_intel_sources 外键，src_ 前缀）"},
+		{Name: "evidence_id", Type: field.TypeString, Nullable: true, Size: 30, Comment: "取证快照 ID（ic_evidence_snapshots 外键，ev_ 前缀；B-8 先取证后归一）"},
+		{Name: "publish_state", Type: field.TypeString, Size: 12, Comment: "发布状态：pending|published|failed（NATS 不可用落 pending，republish 每 30s 重试 ≤1h）", Default: "published"},
+		{Name: "raw_payload", Type: field.TypeJSON, Nullable: true, Comment: "归一化原文附加片段（调试回放用，非契约；不得塞入完整 HTML）"},
+		{Name: "raw_size", Type: field.TypeInt64, Comment: "采集原始片段字节数（内存上限 4MB 丢弃）", Default: 0},
+		{Name: "raw_truncated", Type: field.TypeBool, Comment: "原始片段是否被截断", Default: false},
+	}
+	// IcIntelItemsTable holds the schema information for the "ic_intel_items" table.
+	IcIntelItemsTable = &schema.Table{
+		Name:       "ic_intel_items",
+		Comment:    "情报条目：采集后归一化的原始素材（契约 IntelItem 的内部持久化视图）",
+		Columns:    IcIntelItemsColumns,
+		PrimaryKey: []*schema.Column{IcIntelItemsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "intelitem_platform_collected_at",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelItemsColumns[5], IcIntelItemsColumns[10]},
+			},
+			{
+				Name:    "intelitem_url_key",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelItemsColumns[25]},
+			},
+			{
+				Name:    "intelitem_cluster_id",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelItemsColumns[35]},
+			},
+			{
+				Name:    "intelitem_category",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelItemsColumns[18]},
+			},
+			{
+				Name:    "intelitem_compliance_gate",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelItemsColumns[36]},
+			},
+			{
+				Name:    "intelitem_source_id",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelItemsColumns[40]},
+			},
+			{
+				Name:    "intelitem_collected_at",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelItemsColumns[10]},
+			},
+			{
+				Name:    "intelitem_publish_state",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelItemsColumns[42]},
+			},
+			{
+				Name:    "intelitem_fp_b0_fp_b1",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelItemsColumns[29], IcIntelItemsColumns[30]},
+			},
+			{
+				Name:    "intelitem_fp_b1_fp_b2",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelItemsColumns[30], IcIntelItemsColumns[31]},
+			},
+			{
+				Name:    "intelitem_fp_b2_fp_b3",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelItemsColumns[31], IcIntelItemsColumns[32]},
+			},
+			{
+				Name:    "intelitem_fp_b0_fp_b3",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelItemsColumns[29], IcIntelItemsColumns[32]},
+			},
+		},
+	}
+	// IcIntelSourcesColumns holds the columns for the "ic_intel_sources" table.
+	IcIntelSourcesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 30, Comment: "信源 ID，src_ 前缀 ULID（契约 §0.3 内部实体，不进契约）"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "platform", Type: field.TypeString, Size: 32, Comment: "来源平台标识（契约 §1 平台枚举表）"},
+		{Name: "region", Type: field.TypeString, Size: 8, Comment: "区域：cn|intl|global", Default: "cn"},
+		{Name: "kind", Type: field.TypeString, Size: 16, Comment: "信源类型：hotlist|keyword|creator|rss|competitor（采什么）"},
+		{Name: "method", Type: field.TypeString, Size: 16, Comment: "采集路：hotlist|api|rss|crawl|sidecar（怎么采；与 kind 组合受矩阵约束，S-20）"},
+		{Name: "config", Type: field.TypeJSON, Nullable: true, Comment: "采集器私有配置（写入前 json.Valid 校验，S-17；凭据不进此字段）"},
+		{Name: "config_schema_hint", Type: field.TypeString, Nullable: true, Size: 64, Comment: "配置 schema 提示（如 newsnow.hotlist/v1），前端动态表单渲染依据（S-17）"},
+		{Name: "enabled", Type: field.TypeBool, Comment: "运营启停开关", Default: true},
+		{Name: "interval_minutes", Type: field.TypeInt32, Comment: "采集周期（分钟），调度唯一真值（评审 B-11）；按 method 分级下限：hotlist≥30/rss≥5/api≥10/crawl≥60（S-18）", Default: 30},
+		{Name: "rate_limit_per_min", Type: field.TypeInt32, Comment: "令牌桶速率（每分钟请求数）；平台级 key 优先于信源级（03 §3.4）", Default: 20},
+		{Name: "priority", Type: field.TypeInt32, Comment: "调度优先级，越大越靠前", Default: 0},
+		{Name: "credential_ref", Type: field.TypeString, Nullable: true, Size: 64, Comment: "凭据引用（指向凭据存储，非明文；NFR-IC-06）"},
+		{Name: "weight", Type: field.TypeFloat64, Comment: "选题权重（回流 FR-INT-16 更新，仅影响调度优先级，范围 0.5~2.0，评审 M-29）", Default: 1},
+		{Name: "robots_exempt", Type: field.TypeBool, Comment: "robots 检查豁免（api/rss/hotlist 路按平台条款豁免）", Default: false},
+		{Name: "robots_exempt_reason", Type: field.TypeString, Nullable: true, Size: 255, Comment: "豁免理由（robots_exempt=true 时必填，审计可自证）"},
+		{Name: "status", Type: field.TypeString, Size: 12, Comment: "熔断状态：active|paused|disabled", Default: "active"},
+		{Name: "paused_until", Type: field.TypeTime, Nullable: true, Comment: "自动暂停截止时间，到期自动恢复"},
+		{Name: "fail_streak", Type: field.TypeInt32, Comment: "连续失败次数", Default: 0},
+		{Name: "last_run_at", Type: field.TypeTime, Nullable: true, Comment: "最近一次调度触发时间，可空"},
+		{Name: "last_success_at", Type: field.TypeTime, Nullable: true, Comment: "最近一次成功采集时间，可空"},
+		{Name: "success_count_7d", Type: field.TypeInt32, Comment: "近 7 日成功次数（health_job 重算，非累加）", Default: 0},
+		{Name: "fail_count_7d", Type: field.TypeInt32, Comment: "近 7 日失败次数（health_job 重算）", Default: 0},
+		{Name: "last_error", Type: field.TypeString, Nullable: true, Size: 512, Comment: "最近一次错误（脱敏，不含凭据）"},
+	}
+	// IcIntelSourcesTable holds the schema information for the "ic_intel_sources" table.
+	IcIntelSourcesTable = &schema.Table{
+		Name:       "ic_intel_sources",
+		Comment:    "信源注册表：热榜/关键词/创作者/RSS/竞品五类信源及其调度与熔断状态",
+		Columns:    IcIntelSourcesColumns,
+		PrimaryKey: []*schema.Column{IcIntelSourcesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "intelsource_platform_enabled",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelSourcesColumns[4], IcIntelSourcesColumns[10]},
+			},
+			{
+				Name:    "intelsource_region",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelSourcesColumns[5]},
+			},
+			{
+				Name:    "intelsource_kind",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelSourcesColumns[6]},
+			},
+			{
+				Name:    "intelsource_enabled",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelSourcesColumns[10]},
+			},
+			{
+				Name:    "intelsource_priority",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelSourcesColumns[13]},
+			},
+			{
+				Name:    "intelsource_status",
+				Unique:  false,
+				Columns: []*schema.Column{IcIntelSourcesColumns[18]},
+			},
+		},
+	}
 	// LoginFailCountersColumns holds the columns for the "login_fail_counters" table.
 	LoginFailCountersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
@@ -431,6 +1019,344 @@ var (
 				Name:    "loginfailcounter_target_type_target_value",
 				Unique:  true,
 				Columns: []*schema.Column{LoginFailCountersColumns[2], LoginFailCountersColumns[3]},
+			},
+		},
+	}
+	// MapApprovalRecordsColumns holds the columns for the "map_approval_records" table.
+	MapApprovalRecordsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "update_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID"},
+		{Name: "dispatch_unit_id", Type: field.TypeString, Comment: "关联分发单元（du_ 前缀）"},
+		{Name: "action", Type: field.TypeEnum, Comment: "动作：submit / approve / reject / publish / cancel", Enums: []string{"submit", "approve", "reject", "publish", "cancel"}},
+		{Name: "actor", Type: field.TypeString, Comment: "操作者标识"},
+		{Name: "actor_type", Type: field.TypeEnum, Comment: "操作者类型：human / automation（自动化身份不得审批/发布）", Enums: []string{"human", "automation"}},
+		{Name: "from_state", Type: field.TypeString, Nullable: true, Comment: "动作前审批状态"},
+		{Name: "to_state", Type: field.TypeString, Nullable: true, Comment: "动作后审批状态"},
+		{Name: "reason", Type: field.TypeString, Nullable: true, Size: 2147483647, Comment: "原因（驳回必填；publish 非 private 时留 override_reason）"},
+		{Name: "visibility_at_action", Type: field.TypeString, Nullable: true, Comment: "动作时刻的可见性（private/unlisted/public）"},
+		{Name: "ip", Type: field.TypeString, Nullable: true, Comment: "操作者 IP（可空，内部调用无）"},
+		{Name: "user_agent", Type: field.TypeString, Nullable: true, Comment: "操作者 UA（可空）"},
+		{Name: "result", Type: field.TypeEnum, Comment: "裁决：allow / deny（deny 即越权尝试痕迹，如自批/自动化/未审批发布）", Enums: []string{"allow", "deny"}, Default: "allow"},
+	}
+	// MapApprovalRecordsTable holds the schema information for the "map_approval_records" table.
+	MapApprovalRecordsTable = &schema.Table{
+		Name:       "map_approval_records",
+		Comment:    "MAP 审批与发布操作审计日志（⑤ MAP 详细设计 §1.4，FR-PUB-07）",
+		Columns:    MapApprovalRecordsColumns,
+		PrimaryKey: []*schema.Column{MapApprovalRecordsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "mapapprovalrecord_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{MapApprovalRecordsColumns[6]},
+			},
+			{
+				Name:    "mapapprovalrecord_dispatch_unit_id",
+				Unique:  false,
+				Columns: []*schema.Column{MapApprovalRecordsColumns[7]},
+			},
+			{
+				Name:    "mapapprovalrecord_action",
+				Unique:  false,
+				Columns: []*schema.Column{MapApprovalRecordsColumns[8]},
+			},
+			{
+				Name:    "mapapprovalrecord_actor",
+				Unique:  false,
+				Columns: []*schema.Column{MapApprovalRecordsColumns[9]},
+			},
+			{
+				Name:    "mapapprovalrecord_create_time",
+				Unique:  false,
+				Columns: []*schema.Column{MapApprovalRecordsColumns[1]},
+			},
+		},
+	}
+	// MapDispatchUnitsColumns holds the columns for the "map_dispatch_units" table.
+	MapDispatchUnitsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "update_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID"},
+		{Name: "unit_id", Type: field.TypeString, Unique: true, Comment: "分发单元 ID，du_ 前缀 ULID（契约 00-shared §0.3）"},
+		{Name: "variant_set_id", Type: field.TypeString, Nullable: true, Comment: "来源 VariantSet（vs_ 前缀），消费 mm.mme.variant.ready.v1 生成，可空（手工建单）"},
+		{Name: "variant_id", Type: field.TypeString, Nullable: true, Comment: "单个变体（v_ 前缀），可空"},
+		{Name: "targets", Type: field.TypeJSON, Nullable: true, Comment: "发布目标列表 [platform:slot]，如「youtube:main」「douyin:a1」；凭据不进契约"},
+		{Name: "scheduled_for", Type: field.TypeTime, Nullable: true, Comment: "计划发布时间，UTC；空 = 审批通过后立即发布"},
+		{Name: "schedule_mode", Type: field.TypeEnum, Comment: "排期模式：native（平台原生排期）/ local_worker（本机 worker 到点发）/ none（未排期）", Enums: []string{"native", "local_worker", "none"}, Default: "none"},
+		{Name: "visibility_default", Type: field.TypeEnum, Comment: "🔴 可见性默认，恒 private 起步（NFR-MAP-01）；升公须 override_reason + 审批", Enums: []string{"private", "unlisted", "public"}, Default: "private"},
+		{Name: "visibility_override_reason", Type: field.TypeString, Nullable: true, Size: 2147483647, Comment: "非 private 时必填的升公理由（NFR-17）"},
+		{Name: "approval_state", Type: field.TypeEnum, Comment: "审批状态：draft / approved / rejected", Enums: []string{"draft", "approved", "rejected"}, Default: "draft"},
+		{Name: "submitted_by", Type: field.TypeString, Comment: "提交者（禁自批判据，与 approver 不可相同）"},
+		{Name: "approver", Type: field.TypeString, Nullable: true, Comment: "审批者；必须 ≠ submitted_by，且不得为自动化身份"},
+		{Name: "approved_at", Type: field.TypeTime, Nullable: true, Comment: "审批通过时间，UTC"},
+		{Name: "reject_reason", Type: field.TypeString, Nullable: true, Size: 2147483647, Comment: "驳回原因（驳回时必填）"},
+		{Name: "publish_state", Type: field.TypeEnum, Comment: "发布状态：pending / publishing / published / failed", Enums: []string{"pending", "publishing", "published", "failed"}, Default: "pending"},
+		{Name: "post_id", Type: field.TypeString, Nullable: true, Comment: "平台返回的作品 ID（回执字段）"},
+		{Name: "post_url", Type: field.TypeString, Nullable: true, Comment: "作品链接（回执字段）"},
+		{Name: "published_at", Type: field.TypeTime, Nullable: true, Comment: "实际发布时间，UTC（回执字段）"},
+		{Name: "operator", Type: field.TypeString, Nullable: true, Comment: "谁点的发布（不得与 submitted_by 相同的自动化身份）"},
+		{Name: "feedback_ref", Type: field.TypeString, Nullable: true, Comment: "回流快照引用（FR-PUB-08，Phase 3），可空"},
+	}
+	// MapDispatchUnitsTable holds the schema information for the "map_dispatch_units" table.
+	MapDispatchUnitsTable = &schema.Table{
+		Name:       "map_dispatch_units",
+		Comment:    "MAP 分发单元：由 VariantSet 派生，审批门约束 + 发布回执字段（⑤ MAP 详细设计 §1.3）",
+		Columns:    MapDispatchUnitsColumns,
+		PrimaryKey: []*schema.Column{MapDispatchUnitsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "mapdispatchunit_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{MapDispatchUnitsColumns[6]},
+			},
+			{
+				Name:    "mapdispatchunit_variant_set_id",
+				Unique:  false,
+				Columns: []*schema.Column{MapDispatchUnitsColumns[8]},
+			},
+			{
+				Name:    "mapdispatchunit_variant_id",
+				Unique:  false,
+				Columns: []*schema.Column{MapDispatchUnitsColumns[9]},
+			},
+			{
+				Name:    "mapdispatchunit_scheduled_for",
+				Unique:  false,
+				Columns: []*schema.Column{MapDispatchUnitsColumns[11]},
+			},
+			{
+				Name:    "mapdispatchunit_approval_state",
+				Unique:  false,
+				Columns: []*schema.Column{MapDispatchUnitsColumns[15]},
+			},
+			{
+				Name:    "mapdispatchunit_publish_state",
+				Unique:  false,
+				Columns: []*schema.Column{MapDispatchUnitsColumns[20]},
+			},
+			{
+				Name:    "mapdispatchunit_create_time",
+				Unique:  false,
+				Columns: []*schema.Column{MapDispatchUnitsColumns[1]},
+			},
+		},
+	}
+	// MapPerformanceSnapshotsColumns holds the columns for the "map_performance_snapshots" table.
+	MapPerformanceSnapshotsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "update_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID"},
+		{Name: "snapshot_id", Type: field.TypeString, Unique: true, Comment: "快照 ID，ps_ 前缀 ULID（契约 00-shared §0.3）"},
+		{Name: "receipt_id", Type: field.TypeString, Nullable: true, Comment: "关联发布回执（pr_ 前缀）"},
+		{Name: "dispatch_unit_id", Type: field.TypeString, Nullable: true, Comment: "回指分发单元（du_ 前缀，形成 发布→表现→反哺选题 闭环）"},
+		{Name: "variant_id", Type: field.TypeString, Nullable: true, Comment: "回指 MME 变体（v_ 前缀）"},
+		{Name: "platform_key", Type: field.TypeString, Comment: "平台"},
+		{Name: "views", Type: field.TypeInt64, Comment: "播放/阅读", Default: 0},
+		{Name: "likes", Type: field.TypeInt64, Comment: "点赞", Default: 0},
+		{Name: "comments", Type: field.TypeInt64, Comment: "评论", Default: 0},
+		{Name: "shares", Type: field.TypeInt64, Comment: "分享（V1.1 契约补登）", Default: 0},
+		{Name: "favorites", Type: field.TypeInt64, Comment: "收藏（V1.1 契约补登）", Default: 0},
+		{Name: "completion_rate", Type: field.TypeFloat64, Comment: "完播率 [0,1]；未知用 0 不伪造", Default: 0},
+		{Name: "fetched_at", Type: field.TypeTime, Comment: "抓取该快照的时间，UTC（表现数时变，必须带时间）"},
+		{Name: "candidate_id", Type: field.TypeString, Nullable: true, Comment: "回指选题（tc_ 前缀，可空）"},
+	}
+	// MapPerformanceSnapshotsTable holds the schema information for the "map_performance_snapshots" table.
+	MapPerformanceSnapshotsTable = &schema.Table{
+		Name:       "map_performance_snapshots",
+		Comment:    "MAP 表现数据回流快照（结构预留，拉取与回流管道 Phase 3）",
+		Columns:    MapPerformanceSnapshotsColumns,
+		PrimaryKey: []*schema.Column{MapPerformanceSnapshotsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "mapperformancesnapshot_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{MapPerformanceSnapshotsColumns[6]},
+			},
+			{
+				Name:    "mapperformancesnapshot_receipt_id",
+				Unique:  false,
+				Columns: []*schema.Column{MapPerformanceSnapshotsColumns[8]},
+			},
+			{
+				Name:    "mapperformancesnapshot_platform_key",
+				Unique:  false,
+				Columns: []*schema.Column{MapPerformanceSnapshotsColumns[11]},
+			},
+			{
+				Name:    "mapperformancesnapshot_fetched_at",
+				Unique:  false,
+				Columns: []*schema.Column{MapPerformanceSnapshotsColumns[18]},
+			},
+		},
+	}
+	// MapPublishAccountsColumns holds the columns for the "map_publish_accounts" table.
+	MapPublishAccountsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "update_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID"},
+		{Name: "account_id", Type: field.TypeString, Unique: true, Comment: "账号 ID，pa_ 前缀 ULID（契约 00-shared §0.3）"},
+		{Name: "channel_id", Type: field.TypeString, Comment: "所属渠道（map_publish_channels.channel_id）"},
+		{Name: "display_name", Type: field.TypeString, Comment: "便于识别的名称（如「抖音-主号」）"},
+		{Name: "credential_ref", Type: field.TypeString, Nullable: true, Comment: "🔴 加密凭据引用（enc:v1:...），非明文；由 CredentialVault 管理"},
+		{Name: "credential_type", Type: field.TypeEnum, Nullable: true, Comment: "凭据类型：oauth / cookie / api_key", Enums: []string{"oauth", "cookie", "api_key"}},
+		{Name: "enabled", Type: field.TypeBool, Comment: "是否启用（人工启停）", Default: true},
+		{Name: "health", Type: field.TypeEnum, Comment: "健康状态：healthy / degraded / paused / credential_invalid（凭据失效，不清凭据待重新授权）", Enums: []string{"healthy", "degraded", "paused", "credential_invalid"}, Default: "healthy"},
+		{Name: "consecutive_failures", Type: field.TypeInt, Comment: "连续发布失败数（熔断计数）", Default: 0},
+		{Name: "paused_until", Type: field.TypeTime, Nullable: true, Comment: "熔断暂停截止时间，UTC；paused 时有效"},
+		{Name: "published_24h", Type: field.TypeInt, Comment: "24h 滚动发布计数（应用层维护 + receipts 复核）", Default: 0},
+		{Name: "last_published_at", Type: field.TypeTime, Nullable: true, Comment: "最近一次成功发布时间，UTC"},
+		{Name: "last_error", Type: field.TypeString, Nullable: true, Comment: "最近一次错误（🔴 已脱敏，不含凭据/堆栈原文）"},
+	}
+	// MapPublishAccountsTable holds the schema information for the "map_publish_accounts" table.
+	MapPublishAccountsTable = &schema.Table{
+		Name:       "map_publish_accounts",
+		Comment:    "MAP 账号池：凭据加密引用 + 健康状态 + 熔断字段（⑤ MAP 详细设计 §1.2）",
+		Columns:    MapPublishAccountsColumns,
+		PrimaryKey: []*schema.Column{MapPublishAccountsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "mappublishaccount_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{MapPublishAccountsColumns[6]},
+			},
+			{
+				Name:    "mappublishaccount_channel_id",
+				Unique:  false,
+				Columns: []*schema.Column{MapPublishAccountsColumns[8]},
+			},
+			{
+				Name:    "mappublishaccount_enabled",
+				Unique:  false,
+				Columns: []*schema.Column{MapPublishAccountsColumns[12]},
+			},
+			{
+				Name:    "mappublishaccount_health",
+				Unique:  false,
+				Columns: []*schema.Column{MapPublishAccountsColumns[13]},
+			},
+			{
+				Name:    "mappublishaccount_paused_until",
+				Unique:  false,
+				Columns: []*schema.Column{MapPublishAccountsColumns[15]},
+			},
+		},
+	}
+	// MapPublishChannelsColumns holds the columns for the "map_publish_channels" table.
+	MapPublishChannelsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "update_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID"},
+		{Name: "channel_id", Type: field.TypeString, Unique: true, Comment: "渠道 ID，ch_ 前缀 ULID（⑤ MAP 内部实体）"},
+		{Name: "platform_key", Type: field.TypeString, Comment: "平台键（douyin/youtube/...），须与 VariantSet.copy 键及适配器 PlatformKey() 一致"},
+		{Name: "slot", Type: field.TypeString, Comment: "槽位名（main/a1/...），与 platform_key 组成唯一槽位"},
+		{Name: "region", Type: field.TypeEnum, Comment: "区域：cn（国内）/intl（国外）/global（跨市场），契约 00-shared §1", Enums: []string{"cn", "intl", "global"}},
+		{Name: "enabled", Type: field.TypeBool, Comment: "是否启用", Default: true},
+		{Name: "capability", Type: field.TypeJSON, Nullable: true, Comment: "能力声明快照（video/im[...]/native_schedule/draft_state/analytics/limits），不支持即明确报错"},
+		{Name: "adapter_version", Type: field.TypeString, Nullable: true, Comment: "适配器版本（去灰用），可空"},
+		{Name: "priority", Type: field.TypeInt, Comment: "发布优先级（越大越先）", Default: 0},
+	}
+	// MapPublishChannelsTable holds the schema information for the "map_publish_channels" table.
+	MapPublishChannelsTable = &schema.Table{
+		Name:       "map_publish_channels",
+		Comment:    "MAP 平台渠道：platform:slot 槽位 + 能力声明快照（⑤ MAP 详细设计 §1.1）",
+		Columns:    MapPublishChannelsColumns,
+		PrimaryKey: []*schema.Column{MapPublishChannelsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "mappublishchannel_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{MapPublishChannelsColumns[6]},
+			},
+			{
+				Name:    "mappublishchannel_platform_key_slot",
+				Unique:  true,
+				Columns: []*schema.Column{MapPublishChannelsColumns[8], MapPublishChannelsColumns[9]},
+			},
+			{
+				Name:    "mappublishchannel_region",
+				Unique:  false,
+				Columns: []*schema.Column{MapPublishChannelsColumns[10]},
+			},
+			{
+				Name:    "mappublishchannel_enabled",
+				Unique:  false,
+				Columns: []*schema.Column{MapPublishChannelsColumns[11]},
+			},
+		},
+	}
+	// MapPublishReceiptsColumns holds the columns for the "map_publish_receipts" table.
+	MapPublishReceiptsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "update_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID"},
+		{Name: "receipt_id", Type: field.TypeString, Unique: true, Comment: "回执 ID，pr_ 前缀 ULID（契约 00-shared §0.3）"},
+		{Name: "dispatch_unit_id", Type: field.TypeString, Comment: "关联分发单元（du_ 前缀）"},
+		{Name: "account_id", Type: field.TypeString, Nullable: true, Comment: "发布所用账号（pa_ 前缀），可空"},
+		{Name: "platform_key", Type: field.TypeString, Comment: "目标平台（与渠道/适配器 PlatformKey 一致）"},
+		{Name: "post_id", Type: field.TypeString, Nullable: true, Comment: "平台返回的作品 ID"},
+		{Name: "post_url", Type: field.TypeString, Nullable: true, Comment: "作品链接"},
+		{Name: "visibility", Type: field.TypeEnum, Comment: "实际对外可见性（🔴 验收随机抽查要求全部 private/unlisted，无一无理由 public）", Enums: []string{"private", "unlisted", "public"}},
+		{Name: "published_at", Type: field.TypeTime, Comment: "实际发布时间，UTC"},
+		{Name: "operator", Type: field.TypeString, Comment: "谁点的发布"},
+		{Name: "request_payload_hash", Type: field.TypeString, Nullable: true, Comment: "请求体 SHA-256（防篡改，可空）"},
+		{Name: "response_raw_ref", Type: field.TypeString, Nullable: true, Comment: "平台原始响应引用（🔴 已脱敏后存储，可空）"},
+	}
+	// MapPublishReceiptsTable holds the schema information for the "map_publish_receipts" table.
+	MapPublishReceiptsTable = &schema.Table{
+		Name:       "map_publish_receipts",
+		Comment:    "MAP 发布回执：一个分发单元在一个平台至多一条（幂等唯一索引）",
+		Columns:    MapPublishReceiptsColumns,
+		PrimaryKey: []*schema.Column{MapPublishReceiptsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "mappublishreceipt_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{MapPublishReceiptsColumns[6]},
+			},
+			{
+				Name:    "mappublishreceipt_dispatch_unit_id_platform_key",
+				Unique:  true,
+				Columns: []*schema.Column{MapPublishReceiptsColumns[8], MapPublishReceiptsColumns[10]},
+			},
+			{
+				Name:    "mappublishreceipt_account_id",
+				Unique:  false,
+				Columns: []*schema.Column{MapPublishReceiptsColumns[9]},
+			},
+			{
+				Name:    "mappublishreceipt_platform_key",
+				Unique:  false,
+				Columns: []*schema.Column{MapPublishReceiptsColumns[10]},
+			},
+			{
+				Name:    "mappublishreceipt_published_at",
+				Unique:  false,
+				Columns: []*schema.Column{MapPublishReceiptsColumns[14]},
 			},
 		},
 	}
@@ -475,6 +1401,564 @@ var (
 				Name:    "menu_status",
 				Unique:  false,
 				Columns: []*schema.Column{MenuPermissionsColumns[1]},
+			},
+		},
+	}
+	// MiaEventCardsColumns holds the columns for the "mia_event_cards" table.
+	MiaEventCardsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "update_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID"},
+		{Name: "event_id", Type: field.TypeString, Unique: true, Comment: "事件卡 ID，ec_ 前缀 ULID（契约 §0.3）"},
+		{Name: "title", Type: field.TypeString, Comment: "事件标题"},
+		{Name: "summary", Type: field.TypeString, Nullable: true, Size: 2147483647, Comment: "事件摘要"},
+		{Name: "occurred_at", Type: field.TypeTime, Comment: "事件发生时间 UTC（非采集时间）"},
+		{Name: "topic_id", Type: field.TypeString, Nullable: true, Comment: "关联 TT 话题 tp_，可空"},
+		{Name: "source_intel_ids", Type: field.TypeJSON, Comment: "全部来源指针（it_ id 列表，合并后仍保留）"},
+		{Name: "source_count", Type: field.TypeInt, Comment: "转载源数（按不同域名去重计数，影响 source_weight）", Default: 1},
+		{Name: "domains", Type: field.TypeJSON, Nullable: true, Comment: "来源去重域名列表（source_weight 的输入）"},
+		{Name: "entities", Type: field.TypeJSON, Nullable: true, Comment: "抽取实体（type/value/confidence）"},
+		{Name: "category", Type: field.TypeEnum, Comment: "事件类别：policy|company|macro|tech|crypto", Enums: []string{"policy", "company", "macro", "tech", "crypto"}},
+		{Name: "lang", Type: field.TypeString, Comment: "语言，如 en/zh", Default: "en"},
+		{Name: "merged_by", Type: field.TypeEnum, Comment: "聚类方式：auto|manual", Enums: []string{"auto", "manual"}, Default: "auto"},
+		{Name: "split_locked", Type: field.TypeBool, Comment: "人工干预后锁定（锁定卡不再被自动聚类吞并）", Default: false},
+	}
+	// MiaEventCardsTable holds the schema information for the "mia_event_cards" table.
+	MiaEventCardsTable = &schema.Table{
+		Name:       "mia_event_cards",
+		Comment:    "事件卡：多源转载合并后的单一事件（FR-MIA-05）",
+		Columns:    MiaEventCardsColumns,
+		PrimaryKey: []*schema.Column{MiaEventCardsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "miaeventcard_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{MiaEventCardsColumns[6]},
+			},
+			{
+				Name:    "miaeventcard_occurred_at",
+				Unique:  false,
+				Columns: []*schema.Column{MiaEventCardsColumns[10]},
+			},
+			{
+				Name:    "miaeventcard_topic_id",
+				Unique:  false,
+				Columns: []*schema.Column{MiaEventCardsColumns[11]},
+			},
+			{
+				Name:    "miaeventcard_category",
+				Unique:  false,
+				Columns: []*schema.Column{MiaEventCardsColumns[16]},
+			},
+			{
+				Name:    "miaeventcard_occurred_at_split_locked",
+				Unique:  false,
+				Columns: []*schema.Column{MiaEventCardsColumns[10], MiaEventCardsColumns[19]},
+			},
+		},
+	}
+	// MiaImpactCardsColumns holds the columns for the "mia_impact_cards" table.
+	MiaImpactCardsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "update_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID"},
+		{Name: "impact_id", Type: field.TypeString, Unique: true, Comment: "影响卡 ID，im_ 前缀 ULID（契约 §0.3）"},
+		{Name: "event_id", Type: field.TypeString, Comment: "关联事件卡 ec_"},
+		{Name: "topic_id", Type: field.TypeString, Nullable: true, Comment: "关联 TT 话题 tp_，可空"},
+		{Name: "title", Type: field.TypeString, Comment: "标题"},
+		{Name: "summary", Type: field.TypeString, Nullable: true, Size: 2147483647, Comment: "摘要"},
+		{Name: "lang", Type: field.TypeString, Comment: "语言，如 en/zh", Default: "en"},
+		{Name: "sentiment_label", Type: field.TypeEnum, Comment: "positive|neutral|negative|unknown（引擎全失效时禁止猜测）", Enums: []string{"positive", "neutral", "negative", "unknown"}, Default: "unknown"},
+		{Name: "sentiment_score", Type: field.TypeFloat64, Comment: "情感分 −1~1；unknown 时为 0", Default: 0},
+		{Name: "sentiment_engine", Type: field.TypeEnum, Comment: "finbert|llm|none（不同引擎分数不可混比）", Enums: []string{"finbert", "llm", "none"}, Default: "none"},
+		{Name: "impact_score", Type: field.TypeFloat64, Comment: "影响面评分 0–100", Default: 0},
+		{Name: "direction", Type: field.TypeEnum, Comment: "bullish|bearish|neutral（方向性独立于分数）", Enums: []string{"bullish", "bearish", "neutral"}, Default: "neutral"},
+		{Name: "ttl_hours", Type: field.TypeInt, Comment: "TTL 衰减时长（小时）", Default: 24},
+		{Name: "expires_at", Type: field.TypeTime, Comment: "过期时刻 UTC；过期卡不占排行榜但不删除（审计）"},
+		{Name: "factors", Type: field.TypeJSON, Comment: "四因子明细 {sentiment, source_weight, relevance, decay}"},
+		{Name: "affected", Type: field.TypeJSON, Comment: "受影响标的（🔴 每项必须 path 非空、confidence 有效）"},
+		{Name: "no_mapping", Type: field.TypeBool, Comment: "无实体映射（score=0，不强行匹配）", Default: false},
+		{Name: "disclaimer", Type: field.TypeString, Comment: "🔴 强制非空免责声明（空卡不允许落库与推送）"},
+		{Name: "rule_version", Type: field.TypeString, Nullable: true, Comment: "规则版本（可复算，NFR-MIA-10）"},
+		{Name: "weights_snapshot", Type: field.TypeJSON, Nullable: true, Comment: "权重快照（可复算）"},
+		{Name: "verified", Type: field.TypeJSON, Nullable: true, Comment: "{checked_at, actual_move, hit}；hit=null 表示未校验"},
+		{Name: "occurred_at", Type: field.TypeTime, Comment: "事件发生时间 UTC"},
+		{Name: "pushed", Type: field.TypeBool, Comment: "是否已推送（高分卡推送幂等）", Default: false},
+	}
+	// MiaImpactCardsTable holds the schema information for the "mia_impact_cards" table.
+	MiaImpactCardsTable = &schema.Table{
+		Name:       "mia_impact_cards",
+		Comment:    "影响卡：事件 + 影响路径 + 关联标的 + 置信度（FR-MIA-06）",
+		Columns:    MiaImpactCardsColumns,
+		PrimaryKey: []*schema.Column{MiaImpactCardsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "miaimpactcard_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{MiaImpactCardsColumns[6]},
+			},
+			{
+				Name:    "miaimpactcard_event_id",
+				Unique:  false,
+				Columns: []*schema.Column{MiaImpactCardsColumns[8]},
+			},
+			{
+				Name:    "miaimpactcard_topic_id",
+				Unique:  false,
+				Columns: []*schema.Column{MiaImpactCardsColumns[9]},
+			},
+			{
+				Name:    "miaimpactcard_sentiment_label",
+				Unique:  false,
+				Columns: []*schema.Column{MiaImpactCardsColumns[13]},
+			},
+			{
+				Name:    "miaimpactcard_impact_score",
+				Unique:  false,
+				Columns: []*schema.Column{MiaImpactCardsColumns[16]},
+			},
+			{
+				Name:    "miaimpactcard_expires_at",
+				Unique:  false,
+				Columns: []*schema.Column{MiaImpactCardsColumns[19]},
+			},
+			{
+				Name:    "miaimpactcard_expires_at_occurred_at",
+				Unique:  false,
+				Columns: []*schema.Column{MiaImpactCardsColumns[19], MiaImpactCardsColumns[27]},
+			},
+			{
+				Name:    "miaimpactcard_occurred_at",
+				Unique:  false,
+				Columns: []*schema.Column{MiaImpactCardsColumns[27]},
+			},
+		},
+	}
+	// MiaQuoteCachesColumns holds the columns for the "mia_quote_caches" table.
+	MiaQuoteCachesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "update_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID"},
+		{Name: "symbol", Type: field.TypeString, Comment: "标的：SPY / ^GSPC / EURUSD / BTC/USDT"},
+		{Name: "provider", Type: field.TypeString, Comment: "行情来源：openbb|ccxt|yahoo"},
+		{Name: "ohlcv", Type: field.TypeJSON, Comment: "OHLCV 快照数组"},
+		{Name: "fetched_at", Type: field.TypeTime, Comment: "拉取时间 UTC（Redis 侧 TTL 5 分钟）"},
+	}
+	// MiaQuoteCachesTable holds the schema information for the "mia_quote_caches" table.
+	MiaQuoteCachesTable = &schema.Table{
+		Name:       "mia_quote_caches",
+		Comment:    "行情缓存：只读 OHLCV 快照（FR-MIA-07）",
+		Columns:    MiaQuoteCachesColumns,
+		PrimaryKey: []*schema.Column{MiaQuoteCachesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "miaquotecache_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{MiaQuoteCachesColumns[6]},
+			},
+			{
+				Name:    "miaquotecache_symbol_provider",
+				Unique:  true,
+				Columns: []*schema.Column{MiaQuoteCachesColumns[7], MiaQuoteCachesColumns[8]},
+			},
+			{
+				Name:    "miaquotecache_fetched_at",
+				Unique:  false,
+				Columns: []*schema.Column{MiaQuoteCachesColumns[10]},
+			},
+		},
+	}
+	// MiaTransmissionRulesColumns holds the columns for the "mia_transmission_rules" table.
+	MiaTransmissionRulesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "update_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID"},
+		{Name: "rule_id", Type: field.TypeString, Unique: true, Comment: "规则 ID，rule_ 前缀 ULID（契约 §0.3）"},
+		{Name: "trigger", Type: field.TypeJSON, Comment: "触发条件，如 {asset=DXY, direction=up, min_move_pct=0.5}"},
+		{Name: "from_asset", Type: field.TypeString, Nullable: true, Comment: "触发资产（冗余于 trigger.asset，便于查询）"},
+		{Name: "to_asset", Type: field.TypeString, Comment: "传导目标标的"},
+		{Name: "to_direction", Type: field.TypeEnum, Comment: "传导方向：bullish|bearish", Enums: []string{"bullish", "bearish"}},
+		{Name: "confidence", Type: field.TypeFloat64, Comment: "🔴 必填 0<置信度≤0.6（假设非因果，标 0.9 是自欺欺人）"},
+		{Name: "note", Type: field.TypeString, Size: 2147483647, Comment: "🔴 必填：说明这是假设及依据"},
+		{Name: "enabled", Type: field.TypeBool, Comment: "是否启用", Default: true},
+		{Name: "hit_count", Type: field.TypeInt, Comment: "该规则被触发的传导条数", Default: 0},
+		{Name: "correct_count", Type: field.TypeInt, Comment: "事后校验命中条数", Default: 0},
+	}
+	// MiaTransmissionRulesTable holds the schema information for the "mia_transmission_rules" table.
+	MiaTransmissionRulesTable = &schema.Table{
+		Name:       "mia_transmission_rules",
+		Comment:    "跨资产传导规则：假设非因果，confidence ≤0.6（FR-MIA-08）",
+		Columns:    MiaTransmissionRulesColumns,
+		PrimaryKey: []*schema.Column{MiaTransmissionRulesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "miatransmissionrule_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{MiaTransmissionRulesColumns[6]},
+			},
+			{
+				Name:    "miatransmissionrule_enabled",
+				Unique:  false,
+				Columns: []*schema.Column{MiaTransmissionRulesColumns[14]},
+			},
+			{
+				Name:    "miatransmissionrule_from_asset",
+				Unique:  false,
+				Columns: []*schema.Column{MiaTransmissionRulesColumns[9]},
+			},
+		},
+	}
+	// MmeAnalysisCachesColumns holds the columns for the "mme_analysis_caches" table.
+	MmeAnalysisCachesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "cache_key", Type: field.TypeString, Unique: true, Size: 64, Comment: "缓存键 sha256 hex（详细设计 §2.2 公式；唯一）"},
+		{Name: "kind", Type: field.TypeString, Size: 20, Comment: "产物类型：transcript|chapters|report|keyframes|reframed"},
+		{Name: "asset_id", Type: field.TypeString, Size: 36, Comment: "素材 ID（as_ 前缀）"},
+		{Name: "payload_path", Type: field.TypeString, Size: 1024, Comment: "产物存储路径（SRT/VTT/JSON/中间片）"},
+		{Name: "payload_meta", Type: field.TypeJSON, Nullable: true, Comment: "摘要信息（列表展示用，不存全文）"},
+		{Name: "engine", Type: field.TypeString, Size: 32, Comment: "引擎：whisper|funasr|cloud|ollama|ffmpeg", Default: ""},
+		{Name: "engine_version", Type: field.TypeString, Size: 64, Comment: "引擎版本（缓存失效因素之一）", Default: ""},
+		{Name: "prompt_version", Type: field.TypeString, Size: 32, Comment: "分析提示词版本", Default: ""},
+		{Name: "hit_count", Type: field.TypeInt64, Comment: "命中次数（评估缓存价值；命中率指标 mme_cache_hit_rate）", Default: 0},
+		{Name: "size_bytes", Type: field.TypeInt64, Comment: "产物字节数（max_cache_bytes 总量帽管理）", Default: 0},
+		{Name: "expires_at", Type: field.TypeTime, Comment: "过期时间（默认 +90d；transcript +180d）"},
+	}
+	// MmeAnalysisCachesTable holds the schema information for the "mme_analysis_caches" table.
+	MmeAnalysisCachesTable = &schema.Table{
+		Name:       "mme_analysis_caches",
+		Comment:    "MME 分析产物缓存（transcript/chapters/report/keyframes/reframed）",
+		Columns:    MmeAnalysisCachesColumns,
+		PrimaryKey: []*schema.Column{MmeAnalysisCachesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "mmeanalysiscache_kind",
+				Unique:  false,
+				Columns: []*schema.Column{MmeAnalysisCachesColumns[5]},
+			},
+			{
+				Name:    "mmeanalysiscache_asset_id",
+				Unique:  false,
+				Columns: []*schema.Column{MmeAnalysisCachesColumns[6]},
+			},
+			{
+				Name:    "mmeanalysiscache_expires_at",
+				Unique:  false,
+				Columns: []*schema.Column{MmeAnalysisCachesColumns[14]},
+			},
+		},
+	}
+	// MmeAssetsColumns holds the columns for the "mme_assets" table.
+	MmeAssetsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 36, Comment: "素材 ID，as_ 前缀 ULID"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "fingerprint", Type: field.TypeString, Unique: true, Size: 64, Comment: "内容指纹 SHA-256 hex（前 64MB 采样 + 文件大小 + 时长；唯一去重键）"},
+		{Name: "source_url", Type: field.TypeString, Nullable: true, Size: 1024, Comment: "来源 URL（本地导入为空）"},
+		{Name: "local_path", Type: field.TypeString, Size: 1024, Comment: "媒体文件存储路径（mme_media_storage 管理，对象存储/本地相对路径）"},
+		{Name: "duration_sec", Type: field.TypeFloat64, Comment: "时长（秒）", Default: 0},
+		{Name: "width", Type: field.TypeInt32, Comment: "原始宽", Default: 0},
+		{Name: "height", Type: field.TypeInt32, Comment: "原始高", Default: 0},
+		{Name: "size_bytes", Type: field.TypeInt64, Comment: "文件字节数", Default: 0},
+		{Name: "ref_count", Type: field.TypeInt32, Comment: "引用计数（任务数）；归零且过留存期后可回收", Default: 1},
+		{Name: "meta_title", Type: field.TypeString, Nullable: true, Size: 512, Comment: "yt-dlp/文件元数据标题（展示用）"},
+		{Name: "subtitle_path", Type: field.TypeString, Nullable: true, Size: 1024, Comment: "源字幕路径（yt-dlp --write-subs 产物；ASR source_subtitle 通路用）"},
+	}
+	// MmeAssetsTable holds the schema information for the "mme_assets" table.
+	MmeAssetsTable = &schema.Table{
+		Name:       "mme_assets",
+		Comment:    "MME 素材去重库（as_ 前缀；fingerprint 唯一，ref_count 引用计数）",
+		Columns:    MmeAssetsColumns,
+		PrimaryKey: []*schema.Column{MmeAssetsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "mmeasset_source_url",
+				Unique:  false,
+				Columns: []*schema.Column{MmeAssetsColumns[5]},
+			},
+		},
+	}
+	// MmeMontageTasksColumns holds the columns for the "mme_montage_tasks" table.
+	MmeMontageTasksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 36, Comment: "任务 ID，task_ 前缀 ULID"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "title", Type: field.TypeString, Size: 256, Comment: "任务标题", Default: ""},
+		{Name: "source_type", Type: field.TypeString, Size: 16, Comment: "来源：url|local|intel|candidate"},
+		{Name: "source_ref", Type: field.TypeString, Size: 1024, Comment: "来源引用：URL / 本地路径 / asset://"},
+		{Name: "candidate_id", Type: field.TypeString, Nullable: true, Size: 36, Comment: "回指 ② TT 选题（tc_ 前缀），可空"},
+		{Name: "intel_id", Type: field.TypeString, Nullable: true, Size: 36, Comment: "回指 ① IC 情报（it_ 前缀），可空"},
+		{Name: "asset_id", Type: field.TypeString, Nullable: true, Size: 36, Comment: "去重后的素材 ID（as_ 前缀，mme_assets 外键），下载完成后回填"},
+		{Name: "user_intent", Type: field.TypeString, Nullable: true, Size: 2147483647, Comment: "用户意图（M1-06 user-intent；纳入分析缓存 key，不同意图产出不同章节/报告）"},
+		{Name: "state", Type: field.TypeString, Size: 20, Comment: "状态机：created|downloading|downloaded|transcribing|analyzing|expanded|rendering|reviewing|done|failed", Default: "created"},
+		{Name: "prompt_version", Type: field.TypeString, Size: 32, Comment: "分析提示词版本（缓存 key 组成；版本变更即使旧分析缓存失效）", Default: "v1.0"},
+		{Name: "asr_engine", Type: field.TypeString, Size: 20, Comment: "ASR 引擎选择：source_subtitle|whisper|funasr|cloud", Default: ""},
+		{Name: "error_msg", Type: field.TypeString, Nullable: true, Size: 1024, Comment: "可读错误（下载/分析失败原因；不存堆栈）"},
+		{Name: "highlights", Type: field.TypeJSON, Nullable: true, Comment: "高光候选列表（内容版本来源；手工 EDL 或 LLM 分析产物）"},
+		{Name: "progress", Type: field.TypeFloat64, Comment: "加工进度 0-1（下载/分析阶段粗粒度上报）", Default: 0},
+	}
+	// MmeMontageTasksTable holds the schema information for the "mme_montage_tasks" table.
+	MmeMontageTasksTable = &schema.Table{
+		Name:       "mme_montage_tasks",
+		Comment:    "MME 加工任务（task_ 前缀；source_type=url/local/intel/candidate）",
+		Columns:    MmeMontageTasksColumns,
+		PrimaryKey: []*schema.Column{MmeMontageTasksColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "mmemontagetask_source_type",
+				Unique:  false,
+				Columns: []*schema.Column{MmeMontageTasksColumns[5]},
+			},
+			{
+				Name:    "mmemontagetask_state",
+				Unique:  false,
+				Columns: []*schema.Column{MmeMontageTasksColumns[11]},
+			},
+			{
+				Name:    "mmemontagetask_candidate_id",
+				Unique:  false,
+				Columns: []*schema.Column{MmeMontageTasksColumns[7]},
+			},
+			{
+				Name:    "mmemontagetask_intel_id",
+				Unique:  false,
+				Columns: []*schema.Column{MmeMontageTasksColumns[8]},
+			},
+			{
+				Name:    "mmemontagetask_asset_id",
+				Unique:  false,
+				Columns: []*schema.Column{MmeMontageTasksColumns[9]},
+			},
+		},
+	}
+	// MmeRenderJobsColumns holds the columns for the "mme_render_jobs" table.
+	MmeRenderJobsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 36, Comment: "渲染任务 ID，job_ 前缀 ULID"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "variant_id", Type: field.TypeString, Size: 36, Comment: "变体 ID（v_ 前缀）"},
+		{Name: "state", Type: field.TypeString, Size: 12, Comment: "状态：queued|running|done|failed|cancelled", Default: "queued"},
+		{Name: "progress", Type: field.TypeFloat64, Comment: "进度 0-1", Default: 0},
+		{Name: "started_at", Type: field.TypeTime, Nullable: true, Comment: "开渲时间（ETA 推算基准）"},
+		{Name: "finished_at", Type: field.TypeTime, Nullable: true, Comment: "完成时间"},
+		{Name: "worker_id", Type: field.TypeString, Size: 64, Comment: "消费者实例标识（排查归属）", Default: ""},
+		{Name: "error_code", Type: field.TypeString, Nullable: true, Size: 48, Comment: "错误码：MME_RENDER_FAIL 等"},
+		{Name: "error_msg", Type: field.TypeString, Nullable: true, Size: 2048, Comment: "错误摘要（ffmpeg stderr 截断 2KB）"},
+		{Name: "intermediate_path", Type: field.TypeString, Nullable: true, Size: 1024, Comment: "失败保留的中间产物路径（断点续渲/排查）"},
+		{Name: "attempt", Type: field.TypeInt32, Comment: "已尝试次数（重试 +1）", Default: 0},
+	}
+	// MmeRenderJobsTable holds the schema information for the "mme_render_jobs" table.
+	MmeRenderJobsTable = &schema.Table{
+		Name:       "mme_render_jobs",
+		Comment:    "MME 渲染任务（job_ 前缀；asynq 队列 mme_render 消费）",
+		Columns:    MmeRenderJobsColumns,
+		PrimaryKey: []*schema.Column{MmeRenderJobsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "mmerenderjob_variant_id",
+				Unique:  false,
+				Columns: []*schema.Column{MmeRenderJobsColumns[4]},
+			},
+			{
+				Name:    "mmerenderjob_state",
+				Unique:  false,
+				Columns: []*schema.Column{MmeRenderJobsColumns[5]},
+			},
+			{
+				Name:    "mmerenderjob_state_create_time",
+				Unique:  false,
+				Columns: []*schema.Column{MmeRenderJobsColumns[5], MmeRenderJobsColumns[1]},
+			},
+		},
+	}
+	// MmeTemplatesColumns holds the columns for the "mme_templates" table.
+	MmeTemplatesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 40, Comment: "模板 ID，tpl_ 前缀"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "name", Type: field.TypeString, Size: 128, Comment: "模板名"},
+		{Name: "intro_path", Type: field.TypeString, Size: 1024, Comment: "开场素材路径（可空 = 无片头）", Default: ""},
+		{Name: "outro_path", Type: field.TypeString, Size: 1024, Comment: "结尾素材路径（可空 = 无片尾）", Default: ""},
+		{Name: "transition", Type: field.TypeString, Size: 16, Comment: "转场：cut|fade|slide", Default: "cut"},
+		{Name: "caption_skin", Type: field.TypeJSON, Nullable: true, Comment: "字幕皮肤配置（字体/字号/颜色/描边/位置覆盖）"},
+		{Name: "enabled", Type: field.TypeBool, Comment: "是否可用", Default: true},
+	}
+	// MmeTemplatesTable holds the schema information for the "mme_templates" table.
+	MmeTemplatesTable = &schema.Table{
+		Name:       "mme_templates",
+		Comment:    "MME 混剪模板（开场/转场/结尾 + 字幕皮肤；≥3 套；变更可批量重渲）",
+		Columns:    MmeTemplatesColumns,
+		PrimaryKey: []*schema.Column{MmeTemplatesColumns[0]},
+	}
+	// MmeVariantsColumns holds the columns for the "mme_variants" table.
+	MmeVariantsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 36, Comment: "变体 ID，v_ 前缀 ULID"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "set_id", Type: field.TypeString, Size: 36, Comment: "所属变体簇（vs_ 前缀）"},
+		{Name: "content_version", Type: field.TypeString, Size: 64, Comment: "B 维度：内容版本标识（「高光1」等的 highlight id）"},
+		{Name: "aspect", Type: field.TypeString, Size: 8, Comment: "A 维度：画幅 9:16|1:1|16:9"},
+		{Name: "hook_id", Type: field.TypeString, Size: 64, Comment: "C 维度：Hook 标识", Default: ""},
+		{Name: "cover_id", Type: field.TypeString, Size: 64, Comment: "C 维度：封面标识", Default: ""},
+		{Name: "edl_ref", Type: field.TypeString, Size: 512, Comment: "切点定义 JSON（{start_sec,end_sec}；在 B 维度确定）", Default: ""},
+		{Name: "duration_sec", Type: field.TypeFloat64, Comment: "成片时长", Default: 0},
+		{Name: "video_path", Type: field.TypeString, Size: 1024, Comment: "成片文件路径（对象存储路径，非 HTTP URL）", Default: ""},
+		{Name: "cover_path", Type: field.TypeString, Size: 1024, Comment: "封面图路径", Default: ""},
+		{Name: "caption_style", Type: field.TypeString, Size: 16, Comment: "字幕档位：simple|dynamic", Default: "simple"},
+		{Name: "srt_path", Type: field.TypeString, Size: 1024, Comment: "字幕文件路径", Default: ""},
+		{Name: "copy_json", Type: field.TypeJSON, Nullable: true, Comment: "平台文案 {douyin:{title,desc,tags},xiaohongshu:{...},bilibili:{...},youtube_shorts:{...}}；键须与 MAP platform_key 一致"},
+		{Name: "copy_degraded", Type: field.TypeBool, Comment: "文案为模板降级产物（LLM 不可用；诚实标注，manifest 同步）", Default: false},
+		{Name: "manifest_path", Type: field.TypeString, Size: 1024, Comment: "manifest.json 路径（含 QC 块，详细设计 §2.7）", Default: ""},
+		{Name: "qc_boundary_ok", Type: field.TypeBool, Comment: "边界自检（时长/分辨率/黑帧；🔴 硬门禁）", Default: false},
+		{Name: "qc_subtitle_ok", Type: field.TypeBool, Comment: "字幕自检（安全区/无句中硬切/时长匹配；🔴 硬门禁）", Default: false},
+		{Name: "qc_score", Type: field.TypeFloat64, Comment: "质检综合分 0-1", Default: 0},
+		{Name: "render_state", Type: field.TypeString, Size: 12, Comment: "渲染状态：pending|running|done|failed", Default: "pending"},
+		{Name: "render_error", Type: field.TypeString, Nullable: true, Size: 1024, Comment: "渲染失败原因（可读）"},
+		{Name: "selected", Type: field.TypeBool, Comment: "是否保留渲染（展开=true；删减只渲染 selected=true 的）", Default: true},
+		{Name: "review_state", Type: field.TypeString, Size: 12, Comment: "审核状态：pending|approved|rejected（FR-MIX-06 批量审核台）", Default: "pending"},
+		{Name: "review_reason", Type: field.TypeString, Nullable: true, Size: 512, Comment: "驳回原因（驳回必填；批准为空）"},
+	}
+	// MmeVariantsTable holds the schema information for the "mme_variants" table.
+	MmeVariantsTable = &schema.Table{
+		Name:       "mme_variants",
+		Comment:    "MME 单个变体（v_ 前缀：内容版本 × 画幅 × Hook 的一个组合）",
+		Columns:    MmeVariantsColumns,
+		PrimaryKey: []*schema.Column{MmeVariantsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "mmevariant_set_id",
+				Unique:  false,
+				Columns: []*schema.Column{MmeVariantsColumns[4]},
+			},
+			{
+				Name:    "mmevariant_content_version",
+				Unique:  false,
+				Columns: []*schema.Column{MmeVariantsColumns[5]},
+			},
+			{
+				Name:    "mmevariant_aspect",
+				Unique:  false,
+				Columns: []*schema.Column{MmeVariantsColumns[6]},
+			},
+			{
+				Name:    "mmevariant_render_state",
+				Unique:  false,
+				Columns: []*schema.Column{MmeVariantsColumns[21]},
+			},
+			{
+				Name:    "mmevariant_selected",
+				Unique:  false,
+				Columns: []*schema.Column{MmeVariantsColumns[23]},
+			},
+			{
+				Name:    "mmevariant_set_id_selected",
+				Unique:  false,
+				Columns: []*schema.Column{MmeVariantsColumns[4], MmeVariantsColumns[23]},
+			},
+		},
+	}
+	// MmeVariantSetsColumns holds the columns for the "mme_variant_sets" table.
+	MmeVariantSetsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 36, Comment: "变体簇 ID，vs_ 前缀 ULID"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "task_id", Type: field.TypeString, Size: 36, Comment: "加工任务 ID（task_ 前缀）"},
+		{Name: "candidate_id", Type: field.TypeString, Nullable: true, Size: 36, Comment: "回指 ② TT 选题，可空（手动传素材场景为 null，契约 §4）"},
+		{Name: "asset_id", Type: field.TypeString, Size: 36, Comment: "素材 ID（as_ 前缀）"},
+		{Name: "transcript_ref", Type: field.TypeString, Size: 1024, Comment: "转写产物引用（AnalysisCache payload_path 或 asset:// 字幕）", Default: ""},
+		{Name: "state", Type: field.TypeString, Size: 16, Comment: "状态：planned|rendering|review|approved|rejected", Default: "planned"},
+		{Name: "variant_count", Type: field.TypeInt32, Comment: "变体总数", Default: 0},
+		{Name: "diff_min_similarity", Type: field.TypeFloat64, Comment: "差异化检查：同簇两两最大相似度的最小值（FR-MIX-05，越高越危险）", Default: 0},
+		{Name: "diff_warn", Type: field.TypeBool, Comment: "差异化告警（综合 ≥0.90；强提示不硬阻断，ADR-MME-04）", Default: false},
+		{Name: "diff_pairs", Type: field.TypeJSON, Nullable: true, Comment: "相似度对明细 [{variant_a,variant_b,visual,hook,copy,overall}]（告警对高亮用）"},
+		{Name: "template_id", Type: field.TypeString, Nullable: true, Size: 36, Comment: "混剪模板 ID（FR-MIX-08），可空"},
+	}
+	// MmeVariantSetsTable holds the schema information for the "mme_variant_sets" table.
+	MmeVariantSetsTable = &schema.Table{
+		Name:       "mme_variant_sets",
+		Comment:    "MME 变体簇（vs_ 前缀；矩阵展开的统一管理容器）",
+		Columns:    MmeVariantSetsColumns,
+		PrimaryKey: []*schema.Column{MmeVariantSetsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "mmevariantset_task_id",
+				Unique:  false,
+				Columns: []*schema.Column{MmeVariantSetsColumns[4]},
+			},
+			{
+				Name:    "mmevariantset_candidate_id",
+				Unique:  false,
+				Columns: []*schema.Column{MmeVariantSetsColumns[5]},
+			},
+			{
+				Name:    "mmevariantset_state",
+				Unique:  false,
+				Columns: []*schema.Column{MmeVariantSetsColumns[8]},
+			},
+		},
+	}
+	// MiaNarrativeCoinMappingsColumns holds the columns for the "mia_narrative_coin_mappings" table.
+	MiaNarrativeCoinMappingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "update_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID"},
+		{Name: "narrative", Type: field.TypeString, Comment: "叙事名，如「现货 ETF 获批」"},
+		{Name: "keywords", Type: field.TypeJSON, Comment: "触发关键词数组"},
+		{Name: "coins", Type: field.TypeJSON, Comment: "受影响币种，如 [BTC, ETH]"},
+		{Name: "default_sentiment_hint", Type: field.TypeEnum, Comment: "默认情感提示：bullish|bearish|neutral", Enums: []string{"bullish", "bearish", "neutral"}, Default: "neutral"},
+		{Name: "ttl_hours", Type: field.TypeInt, Comment: "该叙事的影响衰减时长（小时）。加密叙事衰减快，常 6h", Default: 6},
+		{Name: "confidence", Type: field.TypeFloat64, Comment: "映射可信度 0–1", Default: 0.6},
+		{Name: "enabled", Type: field.TypeBool, Comment: "是否启用", Default: true},
+	}
+	// MiaNarrativeCoinMappingsTable holds the schema information for the "mia_narrative_coin_mappings" table.
+	MiaNarrativeCoinMappingsTable = &schema.Table{
+		Name:       "mia_narrative_coin_mappings",
+		Comment:    "映射表 B：加密叙事 → 币种（FR-MIA-02）",
+		Columns:    MiaNarrativeCoinMappingsColumns,
+		PrimaryKey: []*schema.Column{MiaNarrativeCoinMappingsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "narrativecoinmapping_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{MiaNarrativeCoinMappingsColumns[6]},
+			},
+			{
+				Name:    "narrativecoinmapping_enabled",
+				Unique:  false,
+				Columns: []*schema.Column{MiaNarrativeCoinMappingsColumns[13]},
+			},
+			{
+				Name:    "narrativecoinmapping_narrative",
+				Unique:  true,
+				Columns: []*schema.Column{MiaNarrativeCoinMappingsColumns[7]},
 			},
 		},
 	}
@@ -1326,6 +2810,121 @@ var (
 			},
 		},
 	}
+	// TtTopicsColumns holds the columns for the "tt_topics" table.
+	TtTopicsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "update_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID"},
+		{Name: "topic_id", Type: field.TypeString, Unique: true, Comment: "话题 ID，tp_ 前缀 ULID（契约 §0.3）"},
+		{Name: "api_version", Type: field.TypeString, Comment: "契约版本", Default: "1.0"},
+		{Name: "label", Type: field.TypeString, Comment: "话题标签（代表标题，M-19 选取规则：gate=pass 优先 → workability 降序 → 互动降序 → collected_at 升序）"},
+		{Name: "category", Type: field.TypeEnum, Comment: "分类：A_hot|B_material|C_market|D_compliance（决定候选路由）", Enums: []string{"A_hot", "B_material", "C_market", "D_compliance"}},
+		{Name: "region", Type: field.TypeEnum, Comment: "区域：cn|intl|global", Enums: []string{"cn", "intl", "global"}, Default: "cn"},
+		{Name: "stage", Type: field.TypeEnum, Comment: "生命周期阶段（评审 B-6 补 dormant 兜底态）", Enums: []string{"latent", "rising", "peak", "decaying", "long_tail", "dormant"}, Default: "latent"},
+		{Name: "stage_since", Type: field.TypeTime, Nullable: true, Comment: "进入当前阶段的样本时间（UTC）"},
+		{Name: "stage_duration_points", Type: field.TypeInt, Comment: "当前阶段内已写入的样本点数（B-7：按点数计而非墙钟时长；C-15）", Default: 0},
+		{Name: "heat_score", Type: field.TypeFloat64, Comment: "当前热度（0-100 相对可比分数，冗余便于排序）", Default: 0},
+		{Name: "velocity", Type: field.TypeFloat64, Comment: "当前 v_ewma，单位：分/小时（M-2 统一口径）", Default: 0},
+		{Name: "accel", Type: field.TypeFloat64, Comment: "当前加速度", Default: 0},
+		{Name: "rank_pct", Type: field.TypeFloat64, Comment: "榜内相对位置因子取值 0-1", Default: 0},
+		{Name: "eng_pct", Type: field.TypeFloat64, Comment: "互动对数分位因子取值 0-1（A-2 平台内分位）", Default: 0},
+		{Name: "freshness", Type: field.TypeFloat64, Comment: "新鲜度因子取值 0-1（A-4：样本时间口径 + 地板 0.05）", Default: 0},
+		{Name: "breadth", Type: field.TypeFloat64, Comment: "跨平台扩散度因子取值 0-1（A-5 零点平移）", Default: 0},
+		{Name: "w_rank_eff", Type: field.TypeFloat64, Comment: "本次实际生效权重（A-6 缺失重分配后）", Default: 0},
+		{Name: "w_eng_eff", Type: field.TypeFloat64, Comment: "本次实际生效权重", Default: 0},
+		{Name: "w_fresh_eff", Type: field.TypeFloat64, Comment: "本次实际生效权重", Default: 0},
+		{Name: "w_breadth_eff", Type: field.TypeFloat64, Comment: "本次实际生效权重", Default: 0},
+		{Name: "missing_factors", Type: field.TypeJSON, Nullable: true, Comment: "本次缺失的因子名（rank/eng/fresh/breadth）"},
+		{Name: "weight_epoch", Type: field.TypeString, Nullable: true, Comment: "权重口径 epoch（A-15：sha256(WeightConfig.id)[:8]，变更断点标记）"},
+		{Name: "platform_count", Type: field.TypeInt, Comment: "近 24h 有贡献的 distinct 平台数", Default: 0},
+		{Name: "platforms", Type: field.TypeJSON, Nullable: true, Comment: "近 24h 窗口内的平台列表（契约 heat.breadth.platforms 必填）", SchemaType: map[string]string{"mysql": "json"}},
+		{Name: "first_seen_at", Type: field.TypeTime, Comment: "首次出现的样本时间（UTC）"},
+		{Name: "last_seen_at", Type: field.TypeTime, Comment: "最近出现的样本时间（UTC）"},
+		{Name: "origin", Type: field.TypeJSON, Nullable: true, Comment: "溯源：{first_platform, first_url, first_intel_id}", SchemaType: map[string]string{"mysql": "json"}},
+		{Name: "representative_intel_id", Type: field.TypeString, Nullable: true, Comment: "主条目 it_ ID（M-19 同 label 选取规则）"},
+		{Name: "merge_lock", Type: field.TypeBool, Comment: "人工合并/拆分后置 true，自动聚类不得再拆散", Default: false},
+		{Name: "needs_review", Type: field.TypeBool, Comment: "低置信归并（0.70≤s<0.82）待人工复核", Default: false},
+		{Name: "is_archived", Type: field.TypeBool, Comment: "已归档（M-17 归档任务：last_seen_at < now-30d 或 dormant>7d）", Default: false},
+	}
+	// TtTopicsTable holds the schema information for the "tt_topics" table.
+	TtTopicsTable = &schema.Table{
+		Name:       "tt_topics",
+		Comment:    "TT 话题：跨平台同一事件的归并单元，热度/阶段/动态指标的元数据载体",
+		Columns:    TtTopicsColumns,
+		PrimaryKey: []*schema.Column{TtTopicsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "topic_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{TtTopicsColumns[6]},
+			},
+			{
+				Name:    "topic_is_archived_stage_last_seen_at",
+				Unique:  false,
+				Columns: []*schema.Column{TtTopicsColumns[36], TtTopicsColumns[12], TtTopicsColumns[31]},
+			},
+			{
+				Name:    "topic_heat_score",
+				Unique:  false,
+				Columns: []*schema.Column{TtTopicsColumns[15]},
+			},
+			{
+				Name:    "topic_last_seen_at",
+				Unique:  false,
+				Columns: []*schema.Column{TtTopicsColumns[31]},
+			},
+		},
+	}
+	// TtTopicSourcesColumns holds the columns for the "tt_topic_sources" table.
+	TtTopicSourcesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "update_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID"},
+		{Name: "topic_id", Type: field.TypeString, Comment: "话题 ID（tt_topics.topic_id）"},
+		{Name: "intel_id", Type: field.TypeString, Comment: "情报 ID（ic_intel_items.intel_id，it_ 前缀）"},
+		{Name: "cluster_key", Type: field.TypeString, Nullable: true, Comment: "IC 去重簇 ID（cl_ 前缀；B-1 Step1 硬键，命中直接归入本话题）"},
+		{Name: "contributed_at", Type: field.TypeTime, Comment: "该条目归入话题的样本时间（UTC；S-17 滑动窗口统计基础）"},
+		{Name: "similarity", Type: field.TypeFloat64, Comment: "归入时的相似度（Step1 硬键命中记 1.0）", Default: 1},
+		{Name: "moved_by", Type: field.TypeString, Nullable: true, Comment: "人工合并/拆分操作者，可空（空=自动聚类归入）"},
+		{Name: "moved_at", Type: field.TypeTime, Nullable: true, Comment: "人工移动时间（UTC）"},
+	}
+	// TtTopicSourcesTable holds the schema information for the "tt_topic_sources" table.
+	TtTopicSourcesTable = &schema.Table{
+		Name:       "tt_topic_sources",
+		Comment:    "TT 话题来源关联：话题由哪些情报条目贡献、何时贡献、相似度",
+		Columns:    TtTopicSourcesColumns,
+		PrimaryKey: []*schema.Column{TtTopicSourcesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "topicsource_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{TtTopicSourcesColumns[6]},
+			},
+			{
+				Name:    "topicsource_topic_id_intel_id",
+				Unique:  true,
+				Columns: []*schema.Column{TtTopicSourcesColumns[7], TtTopicSourcesColumns[8]},
+			},
+			{
+				Name:    "topicsource_cluster_key",
+				Unique:  false,
+				Columns: []*schema.Column{TtTopicSourcesColumns[9]},
+			},
+			{
+				Name:    "topicsource_topic_id_contributed_at",
+				Unique:  false,
+				Columns: []*schema.Column{TtTopicSourcesColumns[7], TtTopicSourcesColumns[10]},
+			},
+		},
+	}
 	// ApOrgUserColumns holds the columns for the "ap_org_user" table.
 	ApOrgUserColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
@@ -1561,14 +3160,44 @@ var (
 		AdminLoginRestrictionsTable,
 		AdminOperationLogTable,
 		APIResourceTable,
+		IcAuthorizationRecordsTable,
 		CasbinRuleTable,
+		IcClusterMergeEventsTable,
+		IcCollectRunsTable,
+		IcComplianceRulesTable,
+		IcCredentialAccountsTable,
 		DataPermissionsTable,
+		IcDeadLettersTable,
+		IcDedupSamplesTable,
 		ApOrgDeptTable,
 		DictTable,
 		DictCategoryTable,
+		MiaEntityAssetMappingsTable,
+		IcEvidenceSnapshotsTable,
 		FilesTable,
+		IcIntelClustersTable,
+		IcIntelItemsTable,
+		IcIntelSourcesTable,
 		LoginFailCountersTable,
+		MapApprovalRecordsTable,
+		MapDispatchUnitsTable,
+		MapPerformanceSnapshotsTable,
+		MapPublishAccountsTable,
+		MapPublishChannelsTable,
+		MapPublishReceiptsTable,
 		MenuPermissionsTable,
+		MiaEventCardsTable,
+		MiaImpactCardsTable,
+		MiaQuoteCachesTable,
+		MiaTransmissionRulesTable,
+		MmeAnalysisCachesTable,
+		MmeAssetsTable,
+		MmeMontageTasksTable,
+		MmeRenderJobsTable,
+		MmeTemplatesTable,
+		MmeVariantsTable,
+		MmeVariantSetsTable,
+		MiaNarrativeCoinMappingsTable,
 		NotificationMessagesTable,
 		NotificationMessageCategoriesTable,
 		NotificationMessageRecipientsTable,
@@ -1594,6 +3223,8 @@ var (
 		ToolLinkCategoriesTable,
 		ToolLinkSSOTicketsTable,
 		ToolLinkUserMarksTable,
+		TtTopicsTable,
+		TtTopicSourcesTable,
 		ApOrgUserTable,
 		UserCredentialsTable,
 		ApOrgUserPostTable,
@@ -1623,13 +3254,48 @@ func init() {
 		Charset:   "utf8mb4",
 		Collation: "utf8mb4_bin",
 	}
+	IcAuthorizationRecordsTable.Annotation = &entsql.Annotation{
+		Table:     "ic_authorization_records",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
 	CasbinRuleTable.Annotation = &entsql.Annotation{
 		Table:     "casbin_rule",
 		Charset:   "utf8mb4",
 		Collation: "utf8mb4_bin",
 	}
+	IcClusterMergeEventsTable.Annotation = &entsql.Annotation{
+		Table:     "ic_cluster_merge_events",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	IcCollectRunsTable.Annotation = &entsql.Annotation{
+		Table:     "ic_collect_runs",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	IcComplianceRulesTable.Annotation = &entsql.Annotation{
+		Table:     "ic_compliance_rules",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	IcCredentialAccountsTable.Annotation = &entsql.Annotation{
+		Table:     "ic_credential_accounts",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
 	DataPermissionsTable.Annotation = &entsql.Annotation{
 		Table:     "data_permissions",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	IcDeadLettersTable.Annotation = &entsql.Annotation{
+		Table:     "ic_dead_letters",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	IcDedupSamplesTable.Annotation = &entsql.Annotation{
+		Table:     "ic_dedup_samples",
 		Charset:   "utf8mb4",
 		Collation: "utf8mb4_bin",
 	}
@@ -1649,8 +3315,33 @@ func init() {
 		Charset:   "utf8mb4",
 		Collation: "utf8mb4_bin",
 	}
+	MiaEntityAssetMappingsTable.Annotation = &entsql.Annotation{
+		Table:     "mia_entity_asset_mappings",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	IcEvidenceSnapshotsTable.Annotation = &entsql.Annotation{
+		Table:     "ic_evidence_snapshots",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
 	FilesTable.Annotation = &entsql.Annotation{
 		Table:     "files",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	IcIntelClustersTable.Annotation = &entsql.Annotation{
+		Table:     "ic_intel_clusters",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	IcIntelItemsTable.Annotation = &entsql.Annotation{
+		Table:     "ic_intel_items",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	IcIntelSourcesTable.Annotation = &entsql.Annotation{
+		Table:     "ic_intel_sources",
 		Charset:   "utf8mb4",
 		Collation: "utf8mb4_bin",
 	}
@@ -1659,9 +3350,102 @@ func init() {
 		Charset:   "utf8mb4",
 		Collation: "utf8mb4_bin",
 	}
+	MapApprovalRecordsTable.Annotation = &entsql.Annotation{
+		Table:     "map_approval_records",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MapDispatchUnitsTable.Annotation = &entsql.Annotation{
+		Table:     "map_dispatch_units",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MapDispatchUnitsTable.Annotation.Checks = map[string]string{
+		"map_dispatch_publish_requires_approval": "publish_state <> 'published' OR (approval_state = 'approved' AND approver IS NOT NULL AND approver <> submitted_by)",
+	}
+	MapPerformanceSnapshotsTable.Annotation = &entsql.Annotation{
+		Table:     "map_performance_snapshots",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MapPublishAccountsTable.Annotation = &entsql.Annotation{
+		Table:     "map_publish_accounts",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MapPublishChannelsTable.Annotation = &entsql.Annotation{
+		Table:     "map_publish_channels",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MapPublishReceiptsTable.Annotation = &entsql.Annotation{
+		Table:     "map_publish_receipts",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
 	MenuPermissionsTable.ForeignKeys[0].RefTable = MenuPermissionsTable
 	MenuPermissionsTable.Annotation = &entsql.Annotation{
 		Table:     "menu_permissions",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MiaEventCardsTable.Annotation = &entsql.Annotation{
+		Table:     "mia_event_cards",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MiaImpactCardsTable.Annotation = &entsql.Annotation{
+		Table:     "mia_impact_cards",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MiaQuoteCachesTable.Annotation = &entsql.Annotation{
+		Table:     "mia_quote_caches",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MiaTransmissionRulesTable.Annotation = &entsql.Annotation{
+		Table:     "mia_transmission_rules",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MmeAnalysisCachesTable.Annotation = &entsql.Annotation{
+		Table:     "mme_analysis_caches",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MmeAssetsTable.Annotation = &entsql.Annotation{
+		Table:     "mme_assets",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MmeMontageTasksTable.Annotation = &entsql.Annotation{
+		Table:     "mme_montage_tasks",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MmeRenderJobsTable.Annotation = &entsql.Annotation{
+		Table:     "mme_render_jobs",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MmeTemplatesTable.Annotation = &entsql.Annotation{
+		Table:     "mme_templates",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MmeVariantsTable.Annotation = &entsql.Annotation{
+		Table:     "mme_variants",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MmeVariantSetsTable.Annotation = &entsql.Annotation{
+		Table:     "mme_variant_sets",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	MiaNarrativeCoinMappingsTable.Annotation = &entsql.Annotation{
+		Table:     "mia_narrative_coin_mappings",
 		Charset:   "utf8mb4",
 		Collation: "utf8mb4_bin",
 	}
@@ -1791,6 +3575,16 @@ func init() {
 	}
 	ToolLinkUserMarksTable.Annotation = &entsql.Annotation{
 		Table:     "tool_link_user_marks",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	TtTopicsTable.Annotation = &entsql.Annotation{
+		Table:     "tt_topics",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	TtTopicSourcesTable.Annotation = &entsql.Annotation{
+		Table:     "tt_topic_sources",
 		Charset:   "utf8mb4",
 		Collation: "utf8mb4_bin",
 	}

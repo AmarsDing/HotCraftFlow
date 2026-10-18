@@ -146,6 +146,8 @@ func NewDispatchUnitID() string    { return NewID(PrefixDispatchUnit) }
 func NewPublishAccountID() string  { return NewID(PrefixPublishAccount) }
 func NewPublishReceiptID() string  { return NewID(PrefixPublishReceipt) }
 func NewPerformanceSnapID() string { return NewID(PrefixPerformanceSnap) }
+func NewMontageTaskID() string     { return NewID(PrefixMontageTask) }
+func NewRenderJobID() string       { return NewID(PrefixRenderJob) }
 func NewEventID() string           { return NewID(PrefixEvent) }
 
 // ValidateIDFormat 校验 ID 是否符合 `{前缀}_{26位ULID}` 格式。

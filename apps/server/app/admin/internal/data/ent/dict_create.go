@@ -9,6 +9,7 @@ import (
 	"framework/app/admin/internal/data/ent/dict"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -18,6 +19,7 @@ type DictCreate struct {
 	config
 	mutation *DictMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -377,6 +379,7 @@ func (_c *DictCreate) createSpec() (*Dict, *sqlgraph.CreateSpec) {
 		_node = &Dict{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(dict.Table, sqlgraph.NewFieldSpec(dict.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -444,11 +447,642 @@ func (_c *DictCreate) createSpec() (*Dict, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Dict.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DictUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *DictCreate) OnConflict(opts ...sql.ConflictOption) *DictUpsertOne {
+	_c.conflict = opts
+	return &DictUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Dict.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *DictCreate) OnConflictColumns(columns ...string) *DictUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &DictUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// DictUpsertOne is the builder for "upsert"-ing
+	//  one Dict node.
+	DictUpsertOne struct {
+		create *DictCreate
+	}
+
+	// DictUpsert is the "OnConflict" setter.
+	DictUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *DictUpsert) SetUpdateTime(v time.Time) *DictUpsert {
+	u.Set(dict.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *DictUpsert) UpdateUpdateTime() *DictUpsert {
+	u.SetExcluded(dict.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *DictUpsert) ClearUpdateTime() *DictUpsert {
+	u.SetNull(dict.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *DictUpsert) SetDeleteTime(v time.Time) *DictUpsert {
+	u.Set(dict.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *DictUpsert) UpdateDeleteTime() *DictUpsert {
+	u.SetExcluded(dict.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *DictUpsert) ClearDeleteTime() *DictUpsert {
+	u.SetNull(dict.FieldDeleteTime)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *DictUpsert) SetStatus(v dict.Status) *DictUpsert {
+	u.Set(dict.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *DictUpsert) UpdateStatus() *DictUpsert {
+	u.SetExcluded(dict.FieldStatus)
+	return u
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *DictUpsert) ClearStatus() *DictUpsert {
+	u.SetNull(dict.FieldStatus)
+	return u
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *DictUpsert) SetCreateBy(v uint32) *DictUpsert {
+	u.Set(dict.FieldCreateBy, v)
+	return u
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *DictUpsert) UpdateCreateBy() *DictUpsert {
+	u.SetExcluded(dict.FieldCreateBy)
+	return u
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *DictUpsert) AddCreateBy(v uint32) *DictUpsert {
+	u.Add(dict.FieldCreateBy, v)
+	return u
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *DictUpsert) ClearCreateBy() *DictUpsert {
+	u.SetNull(dict.FieldCreateBy)
+	return u
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *DictUpsert) SetUpdateBy(v uint32) *DictUpsert {
+	u.Set(dict.FieldUpdateBy, v)
+	return u
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *DictUpsert) UpdateUpdateBy() *DictUpsert {
+	u.SetExcluded(dict.FieldUpdateBy)
+	return u
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *DictUpsert) AddUpdateBy(v uint32) *DictUpsert {
+	u.Add(dict.FieldUpdateBy, v)
+	return u
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *DictUpsert) ClearUpdateBy() *DictUpsert {
+	u.SetNull(dict.FieldUpdateBy)
+	return u
+}
+
+// SetRemark sets the "remark" field.
+func (u *DictUpsert) SetRemark(v string) *DictUpsert {
+	u.Set(dict.FieldRemark, v)
+	return u
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *DictUpsert) UpdateRemark() *DictUpsert {
+	u.SetExcluded(dict.FieldRemark)
+	return u
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *DictUpsert) ClearRemark() *DictUpsert {
+	u.SetNull(dict.FieldRemark)
+	return u
+}
+
+// SetType sets the "type" field.
+func (u *DictUpsert) SetType(v string) *DictUpsert {
+	u.Set(dict.FieldType, v)
+	return u
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *DictUpsert) UpdateType() *DictUpsert {
+	u.SetExcluded(dict.FieldType)
+	return u
+}
+
+// SetTypeName sets the "type_name" field.
+func (u *DictUpsert) SetTypeName(v string) *DictUpsert {
+	u.Set(dict.FieldTypeName, v)
+	return u
+}
+
+// UpdateTypeName sets the "type_name" field to the value that was provided on create.
+func (u *DictUpsert) UpdateTypeName() *DictUpsert {
+	u.SetExcluded(dict.FieldTypeName)
+	return u
+}
+
+// SetItemKey sets the "item_key" field.
+func (u *DictUpsert) SetItemKey(v string) *DictUpsert {
+	u.Set(dict.FieldItemKey, v)
+	return u
+}
+
+// UpdateItemKey sets the "item_key" field to the value that was provided on create.
+func (u *DictUpsert) UpdateItemKey() *DictUpsert {
+	u.SetExcluded(dict.FieldItemKey)
+	return u
+}
+
+// SetItemValue sets the "item_value" field.
+func (u *DictUpsert) SetItemValue(v string) *DictUpsert {
+	u.Set(dict.FieldItemValue, v)
+	return u
+}
+
+// UpdateItemValue sets the "item_value" field to the value that was provided on create.
+func (u *DictUpsert) UpdateItemValue() *DictUpsert {
+	u.SetExcluded(dict.FieldItemValue)
+	return u
+}
+
+// SetValueDesc sets the "value_desc" field.
+func (u *DictUpsert) SetValueDesc(v string) *DictUpsert {
+	u.Set(dict.FieldValueDesc, v)
+	return u
+}
+
+// UpdateValueDesc sets the "value_desc" field to the value that was provided on create.
+func (u *DictUpsert) UpdateValueDesc() *DictUpsert {
+	u.SetExcluded(dict.FieldValueDesc)
+	return u
+}
+
+// ClearValueDesc clears the value of the "value_desc" field.
+func (u *DictUpsert) ClearValueDesc() *DictUpsert {
+	u.SetNull(dict.FieldValueDesc)
+	return u
+}
+
+// SetValueDataType sets the "value_data_type" field.
+func (u *DictUpsert) SetValueDataType(v string) *DictUpsert {
+	u.Set(dict.FieldValueDataType, v)
+	return u
+}
+
+// UpdateValueDataType sets the "value_data_type" field to the value that was provided on create.
+func (u *DictUpsert) UpdateValueDataType() *DictUpsert {
+	u.SetExcluded(dict.FieldValueDataType)
+	return u
+}
+
+// ClearValueDataType clears the value of the "value_data_type" field.
+func (u *DictUpsert) ClearValueDataType() *DictUpsert {
+	u.SetNull(dict.FieldValueDataType)
+	return u
+}
+
+// SetSortID sets the "sort_id" field.
+func (u *DictUpsert) SetSortID(v int32) *DictUpsert {
+	u.Set(dict.FieldSortID, v)
+	return u
+}
+
+// UpdateSortID sets the "sort_id" field to the value that was provided on create.
+func (u *DictUpsert) UpdateSortID() *DictUpsert {
+	u.SetExcluded(dict.FieldSortID)
+	return u
+}
+
+// AddSortID adds v to the "sort_id" field.
+func (u *DictUpsert) AddSortID(v int32) *DictUpsert {
+	u.Add(dict.FieldSortID, v)
+	return u
+}
+
+// ClearSortID clears the value of the "sort_id" field.
+func (u *DictUpsert) ClearSortID() *DictUpsert {
+	u.SetNull(dict.FieldSortID)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Dict.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(dict.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *DictUpsertOne) UpdateNewValues() *DictUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(dict.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(dict.FieldCreateTime)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(dict.FieldTenantID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Dict.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *DictUpsertOne) Ignore() *DictUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DictUpsertOne) DoNothing() *DictUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DictCreate.OnConflict
+// documentation for more info.
+func (u *DictUpsertOne) Update(set func(*DictUpsert)) *DictUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DictUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *DictUpsertOne) SetUpdateTime(v time.Time) *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *DictUpsertOne) UpdateUpdateTime() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *DictUpsertOne) ClearUpdateTime() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *DictUpsertOne) SetDeleteTime(v time.Time) *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *DictUpsertOne) UpdateDeleteTime() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *DictUpsertOne) ClearDeleteTime() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *DictUpsertOne) SetStatus(v dict.Status) *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *DictUpsertOne) UpdateStatus() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *DictUpsertOne) ClearStatus() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *DictUpsertOne) SetCreateBy(v uint32) *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *DictUpsertOne) AddCreateBy(v uint32) *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *DictUpsertOne) UpdateCreateBy() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *DictUpsertOne) ClearCreateBy() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *DictUpsertOne) SetUpdateBy(v uint32) *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *DictUpsertOne) AddUpdateBy(v uint32) *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *DictUpsertOne) UpdateUpdateBy() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *DictUpsertOne) ClearUpdateBy() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetRemark sets the "remark" field.
+func (u *DictUpsertOne) SetRemark(v string) *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.SetRemark(v)
+	})
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *DictUpsertOne) UpdateRemark() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateRemark()
+	})
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *DictUpsertOne) ClearRemark() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearRemark()
+	})
+}
+
+// SetType sets the "type" field.
+func (u *DictUpsertOne) SetType(v string) *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *DictUpsertOne) UpdateType() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateType()
+	})
+}
+
+// SetTypeName sets the "type_name" field.
+func (u *DictUpsertOne) SetTypeName(v string) *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.SetTypeName(v)
+	})
+}
+
+// UpdateTypeName sets the "type_name" field to the value that was provided on create.
+func (u *DictUpsertOne) UpdateTypeName() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateTypeName()
+	})
+}
+
+// SetItemKey sets the "item_key" field.
+func (u *DictUpsertOne) SetItemKey(v string) *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.SetItemKey(v)
+	})
+}
+
+// UpdateItemKey sets the "item_key" field to the value that was provided on create.
+func (u *DictUpsertOne) UpdateItemKey() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateItemKey()
+	})
+}
+
+// SetItemValue sets the "item_value" field.
+func (u *DictUpsertOne) SetItemValue(v string) *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.SetItemValue(v)
+	})
+}
+
+// UpdateItemValue sets the "item_value" field to the value that was provided on create.
+func (u *DictUpsertOne) UpdateItemValue() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateItemValue()
+	})
+}
+
+// SetValueDesc sets the "value_desc" field.
+func (u *DictUpsertOne) SetValueDesc(v string) *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.SetValueDesc(v)
+	})
+}
+
+// UpdateValueDesc sets the "value_desc" field to the value that was provided on create.
+func (u *DictUpsertOne) UpdateValueDesc() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateValueDesc()
+	})
+}
+
+// ClearValueDesc clears the value of the "value_desc" field.
+func (u *DictUpsertOne) ClearValueDesc() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearValueDesc()
+	})
+}
+
+// SetValueDataType sets the "value_data_type" field.
+func (u *DictUpsertOne) SetValueDataType(v string) *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.SetValueDataType(v)
+	})
+}
+
+// UpdateValueDataType sets the "value_data_type" field to the value that was provided on create.
+func (u *DictUpsertOne) UpdateValueDataType() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateValueDataType()
+	})
+}
+
+// ClearValueDataType clears the value of the "value_data_type" field.
+func (u *DictUpsertOne) ClearValueDataType() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearValueDataType()
+	})
+}
+
+// SetSortID sets the "sort_id" field.
+func (u *DictUpsertOne) SetSortID(v int32) *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.SetSortID(v)
+	})
+}
+
+// AddSortID adds v to the "sort_id" field.
+func (u *DictUpsertOne) AddSortID(v int32) *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.AddSortID(v)
+	})
+}
+
+// UpdateSortID sets the "sort_id" field to the value that was provided on create.
+func (u *DictUpsertOne) UpdateSortID() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateSortID()
+	})
+}
+
+// ClearSortID clears the value of the "sort_id" field.
+func (u *DictUpsertOne) ClearSortID() *DictUpsertOne {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearSortID()
+	})
+}
+
+// Exec executes the query.
+func (u *DictUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DictCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DictUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *DictUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *DictUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // DictCreateBulk is the builder for creating many Dict entities in bulk.
 type DictCreateBulk struct {
 	config
 	err      error
 	builders []*DictCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Dict entities in the database.
@@ -478,6 +1112,7 @@ func (_c *DictCreateBulk) Save(ctx context.Context) ([]*Dict, error) {
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -528,6 +1163,392 @@ func (_c *DictCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *DictCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Dict.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DictUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *DictCreateBulk) OnConflict(opts ...sql.ConflictOption) *DictUpsertBulk {
+	_c.conflict = opts
+	return &DictUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Dict.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *DictCreateBulk) OnConflictColumns(columns ...string) *DictUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &DictUpsertBulk{
+		create: _c,
+	}
+}
+
+// DictUpsertBulk is the builder for "upsert"-ing
+// a bulk of Dict nodes.
+type DictUpsertBulk struct {
+	create *DictCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Dict.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(dict.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *DictUpsertBulk) UpdateNewValues() *DictUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(dict.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(dict.FieldCreateTime)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(dict.FieldTenantID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Dict.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *DictUpsertBulk) Ignore() *DictUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DictUpsertBulk) DoNothing() *DictUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DictCreateBulk.OnConflict
+// documentation for more info.
+func (u *DictUpsertBulk) Update(set func(*DictUpsert)) *DictUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DictUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *DictUpsertBulk) SetUpdateTime(v time.Time) *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *DictUpsertBulk) UpdateUpdateTime() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *DictUpsertBulk) ClearUpdateTime() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *DictUpsertBulk) SetDeleteTime(v time.Time) *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *DictUpsertBulk) UpdateDeleteTime() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *DictUpsertBulk) ClearDeleteTime() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *DictUpsertBulk) SetStatus(v dict.Status) *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *DictUpsertBulk) UpdateStatus() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *DictUpsertBulk) ClearStatus() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *DictUpsertBulk) SetCreateBy(v uint32) *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *DictUpsertBulk) AddCreateBy(v uint32) *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *DictUpsertBulk) UpdateCreateBy() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *DictUpsertBulk) ClearCreateBy() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *DictUpsertBulk) SetUpdateBy(v uint32) *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *DictUpsertBulk) AddUpdateBy(v uint32) *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *DictUpsertBulk) UpdateUpdateBy() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *DictUpsertBulk) ClearUpdateBy() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetRemark sets the "remark" field.
+func (u *DictUpsertBulk) SetRemark(v string) *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.SetRemark(v)
+	})
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *DictUpsertBulk) UpdateRemark() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateRemark()
+	})
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *DictUpsertBulk) ClearRemark() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearRemark()
+	})
+}
+
+// SetType sets the "type" field.
+func (u *DictUpsertBulk) SetType(v string) *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *DictUpsertBulk) UpdateType() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateType()
+	})
+}
+
+// SetTypeName sets the "type_name" field.
+func (u *DictUpsertBulk) SetTypeName(v string) *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.SetTypeName(v)
+	})
+}
+
+// UpdateTypeName sets the "type_name" field to the value that was provided on create.
+func (u *DictUpsertBulk) UpdateTypeName() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateTypeName()
+	})
+}
+
+// SetItemKey sets the "item_key" field.
+func (u *DictUpsertBulk) SetItemKey(v string) *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.SetItemKey(v)
+	})
+}
+
+// UpdateItemKey sets the "item_key" field to the value that was provided on create.
+func (u *DictUpsertBulk) UpdateItemKey() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateItemKey()
+	})
+}
+
+// SetItemValue sets the "item_value" field.
+func (u *DictUpsertBulk) SetItemValue(v string) *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.SetItemValue(v)
+	})
+}
+
+// UpdateItemValue sets the "item_value" field to the value that was provided on create.
+func (u *DictUpsertBulk) UpdateItemValue() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateItemValue()
+	})
+}
+
+// SetValueDesc sets the "value_desc" field.
+func (u *DictUpsertBulk) SetValueDesc(v string) *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.SetValueDesc(v)
+	})
+}
+
+// UpdateValueDesc sets the "value_desc" field to the value that was provided on create.
+func (u *DictUpsertBulk) UpdateValueDesc() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateValueDesc()
+	})
+}
+
+// ClearValueDesc clears the value of the "value_desc" field.
+func (u *DictUpsertBulk) ClearValueDesc() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearValueDesc()
+	})
+}
+
+// SetValueDataType sets the "value_data_type" field.
+func (u *DictUpsertBulk) SetValueDataType(v string) *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.SetValueDataType(v)
+	})
+}
+
+// UpdateValueDataType sets the "value_data_type" field to the value that was provided on create.
+func (u *DictUpsertBulk) UpdateValueDataType() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateValueDataType()
+	})
+}
+
+// ClearValueDataType clears the value of the "value_data_type" field.
+func (u *DictUpsertBulk) ClearValueDataType() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearValueDataType()
+	})
+}
+
+// SetSortID sets the "sort_id" field.
+func (u *DictUpsertBulk) SetSortID(v int32) *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.SetSortID(v)
+	})
+}
+
+// AddSortID adds v to the "sort_id" field.
+func (u *DictUpsertBulk) AddSortID(v int32) *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.AddSortID(v)
+	})
+}
+
+// UpdateSortID sets the "sort_id" field to the value that was provided on create.
+func (u *DictUpsertBulk) UpdateSortID() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.UpdateSortID()
+	})
+}
+
+// ClearSortID clears the value of the "sort_id" field.
+func (u *DictUpsertBulk) ClearSortID() *DictUpsertBulk {
+	return u.Update(func(s *DictUpsert) {
+		s.ClearSortID()
+	})
+}
+
+// Exec executes the query.
+func (u *DictUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the DictCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DictCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DictUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

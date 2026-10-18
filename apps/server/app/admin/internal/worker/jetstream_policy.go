@@ -19,6 +19,12 @@ const (
 
 // jsSubscribeOpts 订阅选项公共件（ManualAck + MaxDeliver + AckWait）。
 func jsSubscribeOpts() []natsgo.SubOpt {
+	return JSSubscribeOpts()
+}
+
+// JSSubscribeOpts 导出件：供 worker 子包（worker/tt 等）复用同一投递纪律，
+// 不另立口径（MaxDeliver/AckWait 改一处全站生效）。
+func JSSubscribeOpts() []natsgo.SubOpt {
 	return []natsgo.SubOpt{
 		natsgo.ManualAck(),
 		natsgo.MaxDeliver(jsMaxDeliver),

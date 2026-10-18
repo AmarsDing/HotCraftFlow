@@ -1,0 +1,48 @@
+# ② TT 热点追踪配置（02-TT/03-详细设计.md §4 + 深度评审 A-14/A-16/A-17 修正）
+# 纪律：
+#  - timezone.storage 恒为 UTC（NFR-TT-03，🔴 不可改）；展示时区仅渲染层使用。
+#  - sampling.bucket_minutes ∈ [2,60]（FR-TRK-01），hotlist_interval ≥ 30（NFR-TT-04 46s 缓存不击穿）。
+#  - influx.token 禁止明文，走 ${INFLUX_TOKEN} 环境变量（启动脚本 tt_influx_setup.ps1 注入）。
+#  - 写失败缓冲为 Redis Stream 死信队列（A-16），非 TTL 队列；丢失以 tt_influx_dropped_total 如实计数（需求 §9）。
+tt:
+  enabled: true
+
+  ingest:
+    durable: "tt-ingest-intel"      # JetStream 持久订阅名（消费进度独立）
+    batch_size: 200                 # 单批构点上限（与 influx.batch_size 对齐落批节奏）
+    flush_interval: 5s              # 未满批最长驻留
+    dedup_ttl: 24h                  # event_id 幂等去重窗口（Redis SET NX PX）
+    last_wins_guard_ttl: 48h        # 同桶 last-wins 守卫 key TTL（A-14）
+
+  sampling:
+    bucket_minutes: 30              # 🔴 桶对齐粒度；改动会突变所有历史曲线可比性
+    hotlist_interval_minutes: 30    # 热榜源采样间隔下限（info）
+    late_hours: 24                  # _as_of 落后 > 24h：写并打 late=true，标记重算
+    future_skew_minutes: 5          # _as_of 超前 now > 5min：丢弃并计数（上游时钟异常）
+
+  influx:
+    url: "http://127.0.0.1:8086"
+    token: "${INFLUX_TOKEN}"        # 环境变量引用（tt-writer 专用 token）
+    org: "media"
+    bucket_raw: "mm_raw"            # 90d 保留（A-17）
+    bucket_1h: "mm_1h"              # 1y 保留（M3 降采样任务消费）
+    bucket_1d: "mm_1d"              # 3y 保留
+    batch_size: 500
+    flush_ms: 1000
+    timeout: 10s
+    ping_on_start: true             # 失败告警不阻塞启动（降级运行由 buffer 兜底）
+
+  buffer:
+    stream_key: "tt:influx:buf"     # Redis Stream + 消费组 tt_writer
+    poison_key: "tt:influx:poison"  # 重试超限毒消息流（30d 保留，人工介入）
+    consumer_group: "tt_writer"
+    max_len: 2000000                # XADD MAXLEN ≈；超限 XTRIM 最旧 + 如实计数
+    pause_depth: 500000             # 背压：深度超此值暂停 NATS 消费（不 NAK，防重投风暴）
+    resume_depth: 100000            # 滞回恢复阈值（须 < pause_depth）
+    max_attempts: 5                 # 单条重放重试上限
+    replay_batch: 200
+    replay_interval: 15s
+
+  timezone:
+    storage: "UTC"                  # 🔴 不可改
+    display: "Asia/Shanghai"

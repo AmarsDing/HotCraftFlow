@@ -3,8 +3,10 @@
     class="dash-card repo-card"
     role="button"
     tabindex="0"
+    :aria-label="t('githubRadar.detailAria', { name: repo.full_name })"
     @click="$emit('open', repo)"
     @keydown.enter="$emit('open', repo)"
+    @keydown.space.prevent="$emit('open', repo)"
   >
     <div class="repo-card__top">
       <span class="repo-card__rank">#{{ repo.rank || '—' }}</span>
@@ -71,7 +73,7 @@
     <div class="repo-card__desc">{{ descText }}</div>
 
     <div class="repo-card__meta">
-      <span class="repo-card__stars" :title="`${exactCount(repo.stars)} stars`">
+      <span class="repo-card__stars" :title="t('githubRadar.meta.starsTooltip', { n: exactCount(repo.stars) })">
         <q-icon name="star" size="13px" /> {{ abbrevCount(repo.stars) }}
       </span>
       <span
@@ -82,10 +84,10 @@
         {{ repo.stars_delta > 0 ? '+' : '' }}{{ abbrevCount(repo.stars_delta) }} {{ sinceLabel }}
         <q-tooltip>{{ t('githubRadar.deltaTooltip', { n: exactCount(repo.stars_delta) }) }}</q-tooltip>
       </span>
-      <span :title="`${exactCount(repo.forks)} forks`">
+      <span :title="t('githubRadar.meta.forksTooltip', { n: exactCount(repo.forks) })">
         <q-icon name="call_split" size="13px" /> {{ abbrevCount(repo.forks) }}
       </span>
-      <span v-if="repo.open_issues" :title="`${exactCount(repo.open_issues)} open issues`">
+      <span v-if="repo.open_issues" :title="t('githubRadar.meta.issuesTooltip', { n: exactCount(repo.open_issues) })">
         <q-icon name="error_outline" size="13px" /> {{ abbrevCount(repo.open_issues) }}
       </span>
     </div>
@@ -97,16 +99,37 @@
       <span v-else class="repo-card__license repo-card__license--none" :title="t('githubRadar.noLicenseTooltip')">{{
         t('githubRadar.noLicense')
       }}</span>
+      <a
+        v-if="repo.homepage"
+        class="repo-card__home"
+        :href="repo.homepage"
+        target="_blank"
+        rel="noopener"
+        :title="repo.homepage"
+        :aria-label="t('githubRadar.homepage')"
+        @click.stop
+      >
+        <q-icon name="language" size="14px" />
+      </a>
+      <span v-if="repo.watchers" :title="t('githubRadar.meta.watchersTooltip', { n: exactCount(repo.watchers) })">
+        <q-icon name="visibility" size="13px" /> {{ abbrevCount(repo.watchers) }}
+      </span>
       <span v-if="repo.pushed_at" :title="t('githubRadar.pushedAt', { time: repo.pushed_at })">
-        <q-icon name="update" size="13px" /> {{ relTime(repo.pushed_at) }}
+        <q-icon name="update" size="13px" /> {{ relTime(repo.pushed_at, t) }}
       </span>
     </div>
 
     <div class="repo-card__footer">
       <Sparkline v-if="repo.sparkline?.length" :values="repo.sparkline" :width="56" :height="18" />
       <q-space />
-      <div v-if="topicChips.length" class="repo-card__topics">
+      <div v-if="repo.topics?.length" class="repo-card__topics">
         <q-chip v-for="tp in topicChips" :key="tp" dense outline size="sm" color="primary">{{ tp }}</q-chip>
+        <q-chip v-if="topicsOverflow > 0" dense outline size="sm" color="grey-7" class="repo-card__topics-more">
+          +{{ topicsOverflow }}
+          <q-tooltip
+            >{{ t('githubRadar.topicsMoreTooltip', { n: topicsOverflow }) }}：{{ topicsRest.join(', ') }}</q-tooltip
+          >
+        </q-chip>
       </div>
     </div>
   </article>
@@ -129,6 +152,8 @@ defineEmits<{ open: [RepoItem, string?]; watch: [RepoItem] }>();
 const parts = computed(() => splitFullName(props.repo.full_name));
 const descText = computed(() => props.repo.description?.trim() || t('githubRadar.noDesc'));
 const topicChips = computed(() => (props.repo.topics ?? []).slice(0, 4));
+const topicsRest = computed(() => (props.repo.topics ?? []).slice(4));
+const topicsOverflow = computed(() => topicsRest.value.length);
 const sinceLabel = computed(() => t(`githubRadar.since.${props.since}`));
 </script>
 
@@ -171,7 +196,8 @@ const sinceLabel = computed(() => t(`githubRadar.since.${props.since}`));
   align-items: center
   opacity: 0
   transition: opacity .15s ease
-  .repo-card:hover &
+  .repo-card:hover &,
+  .repo-card:focus-within &
     opacity: 1
   @media (hover: none)
     opacity: 1
@@ -221,6 +247,13 @@ const sinceLabel = computed(() => t(`githubRadar.since.${props.since}`));
 
 .repo-card__delta--down
   color: var(--color-danger)
+
+.repo-card__home
+  display: inline-flex
+  align-items: center
+  color: var(--color-text-secondary)
+  &:hover
+    color: var(--color-accent)
 
 .repo-card__license
   font-size: 11px

@@ -7,6 +7,7 @@
 package miav1
 
 import (
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -693,11 +694,1010 @@ func (x *TriggerSpec) GetMinMovePct() float64 {
 	return 0
 }
 
+// ImpactCardListItem 影响卡列表视图（摘要字段，详情走 GetImpactCard）。
+type ImpactCardListItem struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	ImpactId        string                 `protobuf:"bytes,1,opt,name=impact_id,proto3" json:"impact_id,omitempty"`
+	EventId         string                 `protobuf:"bytes,2,opt,name=event_id,proto3" json:"event_id,omitempty"`
+	Title           string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	SentimentLabel  string                 `protobuf:"bytes,4,opt,name=sentiment_label,proto3" json:"sentiment_label,omitempty"`
+	SentimentScore  float64                `protobuf:"fixed64,5,opt,name=sentiment_score,proto3" json:"sentiment_score,omitempty"`
+	SentimentEngine string                 `protobuf:"bytes,6,opt,name=sentiment_engine,proto3" json:"sentiment_engine,omitempty"`
+	ImpactScore     float64                `protobuf:"fixed64,7,opt,name=impact_score,proto3" json:"impact_score,omitempty"`
+	Direction       string                 `protobuf:"bytes,8,opt,name=direction,proto3" json:"direction,omitempty"`
+	TtlHours        int32                  `protobuf:"varint,9,opt,name=ttl_hours,proto3" json:"ttl_hours,omitempty"`
+	ExpiresAt       string                 `protobuf:"bytes,10,opt,name=expires_at,proto3" json:"expires_at,omitempty"` // RFC3339 UTC
+	OccurredAt      string                 `protobuf:"bytes,11,opt,name=occurred_at,proto3" json:"occurred_at,omitempty"`
+	CreatedAt       string                 `protobuf:"bytes,12,opt,name=created_at,proto3" json:"created_at,omitempty"`
+	AffectedCount   int32                  `protobuf:"varint,13,opt,name=affected_count,proto3" json:"affected_count,omitempty"`
+	Pushed          bool                   `protobuf:"varint,14,opt,name=pushed,proto3" json:"pushed,omitempty"`
+	NoMapping       bool                   `protobuf:"varint,15,opt,name=no_mapping,proto3" json:"no_mapping,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *ImpactCardListItem) Reset() {
+	*x = ImpactCardListItem{}
+	mi := &file_media_v1_mia_impact_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ImpactCardListItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImpactCardListItem) ProtoMessage() {}
+
+func (x *ImpactCardListItem) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mia_impact_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImpactCardListItem.ProtoReflect.Descriptor instead.
+func (*ImpactCardListItem) Descriptor() ([]byte, []int) {
+	return file_media_v1_mia_impact_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *ImpactCardListItem) GetImpactId() string {
+	if x != nil {
+		return x.ImpactId
+	}
+	return ""
+}
+
+func (x *ImpactCardListItem) GetEventId() string {
+	if x != nil {
+		return x.EventId
+	}
+	return ""
+}
+
+func (x *ImpactCardListItem) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *ImpactCardListItem) GetSentimentLabel() string {
+	if x != nil {
+		return x.SentimentLabel
+	}
+	return ""
+}
+
+func (x *ImpactCardListItem) GetSentimentScore() float64 {
+	if x != nil {
+		return x.SentimentScore
+	}
+	return 0
+}
+
+func (x *ImpactCardListItem) GetSentimentEngine() string {
+	if x != nil {
+		return x.SentimentEngine
+	}
+	return ""
+}
+
+func (x *ImpactCardListItem) GetImpactScore() float64 {
+	if x != nil {
+		return x.ImpactScore
+	}
+	return 0
+}
+
+func (x *ImpactCardListItem) GetDirection() string {
+	if x != nil {
+		return x.Direction
+	}
+	return ""
+}
+
+func (x *ImpactCardListItem) GetTtlHours() int32 {
+	if x != nil {
+		return x.TtlHours
+	}
+	return 0
+}
+
+func (x *ImpactCardListItem) GetExpiresAt() string {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return ""
+}
+
+func (x *ImpactCardListItem) GetOccurredAt() string {
+	if x != nil {
+		return x.OccurredAt
+	}
+	return ""
+}
+
+func (x *ImpactCardListItem) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *ImpactCardListItem) GetAffectedCount() int32 {
+	if x != nil {
+		return x.AffectedCount
+	}
+	return 0
+}
+
+func (x *ImpactCardListItem) GetPushed() bool {
+	if x != nil {
+		return x.Pushed
+	}
+	return false
+}
+
+func (x *ImpactCardListItem) GetNoMapping() bool {
+	if x != nil {
+		return x.NoMapping
+	}
+	return false
+}
+
+type ListImpactCardsRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Page           int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize       int32                  `protobuf:"varint,2,opt,name=page_size,proto3" json:"page_size,omitempty"`
+	Direction      string                 `protobuf:"bytes,3,opt,name=direction,proto3" json:"direction,omitempty"` // bullish|bearish|neutral
+	MinScore       float64                `protobuf:"fixed64,4,opt,name=min_score,proto3" json:"min_score,omitempty"`
+	IncludeExpired bool                   `protobuf:"varint,5,opt,name=include_expired,proto3" json:"include_expired,omitempty"` // 默认只看未过期（TTL 纪律）
+	OccurredAfter  string                 `protobuf:"bytes,6,opt,name=occurred_after,proto3" json:"occurred_after,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ListImpactCardsRequest) Reset() {
+	*x = ListImpactCardsRequest{}
+	mi := &file_media_v1_mia_impact_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListImpactCardsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListImpactCardsRequest) ProtoMessage() {}
+
+func (x *ListImpactCardsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mia_impact_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListImpactCardsRequest.ProtoReflect.Descriptor instead.
+func (*ListImpactCardsRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_mia_impact_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ListImpactCardsRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListImpactCardsRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListImpactCardsRequest) GetDirection() string {
+	if x != nil {
+		return x.Direction
+	}
+	return ""
+}
+
+func (x *ListImpactCardsRequest) GetMinScore() float64 {
+	if x != nil {
+		return x.MinScore
+	}
+	return 0
+}
+
+func (x *ListImpactCardsRequest) GetIncludeExpired() bool {
+	if x != nil {
+		return x.IncludeExpired
+	}
+	return false
+}
+
+func (x *ListImpactCardsRequest) GetOccurredAfter() string {
+	if x != nil {
+		return x.OccurredAfter
+	}
+	return ""
+}
+
+type ListImpactCardsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*ImpactCardListItem  `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListImpactCardsResponse) Reset() {
+	*x = ListImpactCardsResponse{}
+	mi := &file_media_v1_mia_impact_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListImpactCardsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListImpactCardsResponse) ProtoMessage() {}
+
+func (x *ListImpactCardsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mia_impact_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListImpactCardsResponse.ProtoReflect.Descriptor instead.
+func (*ListImpactCardsResponse) Descriptor() ([]byte, []int) {
+	return file_media_v1_mia_impact_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ListImpactCardsResponse) GetItems() []*ImpactCardListItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *ListImpactCardsResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+type GetImpactCardRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ImpactId      string                 `protobuf:"bytes,1,opt,name=impact_id,proto3" json:"impact_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetImpactCardRequest) Reset() {
+	*x = GetImpactCardRequest{}
+	mi := &file_media_v1_mia_impact_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetImpactCardRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetImpactCardRequest) ProtoMessage() {}
+
+func (x *GetImpactCardRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mia_impact_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetImpactCardRequest.ProtoReflect.Descriptor instead.
+func (*GetImpactCardRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_mia_impact_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *GetImpactCardRequest) GetImpactId() string {
+	if x != nil {
+		return x.ImpactId
+	}
+	return ""
+}
+
+// GetImpactCardResponse 详情：完整契约卡 + 存储侧附加字段。
+type GetImpactCardResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Card          *ImpactCard            `protobuf:"bytes,1,opt,name=card,proto3" json:"card,omitempty"`
+	ImpactId      string                 `protobuf:"bytes,2,opt,name=impact_id,proto3" json:"impact_id,omitempty"`
+	EventId       string                 `protobuf:"bytes,3,opt,name=event_id,proto3" json:"event_id,omitempty"`
+	ExpiresAt     string                 `protobuf:"bytes,4,opt,name=expires_at,proto3" json:"expires_at,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,5,opt,name=created_at,proto3" json:"created_at,omitempty"`
+	Pushed        bool                   `protobuf:"varint,6,opt,name=pushed,proto3" json:"pushed,omitempty"`
+	NoMapping     bool                   `protobuf:"varint,7,opt,name=no_mapping,proto3" json:"no_mapping,omitempty"`
+	RuleVersion   string                 `protobuf:"bytes,8,opt,name=rule_version,proto3" json:"rule_version,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetImpactCardResponse) Reset() {
+	*x = GetImpactCardResponse{}
+	mi := &file_media_v1_mia_impact_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetImpactCardResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetImpactCardResponse) ProtoMessage() {}
+
+func (x *GetImpactCardResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mia_impact_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetImpactCardResponse.ProtoReflect.Descriptor instead.
+func (*GetImpactCardResponse) Descriptor() ([]byte, []int) {
+	return file_media_v1_mia_impact_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *GetImpactCardResponse) GetCard() *ImpactCard {
+	if x != nil {
+		return x.Card
+	}
+	return nil
+}
+
+func (x *GetImpactCardResponse) GetImpactId() string {
+	if x != nil {
+		return x.ImpactId
+	}
+	return ""
+}
+
+func (x *GetImpactCardResponse) GetEventId() string {
+	if x != nil {
+		return x.EventId
+	}
+	return ""
+}
+
+func (x *GetImpactCardResponse) GetExpiresAt() string {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return ""
+}
+
+func (x *GetImpactCardResponse) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *GetImpactCardResponse) GetPushed() bool {
+	if x != nil {
+		return x.Pushed
+	}
+	return false
+}
+
+func (x *GetImpactCardResponse) GetNoMapping() bool {
+	if x != nil {
+		return x.NoMapping
+	}
+	return false
+}
+
+func (x *GetImpactCardResponse) GetRuleVersion() string {
+	if x != nil {
+		return x.RuleVersion
+	}
+	return ""
+}
+
+// CalibrationBucket 按规则的校准统计桶（FR-MIA-11，P2）。
+type CalibrationBucket struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RuleId        string                 `protobuf:"bytes,1,opt,name=rule_id,proto3" json:"rule_id,omitempty"`
+	Samples       int32                  `protobuf:"varint,2,opt,name=samples,proto3" json:"samples,omitempty"`
+	HitRate       float64                `protobuf:"fixed64,3,opt,name=hit_rate,proto3" json:"hit_rate,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CalibrationBucket) Reset() {
+	*x = CalibrationBucket{}
+	mi := &file_media_v1_mia_impact_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CalibrationBucket) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CalibrationBucket) ProtoMessage() {}
+
+func (x *CalibrationBucket) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mia_impact_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CalibrationBucket.ProtoReflect.Descriptor instead.
+func (*CalibrationBucket) Descriptor() ([]byte, []int) {
+	return file_media_v1_mia_impact_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *CalibrationBucket) GetRuleId() string {
+	if x != nil {
+		return x.RuleId
+	}
+	return ""
+}
+
+func (x *CalibrationBucket) GetSamples() int32 {
+	if x != nil {
+		return x.Samples
+	}
+	return 0
+}
+
+func (x *CalibrationBucket) GetHitRate() float64 {
+	if x != nil {
+		return x.HitRate
+	}
+	return 0
+}
+
+type GetCalibrationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Since         string                 `protobuf:"bytes,1,opt,name=since,proto3" json:"since,omitempty"`
+	Until         string                 `protobuf:"bytes,2,opt,name=until,proto3" json:"until,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCalibrationRequest) Reset() {
+	*x = GetCalibrationRequest{}
+	mi := &file_media_v1_mia_impact_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCalibrationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCalibrationRequest) ProtoMessage() {}
+
+func (x *GetCalibrationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mia_impact_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCalibrationRequest.ProtoReflect.Descriptor instead.
+func (*GetCalibrationRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_mia_impact_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *GetCalibrationRequest) GetSince() string {
+	if x != nil {
+		return x.Since
+	}
+	return ""
+}
+
+func (x *GetCalibrationRequest) GetUntil() string {
+	if x != nil {
+		return x.Until
+	}
+	return ""
+}
+
+// CalibrationReport 校准报告。固定提示：校准参考，非预测准确率承诺。
+type CalibrationReport struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Buckets       []*CalibrationBucket   `protobuf:"bytes,1,rep,name=buckets,proto3" json:"buckets,omitempty"`
+	TotalSamples  int32                  `protobuf:"varint,2,opt,name=total_samples,proto3" json:"total_samples,omitempty"`
+	Window        string                 `protobuf:"bytes,3,opt,name=window,proto3" json:"window,omitempty"`
+	Note          string                 `protobuf:"bytes,4,opt,name=note,proto3" json:"note,omitempty"`
+	Enabled       bool                   `protobuf:"varint,5,opt,name=enabled,proto3" json:"enabled,omitempty"` // verify.enabled=false 时返回空报告
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CalibrationReport) Reset() {
+	*x = CalibrationReport{}
+	mi := &file_media_v1_mia_impact_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CalibrationReport) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CalibrationReport) ProtoMessage() {}
+
+func (x *CalibrationReport) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mia_impact_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CalibrationReport.ProtoReflect.Descriptor instead.
+func (*CalibrationReport) Descriptor() ([]byte, []int) {
+	return file_media_v1_mia_impact_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *CalibrationReport) GetBuckets() []*CalibrationBucket {
+	if x != nil {
+		return x.Buckets
+	}
+	return nil
+}
+
+func (x *CalibrationReport) GetTotalSamples() int32 {
+	if x != nil {
+		return x.TotalSamples
+	}
+	return 0
+}
+
+func (x *CalibrationReport) GetWindow() string {
+	if x != nil {
+		return x.Window
+	}
+	return ""
+}
+
+func (x *CalibrationReport) GetNote() string {
+	if x != nil {
+		return x.Note
+	}
+	return ""
+}
+
+func (x *CalibrationReport) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
+// TransmissionRuleItem 传导规则列表视图（FR-MIA-08：每条带 confidence 与 note）。
+type TransmissionRuleItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Rule          *TransmissionRule      `protobuf:"bytes,2,opt,name=rule,proto3" json:"rule,omitempty"`
+	Enabled       bool                   `protobuf:"varint,3,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	HitCount      int32                  `protobuf:"varint,4,opt,name=hit_count,proto3" json:"hit_count,omitempty"`
+	CorrectCount  int32                  `protobuf:"varint,5,opt,name=correct_count,proto3" json:"correct_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TransmissionRuleItem) Reset() {
+	*x = TransmissionRuleItem{}
+	mi := &file_media_v1_mia_impact_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TransmissionRuleItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TransmissionRuleItem) ProtoMessage() {}
+
+func (x *TransmissionRuleItem) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mia_impact_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TransmissionRuleItem.ProtoReflect.Descriptor instead.
+func (*TransmissionRuleItem) Descriptor() ([]byte, []int) {
+	return file_media_v1_mia_impact_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *TransmissionRuleItem) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *TransmissionRuleItem) GetRule() *TransmissionRule {
+	if x != nil {
+		return x.Rule
+	}
+	return nil
+}
+
+func (x *TransmissionRuleItem) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
+func (x *TransmissionRuleItem) GetHitCount() int32 {
+	if x != nil {
+		return x.HitCount
+	}
+	return 0
+}
+
+func (x *TransmissionRuleItem) GetCorrectCount() int32 {
+	if x != nil {
+		return x.CorrectCount
+	}
+	return 0
+}
+
+type ListTransmissionRulesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EnabledOnly   bool                   `protobuf:"varint,1,opt,name=enabled_only,proto3" json:"enabled_only,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListTransmissionRulesRequest) Reset() {
+	*x = ListTransmissionRulesRequest{}
+	mi := &file_media_v1_mia_impact_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListTransmissionRulesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListTransmissionRulesRequest) ProtoMessage() {}
+
+func (x *ListTransmissionRulesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mia_impact_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListTransmissionRulesRequest.ProtoReflect.Descriptor instead.
+func (*ListTransmissionRulesRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_mia_impact_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *ListTransmissionRulesRequest) GetEnabledOnly() bool {
+	if x != nil {
+		return x.EnabledOnly
+	}
+	return false
+}
+
+type ListTransmissionRulesResponse struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Items         []*TransmissionRuleItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListTransmissionRulesResponse) Reset() {
+	*x = ListTransmissionRulesResponse{}
+	mi := &file_media_v1_mia_impact_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListTransmissionRulesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListTransmissionRulesResponse) ProtoMessage() {}
+
+func (x *ListTransmissionRulesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mia_impact_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListTransmissionRulesResponse.ProtoReflect.Descriptor instead.
+func (*ListTransmissionRulesResponse) Descriptor() ([]byte, []int) {
+	return file_media_v1_mia_impact_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *ListTransmissionRulesResponse) GetItems() []*TransmissionRuleItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+// GetQuoteRequest 行情只读查询。
+// symbol 走 query（BTC/USDT 含斜杠，不能用路径参数）。
+type GetQuoteRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Symbol        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetQuoteRequest) Reset() {
+	*x = GetQuoteRequest{}
+	mi := &file_media_v1_mia_impact_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetQuoteRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetQuoteRequest) ProtoMessage() {}
+
+func (x *GetQuoteRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mia_impact_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetQuoteRequest.ProtoReflect.Descriptor instead.
+func (*GetQuoteRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_mia_impact_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *GetQuoteRequest) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+type OhlcvBar struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	T             string                 `protobuf:"bytes,1,opt,name=t,proto3" json:"t,omitempty"` // bucket 时间 RFC3339
+	Open          float64                `protobuf:"fixed64,2,opt,name=open,proto3" json:"open,omitempty"`
+	High          float64                `protobuf:"fixed64,3,opt,name=high,proto3" json:"high,omitempty"`
+	Low           float64                `protobuf:"fixed64,4,opt,name=low,proto3" json:"low,omitempty"`
+	Close         float64                `protobuf:"fixed64,5,opt,name=close,proto3" json:"close,omitempty"`
+	Volume        float64                `protobuf:"fixed64,6,opt,name=volume,proto3" json:"volume,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OhlcvBar) Reset() {
+	*x = OhlcvBar{}
+	mi := &file_media_v1_mia_impact_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OhlcvBar) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OhlcvBar) ProtoMessage() {}
+
+func (x *OhlcvBar) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mia_impact_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OhlcvBar.ProtoReflect.Descriptor instead.
+func (*OhlcvBar) Descriptor() ([]byte, []int) {
+	return file_media_v1_mia_impact_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *OhlcvBar) GetT() string {
+	if x != nil {
+		return x.T
+	}
+	return ""
+}
+
+func (x *OhlcvBar) GetOpen() float64 {
+	if x != nil {
+		return x.Open
+	}
+	return 0
+}
+
+func (x *OhlcvBar) GetHigh() float64 {
+	if x != nil {
+		return x.High
+	}
+	return 0
+}
+
+func (x *OhlcvBar) GetLow() float64 {
+	if x != nil {
+		return x.Low
+	}
+	return 0
+}
+
+func (x *OhlcvBar) GetClose() float64 {
+	if x != nil {
+		return x.Close
+	}
+	return 0
+}
+
+func (x *OhlcvBar) GetVolume() float64 {
+	if x != nil {
+		return x.Volume
+	}
+	return 0
+}
+
+type GetQuoteResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Symbol        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Provider      string                 `protobuf:"bytes,2,opt,name=provider,proto3" json:"provider,omitempty"`
+	Bars          []*OhlcvBar            `protobuf:"bytes,3,rep,name=bars,proto3" json:"bars,omitempty"`
+	FetchedAt     string                 `protobuf:"bytes,4,opt,name=fetched_at,proto3" json:"fetched_at,omitempty"`
+	FromCache     bool                   `protobuf:"varint,5,opt,name=from_cache,proto3" json:"from_cache,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetQuoteResponse) Reset() {
+	*x = GetQuoteResponse{}
+	mi := &file_media_v1_mia_impact_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetQuoteResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetQuoteResponse) ProtoMessage() {}
+
+func (x *GetQuoteResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mia_impact_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetQuoteResponse.ProtoReflect.Descriptor instead.
+func (*GetQuoteResponse) Descriptor() ([]byte, []int) {
+	return file_media_v1_mia_impact_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *GetQuoteResponse) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *GetQuoteResponse) GetProvider() string {
+	if x != nil {
+		return x.Provider
+	}
+	return ""
+}
+
+func (x *GetQuoteResponse) GetBars() []*OhlcvBar {
+	if x != nil {
+		return x.Bars
+	}
+	return nil
+}
+
+func (x *GetQuoteResponse) GetFetchedAt() string {
+	if x != nil {
+		return x.FetchedAt
+	}
+	return ""
+}
+
+func (x *GetQuoteResponse) GetFromCache() bool {
+	if x != nil {
+		return x.FromCache
+	}
+	return false
+}
+
 var File_media_v1_mia_impact_proto protoreflect.FileDescriptor
 
 const file_media_v1_mia_impact_proto_rawDesc = "" +
 	"\n" +
-	"\x19media/v1/mia/impact.proto\x12\fmedia.mia.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8a\x03\n" +
+	"\x19media/v1/mia/impact.proto\x12\fmedia.mia.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8a\x03\n" +
 	"\n" +
 	"ImpactCard\x12 \n" +
 	"\vapi_version\x18\x01 \x01(\tR\vapi_version\x12\x1c\n" +
@@ -758,7 +1758,105 @@ const file_media_v1_mia_impact_proto_rawDesc = "" +
 	"\vTriggerSpec\x12\x14\n" +
 	"\x05asset\x18\x01 \x01(\tR\x05asset\x12\x1c\n" +
 	"\tdirection\x18\x02 \x01(\tR\tdirection\x12\"\n" +
-	"\fmin_move_pct\x18\x03 \x01(\x01R\fmin_move_pctB\x9a\x01\n" +
+	"\fmin_move_pct\x18\x03 \x01(\x01R\fmin_move_pct\"\x86\x04\n" +
+	"\x12ImpactCardListItem\x12\x1c\n" +
+	"\timpact_id\x18\x01 \x01(\tR\timpact_id\x12\x1a\n" +
+	"\bevent_id\x18\x02 \x01(\tR\bevent_id\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12(\n" +
+	"\x0fsentiment_label\x18\x04 \x01(\tR\x0fsentiment_label\x12(\n" +
+	"\x0fsentiment_score\x18\x05 \x01(\x01R\x0fsentiment_score\x12*\n" +
+	"\x10sentiment_engine\x18\x06 \x01(\tR\x10sentiment_engine\x12\"\n" +
+	"\fimpact_score\x18\a \x01(\x01R\fimpact_score\x12\x1c\n" +
+	"\tdirection\x18\b \x01(\tR\tdirection\x12\x1c\n" +
+	"\tttl_hours\x18\t \x01(\x05R\tttl_hours\x12\x1e\n" +
+	"\n" +
+	"expires_at\x18\n" +
+	" \x01(\tR\n" +
+	"expires_at\x12 \n" +
+	"\voccurred_at\x18\v \x01(\tR\voccurred_at\x12\x1e\n" +
+	"\n" +
+	"created_at\x18\f \x01(\tR\n" +
+	"created_at\x12&\n" +
+	"\x0eaffected_count\x18\r \x01(\x05R\x0eaffected_count\x12\x16\n" +
+	"\x06pushed\x18\x0e \x01(\bR\x06pushed\x12\x1e\n" +
+	"\n" +
+	"no_mapping\x18\x0f \x01(\bR\n" +
+	"no_mapping\"\xd8\x01\n" +
+	"\x16ListImpactCardsRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1c\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\tpage_size\x12\x1c\n" +
+	"\tdirection\x18\x03 \x01(\tR\tdirection\x12\x1c\n" +
+	"\tmin_score\x18\x04 \x01(\x01R\tmin_score\x12(\n" +
+	"\x0finclude_expired\x18\x05 \x01(\bR\x0finclude_expired\x12&\n" +
+	"\x0eoccurred_after\x18\x06 \x01(\tR\x0eoccurred_after\"g\n" +
+	"\x17ListImpactCardsResponse\x126\n" +
+	"\x05items\x18\x01 \x03(\v2 .media.mia.v1.ImpactCardListItemR\x05items\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"4\n" +
+	"\x14GetImpactCardRequest\x12\x1c\n" +
+	"\timpact_id\x18\x01 \x01(\tR\timpact_id\"\x9b\x02\n" +
+	"\x15GetImpactCardResponse\x12,\n" +
+	"\x04card\x18\x01 \x01(\v2\x18.media.mia.v1.ImpactCardR\x04card\x12\x1c\n" +
+	"\timpact_id\x18\x02 \x01(\tR\timpact_id\x12\x1a\n" +
+	"\bevent_id\x18\x03 \x01(\tR\bevent_id\x12\x1e\n" +
+	"\n" +
+	"expires_at\x18\x04 \x01(\tR\n" +
+	"expires_at\x12\x1e\n" +
+	"\n" +
+	"created_at\x18\x05 \x01(\tR\n" +
+	"created_at\x12\x16\n" +
+	"\x06pushed\x18\x06 \x01(\bR\x06pushed\x12\x1e\n" +
+	"\n" +
+	"no_mapping\x18\a \x01(\bR\n" +
+	"no_mapping\x12\"\n" +
+	"\frule_version\x18\b \x01(\tR\frule_version\"c\n" +
+	"\x11CalibrationBucket\x12\x18\n" +
+	"\arule_id\x18\x01 \x01(\tR\arule_id\x12\x18\n" +
+	"\asamples\x18\x02 \x01(\x05R\asamples\x12\x1a\n" +
+	"\bhit_rate\x18\x03 \x01(\x01R\bhit_rate\"C\n" +
+	"\x15GetCalibrationRequest\x12\x14\n" +
+	"\x05since\x18\x01 \x01(\tR\x05since\x12\x14\n" +
+	"\x05until\x18\x02 \x01(\tR\x05until\"\xba\x01\n" +
+	"\x11CalibrationReport\x129\n" +
+	"\abuckets\x18\x01 \x03(\v2\x1f.media.mia.v1.CalibrationBucketR\abuckets\x12$\n" +
+	"\rtotal_samples\x18\x02 \x01(\x05R\rtotal_samples\x12\x16\n" +
+	"\x06window\x18\x03 \x01(\tR\x06window\x12\x12\n" +
+	"\x04note\x18\x04 \x01(\tR\x04note\x12\x18\n" +
+	"\aenabled\x18\x05 \x01(\bR\aenabled\"\xb8\x01\n" +
+	"\x14TransmissionRuleItem\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x122\n" +
+	"\x04rule\x18\x02 \x01(\v2\x1e.media.mia.v1.TransmissionRuleR\x04rule\x12\x18\n" +
+	"\aenabled\x18\x03 \x01(\bR\aenabled\x12\x1c\n" +
+	"\thit_count\x18\x04 \x01(\x05R\thit_count\x12$\n" +
+	"\rcorrect_count\x18\x05 \x01(\x05R\rcorrect_count\"B\n" +
+	"\x1cListTransmissionRulesRequest\x12\"\n" +
+	"\fenabled_only\x18\x01 \x01(\bR\fenabled_only\"Y\n" +
+	"\x1dListTransmissionRulesResponse\x128\n" +
+	"\x05items\x18\x01 \x03(\v2\".media.mia.v1.TransmissionRuleItemR\x05items\")\n" +
+	"\x0fGetQuoteRequest\x12\x16\n" +
+	"\x06symbol\x18\x01 \x01(\tR\x06symbol\"\x80\x01\n" +
+	"\bOhlcvBar\x12\f\n" +
+	"\x01t\x18\x01 \x01(\tR\x01t\x12\x12\n" +
+	"\x04open\x18\x02 \x01(\x01R\x04open\x12\x12\n" +
+	"\x04high\x18\x03 \x01(\x01R\x04high\x12\x10\n" +
+	"\x03low\x18\x04 \x01(\x01R\x03low\x12\x14\n" +
+	"\x05close\x18\x05 \x01(\x01R\x05close\x12\x16\n" +
+	"\x06volume\x18\x06 \x01(\x01R\x06volume\"\xb2\x01\n" +
+	"\x10GetQuoteResponse\x12\x16\n" +
+	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x1a\n" +
+	"\bprovider\x18\x02 \x01(\tR\bprovider\x12*\n" +
+	"\x04bars\x18\x03 \x03(\v2\x16.media.mia.v1.OhlcvBarR\x04bars\x12\x1e\n" +
+	"\n" +
+	"fetched_at\x18\x04 \x01(\tR\n" +
+	"fetched_at\x12\x1e\n" +
+	"\n" +
+	"from_cache\x18\x05 \x01(\bR\n" +
+	"from_cache2\x9c\x05\n" +
+	"\rImpactService\x12\x81\x01\n" +
+	"\x0fListImpactCards\x12$.media.mia.v1.ListImpactCardsRequest\x1a%.media.mia.v1.ListImpactCardsResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/api/v1/media/mia/impacts\x12\x86\x01\n" +
+	"\rGetImpactCard\x12\".media.mia.v1.GetImpactCardRequest\x1a#.media.mia.v1.GetImpactCardResponse\",\x82\xd3\xe4\x93\x02&\x12$/api/v1/media/mia/impact/{impact_id}\x12}\n" +
+	"\x0eGetCalibration\x12#.media.mia.v1.GetCalibrationRequest\x1a\x1f.media.mia.v1.CalibrationReport\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/api/v1/media/mia/calibration\x12\x91\x01\n" +
+	"\x15ListTransmissionRules\x12*.media.mia.v1.ListTransmissionRulesRequest\x1a+.media.mia.v1.ListTransmissionRulesResponse\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/api/v1/media/mia/rules\x12k\n" +
+	"\bGetQuote\x12\x1d.media.mia.v1.GetQuoteRequest\x1a\x1e.media.mia.v1.GetQuoteResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/api/v1/media/mia/quotesB\x9a\x01\n" +
 	"\x10com.media.mia.v1B\vImpactProtoP\x01Z'framework/api/gen/go/media/v1/mia;miav1\xa2\x02\x03MMX\xaa\x02\fMedia.Mia.V1\xca\x02\fMedia\\Mia\\V1\xe2\x02\x18Media\\Mia\\V1\\GPBMetadata\xea\x02\x0eMedia::Mia::V1b\x06proto3"
 
 var (
@@ -773,34 +1871,64 @@ func file_media_v1_mia_impact_proto_rawDescGZIP() []byte {
 	return file_media_v1_mia_impact_proto_rawDescData
 }
 
-var file_media_v1_mia_impact_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_media_v1_mia_impact_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_media_v1_mia_impact_proto_goTypes = []any{
-	(*ImpactCard)(nil),            // 0: media.mia.v1.ImpactCard
-	(*ImpactEvent)(nil),           // 1: media.mia.v1.ImpactEvent
-	(*Sentiment)(nil),             // 2: media.mia.v1.Sentiment
-	(*Impact)(nil),                // 3: media.mia.v1.Impact
-	(*ImpactFactors)(nil),         // 4: media.mia.v1.ImpactFactors
-	(*AffectedItem)(nil),          // 5: media.mia.v1.AffectedItem
-	(*Verified)(nil),              // 6: media.mia.v1.Verified
-	(*TransmissionRule)(nil),      // 7: media.mia.v1.TransmissionRule
-	(*TriggerSpec)(nil),           // 8: media.mia.v1.TriggerSpec
-	(*timestamppb.Timestamp)(nil), // 9: google.protobuf.Timestamp
+	(*ImpactCard)(nil),                    // 0: media.mia.v1.ImpactCard
+	(*ImpactEvent)(nil),                   // 1: media.mia.v1.ImpactEvent
+	(*Sentiment)(nil),                     // 2: media.mia.v1.Sentiment
+	(*Impact)(nil),                        // 3: media.mia.v1.Impact
+	(*ImpactFactors)(nil),                 // 4: media.mia.v1.ImpactFactors
+	(*AffectedItem)(nil),                  // 5: media.mia.v1.AffectedItem
+	(*Verified)(nil),                      // 6: media.mia.v1.Verified
+	(*TransmissionRule)(nil),              // 7: media.mia.v1.TransmissionRule
+	(*TriggerSpec)(nil),                   // 8: media.mia.v1.TriggerSpec
+	(*ImpactCardListItem)(nil),            // 9: media.mia.v1.ImpactCardListItem
+	(*ListImpactCardsRequest)(nil),        // 10: media.mia.v1.ListImpactCardsRequest
+	(*ListImpactCardsResponse)(nil),       // 11: media.mia.v1.ListImpactCardsResponse
+	(*GetImpactCardRequest)(nil),          // 12: media.mia.v1.GetImpactCardRequest
+	(*GetImpactCardResponse)(nil),         // 13: media.mia.v1.GetImpactCardResponse
+	(*CalibrationBucket)(nil),             // 14: media.mia.v1.CalibrationBucket
+	(*GetCalibrationRequest)(nil),         // 15: media.mia.v1.GetCalibrationRequest
+	(*CalibrationReport)(nil),             // 16: media.mia.v1.CalibrationReport
+	(*TransmissionRuleItem)(nil),          // 17: media.mia.v1.TransmissionRuleItem
+	(*ListTransmissionRulesRequest)(nil),  // 18: media.mia.v1.ListTransmissionRulesRequest
+	(*ListTransmissionRulesResponse)(nil), // 19: media.mia.v1.ListTransmissionRulesResponse
+	(*GetQuoteRequest)(nil),               // 20: media.mia.v1.GetQuoteRequest
+	(*OhlcvBar)(nil),                      // 21: media.mia.v1.OhlcvBar
+	(*GetQuoteResponse)(nil),              // 22: media.mia.v1.GetQuoteResponse
+	(*timestamppb.Timestamp)(nil),         // 23: google.protobuf.Timestamp
 }
 var file_media_v1_mia_impact_proto_depIdxs = []int32{
-	1, // 0: media.mia.v1.ImpactCard.event:type_name -> media.mia.v1.ImpactEvent
-	2, // 1: media.mia.v1.ImpactCard.sentiment:type_name -> media.mia.v1.Sentiment
-	3, // 2: media.mia.v1.ImpactCard.impact:type_name -> media.mia.v1.Impact
-	5, // 3: media.mia.v1.ImpactCard.affected:type_name -> media.mia.v1.AffectedItem
-	6, // 4: media.mia.v1.ImpactCard.verified:type_name -> media.mia.v1.Verified
-	9, // 5: media.mia.v1.ImpactEvent.occurred_at:type_name -> google.protobuf.Timestamp
-	4, // 6: media.mia.v1.Impact.factors:type_name -> media.mia.v1.ImpactFactors
-	9, // 7: media.mia.v1.Verified.checked_at:type_name -> google.protobuf.Timestamp
-	8, // 8: media.mia.v1.TransmissionRule.trigger:type_name -> media.mia.v1.TriggerSpec
-	9, // [9:9] is the sub-list for method output_type
-	9, // [9:9] is the sub-list for method input_type
-	9, // [9:9] is the sub-list for extension type_name
-	9, // [9:9] is the sub-list for extension extendee
-	0, // [0:9] is the sub-list for field type_name
+	1,  // 0: media.mia.v1.ImpactCard.event:type_name -> media.mia.v1.ImpactEvent
+	2,  // 1: media.mia.v1.ImpactCard.sentiment:type_name -> media.mia.v1.Sentiment
+	3,  // 2: media.mia.v1.ImpactCard.impact:type_name -> media.mia.v1.Impact
+	5,  // 3: media.mia.v1.ImpactCard.affected:type_name -> media.mia.v1.AffectedItem
+	6,  // 4: media.mia.v1.ImpactCard.verified:type_name -> media.mia.v1.Verified
+	23, // 5: media.mia.v1.ImpactEvent.occurred_at:type_name -> google.protobuf.Timestamp
+	4,  // 6: media.mia.v1.Impact.factors:type_name -> media.mia.v1.ImpactFactors
+	23, // 7: media.mia.v1.Verified.checked_at:type_name -> google.protobuf.Timestamp
+	8,  // 8: media.mia.v1.TransmissionRule.trigger:type_name -> media.mia.v1.TriggerSpec
+	9,  // 9: media.mia.v1.ListImpactCardsResponse.items:type_name -> media.mia.v1.ImpactCardListItem
+	0,  // 10: media.mia.v1.GetImpactCardResponse.card:type_name -> media.mia.v1.ImpactCard
+	14, // 11: media.mia.v1.CalibrationReport.buckets:type_name -> media.mia.v1.CalibrationBucket
+	7,  // 12: media.mia.v1.TransmissionRuleItem.rule:type_name -> media.mia.v1.TransmissionRule
+	17, // 13: media.mia.v1.ListTransmissionRulesResponse.items:type_name -> media.mia.v1.TransmissionRuleItem
+	21, // 14: media.mia.v1.GetQuoteResponse.bars:type_name -> media.mia.v1.OhlcvBar
+	10, // 15: media.mia.v1.ImpactService.ListImpactCards:input_type -> media.mia.v1.ListImpactCardsRequest
+	12, // 16: media.mia.v1.ImpactService.GetImpactCard:input_type -> media.mia.v1.GetImpactCardRequest
+	15, // 17: media.mia.v1.ImpactService.GetCalibration:input_type -> media.mia.v1.GetCalibrationRequest
+	18, // 18: media.mia.v1.ImpactService.ListTransmissionRules:input_type -> media.mia.v1.ListTransmissionRulesRequest
+	20, // 19: media.mia.v1.ImpactService.GetQuote:input_type -> media.mia.v1.GetQuoteRequest
+	11, // 20: media.mia.v1.ImpactService.ListImpactCards:output_type -> media.mia.v1.ListImpactCardsResponse
+	13, // 21: media.mia.v1.ImpactService.GetImpactCard:output_type -> media.mia.v1.GetImpactCardResponse
+	16, // 22: media.mia.v1.ImpactService.GetCalibration:output_type -> media.mia.v1.CalibrationReport
+	19, // 23: media.mia.v1.ImpactService.ListTransmissionRules:output_type -> media.mia.v1.ListTransmissionRulesResponse
+	22, // 24: media.mia.v1.ImpactService.GetQuote:output_type -> media.mia.v1.GetQuoteResponse
+	20, // [20:25] is the sub-list for method output_type
+	15, // [15:20] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_media_v1_mia_impact_proto_init() }
@@ -814,9 +1942,9 @@ func file_media_v1_mia_impact_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_media_v1_mia_impact_proto_rawDesc), len(file_media_v1_mia_impact_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   23,
 			NumExtensions: 0,
-			NumServices:   0,
+			NumServices:   1,
 		},
 		GoTypes:           file_media_v1_mia_impact_proto_goTypes,
 		DependencyIndexes: file_media_v1_mia_impact_proto_depIdxs,

@@ -9,6 +9,7 @@ import (
 	"framework/app/admin/internal/data/ent/radarwatch"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -18,6 +19,7 @@ type RadarWatchCreate struct {
 	config
 	mutation *RadarWatchMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -261,6 +263,7 @@ func (_c *RadarWatchCreate) createSpec() (*RadarWatch, *sqlgraph.CreateSpec) {
 		_node = &RadarWatch{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(radarwatch.Table, sqlgraph.NewFieldSpec(radarwatch.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -312,11 +315,561 @@ func (_c *RadarWatchCreate) createSpec() (*RadarWatch, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.RadarWatch.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.RadarWatchUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *RadarWatchCreate) OnConflict(opts ...sql.ConflictOption) *RadarWatchUpsertOne {
+	_c.conflict = opts
+	return &RadarWatchUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.RadarWatch.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *RadarWatchCreate) OnConflictColumns(columns ...string) *RadarWatchUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &RadarWatchUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// RadarWatchUpsertOne is the builder for "upsert"-ing
+	//  one RadarWatch node.
+	RadarWatchUpsertOne struct {
+		create *RadarWatchCreate
+	}
+
+	// RadarWatchUpsert is the "OnConflict" setter.
+	RadarWatchUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *RadarWatchUpsert) SetUpdateTime(v time.Time) *RadarWatchUpsert {
+	u.Set(radarwatch.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *RadarWatchUpsert) UpdateUpdateTime() *RadarWatchUpsert {
+	u.SetExcluded(radarwatch.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *RadarWatchUpsert) ClearUpdateTime() *RadarWatchUpsert {
+	u.SetNull(radarwatch.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *RadarWatchUpsert) SetDeleteTime(v time.Time) *RadarWatchUpsert {
+	u.Set(radarwatch.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *RadarWatchUpsert) UpdateDeleteTime() *RadarWatchUpsert {
+	u.SetExcluded(radarwatch.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *RadarWatchUpsert) ClearDeleteTime() *RadarWatchUpsert {
+	u.SetNull(radarwatch.FieldDeleteTime)
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *RadarWatchUpsert) SetUserID(v uint32) *RadarWatchUpsert {
+	u.Set(radarwatch.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *RadarWatchUpsert) UpdateUserID() *RadarWatchUpsert {
+	u.SetExcluded(radarwatch.FieldUserID)
+	return u
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *RadarWatchUpsert) AddUserID(v uint32) *RadarWatchUpsert {
+	u.Add(radarwatch.FieldUserID, v)
+	return u
+}
+
+// SetFullName sets the "full_name" field.
+func (u *RadarWatchUpsert) SetFullName(v string) *RadarWatchUpsert {
+	u.Set(radarwatch.FieldFullName, v)
+	return u
+}
+
+// UpdateFullName sets the "full_name" field to the value that was provided on create.
+func (u *RadarWatchUpsert) UpdateFullName() *RadarWatchUpsert {
+	u.SetExcluded(radarwatch.FieldFullName)
+	return u
+}
+
+// SetBaselineStars sets the "baseline_stars" field.
+func (u *RadarWatchUpsert) SetBaselineStars(v int64) *RadarWatchUpsert {
+	u.Set(radarwatch.FieldBaselineStars, v)
+	return u
+}
+
+// UpdateBaselineStars sets the "baseline_stars" field to the value that was provided on create.
+func (u *RadarWatchUpsert) UpdateBaselineStars() *RadarWatchUpsert {
+	u.SetExcluded(radarwatch.FieldBaselineStars)
+	return u
+}
+
+// AddBaselineStars adds v to the "baseline_stars" field.
+func (u *RadarWatchUpsert) AddBaselineStars(v int64) *RadarWatchUpsert {
+	u.Add(radarwatch.FieldBaselineStars, v)
+	return u
+}
+
+// SetStars sets the "stars" field.
+func (u *RadarWatchUpsert) SetStars(v int64) *RadarWatchUpsert {
+	u.Set(radarwatch.FieldStars, v)
+	return u
+}
+
+// UpdateStars sets the "stars" field to the value that was provided on create.
+func (u *RadarWatchUpsert) UpdateStars() *RadarWatchUpsert {
+	u.SetExcluded(radarwatch.FieldStars)
+	return u
+}
+
+// AddStars adds v to the "stars" field.
+func (u *RadarWatchUpsert) AddStars(v int64) *RadarWatchUpsert {
+	u.Add(radarwatch.FieldStars, v)
+	return u
+}
+
+// ClearStars clears the value of the "stars" field.
+func (u *RadarWatchUpsert) ClearStars() *RadarWatchUpsert {
+	u.SetNull(radarwatch.FieldStars)
+	return u
+}
+
+// SetStarsDelta sets the "stars_delta" field.
+func (u *RadarWatchUpsert) SetStarsDelta(v int64) *RadarWatchUpsert {
+	u.Set(radarwatch.FieldStarsDelta, v)
+	return u
+}
+
+// UpdateStarsDelta sets the "stars_delta" field to the value that was provided on create.
+func (u *RadarWatchUpsert) UpdateStarsDelta() *RadarWatchUpsert {
+	u.SetExcluded(radarwatch.FieldStarsDelta)
+	return u
+}
+
+// AddStarsDelta adds v to the "stars_delta" field.
+func (u *RadarWatchUpsert) AddStarsDelta(v int64) *RadarWatchUpsert {
+	u.Add(radarwatch.FieldStarsDelta, v)
+	return u
+}
+
+// ClearStarsDelta clears the value of the "stars_delta" field.
+func (u *RadarWatchUpsert) ClearStarsDelta() *RadarWatchUpsert {
+	u.SetNull(radarwatch.FieldStarsDelta)
+	return u
+}
+
+// SetUnreadCount sets the "unread_count" field.
+func (u *RadarWatchUpsert) SetUnreadCount(v uint32) *RadarWatchUpsert {
+	u.Set(radarwatch.FieldUnreadCount, v)
+	return u
+}
+
+// UpdateUnreadCount sets the "unread_count" field to the value that was provided on create.
+func (u *RadarWatchUpsert) UpdateUnreadCount() *RadarWatchUpsert {
+	u.SetExcluded(radarwatch.FieldUnreadCount)
+	return u
+}
+
+// AddUnreadCount adds v to the "unread_count" field.
+func (u *RadarWatchUpsert) AddUnreadCount(v uint32) *RadarWatchUpsert {
+	u.Add(radarwatch.FieldUnreadCount, v)
+	return u
+}
+
+// ClearUnreadCount clears the value of the "unread_count" field.
+func (u *RadarWatchUpsert) ClearUnreadCount() *RadarWatchUpsert {
+	u.SetNull(radarwatch.FieldUnreadCount)
+	return u
+}
+
+// SetHTMLURL sets the "html_url" field.
+func (u *RadarWatchUpsert) SetHTMLURL(v string) *RadarWatchUpsert {
+	u.Set(radarwatch.FieldHTMLURL, v)
+	return u
+}
+
+// UpdateHTMLURL sets the "html_url" field to the value that was provided on create.
+func (u *RadarWatchUpsert) UpdateHTMLURL() *RadarWatchUpsert {
+	u.SetExcluded(radarwatch.FieldHTMLURL)
+	return u
+}
+
+// ClearHTMLURL clears the value of the "html_url" field.
+func (u *RadarWatchUpsert) ClearHTMLURL() *RadarWatchUpsert {
+	u.SetNull(radarwatch.FieldHTMLURL)
+	return u
+}
+
+// SetSparkline sets the "sparkline" field.
+func (u *RadarWatchUpsert) SetSparkline(v []int64) *RadarWatchUpsert {
+	u.Set(radarwatch.FieldSparkline, v)
+	return u
+}
+
+// UpdateSparkline sets the "sparkline" field to the value that was provided on create.
+func (u *RadarWatchUpsert) UpdateSparkline() *RadarWatchUpsert {
+	u.SetExcluded(radarwatch.FieldSparkline)
+	return u
+}
+
+// ClearSparkline clears the value of the "sparkline" field.
+func (u *RadarWatchUpsert) ClearSparkline() *RadarWatchUpsert {
+	u.SetNull(radarwatch.FieldSparkline)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.RadarWatch.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(radarwatch.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *RadarWatchUpsertOne) UpdateNewValues() *RadarWatchUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(radarwatch.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(radarwatch.FieldCreateTime)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.RadarWatch.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *RadarWatchUpsertOne) Ignore() *RadarWatchUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *RadarWatchUpsertOne) DoNothing() *RadarWatchUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the RadarWatchCreate.OnConflict
+// documentation for more info.
+func (u *RadarWatchUpsertOne) Update(set func(*RadarWatchUpsert)) *RadarWatchUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&RadarWatchUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *RadarWatchUpsertOne) SetUpdateTime(v time.Time) *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *RadarWatchUpsertOne) UpdateUpdateTime() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *RadarWatchUpsertOne) ClearUpdateTime() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *RadarWatchUpsertOne) SetDeleteTime(v time.Time) *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *RadarWatchUpsertOne) UpdateDeleteTime() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *RadarWatchUpsertOne) ClearDeleteTime() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *RadarWatchUpsertOne) SetUserID(v uint32) *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *RadarWatchUpsertOne) AddUserID(v uint32) *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.AddUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *RadarWatchUpsertOne) UpdateUserID() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetFullName sets the "full_name" field.
+func (u *RadarWatchUpsertOne) SetFullName(v string) *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetFullName(v)
+	})
+}
+
+// UpdateFullName sets the "full_name" field to the value that was provided on create.
+func (u *RadarWatchUpsertOne) UpdateFullName() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateFullName()
+	})
+}
+
+// SetBaselineStars sets the "baseline_stars" field.
+func (u *RadarWatchUpsertOne) SetBaselineStars(v int64) *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetBaselineStars(v)
+	})
+}
+
+// AddBaselineStars adds v to the "baseline_stars" field.
+func (u *RadarWatchUpsertOne) AddBaselineStars(v int64) *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.AddBaselineStars(v)
+	})
+}
+
+// UpdateBaselineStars sets the "baseline_stars" field to the value that was provided on create.
+func (u *RadarWatchUpsertOne) UpdateBaselineStars() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateBaselineStars()
+	})
+}
+
+// SetStars sets the "stars" field.
+func (u *RadarWatchUpsertOne) SetStars(v int64) *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetStars(v)
+	})
+}
+
+// AddStars adds v to the "stars" field.
+func (u *RadarWatchUpsertOne) AddStars(v int64) *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.AddStars(v)
+	})
+}
+
+// UpdateStars sets the "stars" field to the value that was provided on create.
+func (u *RadarWatchUpsertOne) UpdateStars() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateStars()
+	})
+}
+
+// ClearStars clears the value of the "stars" field.
+func (u *RadarWatchUpsertOne) ClearStars() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.ClearStars()
+	})
+}
+
+// SetStarsDelta sets the "stars_delta" field.
+func (u *RadarWatchUpsertOne) SetStarsDelta(v int64) *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetStarsDelta(v)
+	})
+}
+
+// AddStarsDelta adds v to the "stars_delta" field.
+func (u *RadarWatchUpsertOne) AddStarsDelta(v int64) *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.AddStarsDelta(v)
+	})
+}
+
+// UpdateStarsDelta sets the "stars_delta" field to the value that was provided on create.
+func (u *RadarWatchUpsertOne) UpdateStarsDelta() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateStarsDelta()
+	})
+}
+
+// ClearStarsDelta clears the value of the "stars_delta" field.
+func (u *RadarWatchUpsertOne) ClearStarsDelta() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.ClearStarsDelta()
+	})
+}
+
+// SetUnreadCount sets the "unread_count" field.
+func (u *RadarWatchUpsertOne) SetUnreadCount(v uint32) *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetUnreadCount(v)
+	})
+}
+
+// AddUnreadCount adds v to the "unread_count" field.
+func (u *RadarWatchUpsertOne) AddUnreadCount(v uint32) *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.AddUnreadCount(v)
+	})
+}
+
+// UpdateUnreadCount sets the "unread_count" field to the value that was provided on create.
+func (u *RadarWatchUpsertOne) UpdateUnreadCount() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateUnreadCount()
+	})
+}
+
+// ClearUnreadCount clears the value of the "unread_count" field.
+func (u *RadarWatchUpsertOne) ClearUnreadCount() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.ClearUnreadCount()
+	})
+}
+
+// SetHTMLURL sets the "html_url" field.
+func (u *RadarWatchUpsertOne) SetHTMLURL(v string) *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetHTMLURL(v)
+	})
+}
+
+// UpdateHTMLURL sets the "html_url" field to the value that was provided on create.
+func (u *RadarWatchUpsertOne) UpdateHTMLURL() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateHTMLURL()
+	})
+}
+
+// ClearHTMLURL clears the value of the "html_url" field.
+func (u *RadarWatchUpsertOne) ClearHTMLURL() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.ClearHTMLURL()
+	})
+}
+
+// SetSparkline sets the "sparkline" field.
+func (u *RadarWatchUpsertOne) SetSparkline(v []int64) *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetSparkline(v)
+	})
+}
+
+// UpdateSparkline sets the "sparkline" field to the value that was provided on create.
+func (u *RadarWatchUpsertOne) UpdateSparkline() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateSparkline()
+	})
+}
+
+// ClearSparkline clears the value of the "sparkline" field.
+func (u *RadarWatchUpsertOne) ClearSparkline() *RadarWatchUpsertOne {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.ClearSparkline()
+	})
+}
+
+// Exec executes the query.
+func (u *RadarWatchUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for RadarWatchCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *RadarWatchUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *RadarWatchUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *RadarWatchUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // RadarWatchCreateBulk is the builder for creating many RadarWatch entities in bulk.
 type RadarWatchCreateBulk struct {
 	config
 	err      error
 	builders []*RadarWatchCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the RadarWatch entities in the database.
@@ -346,6 +899,7 @@ func (_c *RadarWatchCreateBulk) Save(ctx context.Context) ([]*RadarWatch, error)
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -396,6 +950,347 @@ func (_c *RadarWatchCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *RadarWatchCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.RadarWatch.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.RadarWatchUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *RadarWatchCreateBulk) OnConflict(opts ...sql.ConflictOption) *RadarWatchUpsertBulk {
+	_c.conflict = opts
+	return &RadarWatchUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.RadarWatch.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *RadarWatchCreateBulk) OnConflictColumns(columns ...string) *RadarWatchUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &RadarWatchUpsertBulk{
+		create: _c,
+	}
+}
+
+// RadarWatchUpsertBulk is the builder for "upsert"-ing
+// a bulk of RadarWatch nodes.
+type RadarWatchUpsertBulk struct {
+	create *RadarWatchCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.RadarWatch.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(radarwatch.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *RadarWatchUpsertBulk) UpdateNewValues() *RadarWatchUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(radarwatch.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(radarwatch.FieldCreateTime)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.RadarWatch.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *RadarWatchUpsertBulk) Ignore() *RadarWatchUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *RadarWatchUpsertBulk) DoNothing() *RadarWatchUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the RadarWatchCreateBulk.OnConflict
+// documentation for more info.
+func (u *RadarWatchUpsertBulk) Update(set func(*RadarWatchUpsert)) *RadarWatchUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&RadarWatchUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *RadarWatchUpsertBulk) SetUpdateTime(v time.Time) *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *RadarWatchUpsertBulk) UpdateUpdateTime() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *RadarWatchUpsertBulk) ClearUpdateTime() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *RadarWatchUpsertBulk) SetDeleteTime(v time.Time) *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *RadarWatchUpsertBulk) UpdateDeleteTime() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *RadarWatchUpsertBulk) ClearDeleteTime() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *RadarWatchUpsertBulk) SetUserID(v uint32) *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *RadarWatchUpsertBulk) AddUserID(v uint32) *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.AddUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *RadarWatchUpsertBulk) UpdateUserID() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetFullName sets the "full_name" field.
+func (u *RadarWatchUpsertBulk) SetFullName(v string) *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetFullName(v)
+	})
+}
+
+// UpdateFullName sets the "full_name" field to the value that was provided on create.
+func (u *RadarWatchUpsertBulk) UpdateFullName() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateFullName()
+	})
+}
+
+// SetBaselineStars sets the "baseline_stars" field.
+func (u *RadarWatchUpsertBulk) SetBaselineStars(v int64) *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetBaselineStars(v)
+	})
+}
+
+// AddBaselineStars adds v to the "baseline_stars" field.
+func (u *RadarWatchUpsertBulk) AddBaselineStars(v int64) *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.AddBaselineStars(v)
+	})
+}
+
+// UpdateBaselineStars sets the "baseline_stars" field to the value that was provided on create.
+func (u *RadarWatchUpsertBulk) UpdateBaselineStars() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateBaselineStars()
+	})
+}
+
+// SetStars sets the "stars" field.
+func (u *RadarWatchUpsertBulk) SetStars(v int64) *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetStars(v)
+	})
+}
+
+// AddStars adds v to the "stars" field.
+func (u *RadarWatchUpsertBulk) AddStars(v int64) *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.AddStars(v)
+	})
+}
+
+// UpdateStars sets the "stars" field to the value that was provided on create.
+func (u *RadarWatchUpsertBulk) UpdateStars() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateStars()
+	})
+}
+
+// ClearStars clears the value of the "stars" field.
+func (u *RadarWatchUpsertBulk) ClearStars() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.ClearStars()
+	})
+}
+
+// SetStarsDelta sets the "stars_delta" field.
+func (u *RadarWatchUpsertBulk) SetStarsDelta(v int64) *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetStarsDelta(v)
+	})
+}
+
+// AddStarsDelta adds v to the "stars_delta" field.
+func (u *RadarWatchUpsertBulk) AddStarsDelta(v int64) *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.AddStarsDelta(v)
+	})
+}
+
+// UpdateStarsDelta sets the "stars_delta" field to the value that was provided on create.
+func (u *RadarWatchUpsertBulk) UpdateStarsDelta() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateStarsDelta()
+	})
+}
+
+// ClearStarsDelta clears the value of the "stars_delta" field.
+func (u *RadarWatchUpsertBulk) ClearStarsDelta() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.ClearStarsDelta()
+	})
+}
+
+// SetUnreadCount sets the "unread_count" field.
+func (u *RadarWatchUpsertBulk) SetUnreadCount(v uint32) *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetUnreadCount(v)
+	})
+}
+
+// AddUnreadCount adds v to the "unread_count" field.
+func (u *RadarWatchUpsertBulk) AddUnreadCount(v uint32) *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.AddUnreadCount(v)
+	})
+}
+
+// UpdateUnreadCount sets the "unread_count" field to the value that was provided on create.
+func (u *RadarWatchUpsertBulk) UpdateUnreadCount() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateUnreadCount()
+	})
+}
+
+// ClearUnreadCount clears the value of the "unread_count" field.
+func (u *RadarWatchUpsertBulk) ClearUnreadCount() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.ClearUnreadCount()
+	})
+}
+
+// SetHTMLURL sets the "html_url" field.
+func (u *RadarWatchUpsertBulk) SetHTMLURL(v string) *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetHTMLURL(v)
+	})
+}
+
+// UpdateHTMLURL sets the "html_url" field to the value that was provided on create.
+func (u *RadarWatchUpsertBulk) UpdateHTMLURL() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateHTMLURL()
+	})
+}
+
+// ClearHTMLURL clears the value of the "html_url" field.
+func (u *RadarWatchUpsertBulk) ClearHTMLURL() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.ClearHTMLURL()
+	})
+}
+
+// SetSparkline sets the "sparkline" field.
+func (u *RadarWatchUpsertBulk) SetSparkline(v []int64) *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.SetSparkline(v)
+	})
+}
+
+// UpdateSparkline sets the "sparkline" field to the value that was provided on create.
+func (u *RadarWatchUpsertBulk) UpdateSparkline() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.UpdateSparkline()
+	})
+}
+
+// ClearSparkline clears the value of the "sparkline" field.
+func (u *RadarWatchUpsertBulk) ClearSparkline() *RadarWatchUpsertBulk {
+	return u.Update(func(s *RadarWatchUpsert) {
+		s.ClearSparkline()
+	})
+}
+
+// Exec executes the query.
+func (u *RadarWatchUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the RadarWatchCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for RadarWatchCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *RadarWatchUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

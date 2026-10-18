@@ -1,0 +1,44 @@
+# ⑤ MAP 媒体自动化发布矩阵配置（05-MAP/03-详细设计.md §8）
+# 🔴 安全纪律（biz/publish/conf.go Validate 强制，违例即拒绝启动）：
+#  - security.default_visibility 恒为 "private"（NFR-MAP-01；非 private 必须 override_reason + confirm_public 二次确认）
+#  - forbid_self_approval / forbid_automation_approval / forbid_automation_publish 恒 true（三铁律；写 false 会被 Normalize 纠回 true）
+#  - credential.mask_in_logs 恒 true（凭据明文字节永不出现在日志/错误消息）
+#  - credential.key_env 的环境变量承载 32B 密钥；密钥本身绝不入库、不进任何 yaml
+map:
+  enabled: true
+
+  security:
+    default_visibility: "private"      # 🔴 恒 private
+    allow_public: true                 # 允许升公（仍须 override_reason + 审批 + confirm_public）
+    forbid_self_approval: true         # 🔴 恒 true
+    forbid_automation_approval: true   # 🔴 恒 true
+    forbid_automation_publish: true    # 🔴 恒 true
+
+  quota:
+    daily_publish_limit: 100           # 24h 发布总量硬上限（超限 429，需人工解除）
+    platform_hourly_limit: 20          # 单平台每小时上限
+    account_min_interval: 5m           # 同账号两次发布最小间隔（平台限流保护）
+
+  breaker:
+    account_fail_threshold: 3          # 单账号连续失败 N 次 → paused + paused_until
+    platform_fail_rate_threshold: 0.5  # 单平台 24h 失败率 > N → 平台级熔断（暂停剩余账号）
+    pause_duration: 30m                # 账号熔断暂停时长（到时惰性恢复）
+
+  retry:
+    max_attempts: 3                    # asynq worker 消费语义（M4 后续）；V1 即时发布仅 1 次
+    backoff: "exponential"
+    base_delay: 30s
+
+  schedule:
+    humanize_jitter: 3m                # 拟人化偏移 ±3m（FR-PUB-06，避免整点批量模式）
+    local_worker_enabled: false        # 🔴 本机到点发 worker 属 M4；V1 仅平台原生排期/立即发
+
+  feedback:
+    enabled: false                     # 🔴 表现回流管道属 Phase 3（mm.map.feedback.v1 未建）
+    fetch_interval: 6h
+    csv_fallback: true                 # 回执 CSV 导出兜底（FR-PUB-07 已交付）
+
+  credential:
+    vault: "local_encrypted"           # V1：AES-256-GCM 密文入 credential_ref（enc:v1: 前缀）
+    key_env: "MAP_CREDENTIAL_KEY"      # 🔴 密钥来源环境变量名（缺失走 dev 兜底 + Warn，生产必须注入）
+    mask_in_logs: true                 # 🔴 恒 true

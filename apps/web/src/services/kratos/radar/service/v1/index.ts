@@ -8,15 +8,34 @@ export type GetRadarConfigRequest = {
 export type GetRadarConfigResponse = {
   hasGithubToken: boolean | undefined;
   githubTokenMasked: string | undefined;
+  // ── v2 新增：LLM 与克隆配置（密钥脱敏回显） ──
+  llmEnabled: boolean | undefined;
+  llmBaseUrl: string | undefined;
+  llmModel: string | undefined;
+  llmApiKeyMasked: string | undefined;
+  cloneEnabled: boolean | undefined;
+  cloneDir: string | undefined;
 };
 
 export type SetRadarConfigRequest = {
   githubToken: string | undefined;
+  llmEnabled: boolean | undefined;
+  llmBaseUrl: string | undefined;
+  llmApiKey: string | undefined;
+  llmModel: string | undefined;
+  cloneEnabled: boolean | undefined;
+  cloneDir: string | undefined;
 };
 
 export type SetRadarConfigResponse = {
   hasGithubToken: boolean | undefined;
   githubTokenMasked: string | undefined;
+  llmEnabled: boolean | undefined;
+  llmBaseUrl: string | undefined;
+  llmModel: string | undefined;
+  llmApiKeyMasked: string | undefined;
+  cloneEnabled: boolean | undefined;
+  cloneDir: string | undefined;
 };
 
 // RadarConfigService 雷达用户配置（勿与平台 UserService 重名）
@@ -146,6 +165,14 @@ export function createRadarNotifyServiceClient(
     },
   };
 }
+// LanguageStat 仓库语言构成（字节数与占比）。
+export type LanguageStat = {
+  name: string | undefined;
+  bytes: number | undefined;
+  percent: number | undefined;
+};
+
+// RepoItem 榜单 / 详情通用仓库视图（v2：对齐 GitHub 官网卡片密度 + AI/源码/克隆所需字段）。
 export type RepoItem = {
   id: string | undefined;
   fullName: string | undefined;
@@ -159,8 +186,25 @@ export type RepoItem = {
   isNew: boolean | undefined;
   htmlUrl: string | undefined;
   sparkline: number[] | undefined;
+  // ── v2 新增 ──
+  license: string | undefined;
+  licenseSpdx: string | undefined;
+  homepage: string | undefined;
+  openIssues: number | undefined;
+  watchers: number | undefined;
+  contributors: string[] | undefined;
+  createdAt: string | undefined;
+  updatedAt: string | undefined;
+  pushedAt: string | undefined;
+  cloneUrl: string | undefined;
+  sshUrl: string | undefined;
+  zipUrl: string | undefined;
+  defaultBranch: string | undefined;
+  languages: LanguageStat[] | undefined;
+  readmeExcerpt: string | undefined;
 };
 
+// ListTrendingRequest 热门榜查询（v2：月窗口 / 排序 / 关键词 / License）。
 export type ListTrendingRequest = {
   since: string | undefined;
   language: string | undefined;
@@ -168,6 +212,9 @@ export type ListTrendingRequest = {
   onlyNew: boolean | undefined;
   page: number | undefined;
   pageSize: number | undefined;
+  sort: string | undefined;
+  query: string | undefined;
+  license: string | undefined;
 };
 
 export type ListTrendingResponse = {
@@ -178,6 +225,9 @@ export type ListTrendingResponse = {
   languageTop: { [key: string]: number } | undefined;
   risingCount: number | undefined;
   newCount: number | undefined;
+  licenseTop: { [key: string]: number } | undefined;
+  window: string | undefined;
+  total: number | undefined;
 };
 
 export type SearchRisingRequest = {
@@ -192,6 +242,7 @@ export type SearchRisingResponse = {
   stale: boolean | undefined;
   staleReason: string | undefined;
   refreshedAt: string | undefined;
+  total: number | undefined;
 };
 
 // TrendingService 热门 / 新星榜
@@ -225,6 +276,15 @@ export function createTrendingServiceClient(
       }
       if (request.pageSize) {
         queryParams.push(`pageSize=${encodeURIComponent(request.pageSize.toString())}`)
+      }
+      if (request.sort) {
+        queryParams.push(`sort=${encodeURIComponent(request.sort.toString())}`)
+      }
+      if (request.query) {
+        queryParams.push(`query=${encodeURIComponent(request.query.toString())}`)
+      }
+      if (request.license) {
+        queryParams.push(`license=${encodeURIComponent(request.license.toString())}`)
       }
       let uri = path;
       if (queryParams.length > 0) {
@@ -267,6 +327,223 @@ export function createTrendingServiceClient(
         service: "TrendingService",
         method: "SearchRising",
       }) as Promise<SearchRisingResponse>;
+    },
+  };
+}
+// GetRepoRequest 仓库详情。insight_level: '' 不带出 | brief | summary | deep。
+// insight_cache_only: true 时只读 24h 本地总结缓存（绝不触发生成/烧每日配额），
+// 用于详情面板打开时的快照预取；未命中则 insight 为空。
+export type GetRepoRequest = {
+  fullName: string | undefined;
+  includeReadme: boolean | undefined;
+  insightLevel: string | undefined;
+  insightCacheOnly: boolean | undefined;
+};
+
+export type GetRepoResponse = {
+  repo: RepoItem | undefined;
+  readme: string | undefined;
+  insight: AIInsight | undefined;
+  stale: boolean | undefined;
+  staleReason: string | undefined;
+};
+
+// AIInsight AI 总结（三级：brief / summary / deep）。
+export type AIInsight = {
+  fullName: string | undefined;
+  level: string | undefined;
+  contentMarkdown: string | undefined;
+  model: string | undefined;
+  generatedAt: string | undefined;
+  cached: boolean | undefined;
+  durationMs: number | undefined;
+  error: string | undefined;
+};
+
+export type GetRepoTreeRequest = {
+  fullName: string | undefined;
+  branch: string | undefined;
+};
+
+export type TreeNode = {
+  path: string | undefined;
+  type: string | undefined;
+  size: number | undefined;
+};
+
+export type GetRepoTreeResponse = {
+  nodes: TreeNode[] | undefined;
+  defaultBranch: string | undefined;
+  truncated: boolean | undefined;
+};
+
+export type GetRepoContentRequest = {
+  fullName: string | undefined;
+  path: string | undefined;
+  ref: string | undefined;
+};
+
+export type GetRepoContentResponse = {
+  path: string | undefined;
+  name: string | undefined;
+  content: string | undefined;
+  encoding: string | undefined;
+  size: number | undefined;
+  truncated: boolean | undefined;
+  htmlUrl: string | undefined;
+  downloadUrl: string | undefined;
+  language: string | undefined;
+};
+
+export type CloneRepoRequest = {
+  fullName: string | undefined;
+  toServer: boolean | undefined;
+};
+
+export type CloneRepoResponse = {
+  cloneUrl: string | undefined;
+  sshUrl: string | undefined;
+  zipUrl: string | undefined;
+  command: string | undefined;
+  sshCommand: string | undefined;
+  localPath: string | undefined;
+  cloned: boolean | undefined;
+  message: string | undefined;
+};
+
+export type GenerateInsightRequest = {
+  fullName: string | undefined;
+  level: string | undefined;
+};
+
+export type GenerateInsightResponse = {
+  insight: AIInsight | undefined;
+};
+
+// RepoService 仓库详情 / 源码 / 克隆 / AI 总结
+export interface RepoService {
+  GetRepo(request: GetRepoRequest): Promise<GetRepoResponse>;
+  GetRepoTree(request: GetRepoTreeRequest): Promise<GetRepoTreeResponse>;
+  GetRepoContent(request: GetRepoContentRequest): Promise<GetRepoContentResponse>;
+  CloneRepo(request: CloneRepoRequest): Promise<CloneRepoResponse>;
+  GenerateInsight(request: GenerateInsightRequest): Promise<GenerateInsightResponse>;
+}
+
+export function createRepoServiceClient(
+  handler: RequestHandler
+): RepoService {
+  return {
+    GetRepo(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/radar/repo`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.fullName) {
+        queryParams.push(`fullName=${encodeURIComponent(request.fullName.toString())}`)
+      }
+      if (request.includeReadme) {
+        queryParams.push(`includeReadme=${encodeURIComponent(request.includeReadme.toString())}`)
+      }
+      if (request.insightLevel) {
+        queryParams.push(`insightLevel=${encodeURIComponent(request.insightLevel.toString())}`)
+      }
+      if (request.insightCacheOnly) {
+        queryParams.push(`insightCacheOnly=${encodeURIComponent(request.insightCacheOnly.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "RepoService",
+        method: "GetRepo",
+      }) as Promise<GetRepoResponse>;
+    },
+    GetRepoTree(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/radar/repo/tree`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.fullName) {
+        queryParams.push(`fullName=${encodeURIComponent(request.fullName.toString())}`)
+      }
+      if (request.branch) {
+        queryParams.push(`branch=${encodeURIComponent(request.branch.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "RepoService",
+        method: "GetRepoTree",
+      }) as Promise<GetRepoTreeResponse>;
+    },
+    GetRepoContent(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/radar/repo/content`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.fullName) {
+        queryParams.push(`fullName=${encodeURIComponent(request.fullName.toString())}`)
+      }
+      if (request.path) {
+        queryParams.push(`path=${encodeURIComponent(request.path.toString())}`)
+      }
+      if (request.ref) {
+        queryParams.push(`ref=${encodeURIComponent(request.ref.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "RepoService",
+        method: "GetRepoContent",
+      }) as Promise<GetRepoContentResponse>;
+    },
+    CloneRepo(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/radar/repo/clone`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "RepoService",
+        method: "CloneRepo",
+      }) as Promise<CloneRepoResponse>;
+    },
+    GenerateInsight(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/radar/insight`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "RepoService",
+        method: "GenerateInsight",
+      }) as Promise<GenerateInsightResponse>;
     },
   };
 }

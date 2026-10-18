@@ -27,7 +27,7 @@ func (s *RadarRepoService) GetRepo(ctx context.Context, req *radarV1.GetRepoRequ
 	if req == nil {
 		req = &radarV1.GetRepoRequest{}
 	}
-	repo, readme, insight, stale, staleReason, err := s.uc.GetRepo(ctx, req.FullName, req.IncludeReadme, req.InsightLevel)
+	repo, readme, insight, stale, staleReason, err := s.uc.GetRepo(ctx, req.FullName, req.IncludeReadme, req.InsightLevel, req.InsightCacheOnly)
 	if err != nil {
 		return nil, err
 	}

@@ -28,5 +28,36 @@
       timeout: 3s
       retries: 10
 
+  # 调研 P0 欠账：TT 写入侧已依赖 NATS JetStream；media v1 不强依赖但并车补齐。
+  nats:
+    image: nats:2.10
+    container_name: framework-nats
+    command: ["-js", "-m", "8222"]
+    ports:
+      - "4222:4222"   # client
+      - "8222:8222"   # http monitor
+    healthcheck:
+      test: ["CMD-SHELL", "nats-server --version || wget -qO- http://127.0.0.1:8222/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # 观测/时序存储欠账补齐（TT 快照侧链路）。
+  influxdb:
+    image: influxdb:2
+    container_name: framework-influxdb
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: "1234567890"
+      DOCKER_INFLUXDB_INIT_ORG: framework
+      DOCKER_INFLUXDB_INIT_BUCKET: framework
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: CHANGE_ME_DEV_INFLUX_TOKEN
+    ports:
+      - "8086:8086"
+    volumes:
+      - framework_influx:/var/lib/influxdb2
+
 volumes:
   framework_pg:
+  framework_influx:

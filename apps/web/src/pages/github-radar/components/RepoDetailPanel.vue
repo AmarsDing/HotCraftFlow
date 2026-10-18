@@ -54,7 +54,16 @@
             :label="t('githubRadar.watch')"
             @click="$emit('watch', repo)"
           />
-          <q-btn v-else-if="repo" flat dense no-caps icon="bookmark" :label="t('githubRadar.watchingBadge')" disable />
+          <q-btn
+            v-else-if="repo"
+            outline
+            dense
+            no-caps
+            color="primary"
+            icon="bookmark_remove"
+            :label="t('githubRadar.unwatch')"
+            @click="$emit('watch', repo)"
+          />
         </div>
       </q-card-section>
 
@@ -63,13 +72,20 @@
           <q-spinner size="28px" color="primary" />
         </div>
 
+        <q-banner v-else-if="loadError" dense rounded class="q-mb-md bg-negative text-white" data-cy="detail-error">
+          {{ loadError }}
+          <template #action>
+            <q-btn flat dense :label="t('common.retry')" @click="loadDetail" />
+          </template>
+        </q-banner>
+
         <template v-else>
           <div class="repo-detail__layout">
             <!-- 左栏：元数据 -->
             <aside class="repo-detail__meta">
               <div class="repo-detail__meta-title text-caption text-weight-bold">{{ t('githubRadar.repoInfo') }}</div>
               <div class="repo-detail__meta-row">
-                <span>License</span>
+                <span>{{ t('githubRadar.licenseLabel') }}</span>
                 <b>{{ detail?.license || t('githubRadar.notDetected') }}</b>
               </div>
               <div class="repo-detail__meta-row">
@@ -77,7 +93,7 @@
                 <b>{{ detail?.language || '—' }}</b>
               </div>
               <div class="repo-detail__meta-row">
-                <span>Watchers</span>
+                <span>{{ t('githubRadar.watchersLabel') }}</span>
                 <b>{{ exactCount(detail?.watchers || 0) }}</b>
               </div>
               <div class="repo-detail__meta-row">
@@ -90,7 +106,7 @@
               </div>
               <div class="repo-detail__meta-row">
                 <span>{{ t('githubRadar.pushedAtLabel') }}</span>
-                <b>{{ relTime(detail?.pushed_at) }}</b>
+                <b>{{ relTime(detail?.pushed_at, t) }}</b>
               </div>
               <div v-if="detail?.homepage" class="repo-detail__meta-row">
                 <span>{{ t('githubRadar.homepage') }}</span>
@@ -119,7 +135,9 @@
               </div>
 
               <div v-if="detail?.topics?.length" class="q-mt-sm">
-                <div class="repo-detail__meta-title text-caption text-weight-bold">Topics</div>
+                <div class="repo-detail__meta-title text-caption text-weight-bold">
+                  {{ t('githubRadar.topicsLabel') }}
+                </div>
                 <div class="row q-gutter-xs q-mt-xs">
                   <q-chip v-for="tp in detail.topics" :key="tp" dense outline size="sm" color="primary">{{
                     tp
@@ -150,14 +168,27 @@
 
               <q-tab-panels v-model="tab" animated class="repo-detail__panels">
                 <q-tab-panel name="overview">
-                  <div v-if="readme" class="repo-detail__readme">
-                    <MarkdownView :source="readme.slice(0, 12000)" />
+                  <div v-if="loading" class="q-gutter-y-xs q-pa-xs">
+                    <q-skeleton type="text" width="55%" />
+                    <q-skeleton type="text" />
+                    <q-skeleton type="text" width="85%" />
+                    <q-skeleton type="rect" height="72px" />
+                  </div>
+                  <div v-else-if="readme" class="repo-detail__readme">
+                    <MarkdownRenderer :source="readme.slice(0, 12000)" />
                     <div
                       v-if="readme.length > 12000"
                       class="text-caption q-mt-sm"
                       style="color: var(--color-text-secondary)"
                     >
                       {{ t('githubRadar.readmeTruncated') }}
+                    </div>
+                  </div>
+                  <!-- README 拉取失败时回退展示仓库简介摘录，避免空白页 -->
+                  <div v-else-if="detail?.readme_excerpt" class="repo-detail__readme">
+                    <MarkdownRenderer :source="detail.readme_excerpt" />
+                    <div class="text-caption q-mt-sm" style="color: var(--color-text-secondary)">
+                      {{ t('githubRadar.readmeExcerptFallback') }}
                     </div>
                   </div>
                   <div v-else class="dash-card__empty app-empty-state-center--sm">
@@ -171,27 +202,43 @@
                     v-if="repo"
                     :full-name="repo.full_name"
                     :llm-ready="llmReady"
+                    :prefetched="prefetchedInsight"
                     @open-settings="$emit('open-settings')"
                   />
                 </q-tab-panel>
 
                 <q-tab-panel name="source" class="repo-detail__panel--flush">
-                  <SourceBrowser v-if="repo" :full-name="repo.full_name" />
+                  <div class="repo-detail__branch-bar">
+                    <q-input
+                      v-model="branchDraft"
+                      dense
+                      outlined
+                      class="repo-detail__branch-input"
+                      :placeholder="detail?.default_branch || 'main'"
+                      @keydown.enter="applyBranch"
+                    >
+                      <template #prepend>
+                        <q-icon name="account_tree" size="16px" />
+                      </template>
+                      <q-tooltip>{{ t('githubRadar.branchPlaceholder') }}</q-tooltip>
+                    </q-input>
+                  </div>
+                  <SourceBrowser v-if="repo" :full-name="repo.full_name" :branch="sourceBranch" />
                 </q-tab-panel>
 
                 <q-tab-panel name="clone">
                   <div class="clone-panel">
                     <div class="clone-panel__row">
                       <span class="clone-panel__label">HTTPS</span>
-                      <code>{{ detail?.clone_url || `https://github.com/${repo?.full_name}.git` }}</code>
-                      <q-btn flat dense round size="sm" icon="content_copy" @click="copy(detail?.clone_url || '')">
+                      <code>{{ httpsUrl }}</code>
+                      <q-btn flat dense round size="sm" icon="content_copy" @click="copy(httpsUrl)">
                         <q-tooltip>{{ t('githubRadar.copy') }}</q-tooltip>
                       </q-btn>
                     </div>
                     <div class="clone-panel__row">
                       <span class="clone-panel__label">SSH</span>
-                      <code>{{ detail?.ssh_url || `git@github.com:${repo?.full_name}.git` }}</code>
-                      <q-btn flat dense round size="sm" icon="content_copy" @click="copy(detail?.ssh_url || '')">
+                      <code>{{ sshUrl }}</code>
+                      <q-btn flat dense round size="sm" icon="content_copy" @click="copy(sshUrl)">
                         <q-tooltip>{{ t('githubRadar.copy') }}</q-tooltip>
                       </q-btn>
                     </div>
@@ -247,10 +294,18 @@ import { useI18n } from 'vue-i18n';
 import { computed, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { radarRepoService } from '../../../services';
-import MarkdownView from './MarkdownView.vue';
+import MarkdownRenderer from '../../../components/MarkdownRenderer.vue';
 import RepoInsight from './RepoInsight.vue';
 import SourceBrowser from './SourceBrowser.vue';
-import { exactCount, langColor, relTime, type RepoItem } from '../types';
+import {
+  exactCount,
+  langColor,
+  normalizeInsight,
+  normalizeRepo,
+  relTime,
+  type AIInsight,
+  type RepoItem,
+} from '../types';
 
 const { t } = useI18n();
 const props = defineProps<{
@@ -266,34 +321,76 @@ defineEmits<{ 'update:modelValue': [boolean]; watch: [RepoItem]; 'open-settings'
 const $q = useQuasar();
 const tab = ref('overview');
 const loading = ref(false);
+const loadError = ref('');
 const detail = ref<RepoItem | null>(null);
 const readme = ref('');
+// Source 页分支输入：缺省 default_branch，Enter 生效后透传给 SourceBrowser
+const branchDraft = ref('');
+const sourceBranch = ref('');
+// AI 总结预取快照：打开详情时随 GetRepo(cache-only) 带出，命中即秒显 summary（不烧配额，未命中静默为 null）
+const prefetchedInsight = ref<AIInsight | null>(null);
 const cloning = ref(false);
 const serverMsg = ref('');
 const serverOk = ref(false);
 
-const zipUrl = computed(() =>
-  props.repo ? `https://github.com/${props.repo.full_name}/archive/refs/heads/HEAD.zip` : '',
+// 克隆地址：展示与复制用同一 computed，杜绝「显示兜底值却复制空串」。
+const httpsUrl = computed(
+  () => detail.value?.clone_url || (props.repo ? `https://github.com/${props.repo.full_name}.git` : ''),
 );
+const sshUrl = computed(
+  () => detail.value?.ssh_url || (props.repo ? `git@github.com:${props.repo.full_name}.git` : ''),
+);
+// ZIP 优先用后端 zip_url；缺失时按真实 default_branch 拼 archive 地址（HEAD.zip 在 GitHub 恒 404）。
+const zipUrl = computed(() => {
+  if (detail.value?.zip_url) return detail.value.zip_url;
+  if (!props.repo) return '';
+  const branch = detail.value?.default_branch || 'main';
+  return `https://github.com/${props.repo.full_name}/archive/refs/heads/${branch}.zip`;
+});
 
 watch(
   () => props.modelValue,
   async (open) => {
     if (!open || !props.repo) return;
     tab.value = props.initialTab || 'overview';
-    loading.value = true;
-    serverMsg.value = '';
-    try {
-      const res = await radarRepoService.getRepo(props.repo.full_name, { includeReadme: true });
-      if (res.repo) detail.value = res.repo as unknown as RepoItem;
-      readme.value = res.readme || '';
-    } catch {
-      detail.value = null;
-    } finally {
-      loading.value = false;
-    }
+    await loadDetail();
   },
 );
+
+async function loadDetail() {
+  if (!props.repo) return;
+  loading.value = true;
+  serverMsg.value = '';
+  loadError.value = '';
+  try {
+    const res = await radarRepoService.getRepo(props.repo.full_name, {
+      includeReadme: true,
+      insightLevel: 'summary',
+      cacheOnly: true,
+    });
+    if (res.repo) {
+      detail.value = normalizeRepo(res.repo as unknown as Record<string, unknown>);
+      branchDraft.value = detail.value.default_branch || '';
+      sourceBranch.value = '';
+    }
+    readme.value = res.readme || '';
+    prefetchedInsight.value = res.insight ? normalizeInsight(res.insight as unknown as Record<string, unknown>) : null;
+  } catch (e) {
+    detail.value = null;
+    readme.value = '';
+    prefetchedInsight.value = null;
+    loadError.value = t('githubRadar.detailLoadFailed', { msg: (e as Error).message });
+  } finally {
+    loading.value = false;
+  }
+}
+
+/** 分支输入 Enter 生效：空值回退默认分支（SourceBrowser 内部兜底 defaultBranch） */
+function applyBranch() {
+  const b = branchDraft.value.trim();
+  if (b === sourceBranch.value) return;
+  sourceBranch.value = b;
+}
 
 async function copy(text: string) {
   if (!text) return;
@@ -310,8 +407,10 @@ async function cloneToServer() {
   cloning.value = true;
   try {
     const res = await radarRepoService.clone(props.repo.full_name, true);
-    serverOk.value = !!res.cloned;
-    serverMsg.value = res.message || '';
+    const raw = res as unknown as Record<string, unknown>;
+    serverOk.value = !!raw.cloned;
+    const localPath = String(raw.local_path ?? raw.localPath ?? '');
+    serverMsg.value = `${String(raw.message ?? (serverOk.value ? t('githubRadar.cloneDone') : t('githubRadar.cloneFailed')))}${localPath ? ` → ${localPath}` : ''}`;
   } catch (e) {
     serverOk.value = false;
     serverMsg.value = (e as Error).message;
@@ -422,6 +521,14 @@ function formatDate(iso?: string): string {
 
 .repo-detail__panel--flush
   padding: 0
+
+.repo-detail__branch-bar
+  display: flex
+  padding: var(--space-2) var(--space-3)
+  border-bottom: 1px solid var(--glass-border)
+
+.repo-detail__branch-input
+  width: 200px
 
 .repo-detail__readme
   max-height: 420px

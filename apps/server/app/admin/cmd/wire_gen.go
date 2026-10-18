@@ -8,12 +8,20 @@ package main
 
 import (
 	"framework/app/admin/internal/biz"
+	"framework/app/admin/internal/biz/mia"
+	"framework/app/admin/internal/biz/publish"
+	"framework/app/admin/internal/biz/tt"
 	"framework/app/admin/internal/conf"
 	"framework/app/admin/internal/core"
 	"framework/app/admin/internal/data"
+	"framework/app/admin/internal/data/publish"
+	"framework/app/admin/internal/data/tt"
+	"framework/app/admin/internal/publishadapters"
 	"framework/app/admin/internal/server"
 	"framework/app/admin/internal/service"
 	"framework/app/admin/internal/worker"
+	"framework/app/admin/internal/worker/mia"
+	"framework/app/admin/internal/worker/tt"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"go.opentelemetry.io/otel/sdk/trace"
@@ -24,7 +32,7 @@ import (
 // wireApp init kratos application.
 // 公共配置类型（Data/Nats/Registry/Trace/Log）已在根 conf/pb 包定义，
 // core.NewCoreServer 直接接收 *conf.Bootstrap，内部取 bc.GetNats()，无需额外 provider。
-func wireApp(bc *conf.Bootstrap, logger log.Logger, tp *trace.TracerProvider) (*kratos.App, func(), error) {
+func wireApp(bc *conf.Bootstrap, ttb *tt.Conf, mc *publish.Conf, mpconfs publishadapters.PlatformConfMap, logger log.Logger, tp *trace.TracerProvider) (*kratos.App, func(), error) {
 	registrar := server.NewRegistrar(bc)
 	authenticator := data.NewAuthenticator(bc)
 	entClient := data.NewEntClient(bc, logger)
@@ -137,38 +145,109 @@ func wireApp(bc *conf.Bootstrap, logger log.Logger, tp *trace.TracerProvider) (*
 	userIOUsecase := biz.NewUserIOUsecase(userRepo, userCredentialRepo, roleRepo, departmentRepo, positionRepo, logger)
 	logExportUsecase := biz.NewLogExportUsecase(adminLoginLogRepo, adminOperationLogRepo, logger)
 	userIOService := service.NewUserIOService(logger, userIOUsecase, logExportUsecase)
-	radarWatchRepo := data.NewRadarWatchRepo(dataData, logger)
-	radarWatchEventRepo := data.NewRadarWatchEventRepo(dataData, logger)
 	radarUserConfigRepo := data.NewRadarUserConfigRepo(dataData, logger)
 	radarConfigUsecase := biz.NewRadarConfigUsecase(radarUserConfigRepo, logger)
 	radarConfigService := service.NewRadarConfigService(radarConfigUsecase, logger)
-	radarGitHubClient := biz.NewGitHubClient(radarConfigService.GitHubToken)
-	radarTrendingReader := biz.RadarTrendingReader(biz.NewGitHubRadarTrendingReader(radarGitHubClient))
-	if biz.RadarDemoEnabled() {
-		radarTrendingReader = biz.ProvideDemoRadarTrendingReader()
-	}
+	gitHubClient := biz.ProvideRadarGitHubClient(radarConfigService)
+	radarTrendingReader := biz.ProvideRadarTrendingReader(gitHubClient)
 	radarTrendingUsecase := biz.NewRadarTrendingUsecase(radarTrendingReader)
-	radarWatchUsecase := biz.NewRadarWatchUsecase(radarWatchRepo, radarWatchEventRepo, logger)
-	radarNotifyUsecase := biz.NewRadarNotifyUsecase(radarWatchEventRepo)
-	radarInsightService := biz.NewInsightService(radarGitHubClient, radarConfigService)
-	radarRepoUsecase := biz.NewRadarRepoUsecase(radarGitHubClient, radarInsightService, radarConfigService)
 	radarTrendingService := service.NewRadarTrendingService(radarTrendingUsecase, logger)
+	insightService := biz.NewInsightService(gitHubClient, radarConfigService)
+	radarRepoUsecase := biz.NewRadarRepoUsecase(gitHubClient, insightService, radarConfigService)
 	radarRepoService := service.NewRadarRepoService(radarRepoUsecase, logger)
-	radarWatchService := service.NewRadarWatchService(radarWatchUsecase, radarGitHubClient, logger)
+	radarWatchRepo := data.NewRadarWatchRepo(dataData, logger)
+	radarWatchEventRepo := data.NewRadarWatchEventRepo(dataData, logger)
+	radarWatchUsecase := biz.NewRadarWatchUsecase(radarWatchRepo, radarWatchEventRepo, logger)
+	radarWatchService := service.NewRadarWatchService(radarWatchUsecase, gitHubClient, logger)
+	radarNotifyUsecase := biz.NewRadarNotifyUsecase(radarWatchEventRepo)
 	radarNotifyService := service.NewRadarNotifyService(radarNotifyUsecase, logger)
-	httpServer := server.NewRESTServer(bc, logger, tp, authenticator, authorizer, dataData, adminOperationLogRepo, adminLoginLogRepo, userTokenCacheRepo, dataPermissionUsecase, authenticationService, userService, menuService, routerService, organizationService, roleService, positionService, dictService, departmentService, adminLoginLogService, adminOperationLogService, ossService, uEditorService, fileService, tenantService, taskService, notificationMessageService, notificationMessageCategoryService, notificationMessageRecipientService, privateMessageService, adminLoginRestrictionService, toolLinkService, toolLinkCategoryService, userProfileService, apiResourceService, seedService, sessionService, systemConfigService, dataPermissionService, roleDeptService, userPermissionService, userIOService, radarTrendingService, radarRepoService, radarWatchService, radarNotifyService, radarConfigService, localStorage)
-	taskWorker := server.NewTaskWorker(asynqServer, taskUsecase, sessionUsecase, logger)
+	entityMappingRepo := data.NewMiaEntityMappingRepo(dataData, logger)
+	narrativeMappingRepo := data.NewMiaNarrativeMappingRepo(dataData, logger)
+	mappingUsecase := mia.NewMappingUsecase(entityMappingRepo, narrativeMappingRepo, logger)
+	miaMappingService := service.NewMiaMappingService(mappingUsecase, logger)
+	eventCardRepo := data.NewMiaEventCardRepo(dataData, logger)
+	eventUsecase := mia.NewEventUsecase(eventCardRepo, logger)
+	miaEventService := service.NewMiaEventService(eventUsecase, logger)
+	config := mia.ResolveConfig(bc)
+	impactCardRepo := data.NewMiaImpactCardRepo(dataData, logger)
+	quoteCacheRepo := data.NewMiaQuoteCacheRepo(dataData, logger)
 	redisClient, cleanup3, err := data.NewRedisClient(bc, logger)
 	if err != nil {
 		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
+	miaCCXTQuoteProvider := data.NewMiaCCXTQuoteProvider(bc, logger)
+	miaBlockedOpenBBProvider := data.NewMiaBlockedOpenBBProvider(logger)
+	quoteService := data.NewMiaQuoteService(bc, quoteCacheRepo, redisClient, miaCCXTQuoteProvider, miaBlockedOpenBBProvider, logger)
+	impactUsecase := mia.NewImpactUsecase(config, impactCardRepo, quoteService, logger)
+	transmissionRuleRepo := data.NewMiaTransmissionRuleRepo(dataData, logger)
+	ruleUsecase := mia.NewRuleUsecase(transmissionRuleRepo, logger)
+	miaImpactService := service.NewMiaImpactService(impactUsecase, eventUsecase, ruleUsecase, logger)
+	// ⑤ MAP 媒体发布矩阵（手工同步 wire.go 声明；make wire 再生成后此段即废）。
+	// data 子包（纯增量，不扰共享 data 链）：
+	mapChannelRepo := pubdata.NewEntChannelRepo(entClient, logger)
+	mapAccountRepo := pubdata.NewEntAccountRepo(entClient, logger)
+	mapDispatchRepo := pubdata.NewEntDispatchRepo(entClient, logger)
+	mapApprovalRepo := pubdata.NewEntApprovalRepo(entClient, logger)
+	mapReceiptRepo := pubdata.NewEntReceiptRepo(entClient, logger)
+	mapPerformanceRepo := pubdata.NewEntPerformanceRepo(entClient, logger)
+	mapCredentialVault, err := pubdata.NewMapCredentialVault(mc, logger)
+	if err != nil {
+		cleanup3()
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	mapPublishLocker := pubdata.NewRedisPublishLocker(redisClient, logger)
+	// 适配器注册表 + 能力目录（registry 为全局单例，ProvideRegistry 仅注入 logger）：
+	mapRegistry := publishadapters.ProvideRegistry(logger)
+	mapPlatformCatalog := publishadapters.NewPlatformCatalog(mapRegistry, mpconfs, logger)
+	// biz usecases：
+	mapBreakerUsecase := publish.NewBreakerUsecase(mc, mapAccountRepo, logger)
+	mapQuotaUsecase := publish.NewQuotaUsecase(mc, mapReceiptRepo, logger)
+	approvalGateUsecase := publish.NewApprovalGateUsecase(mc, mapDispatchRepo, mapApprovalRepo, logger)
+	intakeUsecase := publish.NewIntakeUsecase(mc, mapChannelRepo, mapDispatchRepo, mapApprovalRepo, mapRegistry, logger)
+	publishUsecase := publish.NewPublishUsecase(mc, mapDispatchRepo, mapAccountRepo, mapChannelRepo, mapReceiptRepo, mapApprovalRepo, mapCredentialVault, mapPublishLocker, mapRegistry, mapBreakerUsecase, mapQuotaUsecase, logger)
+	dispatchUsecase := publish.NewDispatchUsecase(mapDispatchRepo, mapApprovalRepo, mapReceiptRepo, mapPerformanceRepo, logger)
+	channelUsecase := publish.NewChannelUsecase(mc, mapChannelRepo, mapPlatformCatalog, logger)
+	accountUsecase := publish.NewAccountUsecase(mc, mapAccountRepo, mapChannelRepo, mapCredentialVault, logger)
+	mapService := service.NewMapService(logger, approvalGateUsecase, intakeUsecase, publishUsecase, dispatchUsecase, channelUsecase, accountUsecase, mapPlatformCatalog)
+	httpServer := server.NewRESTServer(bc, logger, tp, authenticator, authorizer, dataData, adminOperationLogRepo, adminLoginLogRepo, userTokenCacheRepo, dataPermissionUsecase, authenticationService, userService, menuService, routerService, organizationService, roleService, positionService, dictService, departmentService, adminLoginLogService, adminOperationLogService, ossService, uEditorService, fileService, tenantService, taskService, notificationMessageService, notificationMessageCategoryService, notificationMessageRecipientService, privateMessageService, adminLoginRestrictionService, toolLinkService, toolLinkCategoryService, userProfileService, apiResourceService, seedService, sessionService, systemConfigService, dataPermissionService, roleDeptService, userPermissionService, userIOService, radarTrendingService, radarRepoService, radarWatchService, radarNotifyService, radarConfigService, miaMappingService, miaEventService, miaImpactService, mapService, localStorage)
+	taskWorker := server.NewTaskWorker(asynqServer, taskUsecase, sessionUsecase, logger)
 	siteMsgSubscriber := worker.NewSiteMsgSubscriber(coreServer, notificationMessageRepo, redisClient, logger)
 	logRetentionWorker := worker.NewLogRetentionWorker(adminOperationLogRepo, adminLoginLogRepo, logger)
 	radarEventRetentionWorker := worker.NewRadarEventRetentionWorker(radarWatchEventRepo, logger)
-	app := newApp(logger, registrar, httpServer, coreServer, asynqServer, taskWorker, siteMsgSubscriber, logRetentionWorker, radarEventRetentionWorker)
+	entTopicRepo := ttdata.NewEntTopicRepo(entClient, logger)
+	client := ttdata.ProvideRawRedis(redisClient)
+	redisGuardStore := ttdata.NewRedisGuardStore(client, logger)
+	natsSnapshotPublisher := ttworker.NewNatsSnapshotPublisher(coreServer, logger)
+	ingestUsecase := tt.NewIngestUsecase(ttb, entTopicRepo, redisGuardStore, natsSnapshotPublisher, redisClient, logger)
+	ingestSubscriber := ttworker.NewIngestSubscriber(ttb, coreServer, ingestUsecase, logger)
+	influxTS, cleanup4 := ttdata.NewInfluxTS(ttb, logger)
+	redisSnapshotBuffer, err := ttdata.NewRedisSnapshotBuffer(ttb, client, logger)
+	if err != nil {
+		cleanup4()
+		cleanup3()
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	influxSink := ttdata.NewInfluxSink(ttb, influxTS, redisSnapshotBuffer, logger)
+	writerUsecase := tt.NewWriterUsecase(ttb, influxSink, logger)
+	snapshotWriter := ttworker.NewSnapshotWriter(ttb, coreServer, writerUsecase, logger)
+	bufferReplay := ttworker.NewBufferReplay(ttb, redisSnapshotBuffer, influxTS, logger)
+	sentimentOrchestrator := data.NewMiaSentimentOrchestrator(bc, redisClient, logger)
+	natsImpactPublisher := miaworker.NewNatsImpactPublisher(coreServer, logger)
+	webhookSender := data.NewMiaWebhookSender(bc, logger)
+	notifier := mia.NewNotifier(webhookSender, logger)
+	miaIngestUsecase := mia.NewIngestUsecase(config, sentimentOrchestrator, entityMappingRepo, narrativeMappingRepo, eventCardRepo, impactCardRepo, transmissionRuleRepo, natsImpactPublisher, notifier, logger)
+	intelSubscriber := miaworker.NewIntelSubscriber(config, coreServer, miaIngestUsecase, redisClient, logger)
+	miaEquityScheduler := miaworker.NewMiaEquityScheduler(config, entityMappingRepo, quoteService, impactUsecase, webhookSender, logger)
+	miaCryptoScheduler := miaworker.NewMiaCryptoScheduler(config, entityMappingRepo, narrativeMappingRepo, quoteService, logger)
+	app := newApp(logger, registrar, httpServer, coreServer, asynqServer, taskWorker, siteMsgSubscriber, logRetentionWorker, radarEventRetentionWorker, ingestSubscriber, snapshotWriter, bufferReplay, intelSubscriber, miaEquityScheduler, miaCryptoScheduler)
 	return app, func() {
+		cleanup4()
 		cleanup3()
 		cleanup2()
 		cleanup()

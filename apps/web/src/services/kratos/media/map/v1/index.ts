@@ -62,5 +62,1128 @@ export type PerformanceMetric = {
   favorites: number | undefined;
 };
 
+// MapErrorReason ⑤ MAP 错误码（详细设计 §9 错误码表）。
+// reason 字符串即契约错误码（MAP_*），前端按 reason 做精确提示。
+// 🔴 安全类（自批/自动化/未审批/可见性）一律 4xx 且必须记录审计留痕。
+export type MapErrorReason =
+  // 400
+  | "MAP_BAD_REQUEST"
+  | "MAP_VISIBILITY_NO_REASON"
+  | "MAP_ADAPTER_NOT_FOUND"
+  | "MAP_CAPABILITY_UNSUPPORTED"
+  | "MAP_TRANSCODE_FAIL"
+  | "MAP_REJECT_REASON_REQUIRED"
+  | "MAP_PUBLIC_CONFIRM_REQUIRED"
+  // 403 🔴 审批门禁
+  | "MAP_NOT_APPROVED"
+  | "MAP_SELF_APPROVAL"
+  | "MAP_AUTOMATION_DENIED"
+  | "MAP_APPROVER_MISMATCH"
+  // 404
+  | "MAP_NOT_FOUND"
+  | "MAP_CHANNEL_NOT_FOUND"
+  // 409
+  | "MAP_INVALID_STATE"
+  | "MAP_ACCOUNT_PAUSED"
+  | "MAP_CREDENTIAL_INVALID"
+  | "MAP_ALREADY_PUBLISHING"
+  | "MAP_ALREADY_PUBLISHED"
+  // 429
+  | "MAP_QUOTA_EXCEEDED"
+  | "MAP_RATE_LIMITED"
+  // 500
+  | "MAP_INTERNAL"
+  | "MAP_UPSTREAM_ERROR";
+export type MapChannel = {
+  channel_id: string | undefined;
+  platform_key: string | undefined;
+  slot: string | undefined;
+  region: string | undefined;
+  enabled: boolean | undefined;
+  capability_json: string | undefined;
+  adapter_version: string | undefined;
+  priority: number | undefined;
+  create_time: wellKnownTimestamp | undefined;
+};
+
+export type ListChannelsResponse = {
+  total: number | undefined;
+  items: MapChannel[] | undefined;
+};
+
+export type CreateChannelRequest = {
+  platform_key: string | undefined;
+  slot: string | undefined;
+  region: string | undefined;
+  enabled: boolean | undefined;
+  priority: number | undefined;
+  adapter_version: string | undefined;
+};
+
+export type MapAccount = {
+  account_id: string | undefined;
+  channel_id: string | undefined;
+  platform_key: string | undefined;
+  slot: string | undefined;
+  display_name: string | undefined;
+  credential_type: string | undefined;
+  has_credential: boolean | undefined;
+  enabled: boolean | undefined;
+  health: string | undefined;
+  consecutive_failures: number | undefined;
+  paused_until: wellKnownTimestamp | undefined;
+  published_24h: number | undefined;
+  last_published_at: wellKnownTimestamp | undefined;
+  last_error: string | undefined;
+  create_time: wellKnownTimestamp | undefined;
+};
+
+export type ListAccountsResponse = {
+  total: number | undefined;
+  items: MapAccount[] | undefined;
+};
+
+export type CreateAccountRequest = {
+  channel_id: string | undefined;
+  display_name: string | undefined;
+  credential_type: string | undefined;
+  // 🔴 凭据明文仅经 TLS 传输一次，服务端加密后入库；任何响应/日志不回显。
+  credential: string | undefined;
+  enabled: boolean | undefined;
+};
+
+export type ToggleAccountRequest = {
+  id: string | undefined;
+  enabled: boolean | undefined;
+};
+
+export type ReauthAccountRequest = {
+  id: string | undefined;
+  credential_type: string | undefined;
+  credential: string | undefined;
+};
+
+export type MapDispatchUnitItem = {
+  unit_id: string | undefined;
+  variant_set_id: string | undefined;
+  variant_id: string | undefined;
+  targets: string[] | undefined;
+  scheduled_for: wellKnownTimestamp | undefined;
+  schedule_mode: string | undefined;
+  visibility_default: string | undefined;
+  visibility_override_reason: string | undefined;
+  approval_state: string | undefined;
+  submitted_by: string | undefined;
+  approver: string | undefined;
+  approved_at: wellKnownTimestamp | undefined;
+  reject_reason: string | undefined;
+  publish_state: string | undefined;
+  post_id: string | undefined;
+  post_url: string | undefined;
+  published_at: wellKnownTimestamp | undefined;
+  operator: string | undefined;
+  create_time: wellKnownTimestamp | undefined;
+};
+
+export type ListDispatchUnitsResponse = {
+  total: number | undefined;
+  items: MapDispatchUnitItem[] | undefined;
+};
+
+export type CreateDispatchUnitRequest = {
+  variant_set_id: string | undefined;
+  variant_id: string | undefined;
+  targets: string[] | undefined;
+  scheduled_for: wellKnownTimestamp | undefined;
+  // 缺省强制 private；填 unlisted/public 必须给 override_reason，否则 MAP_VISIBILITY_NO_REASON。
+  visibility_default: string | undefined;
+  visibility_override_reason: string | undefined;
+};
+
+export type GetDispatchUnitRequest = {
+  id: string | undefined;
+};
+
+export type MapDispatchUnitDetail = {
+  unit: MapDispatchUnitItem | undefined;
+  records: MapApprovalRecordItem[] | undefined;
+  receipts: MapReceipt[] | undefined;
+};
+
+export type MapApprovalRecordItem = {
+  id: number | undefined;
+  action: string | undefined;
+  actor: string | undefined;
+  actor_type: string | undefined;
+  from_state: string | undefined;
+  to_state: string | undefined;
+  reason: string | undefined;
+  visibility_at_action: string | undefined;
+  ip: string | undefined;
+  result: string | undefined;
+  create_time: wellKnownTimestamp | undefined;
+};
+
+export type MapReceipt = {
+  receipt_id: string | undefined;
+  dispatch_unit_id: string | undefined;
+  account_id: string | undefined;
+  platform_key: string | undefined;
+  post_id: string | undefined;
+  post_url: string | undefined;
+  visibility: string | undefined;
+  published_at: wellKnownTimestamp | undefined;
+  operator: string | undefined;
+};
+
+export type SubmitDispatchUnitRequest = {
+  id: string | undefined;
+};
+
+export type ApproveDispatchUnitRequest = {
+  id: string | undefined;
+};
+
+export type RejectDispatchUnitRequest = {
+  id: string | undefined;
+  reason: string | undefined;
+};
+
+export type PublishDispatchUnitRequest = {
+  id: string | undefined;
+  // 🔴 可见性非 private 时必须显式 true（二次确认，ADR-MAP-03），否则拒绝。
+  confirm_public: boolean | undefined;
+};
+
+export type PublishDispatchUnitResponse = {
+  publish_state: string | undefined;
+  receipts: MapReceipt[] | undefined;
+  warnings: string[] | undefined;
+};
+
+export type CancelDispatchUnitRequest = {
+  id: string | undefined;
+  reason: string | undefined;
+};
+
+export type ListApprovalQueueResponse = {
+  total: number | undefined;
+  items: MapDispatchUnitItem[] | undefined;
+};
+
+export type ListReceiptsResponse = {
+  total: number | undefined;
+  items: MapReceipt[] | undefined;
+};
+
+export type GetCalendarRequest = {
+  from: wellKnownTimestamp | undefined;
+  to: wellKnownTimestamp | undefined;
+};
+
+export type MapCalendarItem = {
+  unit_id: string | undefined;
+  targets: string[] | undefined;
+  scheduled_for: wellKnownTimestamp | undefined;
+  schedule_mode: string | undefined;
+  approval_state: string | undefined;
+  publish_state: string | undefined;
+};
+
+export type GetCalendarResponse = {
+  items: MapCalendarItem[] | undefined;
+};
+
+export type GetAnalyticsRequest = {
+  id: string | undefined;
+};
+
+export type MapAnalyticsView = {
+  receipt_id: string | undefined;
+  platform_key: string | undefined;
+  views: number | undefined;
+  likes: number | undefined;
+  comments: number | undefined;
+  shares: number | undefined;
+  favorites: number | undefined;
+  completion_rate: number | undefined;
+  fetched_at: wellKnownTimestamp | undefined;
+  note: string | undefined;
+};
+
+// MapService ⑤ MAP 媒体自动化发布矩阵 REST API（概要设计 §8.2 路由矩阵）。
+// 🔴 三条红线（必须体现在 API 形状上）：
+// 1. approve 与 publish 是两个独立 rpc，绝不一键发布（ADR-MAP-03）；
+// 2. approve/reject 由服务端从 JWT 取审批人，禁自批（请求体不含 approver 字段，防伪造）；
+// 3. visibility 默认恒 private；非 private 必须带 override_reason（NFR-MAP-01）。
+// 所有 {id} 均为业务字符串 ID（du_/pa_/pr_ 前缀 ULID），非内部整型主键。
+export interface MapService {
+  // 查询渠道列表
+  ListChannels(request: pagination_PagingRequest): Promise<ListChannelsResponse>;
+  // 创建渠道（platform:slot）；能力快照由服务端按平台能力配置写入
+  CreateChannel(request: CreateChannelRequest): Promise<MapChannel>;
+  // 查询账号列表（含健康状态、24h 计数；🔴 永不返回凭据本体）
+  ListAccounts(request: pagination_PagingRequest): Promise<ListAccountsResponse>;
+  // 创建账号（凭据明文仅经 TLS 传输，落库前加密；响应不回显）
+  CreateAccount(request: CreateAccountRequest): Promise<MapAccount>;
+  // 启停账号
+  ToggleAccount(request: ToggleAccountRequest): Promise<MapAccount>;
+  // 重新授权（凭据失效 credential_invalid 后；不清旧凭据，仅覆盖 + 切健康态）
+  ReauthAccount(request: ReauthAccountRequest): Promise<wellKnownEmpty>;
+  // 查询分发单元列表
+  ListDispatchUnits(request: pagination_PagingRequest): Promise<ListDispatchUnitsResponse>;
+  // 创建分发单元（创建即记 submit 审计；可见性默认强制 private）
+  CreateDispatchUnit(request: CreateDispatchUnitRequest): Promise<MapDispatchUnitItem>;
+  // 分发单元详情（含审批记录与回执）
+  GetDispatchUnit(request: GetDispatchUnitRequest): Promise<MapDispatchUnitDetail>;
+  // 提交审批（驳回后修改重新提交：rejected → draft）
+  SubmitDispatchUnit(request: SubmitDispatchUnitRequest): Promise<MapDispatchUnitItem>;
+  // 🔴 审批通过（审批人取自 JWT；自批必败 MAP_SELF_APPROVAL；自动化身份必败）
+  ApproveDispatchUnit(request: ApproveDispatchUnitRequest): Promise<MapDispatchUnitItem>;
+  // 驳回（reason 必填，空值 400；驳回可留痕审计）
+  RejectDispatchUnit(request: RejectDispatchUnitRequest): Promise<MapDispatchUnitItem>;
+  // 🔴 发布（二次确认：operator 取自 JWT；须已 approved；非 private 须 confirm_public=true）
+  PublishDispatchUnit(request: PublishDispatchUnitRequest): Promise<PublishDispatchUnitResponse>;
+  // 撤回（终止未发布的流转）
+  CancelDispatchUnit(request: CancelDispatchUnitRequest): Promise<MapDispatchUnitItem>;
+  // 待审批队列（approval_state=draft 的分发单元）
+  ListApprovalQueue(request: pagination_PagingRequest): Promise<ListApprovalQueueResponse>;
+  // 发布回执列表（post_id/时间/可见性/操作者全记录；前端可导出 CSV）
+  ListReceipts(request: pagination_PagingRequest): Promise<ListReceiptsResponse>;
+  // 账号 × 时间 × 平台排期总览（只读；不承诺剪辑画布）
+  GetCalendar(request: GetCalendarRequest): Promise<GetCalendarResponse>;
+  // 单条回执的表现数据（无数据时 note 诚实说明，不伪造）
+  GetAnalytics(request: GetAnalyticsRequest): Promise<MapAnalyticsView>;
+}
+
+type RequestType = {
+  path: string;
+  method: string;
+  body: string | null;
+};
+
+type RequestHandler = (request: RequestType, meta: { service: string, method: string }) => Promise<unknown>;
+
+export function createMapServiceClient(
+  handler: RequestHandler
+): MapService {
+  return {
+    ListChannels(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/map/channels`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.pageSize) {
+        queryParams.push(`pageSize=${encodeURIComponent(request.pageSize.toString())}`)
+      }
+      if (request.offset) {
+        queryParams.push(`offset=${encodeURIComponent(request.offset.toString())}`)
+      }
+      if (request.limit) {
+        queryParams.push(`limit=${encodeURIComponent(request.limit.toString())}`)
+      }
+      if (request.token) {
+        queryParams.push(`token=${encodeURIComponent(request.token.toString())}`)
+      }
+      if (request.noPaging) {
+        queryParams.push(`noPaging=${encodeURIComponent(request.noPaging.toString())}`)
+      }
+      if (request.query) {
+        queryParams.push(`query=${encodeURIComponent(request.query.toString())}`)
+      }
+      if (request.filter) {
+        queryParams.push(`filter=${encodeURIComponent(request.filter.toString())}`)
+      }
+      if (request.filterExpr?.type) {
+        queryParams.push(`filterExpr.type=${encodeURIComponent(request.filterExpr.type.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.field) {
+        queryParams.push(`filterExpr.conditions.field=${encodeURIComponent(request.filterExpr.conditions.field.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.op) {
+        queryParams.push(`filterExpr.conditions.op=${encodeURIComponent(request.filterExpr.conditions.op.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.value) {
+        queryParams.push(`filterExpr.conditions.value=${encodeURIComponent(request.filterExpr.conditions.value.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.jsonValue) {
+        queryParams.push(`filterExpr.conditions.jsonValue=${encodeURIComponent(request.filterExpr.conditions.jsonValue.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.values) {
+        request.filterExpr.conditions.values.forEach((x) => {
+          queryParams.push(`filterExpr.conditions.values=${encodeURIComponent(x.toString())}`)
+        })
+      }
+      if (request.filterExpr?.conditions?.datePart) {
+        queryParams.push(`filterExpr.conditions.datePart=${encodeURIComponent(request.filterExpr.conditions.datePart.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.jsonPath) {
+        queryParams.push(`filterExpr.conditions.jsonPath=${encodeURIComponent(request.filterExpr.conditions.jsonPath.toString())}`)
+      }
+      if (request.orderBy) {
+        queryParams.push(`orderBy=${encodeURIComponent(request.orderBy.toString())}`)
+      }
+      if (request.sorting?.field) {
+        queryParams.push(`sorting.field=${encodeURIComponent(request.sorting.field.toString())}`)
+      }
+      if (request.sorting?.direction) {
+        queryParams.push(`sorting.direction=${encodeURIComponent(request.sorting.direction.toString())}`)
+      }
+      if (request.fieldMask) {
+        queryParams.push(`fieldMask=${encodeURIComponent(request.fieldMask.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MapService",
+        method: "ListChannels",
+      }) as Promise<ListChannelsResponse>;
+    },
+    CreateChannel(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/map/channels`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MapService",
+        method: "CreateChannel",
+      }) as Promise<MapChannel>;
+    },
+    ListAccounts(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/map/accounts`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.pageSize) {
+        queryParams.push(`pageSize=${encodeURIComponent(request.pageSize.toString())}`)
+      }
+      if (request.offset) {
+        queryParams.push(`offset=${encodeURIComponent(request.offset.toString())}`)
+      }
+      if (request.limit) {
+        queryParams.push(`limit=${encodeURIComponent(request.limit.toString())}`)
+      }
+      if (request.token) {
+        queryParams.push(`token=${encodeURIComponent(request.token.toString())}`)
+      }
+      if (request.noPaging) {
+        queryParams.push(`noPaging=${encodeURIComponent(request.noPaging.toString())}`)
+      }
+      if (request.query) {
+        queryParams.push(`query=${encodeURIComponent(request.query.toString())}`)
+      }
+      if (request.filter) {
+        queryParams.push(`filter=${encodeURIComponent(request.filter.toString())}`)
+      }
+      if (request.filterExpr?.type) {
+        queryParams.push(`filterExpr.type=${encodeURIComponent(request.filterExpr.type.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.field) {
+        queryParams.push(`filterExpr.conditions.field=${encodeURIComponent(request.filterExpr.conditions.field.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.op) {
+        queryParams.push(`filterExpr.conditions.op=${encodeURIComponent(request.filterExpr.conditions.op.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.value) {
+        queryParams.push(`filterExpr.conditions.value=${encodeURIComponent(request.filterExpr.conditions.value.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.jsonValue) {
+        queryParams.push(`filterExpr.conditions.jsonValue=${encodeURIComponent(request.filterExpr.conditions.jsonValue.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.values) {
+        request.filterExpr.conditions.values.forEach((x) => {
+          queryParams.push(`filterExpr.conditions.values=${encodeURIComponent(x.toString())}`)
+        })
+      }
+      if (request.filterExpr?.conditions?.datePart) {
+        queryParams.push(`filterExpr.conditions.datePart=${encodeURIComponent(request.filterExpr.conditions.datePart.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.jsonPath) {
+        queryParams.push(`filterExpr.conditions.jsonPath=${encodeURIComponent(request.filterExpr.conditions.jsonPath.toString())}`)
+      }
+      if (request.orderBy) {
+        queryParams.push(`orderBy=${encodeURIComponent(request.orderBy.toString())}`)
+      }
+      if (request.sorting?.field) {
+        queryParams.push(`sorting.field=${encodeURIComponent(request.sorting.field.toString())}`)
+      }
+      if (request.sorting?.direction) {
+        queryParams.push(`sorting.direction=${encodeURIComponent(request.sorting.direction.toString())}`)
+      }
+      if (request.fieldMask) {
+        queryParams.push(`fieldMask=${encodeURIComponent(request.fieldMask.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MapService",
+        method: "ListAccounts",
+      }) as Promise<ListAccountsResponse>;
+    },
+    CreateAccount(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/map/accounts`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MapService",
+        method: "CreateAccount",
+      }) as Promise<MapAccount>;
+    },
+    ToggleAccount(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/map/accounts/${request.id}/toggle`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MapService",
+        method: "ToggleAccount",
+      }) as Promise<MapAccount>;
+    },
+    ReauthAccount(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/map/accounts/${request.id}/reauth`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MapService",
+        method: "ReauthAccount",
+      }) as Promise<wellKnownEmpty>;
+    },
+    ListDispatchUnits(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/map/dispatch-units`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.pageSize) {
+        queryParams.push(`pageSize=${encodeURIComponent(request.pageSize.toString())}`)
+      }
+      if (request.offset) {
+        queryParams.push(`offset=${encodeURIComponent(request.offset.toString())}`)
+      }
+      if (request.limit) {
+        queryParams.push(`limit=${encodeURIComponent(request.limit.toString())}`)
+      }
+      if (request.token) {
+        queryParams.push(`token=${encodeURIComponent(request.token.toString())}`)
+      }
+      if (request.noPaging) {
+        queryParams.push(`noPaging=${encodeURIComponent(request.noPaging.toString())}`)
+      }
+      if (request.query) {
+        queryParams.push(`query=${encodeURIComponent(request.query.toString())}`)
+      }
+      if (request.filter) {
+        queryParams.push(`filter=${encodeURIComponent(request.filter.toString())}`)
+      }
+      if (request.filterExpr?.type) {
+        queryParams.push(`filterExpr.type=${encodeURIComponent(request.filterExpr.type.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.field) {
+        queryParams.push(`filterExpr.conditions.field=${encodeURIComponent(request.filterExpr.conditions.field.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.op) {
+        queryParams.push(`filterExpr.conditions.op=${encodeURIComponent(request.filterExpr.conditions.op.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.value) {
+        queryParams.push(`filterExpr.conditions.value=${encodeURIComponent(request.filterExpr.conditions.value.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.jsonValue) {
+        queryParams.push(`filterExpr.conditions.jsonValue=${encodeURIComponent(request.filterExpr.conditions.jsonValue.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.values) {
+        request.filterExpr.conditions.values.forEach((x) => {
+          queryParams.push(`filterExpr.conditions.values=${encodeURIComponent(x.toString())}`)
+        })
+      }
+      if (request.filterExpr?.conditions?.datePart) {
+        queryParams.push(`filterExpr.conditions.datePart=${encodeURIComponent(request.filterExpr.conditions.datePart.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.jsonPath) {
+        queryParams.push(`filterExpr.conditions.jsonPath=${encodeURIComponent(request.filterExpr.conditions.jsonPath.toString())}`)
+      }
+      if (request.orderBy) {
+        queryParams.push(`orderBy=${encodeURIComponent(request.orderBy.toString())}`)
+      }
+      if (request.sorting?.field) {
+        queryParams.push(`sorting.field=${encodeURIComponent(request.sorting.field.toString())}`)
+      }
+      if (request.sorting?.direction) {
+        queryParams.push(`sorting.direction=${encodeURIComponent(request.sorting.direction.toString())}`)
+      }
+      if (request.fieldMask) {
+        queryParams.push(`fieldMask=${encodeURIComponent(request.fieldMask.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MapService",
+        method: "ListDispatchUnits",
+      }) as Promise<ListDispatchUnitsResponse>;
+    },
+    CreateDispatchUnit(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/map/dispatch-units`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MapService",
+        method: "CreateDispatchUnit",
+      }) as Promise<MapDispatchUnitItem>;
+    },
+    GetDispatchUnit(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/map/dispatch-units/${request.id}`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MapService",
+        method: "GetDispatchUnit",
+      }) as Promise<MapDispatchUnitDetail>;
+    },
+    SubmitDispatchUnit(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/map/dispatch-units/${request.id}/submit`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MapService",
+        method: "SubmitDispatchUnit",
+      }) as Promise<MapDispatchUnitItem>;
+    },
+    ApproveDispatchUnit(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/map/dispatch-units/${request.id}/approve`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MapService",
+        method: "ApproveDispatchUnit",
+      }) as Promise<MapDispatchUnitItem>;
+    },
+    RejectDispatchUnit(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/map/dispatch-units/${request.id}/reject`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MapService",
+        method: "RejectDispatchUnit",
+      }) as Promise<MapDispatchUnitItem>;
+    },
+    PublishDispatchUnit(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/map/dispatch-units/${request.id}/publish`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MapService",
+        method: "PublishDispatchUnit",
+      }) as Promise<PublishDispatchUnitResponse>;
+    },
+    CancelDispatchUnit(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/map/dispatch-units/${request.id}/cancel`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MapService",
+        method: "CancelDispatchUnit",
+      }) as Promise<MapDispatchUnitItem>;
+    },
+    ListApprovalQueue(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/map/approvals`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.pageSize) {
+        queryParams.push(`pageSize=${encodeURIComponent(request.pageSize.toString())}`)
+      }
+      if (request.offset) {
+        queryParams.push(`offset=${encodeURIComponent(request.offset.toString())}`)
+      }
+      if (request.limit) {
+        queryParams.push(`limit=${encodeURIComponent(request.limit.toString())}`)
+      }
+      if (request.token) {
+        queryParams.push(`token=${encodeURIComponent(request.token.toString())}`)
+      }
+      if (request.noPaging) {
+        queryParams.push(`noPaging=${encodeURIComponent(request.noPaging.toString())}`)
+      }
+      if (request.query) {
+        queryParams.push(`query=${encodeURIComponent(request.query.toString())}`)
+      }
+      if (request.filter) {
+        queryParams.push(`filter=${encodeURIComponent(request.filter.toString())}`)
+      }
+      if (request.filterExpr?.type) {
+        queryParams.push(`filterExpr.type=${encodeURIComponent(request.filterExpr.type.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.field) {
+        queryParams.push(`filterExpr.conditions.field=${encodeURIComponent(request.filterExpr.conditions.field.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.op) {
+        queryParams.push(`filterExpr.conditions.op=${encodeURIComponent(request.filterExpr.conditions.op.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.value) {
+        queryParams.push(`filterExpr.conditions.value=${encodeURIComponent(request.filterExpr.conditions.value.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.jsonValue) {
+        queryParams.push(`filterExpr.conditions.jsonValue=${encodeURIComponent(request.filterExpr.conditions.jsonValue.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.values) {
+        request.filterExpr.conditions.values.forEach((x) => {
+          queryParams.push(`filterExpr.conditions.values=${encodeURIComponent(x.toString())}`)
+        })
+      }
+      if (request.filterExpr?.conditions?.datePart) {
+        queryParams.push(`filterExpr.conditions.datePart=${encodeURIComponent(request.filterExpr.conditions.datePart.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.jsonPath) {
+        queryParams.push(`filterExpr.conditions.jsonPath=${encodeURIComponent(request.filterExpr.conditions.jsonPath.toString())}`)
+      }
+      if (request.orderBy) {
+        queryParams.push(`orderBy=${encodeURIComponent(request.orderBy.toString())}`)
+      }
+      if (request.sorting?.field) {
+        queryParams.push(`sorting.field=${encodeURIComponent(request.sorting.field.toString())}`)
+      }
+      if (request.sorting?.direction) {
+        queryParams.push(`sorting.direction=${encodeURIComponent(request.sorting.direction.toString())}`)
+      }
+      if (request.fieldMask) {
+        queryParams.push(`fieldMask=${encodeURIComponent(request.fieldMask.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MapService",
+        method: "ListApprovalQueue",
+      }) as Promise<ListApprovalQueueResponse>;
+    },
+    ListReceipts(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/map/receipts`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.pageSize) {
+        queryParams.push(`pageSize=${encodeURIComponent(request.pageSize.toString())}`)
+      }
+      if (request.offset) {
+        queryParams.push(`offset=${encodeURIComponent(request.offset.toString())}`)
+      }
+      if (request.limit) {
+        queryParams.push(`limit=${encodeURIComponent(request.limit.toString())}`)
+      }
+      if (request.token) {
+        queryParams.push(`token=${encodeURIComponent(request.token.toString())}`)
+      }
+      if (request.noPaging) {
+        queryParams.push(`noPaging=${encodeURIComponent(request.noPaging.toString())}`)
+      }
+      if (request.query) {
+        queryParams.push(`query=${encodeURIComponent(request.query.toString())}`)
+      }
+      if (request.filter) {
+        queryParams.push(`filter=${encodeURIComponent(request.filter.toString())}`)
+      }
+      if (request.filterExpr?.type) {
+        queryParams.push(`filterExpr.type=${encodeURIComponent(request.filterExpr.type.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.field) {
+        queryParams.push(`filterExpr.conditions.field=${encodeURIComponent(request.filterExpr.conditions.field.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.op) {
+        queryParams.push(`filterExpr.conditions.op=${encodeURIComponent(request.filterExpr.conditions.op.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.value) {
+        queryParams.push(`filterExpr.conditions.value=${encodeURIComponent(request.filterExpr.conditions.value.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.jsonValue) {
+        queryParams.push(`filterExpr.conditions.jsonValue=${encodeURIComponent(request.filterExpr.conditions.jsonValue.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.values) {
+        request.filterExpr.conditions.values.forEach((x) => {
+          queryParams.push(`filterExpr.conditions.values=${encodeURIComponent(x.toString())}`)
+        })
+      }
+      if (request.filterExpr?.conditions?.datePart) {
+        queryParams.push(`filterExpr.conditions.datePart=${encodeURIComponent(request.filterExpr.conditions.datePart.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.jsonPath) {
+        queryParams.push(`filterExpr.conditions.jsonPath=${encodeURIComponent(request.filterExpr.conditions.jsonPath.toString())}`)
+      }
+      if (request.orderBy) {
+        queryParams.push(`orderBy=${encodeURIComponent(request.orderBy.toString())}`)
+      }
+      if (request.sorting?.field) {
+        queryParams.push(`sorting.field=${encodeURIComponent(request.sorting.field.toString())}`)
+      }
+      if (request.sorting?.direction) {
+        queryParams.push(`sorting.direction=${encodeURIComponent(request.sorting.direction.toString())}`)
+      }
+      if (request.fieldMask) {
+        queryParams.push(`fieldMask=${encodeURIComponent(request.fieldMask.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MapService",
+        method: "ListReceipts",
+      }) as Promise<ListReceiptsResponse>;
+    },
+    GetCalendar(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/map/calendar`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.from) {
+        queryParams.push(`from=${encodeURIComponent(request.from.toString())}`)
+      }
+      if (request.to) {
+        queryParams.push(`to=${encodeURIComponent(request.to.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MapService",
+        method: "GetCalendar",
+      }) as Promise<GetCalendarResponse>;
+    },
+    GetAnalytics(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/map/analytics/${request.id}`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MapService",
+        method: "GetAnalytics",
+      }) as Promise<MapAnalyticsView>;
+    },
+  };
+}
+// ------------------------------
+// 分页通用请求
+// ------------------------------
+export type pagination_PagingRequest = {
+  // 当前页码（从1开始，默认1）
+  page?: number;
+  // 每页条数（默认10，建议设置上限如100）
+  pageSize?: number;
+  // 跳过的记录数（从0开始，默认0）
+  offset?: number;
+  // 最多返回的记录数（默认10，建议设置上限如100）
+  limit?: number;
+  // 上一页最后一条记录的游标（如ID/时间戳+ID，首次请求为空）
+  token?: string;
+  // 是否不分页，如果为true，则page和pageSize参数无效。
+  noPaging?: boolean;
+  // JSON字符串过滤条件，基础语法：{"field1":"val1", "field2___icontains":"val2"}，具体请参见：https://github.com/tx7do/go-crud/tree/main/pagination/filter/README.md
+  query?: string;
+  // Google AIP规范字符串过滤条件
+  filter?: string;
+  // 复杂过滤表达式（优先使用）
+  filterExpr?: pagination_FilterExpr;
+  // 排序条件
+  orderBy?: string;
+  // 排序规则
+  sorting: pagination_Sorting[] | undefined;
+  // 字段掩码，其作用为SELECT中的字段，其语法为使用逗号分隔字段名，例如：id,realName,userName。如果为空则选中所有字段，即SELECT *。
+  fieldMask?: wellKnownFieldMask;
+};
+
+// 过滤表达式
+export type pagination_FilterExpr = {
+  // 过滤表达式类型
+  type: pagination_ExprType | undefined;
+  // 条件列表
+  conditions: pagination_FilterCondition[] | undefined;
+  // 子表达式列表
+  groups: pagination_FilterExpr[] | undefined;
+};
+
+// 过滤表达式类型
+export type pagination_ExprType =
+  | "EXPR_TYPE_UNSPECIFIED"
+  | "AND"
+  | "OR";
+// 过滤条件
+export type pagination_FilterCondition = {
+  // 过滤字段名
+  field: string | undefined;
+  // 过滤操作符
+  op: pagination_Operator | undefined;
+  // 过滤值（单值）
+  value?: string;
+  // 当需要使用非字符串类型的比较值（对象/数组/数字/布尔）时使用此字段，
+  // 使用 google.protobuf.Value 能表达任意 JSON 值。
+  jsonValue?: wellKnownValue;
+  // 过滤值（多值，如IN操作符）
+  values: string[] | undefined;
+  // 日期时间部分（可选，仅在字段为日期时间类型时使用）
+  datePart?: pagination_DatePart;
+  // 当字段为 JSON/JSONB 类型时，可指定要抽取的子路径（例如: "meta.user.name" 或 JSONPath）
+  // 服务端应把此路径用于 JSON_EXTRACT / -> 操作，再对抽取结果应用 op。
+  jsonPath?: string;
+};
+
+// 操作符枚举
+export type pagination_Operator =
+  // 未指定
+  | "OPERATOR_UNSPECIFIED"
+  // 基本比较
+  | "EQ"
+  | "NEQ"
+  | "GT"
+  | "GTE"
+  | "LT"
+  | "LTE"
+  // 模糊 / 大小写不敏感模糊 / 非模糊
+  | "LIKE"
+  | "ILIKE"
+  | "NOT_LIKE"
+  // 集合操作
+  | "IN"
+  | "NIN"
+  // 空值判断
+  | "IS_NULL"
+  | "IS_NOT_NULL"
+  // 范围与正则
+  | "BETWEEN"
+  | "REGEXP"
+  | "IREGEXP"
+  // 语义化的字符串操作
+  | "CONTAINS"
+  | "STARTS_WITH"
+  | "ENDS_WITH"
+  | "ICONTAINS"
+  | "ISTARTS_WITH"
+  | "IENDS_WITH"
+  // JSON / 数组 / 集合相关（按需在服务端映射为具体 DB 运算）
+  | "JSON_CONTAINS"
+  | "ARRAY_CONTAINS"
+  | "EXISTS"
+  | "SEARCH"
+  | "EXACT"
+  | "IEXACT";
+type wellKnownValue = unknown;
+
+// 日期时间部分枚举
+export type pagination_DatePart =
+  | "DATE_PART_UNSPECIFIED"
+  | "DATE"
+  | "YEAR"
+  | "ISO_YEAR"
+  | "QUARTER"
+  | "MONTH"
+  | "WEEK"
+  | "WEEK_DAY"
+  | "ISO_WEEK_DAY"
+  | "DAY"
+  | "TIME"
+  | "HOUR"
+  | "MINUTE"
+  | "SECOND"
+  | "MICROSECOND";
+// 排序规则（分页场景通常需配合排序保证结果稳定）
+export type pagination_Sorting = {
+  // 排序字段（如"id"、"create_time"）
+  field: string | undefined;
+  // 排序方向
+  direction: pagination_Sorting_Direction | undefined;
+};
+
+// 排序方向（ASC/DESC，默认ASC）
+export type pagination_Sorting_Direction =
+  | "ASC"
+  | "DESC";
+// In JSON, a field mask is encoded as a single string where paths are
+// separated by a comma. Fields name in each path are converted
+// to/from lower-camel naming conventions.
+// As an example, consider the following message declarations:
+//
+//     message Profile {
+//       User user = 1;
+//       Photo photo = 2;
+//     }
+//     message User {
+//       string display_name = 1;
+//       string address = 2;
+//     }
+//
+// In proto a field mask for `Profile` may look as such:
+//
+//     mask {
+//       paths: "user.display_name"
+//       paths: "photo"
+//     }
+//
+// In JSON, the same mask is represented as below:
+//
+//     {
+//       mask: "user.displayName,photo"
+//     }
+type wellKnownFieldMask = string;
+
+// An empty JSON object
+type wellKnownEmpty = Record<never, never>;
+
 
 // @@protoc_insertion_point(typescript-http-eof)

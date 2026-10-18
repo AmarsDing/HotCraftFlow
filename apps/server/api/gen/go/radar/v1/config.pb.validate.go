@@ -163,6 +163,18 @@ func (m *GetRadarConfigResponse) validate(all bool) error {
 
 	// no validation rules for GithubTokenMasked
 
+	// no validation rules for LlmEnabled
+
+	// no validation rules for LlmBaseUrl
+
+	// no validation rules for LlmModel
+
+	// no validation rules for LlmApiKeyMasked
+
+	// no validation rules for CloneEnabled
+
+	// no validation rules for CloneDir
+
 	if len(errors) > 0 {
 		return GetRadarConfigResponseMultiError(errors)
 	}
@@ -266,6 +278,18 @@ func (m *SetRadarConfigRequest) validate(all bool) error {
 	var errors []error
 
 	// no validation rules for GithubToken
+
+	// no validation rules for LlmEnabled
+
+	// no validation rules for LlmBaseUrl
+
+	// no validation rules for LlmApiKey
+
+	// no validation rules for LlmModel
+
+	// no validation rules for CloneEnabled
+
+	// no validation rules for CloneDir
 
 	if len(errors) > 0 {
 		return SetRadarConfigRequestMultiError(errors)
@@ -372,6 +396,18 @@ func (m *SetRadarConfigResponse) validate(all bool) error {
 	// no validation rules for HasGithubToken
 
 	// no validation rules for GithubTokenMasked
+
+	// no validation rules for LlmEnabled
+
+	// no validation rules for LlmBaseUrl
+
+	// no validation rules for LlmModel
+
+	// no validation rules for LlmApiKeyMasked
+
+	// no validation rules for CloneEnabled
+
+	// no validation rules for CloneDir
 
 	if len(errors) > 0 {
 		return SetRadarConfigResponseMultiError(errors)

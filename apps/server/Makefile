@@ -9,7 +9,7 @@ GOCMD=go
 VERSION?=1.0.0
 
 # 全部后端 app（gateway 统一入口，打包脚本中排最后启动）
-APPS=admin collector-snmp-ssh monitoralarm moniternotice monitorquery report analysis visualization linemonitor aiops remediation virtman opstools voice radar windfield metar ops gateway
+APPS=admin media collector-snmp-ssh monitoralarm moniternotice monitorquery report analysis visualization linemonitor aiops remediation virtman opstools voice radar windfield metar ops gateway
 # 部署工具（nats_setup: JetStream 初始化；webserve: 前端托管；license-tool: 许可证工具）
 TOOLS=nats_setup webserve license-tool
 

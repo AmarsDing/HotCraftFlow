@@ -1,0 +1,86 @@
+# ① IC 情报收集配置（01-IC/03 §7 + 深度评审 B-10/B-11 补齐项）
+# 纪律：
+#  - 调度以信源级 interval_minutes 为唯一真值（B-11）；本文件的周期仅作默认档位参考。
+#  - 凭据（平台 token/Cookie）不写本文件，走 credential_ref + 加密存储（NFR-IC-06）。
+#  - newsnow / RSSHub / Crawl4AI 必须指向自部署实例，禁止打公共实例（02 §5）。
+ic:
+  enabled: true
+  concurrency: 8                    # NFR-IC-07：默认 ≤8
+  workability_min_score: 0.5        # MME 准入阈值（AI 只读，S-26）
+  raw_queue_capacity: 5000          # 背压 inflight 上限（B-20）
+
+  newsnow:
+    base_url: "http://127.0.0.1:6688"   # 自部署，M0 部署后改地址
+    timeout: 10s
+  rsshub:
+    base_url: "http://127.0.0.1:1200"
+    timeout: 15s
+  crawl4ai:
+    base_url: "http://127.0.0.1:8787"
+    timeout: 60s
+    retry_attempts: 3               # 含首次（B-12：max_attempts=3）
+
+  dedup:
+    simhash_threshold: 3            # 汉明距离
+    embedding_threshold: 0.86       # 余弦相似度
+    embedding_window_hours: 24
+    embedding:
+      provider: "local"
+      model: "bge-small-zh-v1.5"    # 固定；更换须重算全量向量
+      dim: 512
+      endpoint: "http://127.0.0.1:9991"
+      timeout: 3s
+      daily_cap: 5000               # 日调用硬熔断（B-7）
+      store: "none"                 # redis_vss | pgvector | none；M3 部署前用 none（L3 停用）
+
+  evidence:
+    retain_days: 90                 # NFR-IC-08
+    storage_dir: "./storage/ic/evidence"
+    raw_max_bytes: 4194304          # 4MB（B-21）
+    raw_truncate_bytes: 262144      # 256KB（B-21）
+
+  rate_limit:
+    default_per_min: 20
+    backoff_max: 15m
+
+  llm:
+    enabled: false                  # V1 默认规则版；M5 开 LLM 增强
+    provider: "none"                # ollama | none
+    fallback_to_rule: true
+    endpoint: "http://127.0.0.1:11434"
+    timeout: 10s
+    daily_call_cap: 500
+
+  robots:
+    user_agent: "FrameWorkBot/1.0 (+https://internal/robot)"
+    timeout: 5s
+    cache_ttl: 24h
+    respect_crawl_delay: true
+
+  shortlink:
+    enabled: true
+    max_redirects: 5
+    timeout: 5s
+    block_private_ip: true          # SSRF 防护（S-6）
+
+  breaker:
+    fail_threshold: 5               # S-12：fail_streak ≥5 → paused
+    cooldown: 30m
+
+  retention:
+    evidence_days: 90
+    intel_days: 365
+    cluster_idle_close_hours: 48
+    sweep_cron: "0 3 * * *"
+
+  asynq:
+    concurrency: 8
+    max_retry: 3                    # 仅 IC_UPSTREAM_TIMEOUT / IC_RATE_LIMITED
+    task_timeout: 300s
+
+  collectors:                       # 每路可独立启用（FR-INT-03，M-5）
+    hotlist: true
+    api: true
+    rss: true
+    crawl: true
+    sidecar: false                  # P2 才做（FR-INT-15，须授权）

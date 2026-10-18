@@ -4,10 +4,12 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"framework/app/admin/internal/data/ent/notificationmessagerecipient"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -17,6 +19,7 @@ type NotificationMessageRecipientCreate struct {
 	config
 	mutation *NotificationMessageRecipientMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -200,6 +203,7 @@ func (_c *NotificationMessageRecipientCreate) createSpec() (*NotificationMessage
 		_node = &NotificationMessageRecipient{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(notificationmessagerecipient.Table, sqlgraph.NewFieldSpec(notificationmessagerecipient.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -235,11 +239,369 @@ func (_c *NotificationMessageRecipientCreate) createSpec() (*NotificationMessage
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.NotificationMessageRecipient.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.NotificationMessageRecipientUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *NotificationMessageRecipientCreate) OnConflict(opts ...sql.ConflictOption) *NotificationMessageRecipientUpsertOne {
+	_c.conflict = opts
+	return &NotificationMessageRecipientUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.NotificationMessageRecipient.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *NotificationMessageRecipientCreate) OnConflictColumns(columns ...string) *NotificationMessageRecipientUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &NotificationMessageRecipientUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// NotificationMessageRecipientUpsertOne is the builder for "upsert"-ing
+	//  one NotificationMessageRecipient node.
+	NotificationMessageRecipientUpsertOne struct {
+		create *NotificationMessageRecipientCreate
+	}
+
+	// NotificationMessageRecipientUpsert is the "OnConflict" setter.
+	NotificationMessageRecipientUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *NotificationMessageRecipientUpsert) SetUpdateTime(v time.Time) *NotificationMessageRecipientUpsert {
+	u.Set(notificationmessagerecipient.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *NotificationMessageRecipientUpsert) UpdateUpdateTime() *NotificationMessageRecipientUpsert {
+	u.SetExcluded(notificationmessagerecipient.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *NotificationMessageRecipientUpsert) ClearUpdateTime() *NotificationMessageRecipientUpsert {
+	u.SetNull(notificationmessagerecipient.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *NotificationMessageRecipientUpsert) SetDeleteTime(v time.Time) *NotificationMessageRecipientUpsert {
+	u.Set(notificationmessagerecipient.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *NotificationMessageRecipientUpsert) UpdateDeleteTime() *NotificationMessageRecipientUpsert {
+	u.SetExcluded(notificationmessagerecipient.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *NotificationMessageRecipientUpsert) ClearDeleteTime() *NotificationMessageRecipientUpsert {
+	u.SetNull(notificationmessagerecipient.FieldDeleteTime)
+	return u
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *NotificationMessageRecipientUpsert) SetMessageID(v uint32) *NotificationMessageRecipientUpsert {
+	u.Set(notificationmessagerecipient.FieldMessageID, v)
+	return u
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *NotificationMessageRecipientUpsert) UpdateMessageID() *NotificationMessageRecipientUpsert {
+	u.SetExcluded(notificationmessagerecipient.FieldMessageID)
+	return u
+}
+
+// AddMessageID adds v to the "message_id" field.
+func (u *NotificationMessageRecipientUpsert) AddMessageID(v uint32) *NotificationMessageRecipientUpsert {
+	u.Add(notificationmessagerecipient.FieldMessageID, v)
+	return u
+}
+
+// ClearMessageID clears the value of the "message_id" field.
+func (u *NotificationMessageRecipientUpsert) ClearMessageID() *NotificationMessageRecipientUpsert {
+	u.SetNull(notificationmessagerecipient.FieldMessageID)
+	return u
+}
+
+// SetRecipientID sets the "recipient_id" field.
+func (u *NotificationMessageRecipientUpsert) SetRecipientID(v uint32) *NotificationMessageRecipientUpsert {
+	u.Set(notificationmessagerecipient.FieldRecipientID, v)
+	return u
+}
+
+// UpdateRecipientID sets the "recipient_id" field to the value that was provided on create.
+func (u *NotificationMessageRecipientUpsert) UpdateRecipientID() *NotificationMessageRecipientUpsert {
+	u.SetExcluded(notificationmessagerecipient.FieldRecipientID)
+	return u
+}
+
+// AddRecipientID adds v to the "recipient_id" field.
+func (u *NotificationMessageRecipientUpsert) AddRecipientID(v uint32) *NotificationMessageRecipientUpsert {
+	u.Add(notificationmessagerecipient.FieldRecipientID, v)
+	return u
+}
+
+// ClearRecipientID clears the value of the "recipient_id" field.
+func (u *NotificationMessageRecipientUpsert) ClearRecipientID() *NotificationMessageRecipientUpsert {
+	u.SetNull(notificationmessagerecipient.FieldRecipientID)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *NotificationMessageRecipientUpsert) SetStatus(v notificationmessagerecipient.Status) *NotificationMessageRecipientUpsert {
+	u.Set(notificationmessagerecipient.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *NotificationMessageRecipientUpsert) UpdateStatus() *NotificationMessageRecipientUpsert {
+	u.SetExcluded(notificationmessagerecipient.FieldStatus)
+	return u
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *NotificationMessageRecipientUpsert) ClearStatus() *NotificationMessageRecipientUpsert {
+	u.SetNull(notificationmessagerecipient.FieldStatus)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.NotificationMessageRecipient.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(notificationmessagerecipient.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *NotificationMessageRecipientUpsertOne) UpdateNewValues() *NotificationMessageRecipientUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(notificationmessagerecipient.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(notificationmessagerecipient.FieldCreateTime)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(notificationmessagerecipient.FieldTenantID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.NotificationMessageRecipient.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *NotificationMessageRecipientUpsertOne) Ignore() *NotificationMessageRecipientUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *NotificationMessageRecipientUpsertOne) DoNothing() *NotificationMessageRecipientUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the NotificationMessageRecipientCreate.OnConflict
+// documentation for more info.
+func (u *NotificationMessageRecipientUpsertOne) Update(set func(*NotificationMessageRecipientUpsert)) *NotificationMessageRecipientUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&NotificationMessageRecipientUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *NotificationMessageRecipientUpsertOne) SetUpdateTime(v time.Time) *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *NotificationMessageRecipientUpsertOne) UpdateUpdateTime() *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *NotificationMessageRecipientUpsertOne) ClearUpdateTime() *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *NotificationMessageRecipientUpsertOne) SetDeleteTime(v time.Time) *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *NotificationMessageRecipientUpsertOne) UpdateDeleteTime() *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *NotificationMessageRecipientUpsertOne) ClearDeleteTime() *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *NotificationMessageRecipientUpsertOne) SetMessageID(v uint32) *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.SetMessageID(v)
+	})
+}
+
+// AddMessageID adds v to the "message_id" field.
+func (u *NotificationMessageRecipientUpsertOne) AddMessageID(v uint32) *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.AddMessageID(v)
+	})
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *NotificationMessageRecipientUpsertOne) UpdateMessageID() *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.UpdateMessageID()
+	})
+}
+
+// ClearMessageID clears the value of the "message_id" field.
+func (u *NotificationMessageRecipientUpsertOne) ClearMessageID() *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.ClearMessageID()
+	})
+}
+
+// SetRecipientID sets the "recipient_id" field.
+func (u *NotificationMessageRecipientUpsertOne) SetRecipientID(v uint32) *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.SetRecipientID(v)
+	})
+}
+
+// AddRecipientID adds v to the "recipient_id" field.
+func (u *NotificationMessageRecipientUpsertOne) AddRecipientID(v uint32) *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.AddRecipientID(v)
+	})
+}
+
+// UpdateRecipientID sets the "recipient_id" field to the value that was provided on create.
+func (u *NotificationMessageRecipientUpsertOne) UpdateRecipientID() *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.UpdateRecipientID()
+	})
+}
+
+// ClearRecipientID clears the value of the "recipient_id" field.
+func (u *NotificationMessageRecipientUpsertOne) ClearRecipientID() *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.ClearRecipientID()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *NotificationMessageRecipientUpsertOne) SetStatus(v notificationmessagerecipient.Status) *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *NotificationMessageRecipientUpsertOne) UpdateStatus() *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *NotificationMessageRecipientUpsertOne) ClearStatus() *NotificationMessageRecipientUpsertOne {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// Exec executes the query.
+func (u *NotificationMessageRecipientUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for NotificationMessageRecipientCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *NotificationMessageRecipientUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *NotificationMessageRecipientUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *NotificationMessageRecipientUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // NotificationMessageRecipientCreateBulk is the builder for creating many NotificationMessageRecipient entities in bulk.
 type NotificationMessageRecipientCreateBulk struct {
 	config
 	err      error
 	builders []*NotificationMessageRecipientCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the NotificationMessageRecipient entities in the database.
@@ -268,6 +630,7 @@ func (_c *NotificationMessageRecipientCreateBulk) Save(ctx context.Context) ([]*
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -318,6 +681,245 @@ func (_c *NotificationMessageRecipientCreateBulk) Exec(ctx context.Context) erro
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *NotificationMessageRecipientCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.NotificationMessageRecipient.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.NotificationMessageRecipientUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *NotificationMessageRecipientCreateBulk) OnConflict(opts ...sql.ConflictOption) *NotificationMessageRecipientUpsertBulk {
+	_c.conflict = opts
+	return &NotificationMessageRecipientUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.NotificationMessageRecipient.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *NotificationMessageRecipientCreateBulk) OnConflictColumns(columns ...string) *NotificationMessageRecipientUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &NotificationMessageRecipientUpsertBulk{
+		create: _c,
+	}
+}
+
+// NotificationMessageRecipientUpsertBulk is the builder for "upsert"-ing
+// a bulk of NotificationMessageRecipient nodes.
+type NotificationMessageRecipientUpsertBulk struct {
+	create *NotificationMessageRecipientCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.NotificationMessageRecipient.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(notificationmessagerecipient.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *NotificationMessageRecipientUpsertBulk) UpdateNewValues() *NotificationMessageRecipientUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(notificationmessagerecipient.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(notificationmessagerecipient.FieldCreateTime)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(notificationmessagerecipient.FieldTenantID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.NotificationMessageRecipient.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *NotificationMessageRecipientUpsertBulk) Ignore() *NotificationMessageRecipientUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *NotificationMessageRecipientUpsertBulk) DoNothing() *NotificationMessageRecipientUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the NotificationMessageRecipientCreateBulk.OnConflict
+// documentation for more info.
+func (u *NotificationMessageRecipientUpsertBulk) Update(set func(*NotificationMessageRecipientUpsert)) *NotificationMessageRecipientUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&NotificationMessageRecipientUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *NotificationMessageRecipientUpsertBulk) SetUpdateTime(v time.Time) *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *NotificationMessageRecipientUpsertBulk) UpdateUpdateTime() *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *NotificationMessageRecipientUpsertBulk) ClearUpdateTime() *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *NotificationMessageRecipientUpsertBulk) SetDeleteTime(v time.Time) *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *NotificationMessageRecipientUpsertBulk) UpdateDeleteTime() *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *NotificationMessageRecipientUpsertBulk) ClearDeleteTime() *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *NotificationMessageRecipientUpsertBulk) SetMessageID(v uint32) *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.SetMessageID(v)
+	})
+}
+
+// AddMessageID adds v to the "message_id" field.
+func (u *NotificationMessageRecipientUpsertBulk) AddMessageID(v uint32) *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.AddMessageID(v)
+	})
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *NotificationMessageRecipientUpsertBulk) UpdateMessageID() *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.UpdateMessageID()
+	})
+}
+
+// ClearMessageID clears the value of the "message_id" field.
+func (u *NotificationMessageRecipientUpsertBulk) ClearMessageID() *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.ClearMessageID()
+	})
+}
+
+// SetRecipientID sets the "recipient_id" field.
+func (u *NotificationMessageRecipientUpsertBulk) SetRecipientID(v uint32) *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.SetRecipientID(v)
+	})
+}
+
+// AddRecipientID adds v to the "recipient_id" field.
+func (u *NotificationMessageRecipientUpsertBulk) AddRecipientID(v uint32) *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.AddRecipientID(v)
+	})
+}
+
+// UpdateRecipientID sets the "recipient_id" field to the value that was provided on create.
+func (u *NotificationMessageRecipientUpsertBulk) UpdateRecipientID() *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.UpdateRecipientID()
+	})
+}
+
+// ClearRecipientID clears the value of the "recipient_id" field.
+func (u *NotificationMessageRecipientUpsertBulk) ClearRecipientID() *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.ClearRecipientID()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *NotificationMessageRecipientUpsertBulk) SetStatus(v notificationmessagerecipient.Status) *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *NotificationMessageRecipientUpsertBulk) UpdateStatus() *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *NotificationMessageRecipientUpsertBulk) ClearStatus() *NotificationMessageRecipientUpsertBulk {
+	return u.Update(func(s *NotificationMessageRecipientUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// Exec executes the query.
+func (u *NotificationMessageRecipientUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the NotificationMessageRecipientCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for NotificationMessageRecipientCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *NotificationMessageRecipientUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

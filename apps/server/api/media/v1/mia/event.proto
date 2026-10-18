@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package media.mia.v1;
+
+// go_package 由 buf managed 注入，勿手写。
+
+import "google/api/annotations.proto";
+
+// ============================================================================
+// ③ MIA 事件卡（FR-MIA-05）。多源转载合并，保留全部来源指针；支持人工拆分/合并。
+// ============================================================================
+
+// EventCardItem 事件卡（ec_ 前缀）。
+message EventCardItem {
+  int64 id = 1 [json_name = "id"];
+  string event_id = 2 [json_name = "event_id"];                 // ec_ 前缀 ULID
+  string title = 3 [json_name = "title"];
+  string summary = 4 [json_name = "summary"];
+  string occurred_at = 5 [json_name = "occurred_at"];           // RFC3339 UTC
+  string topic_id = 6 [json_name = "topic_id"];
+  repeated string source_intel_ids = 7 [json_name = "source_intel_ids"]; // 全部来源指针
+  int32 source_count = 8 [json_name = "source_count"];
+  repeated string domains = 9 [json_name = "domains"];          // 去重域名（source_weight 输入）
+  string category = 10 [json_name = "category"];                // policy|company|macro|tech|crypto
+  string lang = 11 [json_name = "lang"];
+  string merged_by = 12 [json_name = "merged_by"];              // auto|manual
+  bool split_locked = 13 [json_name = "split_locked"];          // 人工干预锁定
+}
+
+message ListEventCardsRequest {
+  int32 page = 1 [json_name = "page"];
+  int32 page_size = 2 [json_name = "page_size"];
+  string occurred_after = 3 [json_name = "occurred_after"];     // RFC3339
+  string occurred_before = 4 [json_name = "occurred_before"];
+  string category = 5 [json_name = "category"];
+  string keyword = 6 [json_name = "keyword"];
+}
+
+message ListEventCardsResponse {
+  repeated EventCardItem items = 1 [json_name = "items"];
+  int32 total = 2 [json_name = "total"];
+}
+
+message GetEventCardRequest {
+  string event_id = 1 [json_name = "event_id"];
+}
+
+// SplitEventCardRequest 把指定来源指针从原卡拆出为一张新卡（人工干预，锁定两卡）。
+message SplitEventCardRequest {
+  string event_id = 1 [json_name = "event_id"];
+  repeated string source_intel_ids = 2 [json_name = "source_intel_ids"];
+}
+
+message SplitEventCardResponse {
+  EventCardItem new_item = 1 [json_name = "new_item"];
+  EventCardItem parent_item = 2 [json_name = "parent_item"];
+}
+
+// MergeEventCardsRequest 把多张卡合并到第一张（人工干预，锁定目标卡）。
+message MergeEventCardsRequest {
+  repeated string event_ids = 1 [json_name = "event_ids"]; // 第一张为目标卡，其余并入
+}
+
+message MergeEventCardsResponse {
+  EventCardItem merged_item = 1 [json_name = "merged_item"];
+}
+
+// EventService 事件卡列表与人工聚类干预。
+service EventService {
+  rpc ListEventCards(ListEventCardsRequest) returns (ListEventCardsResponse) {
+    option (google.api.http) = { get: "/api/v1/media/mia/events" };
+  }
+  rpc GetEventCard(GetEventCardRequest) returns (EventCardItem) {
+    option (google.api.http) = { get: "/api/v1/media/mia/event/{event_id}" };
+  }
+  rpc SplitEventCard(SplitEventCardRequest) returns (SplitEventCardResponse) {
+    option (google.api.http) = { post: "/api/v1/media/mia/events/{event_id}/split" body: "*" };
+  }
+  rpc MergeEventCards(MergeEventCardsRequest) returns (MergeEventCardsResponse) {
+    option (google.api.http) = { post: "/api/v1/media/mia/events/merge" body: "*" };
+  }
+}

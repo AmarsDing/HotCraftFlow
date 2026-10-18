@@ -169,6 +169,27 @@ func (s *InsightService) Generate(ctx context.Context, fullName, level string) (
 	return ins, nil
 }
 
+// GetCached 只读 24h 本地总结缓存（绝不触发生成 / 不烧每日配额），未命中返回 nil。
+// 复制返回值再置 Cached，避免改写共享缓存对象。
+func (s *InsightService) GetCached(fullName, level string) *RadarInsight {
+	switch level {
+	case InsightLevelBrief, InsightLevelSummary, InsightLevelDeep:
+	default:
+		return nil
+	}
+	v, ok := s.gh.cacheGet(s.gh.insightCacheKey(fullName, level))
+	if !ok {
+		return nil
+	}
+	ins, ok := v.(*RadarInsight)
+	if !ok {
+		return nil
+	}
+	cp := *ins
+	cp.Cached = true
+	return &cp
+}
+
 // buildInsightPrompt 构造三级 Prompt。
 func buildInsightPrompt(level string, repo *RadarRepoView, readme string) (system, user string, maxTokens int) {
 	system = "你是一位资深开源生态分析师，擅长用简体中文解读 GitHub 项目。" +

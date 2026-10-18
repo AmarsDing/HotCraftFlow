@@ -41,3 +41,6 @@ docs/UI/**/*.webm
 docs/UI/*.mp4
 docs/UI/*.mov
 docs/UI/*.webm
+
+# Local research workspace (downloaded third-party OSS source for study)
+research-worker/

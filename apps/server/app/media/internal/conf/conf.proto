@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package media.conf.v1;
+
+option go_package = "framework/app/media/internal/conf;conf";
+
+import "google/protobuf/duration.proto";
+import "conf/pb/conf.proto";
+
+// Bootstrap 是 media 服务的顶层配置结构。
+// 公共配置结构（Data/Log/Trace）引用自根 conf 包（conf/pb/），
+// 私有配置结构（Server/Auth/Media）定义于此。
+message Bootstrap {
+  Server server = 1;
+  framework.conf.v1.Data data = 2;
+  Auth auth = 3;
+  framework.conf.v1.Log log = 4;
+  framework.conf.v1.Trace trace = 5;
+  Media media = 6;
+}
+
+// ---------- Server（私有） ----------
+
+message Server {
+  message REST {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+    CORS cors = 4;
+    Middleware middleware = 5;
+    bool enable_pprof = 6;
+  }
+
+  message CORS {
+    repeated string headers = 1;
+    repeated string methods = 2;
+    repeated string origins = 3;
+  }
+
+  message Middleware {
+    bool enable_logging = 1;
+    bool enable_recovery = 2;
+    bool enable_tracing = 3;
+    bool enable_validate = 4;
+    bool enable_metadata = 5;
+  }
+
+  REST rest = 1;
+}
+
+// ---------- Auth（私有） ----------
+// 与 admin 服务共用同一 JWT 密钥（conf.auth.authn.jwt.key 同值），
+// 前端持有的 admin access token 可直接调用本服务。
+
+message Auth {
+  message Authn {
+    string type = 1;            // jwt
+    JWT jwt = 2;
+  }
+
+  message JWT {
+    string method = 1;          // HS256
+    string key = 2;
+  }
+
+  Authn authn = 1;
+}
+
+// ---------- Media 域（私有） ----------
+
+message Media {
+  // 任务执行通道：lane 名 → 并发度。
+  // infer=AI 推理（GPU 纪律，默认串行）、render=CPU 密集渲染、io=下载/搬运。
+  message Jobs {
+    map<string, int32> lanes = 1;
+    int32 retain_days = 2;           // 任务记录保留天数（清理周期暂未实现，先记账）
+    int32 event_cap_per_job = 3;     // 每任务事件落库封顶（超出裁剪最早事件）
+    int32 queue_capacity = 4;        // 每 lane 内存队列容量（满则拒绝提交）
+  }
+
+  message Storage {
+    string artifact_dir = 1;         // 任务产物根目录（DB 仅存相对路径）
+  }
+
+  message Doctor {
+    repeated string probes = 1;      // 体检的可执行文件名单
+    google.protobuf.Duration probe_timeout = 2;
+  }
+
+  message Engines {
+    string default = 1;              // 默认激活引擎 id
+    bool single_resident = 2;        // 单引擎驻留纪律：激活前卸载其它引擎
+  }
+
+  message Sidecar {
+    google.protobuf.Duration ready_timeout = 1;   // 子进程就绪握手超时
+    google.protobuf.Duration gen_watchdog = 2;    // 单次生成看门狗
+    google.protobuf.Duration idle_reap = 3;       // 空闲收割
+    int64 max_frame_bytes = 4;                    // 帧上限（防失控子进程撑爆内存）
+  }
+
+  bool enabled = 1;
+  Jobs jobs = 2;
+  Storage storage = 3;
+  Doctor doctor = 4;
+  Engines engines = 5;
+  Sidecar sidecar = 6;
+}

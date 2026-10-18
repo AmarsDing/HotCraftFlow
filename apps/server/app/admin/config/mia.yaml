@@ -1,0 +1,57 @@
+# ③ MIA 市场影响分析配置（详细设计 §4）
+# 合规红线：disclaimer 不可为空；allow_guess 恒 false；read_only 恒 true；enable_trading 恒 false。
+mia:
+  enabled: true
+  output:
+    internal_only: true          # 待决策 Q2；true = 仅内部
+    disclaimer: "研究/监测辅助，非投资建议；模型输出须人工复核。"   # 🔴 不可为空
+    min_score_to_push: 60
+  schedule:
+    equity:
+      cron_trading: "*/15 9-15 * * 1-5"     # 交易时段
+      cron_after_close: "0 16 * * 1-5"      # 盘后摘要
+      timezone: "Asia/Shanghai"             # IANA 名，不用固定偏移
+    crypto:
+      cron: "*/10 * * * *"                  # 7×24，10 分钟
+      enabled: true
+  sentiment:
+    finbert_url: "http://127.0.0.1:8800"    # 自托管推理服务
+    finbert_timeout: 5s
+    llm:
+      provider: "cloud"
+      fallback: "ollama"
+      cloud_base_url: ""                    # OpenAI 兼容端点（生产注入）
+      cloud_api_key: ""                     # 生产密钥经环境变量/私有配置覆盖
+      cloud_model: "gpt-4o-mini"
+      ollama_url: "http://127.0.0.1:11434"
+      ollama_model: "qwen2.5:7b-instruct"
+      daily_call_cap: 500                   # 硬上限，超限熔断
+    allow_guess: false                      # 🔴 恒为 false
+  quote:
+    providers: ["ccxt"]                     # openbb 许可证未复核，暂不启用
+    read_only: true                         # 🔴 恒为 true
+    enable_trading: false                   # 🔴 恒为 false
+    cache_ttl: 5m
+    ccxt_sidecar_url: "http://127.0.0.1:8900"
+  scoring:
+    default_ttl_hours:
+      equity: 24
+      macro: 24
+      crypto: 12
+      fx: 12
+      index: 24
+      commodity: 24
+    source_weight_base: 0.4
+    source_weight_log_coef: 0.15
+    min_entity_confidence: 0.6
+  clustering:
+    similarity_threshold: 0.82
+    window_hours: 24
+  verify:
+    enabled: false                # P2，Phase 3 开启
+    offsets: ["1h", "24h", "72h"]
+    move_threshold_pct: 0.3
+    min_sample_for_report: 30
+  notify:
+    webhook_url: ""               # 高分推送（生产注入，企业微信/Webhook）
+    timeout: 5s

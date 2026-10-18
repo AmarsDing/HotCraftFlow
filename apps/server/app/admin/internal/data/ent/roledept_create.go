@@ -9,6 +9,7 @@ import (
 	"framework/app/admin/internal/data/ent/roledept"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -18,6 +19,7 @@ type RoleDeptCreate struct {
 	config
 	mutation *RoleDeptMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -144,6 +146,7 @@ func (_c *RoleDeptCreate) createSpec() (*RoleDept, *sqlgraph.CreateSpec) {
 		_node = &RoleDept{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(roledept.Table, sqlgraph.NewFieldSpec(roledept.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -167,11 +170,226 @@ func (_c *RoleDeptCreate) createSpec() (*RoleDept, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.RoleDept.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.RoleDeptUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *RoleDeptCreate) OnConflict(opts ...sql.ConflictOption) *RoleDeptUpsertOne {
+	_c.conflict = opts
+	return &RoleDeptUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.RoleDept.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *RoleDeptCreate) OnConflictColumns(columns ...string) *RoleDeptUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &RoleDeptUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// RoleDeptUpsertOne is the builder for "upsert"-ing
+	//  one RoleDept node.
+	RoleDeptUpsertOne struct {
+		create *RoleDeptCreate
+	}
+
+	// RoleDeptUpsert is the "OnConflict" setter.
+	RoleDeptUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetRoleID sets the "role_id" field.
+func (u *RoleDeptUpsert) SetRoleID(v uint32) *RoleDeptUpsert {
+	u.Set(roledept.FieldRoleID, v)
+	return u
+}
+
+// UpdateRoleID sets the "role_id" field to the value that was provided on create.
+func (u *RoleDeptUpsert) UpdateRoleID() *RoleDeptUpsert {
+	u.SetExcluded(roledept.FieldRoleID)
+	return u
+}
+
+// AddRoleID adds v to the "role_id" field.
+func (u *RoleDeptUpsert) AddRoleID(v uint32) *RoleDeptUpsert {
+	u.Add(roledept.FieldRoleID, v)
+	return u
+}
+
+// SetDeptID sets the "dept_id" field.
+func (u *RoleDeptUpsert) SetDeptID(v uint32) *RoleDeptUpsert {
+	u.Set(roledept.FieldDeptID, v)
+	return u
+}
+
+// UpdateDeptID sets the "dept_id" field to the value that was provided on create.
+func (u *RoleDeptUpsert) UpdateDeptID() *RoleDeptUpsert {
+	u.SetExcluded(roledept.FieldDeptID)
+	return u
+}
+
+// AddDeptID adds v to the "dept_id" field.
+func (u *RoleDeptUpsert) AddDeptID(v uint32) *RoleDeptUpsert {
+	u.Add(roledept.FieldDeptID, v)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.RoleDept.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(roledept.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *RoleDeptUpsertOne) UpdateNewValues() *RoleDeptUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(roledept.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(roledept.FieldCreateTime)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(roledept.FieldTenantID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.RoleDept.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *RoleDeptUpsertOne) Ignore() *RoleDeptUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *RoleDeptUpsertOne) DoNothing() *RoleDeptUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the RoleDeptCreate.OnConflict
+// documentation for more info.
+func (u *RoleDeptUpsertOne) Update(set func(*RoleDeptUpsert)) *RoleDeptUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&RoleDeptUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetRoleID sets the "role_id" field.
+func (u *RoleDeptUpsertOne) SetRoleID(v uint32) *RoleDeptUpsertOne {
+	return u.Update(func(s *RoleDeptUpsert) {
+		s.SetRoleID(v)
+	})
+}
+
+// AddRoleID adds v to the "role_id" field.
+func (u *RoleDeptUpsertOne) AddRoleID(v uint32) *RoleDeptUpsertOne {
+	return u.Update(func(s *RoleDeptUpsert) {
+		s.AddRoleID(v)
+	})
+}
+
+// UpdateRoleID sets the "role_id" field to the value that was provided on create.
+func (u *RoleDeptUpsertOne) UpdateRoleID() *RoleDeptUpsertOne {
+	return u.Update(func(s *RoleDeptUpsert) {
+		s.UpdateRoleID()
+	})
+}
+
+// SetDeptID sets the "dept_id" field.
+func (u *RoleDeptUpsertOne) SetDeptID(v uint32) *RoleDeptUpsertOne {
+	return u.Update(func(s *RoleDeptUpsert) {
+		s.SetDeptID(v)
+	})
+}
+
+// AddDeptID adds v to the "dept_id" field.
+func (u *RoleDeptUpsertOne) AddDeptID(v uint32) *RoleDeptUpsertOne {
+	return u.Update(func(s *RoleDeptUpsert) {
+		s.AddDeptID(v)
+	})
+}
+
+// UpdateDeptID sets the "dept_id" field to the value that was provided on create.
+func (u *RoleDeptUpsertOne) UpdateDeptID() *RoleDeptUpsertOne {
+	return u.Update(func(s *RoleDeptUpsert) {
+		s.UpdateDeptID()
+	})
+}
+
+// Exec executes the query.
+func (u *RoleDeptUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for RoleDeptCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *RoleDeptUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *RoleDeptUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *RoleDeptUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // RoleDeptCreateBulk is the builder for creating many RoleDept entities in bulk.
 type RoleDeptCreateBulk struct {
 	config
 	err      error
 	builders []*RoleDeptCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the RoleDept entities in the database.
@@ -200,6 +418,7 @@ func (_c *RoleDeptCreateBulk) Save(ctx context.Context) ([]*RoleDept, error) {
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -250,6 +469,168 @@ func (_c *RoleDeptCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *RoleDeptCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.RoleDept.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.RoleDeptUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *RoleDeptCreateBulk) OnConflict(opts ...sql.ConflictOption) *RoleDeptUpsertBulk {
+	_c.conflict = opts
+	return &RoleDeptUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.RoleDept.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *RoleDeptCreateBulk) OnConflictColumns(columns ...string) *RoleDeptUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &RoleDeptUpsertBulk{
+		create: _c,
+	}
+}
+
+// RoleDeptUpsertBulk is the builder for "upsert"-ing
+// a bulk of RoleDept nodes.
+type RoleDeptUpsertBulk struct {
+	create *RoleDeptCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.RoleDept.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(roledept.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *RoleDeptUpsertBulk) UpdateNewValues() *RoleDeptUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(roledept.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(roledept.FieldCreateTime)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(roledept.FieldTenantID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.RoleDept.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *RoleDeptUpsertBulk) Ignore() *RoleDeptUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *RoleDeptUpsertBulk) DoNothing() *RoleDeptUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the RoleDeptCreateBulk.OnConflict
+// documentation for more info.
+func (u *RoleDeptUpsertBulk) Update(set func(*RoleDeptUpsert)) *RoleDeptUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&RoleDeptUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetRoleID sets the "role_id" field.
+func (u *RoleDeptUpsertBulk) SetRoleID(v uint32) *RoleDeptUpsertBulk {
+	return u.Update(func(s *RoleDeptUpsert) {
+		s.SetRoleID(v)
+	})
+}
+
+// AddRoleID adds v to the "role_id" field.
+func (u *RoleDeptUpsertBulk) AddRoleID(v uint32) *RoleDeptUpsertBulk {
+	return u.Update(func(s *RoleDeptUpsert) {
+		s.AddRoleID(v)
+	})
+}
+
+// UpdateRoleID sets the "role_id" field to the value that was provided on create.
+func (u *RoleDeptUpsertBulk) UpdateRoleID() *RoleDeptUpsertBulk {
+	return u.Update(func(s *RoleDeptUpsert) {
+		s.UpdateRoleID()
+	})
+}
+
+// SetDeptID sets the "dept_id" field.
+func (u *RoleDeptUpsertBulk) SetDeptID(v uint32) *RoleDeptUpsertBulk {
+	return u.Update(func(s *RoleDeptUpsert) {
+		s.SetDeptID(v)
+	})
+}
+
+// AddDeptID adds v to the "dept_id" field.
+func (u *RoleDeptUpsertBulk) AddDeptID(v uint32) *RoleDeptUpsertBulk {
+	return u.Update(func(s *RoleDeptUpsert) {
+		s.AddDeptID(v)
+	})
+}
+
+// UpdateDeptID sets the "dept_id" field to the value that was provided on create.
+func (u *RoleDeptUpsertBulk) UpdateDeptID() *RoleDeptUpsertBulk {
+	return u.Update(func(s *RoleDeptUpsert) {
+		s.UpdateDeptID()
+	})
+}
+
+// Exec executes the query.
+func (u *RoleDeptUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the RoleDeptCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for RoleDeptCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *RoleDeptUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

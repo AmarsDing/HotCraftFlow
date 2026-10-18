@@ -4,10 +4,12 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"framework/app/admin/internal/data/ent/adminloginlog"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -17,6 +19,7 @@ type AdminLoginLogCreate struct {
 	config
 	mutation *AdminLoginLogMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -316,6 +319,7 @@ func (_c *AdminLoginLogCreate) createSpec() (*AdminLoginLog, *sqlgraph.CreateSpe
 		_node = &AdminLoginLog{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(adminloginlog.Table, sqlgraph.NewFieldSpec(adminloginlog.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -387,11 +391,756 @@ func (_c *AdminLoginLogCreate) createSpec() (*AdminLoginLog, *sqlgraph.CreateSpe
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.AdminLoginLog.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.AdminLoginLogUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *AdminLoginLogCreate) OnConflict(opts ...sql.ConflictOption) *AdminLoginLogUpsertOne {
+	_c.conflict = opts
+	return &AdminLoginLogUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.AdminLoginLog.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *AdminLoginLogCreate) OnConflictColumns(columns ...string) *AdminLoginLogUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &AdminLoginLogUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// AdminLoginLogUpsertOne is the builder for "upsert"-ing
+	//  one AdminLoginLog node.
+	AdminLoginLogUpsertOne struct {
+		create *AdminLoginLogCreate
+	}
+
+	// AdminLoginLogUpsert is the "OnConflict" setter.
+	AdminLoginLogUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetLoginIP sets the "login_ip" field.
+func (u *AdminLoginLogUpsert) SetLoginIP(v string) *AdminLoginLogUpsert {
+	u.Set(adminloginlog.FieldLoginIP, v)
+	return u
+}
+
+// UpdateLoginIP sets the "login_ip" field to the value that was provided on create.
+func (u *AdminLoginLogUpsert) UpdateLoginIP() *AdminLoginLogUpsert {
+	u.SetExcluded(adminloginlog.FieldLoginIP)
+	return u
+}
+
+// ClearLoginIP clears the value of the "login_ip" field.
+func (u *AdminLoginLogUpsert) ClearLoginIP() *AdminLoginLogUpsert {
+	u.SetNull(adminloginlog.FieldLoginIP)
+	return u
+}
+
+// SetLoginTime sets the "login_time" field.
+func (u *AdminLoginLogUpsert) SetLoginTime(v time.Time) *AdminLoginLogUpsert {
+	u.Set(adminloginlog.FieldLoginTime, v)
+	return u
+}
+
+// UpdateLoginTime sets the "login_time" field to the value that was provided on create.
+func (u *AdminLoginLogUpsert) UpdateLoginTime() *AdminLoginLogUpsert {
+	u.SetExcluded(adminloginlog.FieldLoginTime)
+	return u
+}
+
+// ClearLoginTime clears the value of the "login_time" field.
+func (u *AdminLoginLogUpsert) ClearLoginTime() *AdminLoginLogUpsert {
+	u.SetNull(adminloginlog.FieldLoginTime)
+	return u
+}
+
+// SetUserAgent sets the "user_agent" field.
+func (u *AdminLoginLogUpsert) SetUserAgent(v string) *AdminLoginLogUpsert {
+	u.Set(adminloginlog.FieldUserAgent, v)
+	return u
+}
+
+// UpdateUserAgent sets the "user_agent" field to the value that was provided on create.
+func (u *AdminLoginLogUpsert) UpdateUserAgent() *AdminLoginLogUpsert {
+	u.SetExcluded(adminloginlog.FieldUserAgent)
+	return u
+}
+
+// ClearUserAgent clears the value of the "user_agent" field.
+func (u *AdminLoginLogUpsert) ClearUserAgent() *AdminLoginLogUpsert {
+	u.SetNull(adminloginlog.FieldUserAgent)
+	return u
+}
+
+// SetBrowserName sets the "browser_name" field.
+func (u *AdminLoginLogUpsert) SetBrowserName(v string) *AdminLoginLogUpsert {
+	u.Set(adminloginlog.FieldBrowserName, v)
+	return u
+}
+
+// UpdateBrowserName sets the "browser_name" field to the value that was provided on create.
+func (u *AdminLoginLogUpsert) UpdateBrowserName() *AdminLoginLogUpsert {
+	u.SetExcluded(adminloginlog.FieldBrowserName)
+	return u
+}
+
+// ClearBrowserName clears the value of the "browser_name" field.
+func (u *AdminLoginLogUpsert) ClearBrowserName() *AdminLoginLogUpsert {
+	u.SetNull(adminloginlog.FieldBrowserName)
+	return u
+}
+
+// SetBrowserVersion sets the "browser_version" field.
+func (u *AdminLoginLogUpsert) SetBrowserVersion(v string) *AdminLoginLogUpsert {
+	u.Set(adminloginlog.FieldBrowserVersion, v)
+	return u
+}
+
+// UpdateBrowserVersion sets the "browser_version" field to the value that was provided on create.
+func (u *AdminLoginLogUpsert) UpdateBrowserVersion() *AdminLoginLogUpsert {
+	u.SetExcluded(adminloginlog.FieldBrowserVersion)
+	return u
+}
+
+// ClearBrowserVersion clears the value of the "browser_version" field.
+func (u *AdminLoginLogUpsert) ClearBrowserVersion() *AdminLoginLogUpsert {
+	u.SetNull(adminloginlog.FieldBrowserVersion)
+	return u
+}
+
+// SetClientID sets the "client_id" field.
+func (u *AdminLoginLogUpsert) SetClientID(v string) *AdminLoginLogUpsert {
+	u.Set(adminloginlog.FieldClientID, v)
+	return u
+}
+
+// UpdateClientID sets the "client_id" field to the value that was provided on create.
+func (u *AdminLoginLogUpsert) UpdateClientID() *AdminLoginLogUpsert {
+	u.SetExcluded(adminloginlog.FieldClientID)
+	return u
+}
+
+// ClearClientID clears the value of the "client_id" field.
+func (u *AdminLoginLogUpsert) ClearClientID() *AdminLoginLogUpsert {
+	u.SetNull(adminloginlog.FieldClientID)
+	return u
+}
+
+// SetClientName sets the "client_name" field.
+func (u *AdminLoginLogUpsert) SetClientName(v string) *AdminLoginLogUpsert {
+	u.Set(adminloginlog.FieldClientName, v)
+	return u
+}
+
+// UpdateClientName sets the "client_name" field to the value that was provided on create.
+func (u *AdminLoginLogUpsert) UpdateClientName() *AdminLoginLogUpsert {
+	u.SetExcluded(adminloginlog.FieldClientName)
+	return u
+}
+
+// ClearClientName clears the value of the "client_name" field.
+func (u *AdminLoginLogUpsert) ClearClientName() *AdminLoginLogUpsert {
+	u.SetNull(adminloginlog.FieldClientName)
+	return u
+}
+
+// SetOsName sets the "os_name" field.
+func (u *AdminLoginLogUpsert) SetOsName(v string) *AdminLoginLogUpsert {
+	u.Set(adminloginlog.FieldOsName, v)
+	return u
+}
+
+// UpdateOsName sets the "os_name" field to the value that was provided on create.
+func (u *AdminLoginLogUpsert) UpdateOsName() *AdminLoginLogUpsert {
+	u.SetExcluded(adminloginlog.FieldOsName)
+	return u
+}
+
+// ClearOsName clears the value of the "os_name" field.
+func (u *AdminLoginLogUpsert) ClearOsName() *AdminLoginLogUpsert {
+	u.SetNull(adminloginlog.FieldOsName)
+	return u
+}
+
+// SetOsVersion sets the "os_version" field.
+func (u *AdminLoginLogUpsert) SetOsVersion(v string) *AdminLoginLogUpsert {
+	u.Set(adminloginlog.FieldOsVersion, v)
+	return u
+}
+
+// UpdateOsVersion sets the "os_version" field to the value that was provided on create.
+func (u *AdminLoginLogUpsert) UpdateOsVersion() *AdminLoginLogUpsert {
+	u.SetExcluded(adminloginlog.FieldOsVersion)
+	return u
+}
+
+// ClearOsVersion clears the value of the "os_version" field.
+func (u *AdminLoginLogUpsert) ClearOsVersion() *AdminLoginLogUpsert {
+	u.SetNull(adminloginlog.FieldOsVersion)
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *AdminLoginLogUpsert) SetUserID(v uint32) *AdminLoginLogUpsert {
+	u.Set(adminloginlog.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *AdminLoginLogUpsert) UpdateUserID() *AdminLoginLogUpsert {
+	u.SetExcluded(adminloginlog.FieldUserID)
+	return u
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *AdminLoginLogUpsert) AddUserID(v uint32) *AdminLoginLogUpsert {
+	u.Add(adminloginlog.FieldUserID, v)
+	return u
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (u *AdminLoginLogUpsert) ClearUserID() *AdminLoginLogUpsert {
+	u.SetNull(adminloginlog.FieldUserID)
+	return u
+}
+
+// SetUsername sets the "username" field.
+func (u *AdminLoginLogUpsert) SetUsername(v string) *AdminLoginLogUpsert {
+	u.Set(adminloginlog.FieldUsername, v)
+	return u
+}
+
+// UpdateUsername sets the "username" field to the value that was provided on create.
+func (u *AdminLoginLogUpsert) UpdateUsername() *AdminLoginLogUpsert {
+	u.SetExcluded(adminloginlog.FieldUsername)
+	return u
+}
+
+// ClearUsername clears the value of the "username" field.
+func (u *AdminLoginLogUpsert) ClearUsername() *AdminLoginLogUpsert {
+	u.SetNull(adminloginlog.FieldUsername)
+	return u
+}
+
+// SetStatusCode sets the "status_code" field.
+func (u *AdminLoginLogUpsert) SetStatusCode(v int32) *AdminLoginLogUpsert {
+	u.Set(adminloginlog.FieldStatusCode, v)
+	return u
+}
+
+// UpdateStatusCode sets the "status_code" field to the value that was provided on create.
+func (u *AdminLoginLogUpsert) UpdateStatusCode() *AdminLoginLogUpsert {
+	u.SetExcluded(adminloginlog.FieldStatusCode)
+	return u
+}
+
+// AddStatusCode adds v to the "status_code" field.
+func (u *AdminLoginLogUpsert) AddStatusCode(v int32) *AdminLoginLogUpsert {
+	u.Add(adminloginlog.FieldStatusCode, v)
+	return u
+}
+
+// ClearStatusCode clears the value of the "status_code" field.
+func (u *AdminLoginLogUpsert) ClearStatusCode() *AdminLoginLogUpsert {
+	u.SetNull(adminloginlog.FieldStatusCode)
+	return u
+}
+
+// SetSuccess sets the "success" field.
+func (u *AdminLoginLogUpsert) SetSuccess(v bool) *AdminLoginLogUpsert {
+	u.Set(adminloginlog.FieldSuccess, v)
+	return u
+}
+
+// UpdateSuccess sets the "success" field to the value that was provided on create.
+func (u *AdminLoginLogUpsert) UpdateSuccess() *AdminLoginLogUpsert {
+	u.SetExcluded(adminloginlog.FieldSuccess)
+	return u
+}
+
+// ClearSuccess clears the value of the "success" field.
+func (u *AdminLoginLogUpsert) ClearSuccess() *AdminLoginLogUpsert {
+	u.SetNull(adminloginlog.FieldSuccess)
+	return u
+}
+
+// SetReason sets the "reason" field.
+func (u *AdminLoginLogUpsert) SetReason(v string) *AdminLoginLogUpsert {
+	u.Set(adminloginlog.FieldReason, v)
+	return u
+}
+
+// UpdateReason sets the "reason" field to the value that was provided on create.
+func (u *AdminLoginLogUpsert) UpdateReason() *AdminLoginLogUpsert {
+	u.SetExcluded(adminloginlog.FieldReason)
+	return u
+}
+
+// ClearReason clears the value of the "reason" field.
+func (u *AdminLoginLogUpsert) ClearReason() *AdminLoginLogUpsert {
+	u.SetNull(adminloginlog.FieldReason)
+	return u
+}
+
+// SetLocation sets the "location" field.
+func (u *AdminLoginLogUpsert) SetLocation(v string) *AdminLoginLogUpsert {
+	u.Set(adminloginlog.FieldLocation, v)
+	return u
+}
+
+// UpdateLocation sets the "location" field to the value that was provided on create.
+func (u *AdminLoginLogUpsert) UpdateLocation() *AdminLoginLogUpsert {
+	u.SetExcluded(adminloginlog.FieldLocation)
+	return u
+}
+
+// ClearLocation clears the value of the "location" field.
+func (u *AdminLoginLogUpsert) ClearLocation() *AdminLoginLogUpsert {
+	u.SetNull(adminloginlog.FieldLocation)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.AdminLoginLog.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(adminloginlog.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *AdminLoginLogUpsertOne) UpdateNewValues() *AdminLoginLogUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(adminloginlog.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(adminloginlog.FieldCreateTime)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.AdminLoginLog.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *AdminLoginLogUpsertOne) Ignore() *AdminLoginLogUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *AdminLoginLogUpsertOne) DoNothing() *AdminLoginLogUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the AdminLoginLogCreate.OnConflict
+// documentation for more info.
+func (u *AdminLoginLogUpsertOne) Update(set func(*AdminLoginLogUpsert)) *AdminLoginLogUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&AdminLoginLogUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetLoginIP sets the "login_ip" field.
+func (u *AdminLoginLogUpsertOne) SetLoginIP(v string) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetLoginIP(v)
+	})
+}
+
+// UpdateLoginIP sets the "login_ip" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertOne) UpdateLoginIP() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateLoginIP()
+	})
+}
+
+// ClearLoginIP clears the value of the "login_ip" field.
+func (u *AdminLoginLogUpsertOne) ClearLoginIP() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearLoginIP()
+	})
+}
+
+// SetLoginTime sets the "login_time" field.
+func (u *AdminLoginLogUpsertOne) SetLoginTime(v time.Time) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetLoginTime(v)
+	})
+}
+
+// UpdateLoginTime sets the "login_time" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertOne) UpdateLoginTime() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateLoginTime()
+	})
+}
+
+// ClearLoginTime clears the value of the "login_time" field.
+func (u *AdminLoginLogUpsertOne) ClearLoginTime() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearLoginTime()
+	})
+}
+
+// SetUserAgent sets the "user_agent" field.
+func (u *AdminLoginLogUpsertOne) SetUserAgent(v string) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetUserAgent(v)
+	})
+}
+
+// UpdateUserAgent sets the "user_agent" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertOne) UpdateUserAgent() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateUserAgent()
+	})
+}
+
+// ClearUserAgent clears the value of the "user_agent" field.
+func (u *AdminLoginLogUpsertOne) ClearUserAgent() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearUserAgent()
+	})
+}
+
+// SetBrowserName sets the "browser_name" field.
+func (u *AdminLoginLogUpsertOne) SetBrowserName(v string) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetBrowserName(v)
+	})
+}
+
+// UpdateBrowserName sets the "browser_name" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertOne) UpdateBrowserName() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateBrowserName()
+	})
+}
+
+// ClearBrowserName clears the value of the "browser_name" field.
+func (u *AdminLoginLogUpsertOne) ClearBrowserName() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearBrowserName()
+	})
+}
+
+// SetBrowserVersion sets the "browser_version" field.
+func (u *AdminLoginLogUpsertOne) SetBrowserVersion(v string) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetBrowserVersion(v)
+	})
+}
+
+// UpdateBrowserVersion sets the "browser_version" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertOne) UpdateBrowserVersion() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateBrowserVersion()
+	})
+}
+
+// ClearBrowserVersion clears the value of the "browser_version" field.
+func (u *AdminLoginLogUpsertOne) ClearBrowserVersion() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearBrowserVersion()
+	})
+}
+
+// SetClientID sets the "client_id" field.
+func (u *AdminLoginLogUpsertOne) SetClientID(v string) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetClientID(v)
+	})
+}
+
+// UpdateClientID sets the "client_id" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertOne) UpdateClientID() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateClientID()
+	})
+}
+
+// ClearClientID clears the value of the "client_id" field.
+func (u *AdminLoginLogUpsertOne) ClearClientID() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearClientID()
+	})
+}
+
+// SetClientName sets the "client_name" field.
+func (u *AdminLoginLogUpsertOne) SetClientName(v string) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetClientName(v)
+	})
+}
+
+// UpdateClientName sets the "client_name" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertOne) UpdateClientName() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateClientName()
+	})
+}
+
+// ClearClientName clears the value of the "client_name" field.
+func (u *AdminLoginLogUpsertOne) ClearClientName() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearClientName()
+	})
+}
+
+// SetOsName sets the "os_name" field.
+func (u *AdminLoginLogUpsertOne) SetOsName(v string) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetOsName(v)
+	})
+}
+
+// UpdateOsName sets the "os_name" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertOne) UpdateOsName() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateOsName()
+	})
+}
+
+// ClearOsName clears the value of the "os_name" field.
+func (u *AdminLoginLogUpsertOne) ClearOsName() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearOsName()
+	})
+}
+
+// SetOsVersion sets the "os_version" field.
+func (u *AdminLoginLogUpsertOne) SetOsVersion(v string) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetOsVersion(v)
+	})
+}
+
+// UpdateOsVersion sets the "os_version" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertOne) UpdateOsVersion() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateOsVersion()
+	})
+}
+
+// ClearOsVersion clears the value of the "os_version" field.
+func (u *AdminLoginLogUpsertOne) ClearOsVersion() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearOsVersion()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *AdminLoginLogUpsertOne) SetUserID(v uint32) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *AdminLoginLogUpsertOne) AddUserID(v uint32) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.AddUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertOne) UpdateUserID() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (u *AdminLoginLogUpsertOne) ClearUserID() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearUserID()
+	})
+}
+
+// SetUsername sets the "username" field.
+func (u *AdminLoginLogUpsertOne) SetUsername(v string) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetUsername(v)
+	})
+}
+
+// UpdateUsername sets the "username" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertOne) UpdateUsername() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateUsername()
+	})
+}
+
+// ClearUsername clears the value of the "username" field.
+func (u *AdminLoginLogUpsertOne) ClearUsername() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearUsername()
+	})
+}
+
+// SetStatusCode sets the "status_code" field.
+func (u *AdminLoginLogUpsertOne) SetStatusCode(v int32) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetStatusCode(v)
+	})
+}
+
+// AddStatusCode adds v to the "status_code" field.
+func (u *AdminLoginLogUpsertOne) AddStatusCode(v int32) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.AddStatusCode(v)
+	})
+}
+
+// UpdateStatusCode sets the "status_code" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertOne) UpdateStatusCode() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateStatusCode()
+	})
+}
+
+// ClearStatusCode clears the value of the "status_code" field.
+func (u *AdminLoginLogUpsertOne) ClearStatusCode() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearStatusCode()
+	})
+}
+
+// SetSuccess sets the "success" field.
+func (u *AdminLoginLogUpsertOne) SetSuccess(v bool) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetSuccess(v)
+	})
+}
+
+// UpdateSuccess sets the "success" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertOne) UpdateSuccess() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateSuccess()
+	})
+}
+
+// ClearSuccess clears the value of the "success" field.
+func (u *AdminLoginLogUpsertOne) ClearSuccess() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearSuccess()
+	})
+}
+
+// SetReason sets the "reason" field.
+func (u *AdminLoginLogUpsertOne) SetReason(v string) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetReason(v)
+	})
+}
+
+// UpdateReason sets the "reason" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertOne) UpdateReason() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateReason()
+	})
+}
+
+// ClearReason clears the value of the "reason" field.
+func (u *AdminLoginLogUpsertOne) ClearReason() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearReason()
+	})
+}
+
+// SetLocation sets the "location" field.
+func (u *AdminLoginLogUpsertOne) SetLocation(v string) *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetLocation(v)
+	})
+}
+
+// UpdateLocation sets the "location" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertOne) UpdateLocation() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateLocation()
+	})
+}
+
+// ClearLocation clears the value of the "location" field.
+func (u *AdminLoginLogUpsertOne) ClearLocation() *AdminLoginLogUpsertOne {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearLocation()
+	})
+}
+
+// Exec executes the query.
+func (u *AdminLoginLogUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for AdminLoginLogCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *AdminLoginLogUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *AdminLoginLogUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *AdminLoginLogUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // AdminLoginLogCreateBulk is the builder for creating many AdminLoginLog entities in bulk.
 type AdminLoginLogCreateBulk struct {
 	config
 	err      error
 	builders []*AdminLoginLogCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the AdminLoginLog entities in the database.
@@ -420,6 +1169,7 @@ func (_c *AdminLoginLogCreateBulk) Save(ctx context.Context) ([]*AdminLoginLog, 
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -470,6 +1220,452 @@ func (_c *AdminLoginLogCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *AdminLoginLogCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.AdminLoginLog.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.AdminLoginLogUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *AdminLoginLogCreateBulk) OnConflict(opts ...sql.ConflictOption) *AdminLoginLogUpsertBulk {
+	_c.conflict = opts
+	return &AdminLoginLogUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.AdminLoginLog.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *AdminLoginLogCreateBulk) OnConflictColumns(columns ...string) *AdminLoginLogUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &AdminLoginLogUpsertBulk{
+		create: _c,
+	}
+}
+
+// AdminLoginLogUpsertBulk is the builder for "upsert"-ing
+// a bulk of AdminLoginLog nodes.
+type AdminLoginLogUpsertBulk struct {
+	create *AdminLoginLogCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.AdminLoginLog.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(adminloginlog.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *AdminLoginLogUpsertBulk) UpdateNewValues() *AdminLoginLogUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(adminloginlog.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(adminloginlog.FieldCreateTime)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.AdminLoginLog.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *AdminLoginLogUpsertBulk) Ignore() *AdminLoginLogUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *AdminLoginLogUpsertBulk) DoNothing() *AdminLoginLogUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the AdminLoginLogCreateBulk.OnConflict
+// documentation for more info.
+func (u *AdminLoginLogUpsertBulk) Update(set func(*AdminLoginLogUpsert)) *AdminLoginLogUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&AdminLoginLogUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetLoginIP sets the "login_ip" field.
+func (u *AdminLoginLogUpsertBulk) SetLoginIP(v string) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetLoginIP(v)
+	})
+}
+
+// UpdateLoginIP sets the "login_ip" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertBulk) UpdateLoginIP() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateLoginIP()
+	})
+}
+
+// ClearLoginIP clears the value of the "login_ip" field.
+func (u *AdminLoginLogUpsertBulk) ClearLoginIP() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearLoginIP()
+	})
+}
+
+// SetLoginTime sets the "login_time" field.
+func (u *AdminLoginLogUpsertBulk) SetLoginTime(v time.Time) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetLoginTime(v)
+	})
+}
+
+// UpdateLoginTime sets the "login_time" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertBulk) UpdateLoginTime() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateLoginTime()
+	})
+}
+
+// ClearLoginTime clears the value of the "login_time" field.
+func (u *AdminLoginLogUpsertBulk) ClearLoginTime() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearLoginTime()
+	})
+}
+
+// SetUserAgent sets the "user_agent" field.
+func (u *AdminLoginLogUpsertBulk) SetUserAgent(v string) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetUserAgent(v)
+	})
+}
+
+// UpdateUserAgent sets the "user_agent" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertBulk) UpdateUserAgent() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateUserAgent()
+	})
+}
+
+// ClearUserAgent clears the value of the "user_agent" field.
+func (u *AdminLoginLogUpsertBulk) ClearUserAgent() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearUserAgent()
+	})
+}
+
+// SetBrowserName sets the "browser_name" field.
+func (u *AdminLoginLogUpsertBulk) SetBrowserName(v string) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetBrowserName(v)
+	})
+}
+
+// UpdateBrowserName sets the "browser_name" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertBulk) UpdateBrowserName() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateBrowserName()
+	})
+}
+
+// ClearBrowserName clears the value of the "browser_name" field.
+func (u *AdminLoginLogUpsertBulk) ClearBrowserName() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearBrowserName()
+	})
+}
+
+// SetBrowserVersion sets the "browser_version" field.
+func (u *AdminLoginLogUpsertBulk) SetBrowserVersion(v string) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetBrowserVersion(v)
+	})
+}
+
+// UpdateBrowserVersion sets the "browser_version" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertBulk) UpdateBrowserVersion() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateBrowserVersion()
+	})
+}
+
+// ClearBrowserVersion clears the value of the "browser_version" field.
+func (u *AdminLoginLogUpsertBulk) ClearBrowserVersion() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearBrowserVersion()
+	})
+}
+
+// SetClientID sets the "client_id" field.
+func (u *AdminLoginLogUpsertBulk) SetClientID(v string) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetClientID(v)
+	})
+}
+
+// UpdateClientID sets the "client_id" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertBulk) UpdateClientID() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateClientID()
+	})
+}
+
+// ClearClientID clears the value of the "client_id" field.
+func (u *AdminLoginLogUpsertBulk) ClearClientID() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearClientID()
+	})
+}
+
+// SetClientName sets the "client_name" field.
+func (u *AdminLoginLogUpsertBulk) SetClientName(v string) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetClientName(v)
+	})
+}
+
+// UpdateClientName sets the "client_name" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertBulk) UpdateClientName() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateClientName()
+	})
+}
+
+// ClearClientName clears the value of the "client_name" field.
+func (u *AdminLoginLogUpsertBulk) ClearClientName() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearClientName()
+	})
+}
+
+// SetOsName sets the "os_name" field.
+func (u *AdminLoginLogUpsertBulk) SetOsName(v string) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetOsName(v)
+	})
+}
+
+// UpdateOsName sets the "os_name" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertBulk) UpdateOsName() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateOsName()
+	})
+}
+
+// ClearOsName clears the value of the "os_name" field.
+func (u *AdminLoginLogUpsertBulk) ClearOsName() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearOsName()
+	})
+}
+
+// SetOsVersion sets the "os_version" field.
+func (u *AdminLoginLogUpsertBulk) SetOsVersion(v string) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetOsVersion(v)
+	})
+}
+
+// UpdateOsVersion sets the "os_version" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertBulk) UpdateOsVersion() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateOsVersion()
+	})
+}
+
+// ClearOsVersion clears the value of the "os_version" field.
+func (u *AdminLoginLogUpsertBulk) ClearOsVersion() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearOsVersion()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *AdminLoginLogUpsertBulk) SetUserID(v uint32) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *AdminLoginLogUpsertBulk) AddUserID(v uint32) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.AddUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertBulk) UpdateUserID() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (u *AdminLoginLogUpsertBulk) ClearUserID() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearUserID()
+	})
+}
+
+// SetUsername sets the "username" field.
+func (u *AdminLoginLogUpsertBulk) SetUsername(v string) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetUsername(v)
+	})
+}
+
+// UpdateUsername sets the "username" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertBulk) UpdateUsername() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateUsername()
+	})
+}
+
+// ClearUsername clears the value of the "username" field.
+func (u *AdminLoginLogUpsertBulk) ClearUsername() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearUsername()
+	})
+}
+
+// SetStatusCode sets the "status_code" field.
+func (u *AdminLoginLogUpsertBulk) SetStatusCode(v int32) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetStatusCode(v)
+	})
+}
+
+// AddStatusCode adds v to the "status_code" field.
+func (u *AdminLoginLogUpsertBulk) AddStatusCode(v int32) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.AddStatusCode(v)
+	})
+}
+
+// UpdateStatusCode sets the "status_code" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertBulk) UpdateStatusCode() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateStatusCode()
+	})
+}
+
+// ClearStatusCode clears the value of the "status_code" field.
+func (u *AdminLoginLogUpsertBulk) ClearStatusCode() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearStatusCode()
+	})
+}
+
+// SetSuccess sets the "success" field.
+func (u *AdminLoginLogUpsertBulk) SetSuccess(v bool) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetSuccess(v)
+	})
+}
+
+// UpdateSuccess sets the "success" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertBulk) UpdateSuccess() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateSuccess()
+	})
+}
+
+// ClearSuccess clears the value of the "success" field.
+func (u *AdminLoginLogUpsertBulk) ClearSuccess() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearSuccess()
+	})
+}
+
+// SetReason sets the "reason" field.
+func (u *AdminLoginLogUpsertBulk) SetReason(v string) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetReason(v)
+	})
+}
+
+// UpdateReason sets the "reason" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertBulk) UpdateReason() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateReason()
+	})
+}
+
+// ClearReason clears the value of the "reason" field.
+func (u *AdminLoginLogUpsertBulk) ClearReason() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearReason()
+	})
+}
+
+// SetLocation sets the "location" field.
+func (u *AdminLoginLogUpsertBulk) SetLocation(v string) *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.SetLocation(v)
+	})
+}
+
+// UpdateLocation sets the "location" field to the value that was provided on create.
+func (u *AdminLoginLogUpsertBulk) UpdateLocation() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.UpdateLocation()
+	})
+}
+
+// ClearLocation clears the value of the "location" field.
+func (u *AdminLoginLogUpsertBulk) ClearLocation() *AdminLoginLogUpsertBulk {
+	return u.Update(func(s *AdminLoginLogUpsert) {
+		s.ClearLocation()
+	})
+}
+
+// Exec executes the query.
+func (u *AdminLoginLogUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the AdminLoginLogCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for AdminLoginLogCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *AdminLoginLogUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

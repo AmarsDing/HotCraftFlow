@@ -2,6 +2,11 @@ syntax = "proto3";
 
 package media.mme.v1;
 
+// go_package 由 buf managed (go_package_prefix: framework/api/gen/go) 注入，勿手写。
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
 // ============================================================================
 // ④ MME 短视频矩阵混剪的对外契约（契约 §4）。消费者：⑤ MAP。
 // ============================================================================
@@ -58,4 +63,198 @@ message QC {
 message DiffCheck {
   double min_pair_similarity = 1 [json_name = "min_pair_similarity"];
   bool warn = 2 [json_name = "warn"];
+}
+
+// ============================================================================
+// MmeVariantService 变体簇管理与审核（文档 04-MME §8.2）。
+// 核心设计：FR-MIX-01「先展开后渲染、允许删减」；QC 硬门禁（boundary_ok /
+// subtitle_ok 任一为 false 不得进入 approved）；驳回必须填原因。
+// ============================================================================
+
+service MmeVariantService {
+  // ★ 矩阵展开：内容版本 × 画幅 × Hook 笛卡尔积（纯元数据，秒级），全部 selected=true
+  rpc Expand(ExpandRequest) returns (VariantSetView) {
+    option (google.api.http) = {
+      post: "/api/v1/media/mme/tasks/{task_id}/expand"
+      body: "*"
+    };
+  }
+  // 变体簇详情（矩阵网格数据）
+  rpc GetVariantSet(GetVariantSetRequest) returns (VariantSetView) {
+    option (google.api.http) = { get: "/api/v1/media/mme/variant-sets/{id}" };
+  }
+  // 删减变体组合（全量新集合幂等覆盖；只渲染 selected=true 的）
+  rpc UpdateSelection(UpdateSelectionRequest) returns (VariantSetView) {
+    option (google.api.http) = {
+      patch: "/api/v1/media/mme/variant-sets/{id}/selection"
+      body: "*"
+    };
+  }
+  // ★ 批量渲染：对 selected=true 且未完成的变体建 RenderJob 入队
+  rpc Render(RenderRequest) returns (RenderResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/media/mme/variant-sets/{id}:render"
+      body: "*"
+    };
+  }
+  // ★ 批量审核：批准/驳回（驳回必须填原因）；QC 硬门禁在服务端强制
+  rpc Review(ReviewRequest) returns (VariantSetView) {
+    option (google.api.http) = {
+      post: "/api/v1/media/mme/variant-sets/{id}/review"
+      body: "*"
+    };
+  }
+  // 差异化度检查结果（FR-MIX-05，强提示不硬阻断）
+  rpc GetDiffCheck(GetVariantSetRequest) returns (DiffResult) {
+    option (google.api.http) = { get: "/api/v1/media/mme/variant-sets/{id}/diff-check" };
+    // 触发重算（渲染全部完成后自动算一次，也可手动重算）
+  }
+  // 重算差异化检查
+  rpc RecalcDiffCheck(GetVariantSetRequest) returns (DiffResult) {
+    option (google.api.http) = {
+      post: "/api/v1/media/mme/variant-sets/{id}/diff-check:recalc"
+      body: "*"
+    };
+  }
+  // 送 ⑤ MAP：产出契约 VariantSet 并发布 mm.mme.variant.ready.v1
+  rpc Dispatch(GetVariantSetRequest) returns (VariantSet) {
+    option (google.api.http) = {
+      post: "/api/v1/media/mme/variant-sets/{id}:dispatch"
+      body: "*"
+    };
+  }
+  // 混剪模板列表（FR-MIX-08）
+  rpc ListTemplates(google.protobuf.Empty) returns (ListTemplatesResponse) {
+    option (google.api.http) = { get: "/api/v1/media/mme/templates" };
+  }
+  // 单条变体重渲
+  rpc RerenderVariant(RerenderVariantRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/media/mme/variants/{id}:rerender"
+      body: "*"
+    };
+  }
+}
+
+// VariantItem 单变体的 API 视图（比契约 Variant 多渲染/选择/降级状态）。
+message VariantItem {
+  string id = 1;            // variant_id，v_ 前缀
+  string set_id = 2;
+  string content_version = 3; // B 维度
+  string aspect = 4;          // 9:16 / 1:1 / 16:9
+  string hook_id = 5;         // C 维度
+  string cover_id = 6;
+  string edl_ref = 7;         // 切点定义（JSON start/end）
+  double duration_sec = 8;
+  string video_path = 9;
+  string cover_path = 10;
+  string caption_style = 11;  // simple | dynamic
+  string srt_path = 12;
+  map<string, PlatformCopy> copy = 13;
+  string manifest_path = 14;
+  QC qc = 15;
+  string render_state = 16;   // pending | running | done | failed
+  string render_error = 17;
+  bool selected = 18;         // 展开后可删减；只渲染 selected=true
+  bool copy_degraded = 19;    // true = LLM 不可用时的模板降级文案（诚实标注）
+}
+
+// VariantSetView 变体簇管理视图（含全部变体与差异化结果）。
+message VariantSetView {
+  string id = 1;          // vs_ 前缀
+  string task_id = 2;
+  string candidate_id = 3;
+  string asset_id = 4;
+  string transcript_ref = 5;
+  string state = 6;       // planned | rendering | review | approved | rejected
+  int32 variant_count = 7;
+  DiffResult diff_check = 8;
+  string template_id = 9;
+  string created_at = 10;
+  repeated VariantItem variants = 11;
+}
+
+// HookSpec Hook（前 3s）规格（C 维度）。
+message HookSpec {
+  string id = 1;    // hook_a / hook_b ...
+  string label = 2; // 展示名
+  string text = 3;  // Hook 文案（可选，渲染烧入）
+}
+
+// ExpandRequest 矩阵展开请求。
+message ExpandRequest {
+  string task_id = 1;
+  repeated string content_version_ids = 2; // 空 = 全部高光候选
+  repeated string aspects = 3;             // 空 = 默认 [9:16, 1:1, 16:9]
+  repeated HookSpec hooks = 4;             // 空 = 默认 hook_a/hook_b
+  string template_id = 5;
+}
+
+message GetVariantSetRequest {
+  string id = 1; // variant_set_id
+}
+
+// UpdateSelectionRequest 全量新 selected 集合。
+message UpdateSelectionRequest {
+  string id = 1;                        // variant_set_id
+  repeated string selected_variant_ids = 2;
+}
+
+message RenderRequest {
+  string id = 1; // variant_set_id
+}
+
+message RenderResponse {
+  int32 queued = 1;       // 新入队数
+  int32 skipped = 2;      // 因未选/状态不可渲被跳过
+  int32 already_done = 3; // 已渲完复用
+}
+
+// ReviewRequest 批量审核。rejections 的 reason 必填（服务端强制）。
+message ReviewRequest {
+  string id = 1; // variant_set_id
+  repeated string approved_ids = 2;
+  repeated Rejection rejections = 3;
+}
+
+message Rejection {
+  string variant_id = 1;
+  string reason = 2;
+}
+
+// PairSimilarity 一对变体的相似度（各维度 0~1）。
+message PairSimilarity {
+  string variant_a = 1;
+  string variant_b = 2;
+  double visual = 3;   // 关键帧哈希序列相似度（ffmpeg 缺失时跳过记 -1）
+  double hook = 4;     // 前 3s 相似度（可选）
+  double copy = 5;     // 文案 SimHash 相似度
+  double overall = 6;  // max(visual, hook, copy)
+}
+
+// DiffResult 差异化检查结果（FR-MIX-05）。
+message DiffResult {
+  double min_pair_similarity = 1; // 所有对中overall的最大相似度（越高越危险）
+  bool warn = 2;                  // >= 阈值 0.90
+  repeated PairSimilarity pairs = 3;
+  string summary = 4;             // 可读说明（含被跳过维度的诚实声明）
+}
+
+// MontageTemplate 混剪模板（FR-MIX-08）。
+message MontageTemplate {
+  string id = 1;
+  string name = 2;
+  string intro_path = 3;
+  string outro_path = 4;
+  string transition = 5;   // cut | fade | slide
+  string caption_skin = 6; // 字幕皮肤（JSON 串）
+  bool enabled = 7;
+}
+
+message ListTemplatesResponse {
+  repeated MontageTemplate items = 1;
+}
+
+message RerenderVariantRequest {
+  string id = 1; // variant_id
 }

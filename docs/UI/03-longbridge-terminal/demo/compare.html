@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>复刻实现 vs 录屏参考 — 对比验收</title>
+<style>
+  body { background:#111; color:#ddd; font-family:system-ui,sans-serif; margin:0; padding:24px; }
+  h1 { font-size:18px; } h2 { font-size:14px; color:#9AA0A6; margin:26px 0 8px; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  figure { margin:0; background:#1a1a1a; border:1px solid #2a2a2a; border-radius:8px; overflow:hidden; }
+  figure img { width:100%; display:block; }
+  figcaption { font-size:11px; color:#888; padding:6px 10px; }
+  .impl figcaption { color:#35C8A8; }
+  .ref figcaption { color:#F0568C; }
+  .note { font-size:12px; color:#888; max-width:900px; line-height:1.7; }
+</style>
+</head>
+<body>
+<h1>Longbridge 终端 UI 复刻：实现（左） vs 录屏（右）</h1>
+<p class="note">左列为 <code>lb-terminal/</code> 零依赖实现的 Playwright 截图（1320×810）；右列为录屏抽帧（1320×2868 手机竖屏录制桌面窗口，窗口本体约 1135×690）。录屏帧中的黑色区域为手机屏幕上下留白。</p>
+
+<div id="list"></div>
+<script>
+const pairs = [
+  ['01_market',        '01_market_overview',        'Market 总览'],
+  ['02_heatmap',       '02_heatmap_sp500',          '热力图（色阶 + 阈值筛选）'],
+  ['03_watchlist',     '04_watchlist_grid',         '自选迷你 K 线宫格'],
+  ['04_stock',         '06_stock_chart_nvda',       '个股详情（K线 + 交易面板）'],
+  ['05_financial',     '08_financial_sankey',       '财务（桑基 + 组合图 + 指标表）'],
+  ['06_options',       '14_options_chain',          '期权链 + P&L'],
+  ['07_quant',         '17_quant_code_editor',      '量化编辑器 + 回测日志'],
+  ['08_ai_drawer',     '10_ai_side_panel',          'AI 抽屉'],
+  ['10_ai_full',       '12_ai_fullscreen_greeting', 'AI 全屏'],
+  ['11_cmdk',          '19_theme_command_palette',  '命令面板 + 主题'],
+];
+document.getElementById('list').innerHTML = pairs.map(([a, b, t]) => `
+  <h2>${t}</h2>
+  <div class="row">
+    <figure class="impl"><img src="shots/${a}.png"><figcaption>实现 · shots/${a}.png</figcaption></figure>
+    <figure class="ref"><img src="../frames/${b}.jpg"><figcaption>录屏 · reference-frames/${b}.jpg</figcaption></figure>
+  </div>`).join('');
+</script>
+</body>
+</html>

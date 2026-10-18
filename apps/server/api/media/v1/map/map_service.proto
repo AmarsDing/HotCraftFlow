@@ -1,0 +1,356 @@
+syntax = "proto3";
+
+package media.map.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+import "pagination/v1/pagination.proto";
+
+// MapService ⑤ MAP 媒体自动化发布矩阵 REST API（概要设计 §8.2 路由矩阵）。
+//
+// 🔴 三条红线（必须体现在 API 形状上）：
+//  1. approve 与 publish 是两个独立 rpc，绝不一键发布（ADR-MAP-03）；
+//  2. approve/reject 由服务端从 JWT 取审批人，禁自批（请求体不含 approver 字段，防伪造）；
+//  3. visibility 默认恒 private；非 private 必须带 override_reason（NFR-MAP-01）。
+//
+// 所有 {id} 均为业务字符串 ID（du_/pa_/pr_ 前缀 ULID），非内部整型主键。
+service MapService {
+  // ==================== 渠道（平台槽位） ====================
+
+  // 查询渠道列表
+  rpc ListChannels (pagination.PagingRequest) returns (ListChannelsResponse) {
+    option (google.api.http) = { get: "/api/v1/media/map/channels" };
+  }
+
+  // 创建渠道（platform:slot）；能力快照由服务端按平台能力配置写入
+  rpc CreateChannel (CreateChannelRequest) returns (MapChannel) {
+    option (google.api.http) = { post: "/api/v1/media/map/channels" body: "*" };
+  }
+
+  // ==================== 账号池（FR-PUB-05） ====================
+
+  // 查询账号列表（含健康状态、24h 计数；🔴 永不返回凭据本体）
+  rpc ListAccounts (pagination.PagingRequest) returns (ListAccountsResponse) {
+    option (google.api.http) = { get: "/api/v1/media/map/accounts" };
+  }
+
+  // 创建账号（凭据明文仅经 TLS 传输，落库前加密；响应不回显）
+  rpc CreateAccount (CreateAccountRequest) returns (MapAccount) {
+    option (google.api.http) = { post: "/api/v1/media/map/accounts" body: "*" };
+  }
+
+  // 启停账号
+  rpc ToggleAccount (ToggleAccountRequest) returns (MapAccount) {
+    option (google.api.http) = { post: "/api/v1/media/map/accounts/{id}/toggle" body: "*" };
+  }
+
+  // 重新授权（凭据失效 credential_invalid 后；不清旧凭据，仅覆盖 + 切健康态）
+  rpc ReauthAccount (ReauthAccountRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = { post: "/api/v1/media/map/accounts/{id}/reauth" body: "*" };
+  }
+
+  // ==================== 分发单元 ====================
+
+  // 查询分发单元列表
+  rpc ListDispatchUnits (pagination.PagingRequest) returns (ListDispatchUnitsResponse) {
+    option (google.api.http) = { get: "/api/v1/media/map/dispatch-units" };
+  }
+
+  // 创建分发单元（创建即记 submit 审计；可见性默认强制 private）
+  rpc CreateDispatchUnit (CreateDispatchUnitRequest) returns (MapDispatchUnitItem) {
+    option (google.api.http) = { post: "/api/v1/media/map/dispatch-units" body: "*" };
+  }
+
+  // 分发单元详情（含审批记录与回执）
+  rpc GetDispatchUnit (GetDispatchUnitRequest) returns (MapDispatchUnitDetail) {
+    option (google.api.http) = { get: "/api/v1/media/map/dispatch-units/{id}" };
+  }
+
+  // 提交审批（驳回后修改重新提交：rejected → draft）
+  rpc SubmitDispatchUnit (SubmitDispatchUnitRequest) returns (MapDispatchUnitItem) {
+    option (google.api.http) = { post: "/api/v1/media/map/dispatch-units/{id}/submit" body: "*" };
+  }
+
+  // 🔴 审批通过（审批人取自 JWT；自批必败 MAP_SELF_APPROVAL；自动化身份必败）
+  rpc ApproveDispatchUnit (ApproveDispatchUnitRequest) returns (MapDispatchUnitItem) {
+    option (google.api.http) = { post: "/api/v1/media/map/dispatch-units/{id}/approve" body: "*" };
+  }
+
+  // 驳回（reason 必填，空值 400；驳回可留痕审计）
+  rpc RejectDispatchUnit (RejectDispatchUnitRequest) returns (MapDispatchUnitItem) {
+    option (google.api.http) = { post: "/api/v1/media/map/dispatch-units/{id}/reject" body: "*" };
+  }
+
+  // 🔴 发布（二次确认：operator 取自 JWT；须已 approved；非 private 须 confirm_public=true）
+  rpc PublishDispatchUnit (PublishDispatchUnitRequest) returns (PublishDispatchUnitResponse) {
+    option (google.api.http) = { post: "/api/v1/media/map/dispatch-units/{id}/publish" body: "*" };
+  }
+
+  // 撤回（终止未发布的流转）
+  rpc CancelDispatchUnit (CancelDispatchUnitRequest) returns (MapDispatchUnitItem) {
+    option (google.api.http) = { post: "/api/v1/media/map/dispatch-units/{id}/cancel" body: "*" };
+  }
+
+  // ==================== 审批队列（核心页面） ====================
+
+  // 待审批队列（approval_state=draft 的分发单元）
+  rpc ListApprovalQueue (pagination.PagingRequest) returns (ListApprovalQueueResponse) {
+    option (google.api.http) = { get: "/api/v1/media/map/approvals" };
+  }
+
+  // ==================== 回执与审计 ====================
+
+  // 发布回执列表（post_id/时间/可见性/操作者全记录；前端可导出 CSV）
+  rpc ListReceipts (pagination.PagingRequest) returns (ListReceiptsResponse) {
+    option (google.api.http) = { get: "/api/v1/media/map/receipts" };
+  }
+
+  // ==================== 矩阵日历（FR-PUB-09，只读） ====================
+
+  // 账号 × 时间 × 平台排期总览（只读；不承诺剪辑画布）
+  rpc GetCalendar (GetCalendarRequest) returns (GetCalendarResponse) {
+    option (google.api.http) = { get: "/api/v1/media/map/calendar" };
+  }
+
+  // ==================== 表现数据（FR-PUB-08，Phase 3 拉取管道） ====================
+
+  // 单条回执的表现数据（无数据时 note 诚实说明，不伪造）
+  rpc GetAnalytics (GetAnalyticsRequest) returns (MapAnalyticsView) {
+    option (google.api.http) = { get: "/api/v1/media/map/analytics/{id}" };
+  }
+}
+
+// ==================== 渠道 ====================
+
+message MapChannel {
+  string channel_id = 1 [json_name = "channel_id"];
+  string platform_key = 2 [json_name = "platform_key"];
+  string slot = 3 [json_name = "slot"];
+  string region = 4 [json_name = "region"]; // cn/intl/global
+  bool enabled = 5 [json_name = "enabled"];
+  string capability_json = 6 [json_name = "capability_json"]; // 能力声明快照（JSON）
+  string adapter_version = 7 [json_name = "adapter_version"];
+  int32 priority = 8 [json_name = "priority"];
+  google.protobuf.Timestamp create_time = 9 [json_name = "create_time"];
+}
+
+message ListChannelsResponse {
+  uint32 total = 1 [json_name = "total"];
+  repeated MapChannel items = 2 [json_name = "items"];
+}
+
+message CreateChannelRequest {
+  string platform_key = 1 [json_name = "platform_key"]; // 必须与适配器 PlatformKey()/copy 键一致
+  string slot = 2 [json_name = "slot"];                 // main / a1 ...
+  string region = 3 [json_name = "region"];             // cn/intl/global
+  bool enabled = 4 [json_name = "enabled"];
+  int32 priority = 5 [json_name = "priority"];
+  string adapter_version = 6 [json_name = "adapter_version"];
+}
+
+// ==================== 账号 ====================
+
+message MapAccount {
+  string account_id = 1 [json_name = "account_id"];
+  string channel_id = 2 [json_name = "channel_id"];
+  string platform_key = 3 [json_name = "platform_key"]; // 冗余（由渠道联出）
+  string slot = 4 [json_name = "slot"];                 // 冗余（由渠道联出）
+  string display_name = 5 [json_name = "display_name"];
+  string credential_type = 6 [json_name = "credential_type"]; // oauth/cookie/api_key
+  bool has_credential = 7 [json_name = "has_credential"];     // 仅标记是否已配置，不回显内容
+  bool enabled = 8 [json_name = "enabled"];
+  string health = 9 [json_name = "health"]; // healthy/degraded/paused/credential_invalid
+  int32 consecutive_failures = 10 [json_name = "consecutive_failures"];
+  google.protobuf.Timestamp paused_until = 11 [json_name = "paused_until"];
+  int32 published_24h = 12 [json_name = "published_24h"];
+  google.protobuf.Timestamp last_published_at = 13 [json_name = "last_published_at"];
+  string last_error = 14 [json_name = "last_error"]; // 已脱敏
+  google.protobuf.Timestamp create_time = 15 [json_name = "create_time"];
+}
+
+message ListAccountsResponse {
+  uint32 total = 1 [json_name = "total"];
+  repeated MapAccount items = 2 [json_name = "items"];
+}
+
+message CreateAccountRequest {
+  string channel_id = 1 [json_name = "channel_id"];
+  string display_name = 2 [json_name = "display_name"];
+  string credential_type = 3 [json_name = "credential_type"]; // oauth/cookie/api_key
+  // 🔴 凭据明文仅经 TLS 传输一次，服务端加密后入库；任何响应/日志不回显。
+  string credential = 4 [json_name = "credential"];
+  bool enabled = 5 [json_name = "enabled"];
+}
+
+message ToggleAccountRequest {
+  string id = 1 [json_name = "id"]; // pa_ 前缀
+  bool enabled = 2 [json_name = "enabled"];
+}
+
+message ReauthAccountRequest {
+  string id = 1 [json_name = "id"];
+  string credential_type = 2 [json_name = "credential_type"];
+  string credential = 3 [json_name = "credential"];
+}
+
+// ==================== 分发单元 ====================
+
+message MapDispatchUnitItem {
+  string unit_id = 1 [json_name = "unit_id"];
+  string variant_set_id = 2 [json_name = "variant_set_id"];
+  string variant_id = 3 [json_name = "variant_id"];
+  repeated string targets = 4 [json_name = "targets"]; // ["youtube:main","douyin:a1"]
+  google.protobuf.Timestamp scheduled_for = 5 [json_name = "scheduled_for"];
+  string schedule_mode = 6 [json_name = "schedule_mode"]; // native/local_worker/none
+  string visibility_default = 7 [json_name = "visibility_default"];
+  string visibility_override_reason = 8 [json_name = "visibility_override_reason"];
+  string approval_state = 9 [json_name = "approval_state"]; // draft/approved/rejected
+  string submitted_by = 10 [json_name = "submitted_by"];
+  string approver = 11 [json_name = "approver"];
+  google.protobuf.Timestamp approved_at = 12 [json_name = "approved_at"];
+  string reject_reason = 13 [json_name = "reject_reason"];
+  string publish_state = 14 [json_name = "publish_state"]; // pending/publishing/published/failed
+  string post_id = 15 [json_name = "post_id"];
+  string post_url = 16 [json_name = "post_url"];
+  google.protobuf.Timestamp published_at = 17 [json_name = "published_at"];
+  string operator = 18 [json_name = "operator"];
+  google.protobuf.Timestamp create_time = 19 [json_name = "create_time"];
+}
+
+message ListDispatchUnitsResponse {
+  uint32 total = 1 [json_name = "total"];
+  repeated MapDispatchUnitItem items = 2 [json_name = "items"];
+}
+
+message CreateDispatchUnitRequest {
+  string variant_set_id = 1 [json_name = "variant_set_id"]; // 可空=手工建单
+  string variant_id = 2 [json_name = "variant_id"];
+  repeated string targets = 3 [json_name = "targets"]; // 必填，platform:slot
+  google.protobuf.Timestamp scheduled_for = 4 [json_name = "scheduled_for"];
+  // 缺省强制 private；填 unlisted/public 必须给 override_reason，否则 MAP_VISIBILITY_NO_REASON。
+  string visibility_default = 5 [json_name = "visibility_default"];
+  string visibility_override_reason = 6 [json_name = "visibility_override_reason"];
+}
+
+message GetDispatchUnitRequest {
+  string id = 1 [json_name = "id"]; // du_ 前缀
+}
+
+message MapDispatchUnitDetail {
+  MapDispatchUnitItem unit = 1 [json_name = "unit"];
+  repeated MapApprovalRecordItem records = 2 [json_name = "records"];
+  repeated MapReceipt receipts = 3 [json_name = "receipts"];
+}
+
+message SubmitDispatchUnitRequest {
+  string id = 1 [json_name = "id"];
+}
+
+message ApproveDispatchUnitRequest {
+  string id = 1 [json_name = "id"];
+}
+
+message RejectDispatchUnitRequest {
+  string id = 1 [json_name = "id"];
+  string reason = 2 [json_name = "reason"]; // 🔴 必填（概要设计 §4.2），空值 400
+}
+
+message PublishDispatchUnitRequest {
+  string id = 1 [json_name = "id"];
+  // 🔴 可见性非 private 时必须显式 true（二次确认，ADR-MAP-03），否则拒绝。
+  bool confirm_public = 2 [json_name = "confirm_public"];
+}
+
+message PublishDispatchUnitResponse {
+  string publish_state = 1 [json_name = "publish_state"]; // published/failed
+  repeated MapReceipt receipts = 2 [json_name = "receipts"];
+  repeated string warnings = 3 [json_name = "warnings"]; // 转码/文案降级提示（不阻断，FR-PUB-02/03）
+}
+
+message CancelDispatchUnitRequest {
+  string id = 1 [json_name = "id"];
+  string reason = 2 [json_name = "reason"];
+}
+
+// ==================== 审批队列 ====================
+
+message ListApprovalQueueResponse {
+  uint32 total = 1 [json_name = "total"];
+  repeated MapDispatchUnitItem items = 2 [json_name = "items"];
+}
+
+// ==================== 审批记录 ====================
+
+message MapApprovalRecordItem {
+  uint32 id = 1 [json_name = "id"];
+  string action = 2 [json_name = "action"];           // submit/approve/reject/publish/cancel
+  string actor = 3 [json_name = "actor"];
+  string actor_type = 4 [json_name = "actor_type"];   // human/automation
+  string from_state = 5 [json_name = "from_state"];
+  string to_state = 6 [json_name = "to_state"];
+  string reason = 7 [json_name = "reason"];
+  string visibility_at_action = 8 [json_name = "visibility_at_action"];
+  string ip = 9 [json_name = "ip"];
+  string result = 10 [json_name = "result"]; // allow/deny（deny=越权尝试留痕）
+  google.protobuf.Timestamp create_time = 11 [json_name = "create_time"];
+}
+
+// ==================== 回执 ====================
+
+message MapReceipt {
+  string receipt_id = 1 [json_name = "receipt_id"];
+  string dispatch_unit_id = 2 [json_name = "dispatch_unit_id"];
+  string account_id = 3 [json_name = "account_id"];
+  string platform_key = 4 [json_name = "platform_key"];
+  string post_id = 5 [json_name = "post_id"];
+  string post_url = 6 [json_name = "post_url"];
+  string visibility = 7 [json_name = "visibility"]; // 实际可见性
+  google.protobuf.Timestamp published_at = 8 [json_name = "published_at"];
+  string operator = 9 [json_name = "operator"];
+}
+
+message ListReceiptsResponse {
+  uint32 total = 1 [json_name = "total"];
+  repeated MapReceipt items = 2 [json_name = "items"];
+}
+
+// ==================== 日历 ====================
+
+message GetCalendarRequest {
+  google.protobuf.Timestamp from = 1 [json_name = "from"]; // UTC
+  google.protobuf.Timestamp to = 2 [json_name = "to"];
+}
+
+message MapCalendarItem {
+  string unit_id = 1 [json_name = "unit_id"];
+  repeated string targets = 2 [json_name = "targets"];
+  google.protobuf.Timestamp scheduled_for = 3 [json_name = "scheduled_for"];
+  string schedule_mode = 4 [json_name = "schedule_mode"]; // UI 必须明示排期模式（概要设计 §5）
+  string approval_state = 5 [json_name = "approval_state"];
+  string publish_state = 6 [json_name = "publish_state"];
+}
+
+message GetCalendarResponse {
+  repeated MapCalendarItem items = 1 [json_name = "items"];
+}
+
+// ==================== 表现数据 ====================
+
+message GetAnalyticsRequest {
+  string id = 1 [json_name = "id"]; // receipt_id（pr_ 前缀）
+}
+
+message MapAnalyticsView {
+  string receipt_id = 1 [json_name = "receipt_id"];
+  string platform_key = 2 [json_name = "platform_key"];
+  int64 views = 3 [json_name = "views"];
+  int64 likes = 4 [json_name = "likes"];
+  int64 comments = 5 [json_name = "comments"];
+  int64 shares = 6 [json_name = "shares"];
+  int64 favorites = 7 [json_name = "favorites"];
+  double completion_rate = 8 [json_name = "completion_rate"];
+  google.protobuf.Timestamp fetched_at = 9 [json_name = "fetched_at"];
+  string note = 10 [json_name = "note"]; // 无数据/平台不支持的诚实说明（不伪造）
+}

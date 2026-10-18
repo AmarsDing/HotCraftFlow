@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hotcraftflow.dev/schema/alert.v1.json",
+  "title": "Alert",
+  "description": "突发告警契约（契约 §7）。生产者：② TT 突发检测；消费者：推送渠道、看板。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version", "alert_id", "topic_id", "triggered_at",
+    "methods_hit", "evidence", "channels", "state"
+  ],
+  "properties": {
+    "api_version": { "const": "1.0" },
+    "alert_id": { "type": "string", "pattern": "^al_[0-9A-HJKMNP-TV-Z]{26}$" },
+    "topic_id": { "type": "string", "pattern": "^tp_[0-9A-HJKMNP-TV-Z]{26}$" },
+    "triggered_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+      "description": "UTC 带 Z（契约 §0.2；M-21 修正示例偏移）"
+    },
+    "methods_hit": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["zscore", "velocity", "rank_jump", "eng_spike", "first_cross_platform"]
+      },
+      "description": "≥2 个方法命中才产生 Alert（契约 §7）"
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": { "type": "number" },
+      "description": "每个命中方法的具体数值；无数值的告警不允许发出"
+    },
+    "channels": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["webhook", "inapp", "email", "wecom"] },
+      "uniqueItems": true
+    },
+    "state": { "type": "string", "enum": ["new", "ack", "muted"] }
+  }
+}

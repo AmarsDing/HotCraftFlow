@@ -9,6 +9,7 @@ import (
 	"framework/app/admin/internal/data/ent/roleapi"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -18,6 +19,7 @@ type RoleApiCreate struct {
 	config
 	mutation *RoleApiMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -144,6 +146,7 @@ func (_c *RoleApiCreate) createSpec() (*RoleApi, *sqlgraph.CreateSpec) {
 		_node = &RoleApi{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(roleapi.Table, sqlgraph.NewFieldSpec(roleapi.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -167,11 +170,226 @@ func (_c *RoleApiCreate) createSpec() (*RoleApi, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.RoleApi.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.RoleApiUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *RoleApiCreate) OnConflict(opts ...sql.ConflictOption) *RoleApiUpsertOne {
+	_c.conflict = opts
+	return &RoleApiUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.RoleApi.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *RoleApiCreate) OnConflictColumns(columns ...string) *RoleApiUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &RoleApiUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// RoleApiUpsertOne is the builder for "upsert"-ing
+	//  one RoleApi node.
+	RoleApiUpsertOne struct {
+		create *RoleApiCreate
+	}
+
+	// RoleApiUpsert is the "OnConflict" setter.
+	RoleApiUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetRoleID sets the "role_id" field.
+func (u *RoleApiUpsert) SetRoleID(v uint32) *RoleApiUpsert {
+	u.Set(roleapi.FieldRoleID, v)
+	return u
+}
+
+// UpdateRoleID sets the "role_id" field to the value that was provided on create.
+func (u *RoleApiUpsert) UpdateRoleID() *RoleApiUpsert {
+	u.SetExcluded(roleapi.FieldRoleID)
+	return u
+}
+
+// AddRoleID adds v to the "role_id" field.
+func (u *RoleApiUpsert) AddRoleID(v uint32) *RoleApiUpsert {
+	u.Add(roleapi.FieldRoleID, v)
+	return u
+}
+
+// SetAPIID sets the "api_id" field.
+func (u *RoleApiUpsert) SetAPIID(v uint32) *RoleApiUpsert {
+	u.Set(roleapi.FieldAPIID, v)
+	return u
+}
+
+// UpdateAPIID sets the "api_id" field to the value that was provided on create.
+func (u *RoleApiUpsert) UpdateAPIID() *RoleApiUpsert {
+	u.SetExcluded(roleapi.FieldAPIID)
+	return u
+}
+
+// AddAPIID adds v to the "api_id" field.
+func (u *RoleApiUpsert) AddAPIID(v uint32) *RoleApiUpsert {
+	u.Add(roleapi.FieldAPIID, v)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.RoleApi.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(roleapi.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *RoleApiUpsertOne) UpdateNewValues() *RoleApiUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(roleapi.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(roleapi.FieldCreateTime)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(roleapi.FieldTenantID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.RoleApi.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *RoleApiUpsertOne) Ignore() *RoleApiUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *RoleApiUpsertOne) DoNothing() *RoleApiUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the RoleApiCreate.OnConflict
+// documentation for more info.
+func (u *RoleApiUpsertOne) Update(set func(*RoleApiUpsert)) *RoleApiUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&RoleApiUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetRoleID sets the "role_id" field.
+func (u *RoleApiUpsertOne) SetRoleID(v uint32) *RoleApiUpsertOne {
+	return u.Update(func(s *RoleApiUpsert) {
+		s.SetRoleID(v)
+	})
+}
+
+// AddRoleID adds v to the "role_id" field.
+func (u *RoleApiUpsertOne) AddRoleID(v uint32) *RoleApiUpsertOne {
+	return u.Update(func(s *RoleApiUpsert) {
+		s.AddRoleID(v)
+	})
+}
+
+// UpdateRoleID sets the "role_id" field to the value that was provided on create.
+func (u *RoleApiUpsertOne) UpdateRoleID() *RoleApiUpsertOne {
+	return u.Update(func(s *RoleApiUpsert) {
+		s.UpdateRoleID()
+	})
+}
+
+// SetAPIID sets the "api_id" field.
+func (u *RoleApiUpsertOne) SetAPIID(v uint32) *RoleApiUpsertOne {
+	return u.Update(func(s *RoleApiUpsert) {
+		s.SetAPIID(v)
+	})
+}
+
+// AddAPIID adds v to the "api_id" field.
+func (u *RoleApiUpsertOne) AddAPIID(v uint32) *RoleApiUpsertOne {
+	return u.Update(func(s *RoleApiUpsert) {
+		s.AddAPIID(v)
+	})
+}
+
+// UpdateAPIID sets the "api_id" field to the value that was provided on create.
+func (u *RoleApiUpsertOne) UpdateAPIID() *RoleApiUpsertOne {
+	return u.Update(func(s *RoleApiUpsert) {
+		s.UpdateAPIID()
+	})
+}
+
+// Exec executes the query.
+func (u *RoleApiUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for RoleApiCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *RoleApiUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *RoleApiUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *RoleApiUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // RoleApiCreateBulk is the builder for creating many RoleApi entities in bulk.
 type RoleApiCreateBulk struct {
 	config
 	err      error
 	builders []*RoleApiCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the RoleApi entities in the database.
@@ -200,6 +418,7 @@ func (_c *RoleApiCreateBulk) Save(ctx context.Context) ([]*RoleApi, error) {
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -250,6 +469,168 @@ func (_c *RoleApiCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *RoleApiCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.RoleApi.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.RoleApiUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *RoleApiCreateBulk) OnConflict(opts ...sql.ConflictOption) *RoleApiUpsertBulk {
+	_c.conflict = opts
+	return &RoleApiUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.RoleApi.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *RoleApiCreateBulk) OnConflictColumns(columns ...string) *RoleApiUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &RoleApiUpsertBulk{
+		create: _c,
+	}
+}
+
+// RoleApiUpsertBulk is the builder for "upsert"-ing
+// a bulk of RoleApi nodes.
+type RoleApiUpsertBulk struct {
+	create *RoleApiCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.RoleApi.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(roleapi.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *RoleApiUpsertBulk) UpdateNewValues() *RoleApiUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(roleapi.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(roleapi.FieldCreateTime)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(roleapi.FieldTenantID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.RoleApi.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *RoleApiUpsertBulk) Ignore() *RoleApiUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *RoleApiUpsertBulk) DoNothing() *RoleApiUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the RoleApiCreateBulk.OnConflict
+// documentation for more info.
+func (u *RoleApiUpsertBulk) Update(set func(*RoleApiUpsert)) *RoleApiUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&RoleApiUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetRoleID sets the "role_id" field.
+func (u *RoleApiUpsertBulk) SetRoleID(v uint32) *RoleApiUpsertBulk {
+	return u.Update(func(s *RoleApiUpsert) {
+		s.SetRoleID(v)
+	})
+}
+
+// AddRoleID adds v to the "role_id" field.
+func (u *RoleApiUpsertBulk) AddRoleID(v uint32) *RoleApiUpsertBulk {
+	return u.Update(func(s *RoleApiUpsert) {
+		s.AddRoleID(v)
+	})
+}
+
+// UpdateRoleID sets the "role_id" field to the value that was provided on create.
+func (u *RoleApiUpsertBulk) UpdateRoleID() *RoleApiUpsertBulk {
+	return u.Update(func(s *RoleApiUpsert) {
+		s.UpdateRoleID()
+	})
+}
+
+// SetAPIID sets the "api_id" field.
+func (u *RoleApiUpsertBulk) SetAPIID(v uint32) *RoleApiUpsertBulk {
+	return u.Update(func(s *RoleApiUpsert) {
+		s.SetAPIID(v)
+	})
+}
+
+// AddAPIID adds v to the "api_id" field.
+func (u *RoleApiUpsertBulk) AddAPIID(v uint32) *RoleApiUpsertBulk {
+	return u.Update(func(s *RoleApiUpsert) {
+		s.AddAPIID(v)
+	})
+}
+
+// UpdateAPIID sets the "api_id" field to the value that was provided on create.
+func (u *RoleApiUpsertBulk) UpdateAPIID() *RoleApiUpsertBulk {
+	return u.Update(func(s *RoleApiUpsert) {
+		s.UpdateAPIID()
+	})
+}
+
+// Exec executes the query.
+func (u *RoleApiUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the RoleApiCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for RoleApiCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *RoleApiUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

@@ -4,10 +4,12 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"framework/app/admin/internal/data/ent/usercredential"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -17,6 +19,7 @@ type UserCredentialCreate struct {
 	config
 	mutation *UserCredentialMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -352,6 +355,7 @@ func (_c *UserCredentialCreate) createSpec() (*UserCredential, *sqlgraph.CreateS
 		_node = &UserCredential{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(usercredential.Table, sqlgraph.NewFieldSpec(usercredential.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -415,11 +419,629 @@ func (_c *UserCredentialCreate) createSpec() (*UserCredential, *sqlgraph.CreateS
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.UserCredential.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.UserCredentialUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *UserCredentialCreate) OnConflict(opts ...sql.ConflictOption) *UserCredentialUpsertOne {
+	_c.conflict = opts
+	return &UserCredentialUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.UserCredential.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *UserCredentialCreate) OnConflictColumns(columns ...string) *UserCredentialUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &UserCredentialUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// UserCredentialUpsertOne is the builder for "upsert"-ing
+	//  one UserCredential node.
+	UserCredentialUpsertOne struct {
+		create *UserCredentialCreate
+	}
+
+	// UserCredentialUpsert is the "OnConflict" setter.
+	UserCredentialUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *UserCredentialUpsert) SetUpdateTime(v time.Time) *UserCredentialUpsert {
+	u.Set(usercredential.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *UserCredentialUpsert) UpdateUpdateTime() *UserCredentialUpsert {
+	u.SetExcluded(usercredential.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *UserCredentialUpsert) ClearUpdateTime() *UserCredentialUpsert {
+	u.SetNull(usercredential.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *UserCredentialUpsert) SetDeleteTime(v time.Time) *UserCredentialUpsert {
+	u.Set(usercredential.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *UserCredentialUpsert) UpdateDeleteTime() *UserCredentialUpsert {
+	u.SetExcluded(usercredential.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *UserCredentialUpsert) ClearDeleteTime() *UserCredentialUpsert {
+	u.SetNull(usercredential.FieldDeleteTime)
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *UserCredentialUpsert) SetUserID(v uint32) *UserCredentialUpsert {
+	u.Set(usercredential.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *UserCredentialUpsert) UpdateUserID() *UserCredentialUpsert {
+	u.SetExcluded(usercredential.FieldUserID)
+	return u
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *UserCredentialUpsert) AddUserID(v uint32) *UserCredentialUpsert {
+	u.Add(usercredential.FieldUserID, v)
+	return u
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (u *UserCredentialUpsert) ClearUserID() *UserCredentialUpsert {
+	u.SetNull(usercredential.FieldUserID)
+	return u
+}
+
+// SetIdentityType sets the "identity_type" field.
+func (u *UserCredentialUpsert) SetIdentityType(v usercredential.IdentityType) *UserCredentialUpsert {
+	u.Set(usercredential.FieldIdentityType, v)
+	return u
+}
+
+// UpdateIdentityType sets the "identity_type" field to the value that was provided on create.
+func (u *UserCredentialUpsert) UpdateIdentityType() *UserCredentialUpsert {
+	u.SetExcluded(usercredential.FieldIdentityType)
+	return u
+}
+
+// ClearIdentityType clears the value of the "identity_type" field.
+func (u *UserCredentialUpsert) ClearIdentityType() *UserCredentialUpsert {
+	u.SetNull(usercredential.FieldIdentityType)
+	return u
+}
+
+// SetIdentifier sets the "identifier" field.
+func (u *UserCredentialUpsert) SetIdentifier(v string) *UserCredentialUpsert {
+	u.Set(usercredential.FieldIdentifier, v)
+	return u
+}
+
+// UpdateIdentifier sets the "identifier" field to the value that was provided on create.
+func (u *UserCredentialUpsert) UpdateIdentifier() *UserCredentialUpsert {
+	u.SetExcluded(usercredential.FieldIdentifier)
+	return u
+}
+
+// ClearIdentifier clears the value of the "identifier" field.
+func (u *UserCredentialUpsert) ClearIdentifier() *UserCredentialUpsert {
+	u.SetNull(usercredential.FieldIdentifier)
+	return u
+}
+
+// SetCredentialType sets the "credential_type" field.
+func (u *UserCredentialUpsert) SetCredentialType(v usercredential.CredentialType) *UserCredentialUpsert {
+	u.Set(usercredential.FieldCredentialType, v)
+	return u
+}
+
+// UpdateCredentialType sets the "credential_type" field to the value that was provided on create.
+func (u *UserCredentialUpsert) UpdateCredentialType() *UserCredentialUpsert {
+	u.SetExcluded(usercredential.FieldCredentialType)
+	return u
+}
+
+// ClearCredentialType clears the value of the "credential_type" field.
+func (u *UserCredentialUpsert) ClearCredentialType() *UserCredentialUpsert {
+	u.SetNull(usercredential.FieldCredentialType)
+	return u
+}
+
+// SetCredential sets the "credential" field.
+func (u *UserCredentialUpsert) SetCredential(v string) *UserCredentialUpsert {
+	u.Set(usercredential.FieldCredential, v)
+	return u
+}
+
+// UpdateCredential sets the "credential" field to the value that was provided on create.
+func (u *UserCredentialUpsert) UpdateCredential() *UserCredentialUpsert {
+	u.SetExcluded(usercredential.FieldCredential)
+	return u
+}
+
+// ClearCredential clears the value of the "credential" field.
+func (u *UserCredentialUpsert) ClearCredential() *UserCredentialUpsert {
+	u.SetNull(usercredential.FieldCredential)
+	return u
+}
+
+// SetIsPrimary sets the "is_primary" field.
+func (u *UserCredentialUpsert) SetIsPrimary(v bool) *UserCredentialUpsert {
+	u.Set(usercredential.FieldIsPrimary, v)
+	return u
+}
+
+// UpdateIsPrimary sets the "is_primary" field to the value that was provided on create.
+func (u *UserCredentialUpsert) UpdateIsPrimary() *UserCredentialUpsert {
+	u.SetExcluded(usercredential.FieldIsPrimary)
+	return u
+}
+
+// ClearIsPrimary clears the value of the "is_primary" field.
+func (u *UserCredentialUpsert) ClearIsPrimary() *UserCredentialUpsert {
+	u.SetNull(usercredential.FieldIsPrimary)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *UserCredentialUpsert) SetStatus(v usercredential.Status) *UserCredentialUpsert {
+	u.Set(usercredential.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *UserCredentialUpsert) UpdateStatus() *UserCredentialUpsert {
+	u.SetExcluded(usercredential.FieldStatus)
+	return u
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *UserCredentialUpsert) ClearStatus() *UserCredentialUpsert {
+	u.SetNull(usercredential.FieldStatus)
+	return u
+}
+
+// SetExtraInfo sets the "extra_info" field.
+func (u *UserCredentialUpsert) SetExtraInfo(v string) *UserCredentialUpsert {
+	u.Set(usercredential.FieldExtraInfo, v)
+	return u
+}
+
+// UpdateExtraInfo sets the "extra_info" field to the value that was provided on create.
+func (u *UserCredentialUpsert) UpdateExtraInfo() *UserCredentialUpsert {
+	u.SetExcluded(usercredential.FieldExtraInfo)
+	return u
+}
+
+// ClearExtraInfo clears the value of the "extra_info" field.
+func (u *UserCredentialUpsert) ClearExtraInfo() *UserCredentialUpsert {
+	u.SetNull(usercredential.FieldExtraInfo)
+	return u
+}
+
+// SetActivateToken sets the "activate_token" field.
+func (u *UserCredentialUpsert) SetActivateToken(v string) *UserCredentialUpsert {
+	u.Set(usercredential.FieldActivateToken, v)
+	return u
+}
+
+// UpdateActivateToken sets the "activate_token" field to the value that was provided on create.
+func (u *UserCredentialUpsert) UpdateActivateToken() *UserCredentialUpsert {
+	u.SetExcluded(usercredential.FieldActivateToken)
+	return u
+}
+
+// ClearActivateToken clears the value of the "activate_token" field.
+func (u *UserCredentialUpsert) ClearActivateToken() *UserCredentialUpsert {
+	u.SetNull(usercredential.FieldActivateToken)
+	return u
+}
+
+// SetResetToken sets the "reset_token" field.
+func (u *UserCredentialUpsert) SetResetToken(v string) *UserCredentialUpsert {
+	u.Set(usercredential.FieldResetToken, v)
+	return u
+}
+
+// UpdateResetToken sets the "reset_token" field to the value that was provided on create.
+func (u *UserCredentialUpsert) UpdateResetToken() *UserCredentialUpsert {
+	u.SetExcluded(usercredential.FieldResetToken)
+	return u
+}
+
+// ClearResetToken clears the value of the "reset_token" field.
+func (u *UserCredentialUpsert) ClearResetToken() *UserCredentialUpsert {
+	u.SetNull(usercredential.FieldResetToken)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.UserCredential.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(usercredential.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *UserCredentialUpsertOne) UpdateNewValues() *UserCredentialUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(usercredential.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(usercredential.FieldCreateTime)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(usercredential.FieldTenantID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.UserCredential.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *UserCredentialUpsertOne) Ignore() *UserCredentialUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *UserCredentialUpsertOne) DoNothing() *UserCredentialUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the UserCredentialCreate.OnConflict
+// documentation for more info.
+func (u *UserCredentialUpsertOne) Update(set func(*UserCredentialUpsert)) *UserCredentialUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&UserCredentialUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *UserCredentialUpsertOne) SetUpdateTime(v time.Time) *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *UserCredentialUpsertOne) UpdateUpdateTime() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *UserCredentialUpsertOne) ClearUpdateTime() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *UserCredentialUpsertOne) SetDeleteTime(v time.Time) *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *UserCredentialUpsertOne) UpdateDeleteTime() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *UserCredentialUpsertOne) ClearDeleteTime() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *UserCredentialUpsertOne) SetUserID(v uint32) *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *UserCredentialUpsertOne) AddUserID(v uint32) *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.AddUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *UserCredentialUpsertOne) UpdateUserID() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (u *UserCredentialUpsertOne) ClearUserID() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearUserID()
+	})
+}
+
+// SetIdentityType sets the "identity_type" field.
+func (u *UserCredentialUpsertOne) SetIdentityType(v usercredential.IdentityType) *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetIdentityType(v)
+	})
+}
+
+// UpdateIdentityType sets the "identity_type" field to the value that was provided on create.
+func (u *UserCredentialUpsertOne) UpdateIdentityType() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateIdentityType()
+	})
+}
+
+// ClearIdentityType clears the value of the "identity_type" field.
+func (u *UserCredentialUpsertOne) ClearIdentityType() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearIdentityType()
+	})
+}
+
+// SetIdentifier sets the "identifier" field.
+func (u *UserCredentialUpsertOne) SetIdentifier(v string) *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetIdentifier(v)
+	})
+}
+
+// UpdateIdentifier sets the "identifier" field to the value that was provided on create.
+func (u *UserCredentialUpsertOne) UpdateIdentifier() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateIdentifier()
+	})
+}
+
+// ClearIdentifier clears the value of the "identifier" field.
+func (u *UserCredentialUpsertOne) ClearIdentifier() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearIdentifier()
+	})
+}
+
+// SetCredentialType sets the "credential_type" field.
+func (u *UserCredentialUpsertOne) SetCredentialType(v usercredential.CredentialType) *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetCredentialType(v)
+	})
+}
+
+// UpdateCredentialType sets the "credential_type" field to the value that was provided on create.
+func (u *UserCredentialUpsertOne) UpdateCredentialType() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateCredentialType()
+	})
+}
+
+// ClearCredentialType clears the value of the "credential_type" field.
+func (u *UserCredentialUpsertOne) ClearCredentialType() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearCredentialType()
+	})
+}
+
+// SetCredential sets the "credential" field.
+func (u *UserCredentialUpsertOne) SetCredential(v string) *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetCredential(v)
+	})
+}
+
+// UpdateCredential sets the "credential" field to the value that was provided on create.
+func (u *UserCredentialUpsertOne) UpdateCredential() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateCredential()
+	})
+}
+
+// ClearCredential clears the value of the "credential" field.
+func (u *UserCredentialUpsertOne) ClearCredential() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearCredential()
+	})
+}
+
+// SetIsPrimary sets the "is_primary" field.
+func (u *UserCredentialUpsertOne) SetIsPrimary(v bool) *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetIsPrimary(v)
+	})
+}
+
+// UpdateIsPrimary sets the "is_primary" field to the value that was provided on create.
+func (u *UserCredentialUpsertOne) UpdateIsPrimary() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateIsPrimary()
+	})
+}
+
+// ClearIsPrimary clears the value of the "is_primary" field.
+func (u *UserCredentialUpsertOne) ClearIsPrimary() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearIsPrimary()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *UserCredentialUpsertOne) SetStatus(v usercredential.Status) *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *UserCredentialUpsertOne) UpdateStatus() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *UserCredentialUpsertOne) ClearStatus() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetExtraInfo sets the "extra_info" field.
+func (u *UserCredentialUpsertOne) SetExtraInfo(v string) *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetExtraInfo(v)
+	})
+}
+
+// UpdateExtraInfo sets the "extra_info" field to the value that was provided on create.
+func (u *UserCredentialUpsertOne) UpdateExtraInfo() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateExtraInfo()
+	})
+}
+
+// ClearExtraInfo clears the value of the "extra_info" field.
+func (u *UserCredentialUpsertOne) ClearExtraInfo() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearExtraInfo()
+	})
+}
+
+// SetActivateToken sets the "activate_token" field.
+func (u *UserCredentialUpsertOne) SetActivateToken(v string) *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetActivateToken(v)
+	})
+}
+
+// UpdateActivateToken sets the "activate_token" field to the value that was provided on create.
+func (u *UserCredentialUpsertOne) UpdateActivateToken() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateActivateToken()
+	})
+}
+
+// ClearActivateToken clears the value of the "activate_token" field.
+func (u *UserCredentialUpsertOne) ClearActivateToken() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearActivateToken()
+	})
+}
+
+// SetResetToken sets the "reset_token" field.
+func (u *UserCredentialUpsertOne) SetResetToken(v string) *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetResetToken(v)
+	})
+}
+
+// UpdateResetToken sets the "reset_token" field to the value that was provided on create.
+func (u *UserCredentialUpsertOne) UpdateResetToken() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateResetToken()
+	})
+}
+
+// ClearResetToken clears the value of the "reset_token" field.
+func (u *UserCredentialUpsertOne) ClearResetToken() *UserCredentialUpsertOne {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearResetToken()
+	})
+}
+
+// Exec executes the query.
+func (u *UserCredentialUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for UserCredentialCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *UserCredentialUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *UserCredentialUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *UserCredentialUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // UserCredentialCreateBulk is the builder for creating many UserCredential entities in bulk.
 type UserCredentialCreateBulk struct {
 	config
 	err      error
 	builders []*UserCredentialCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the UserCredential entities in the database.
@@ -449,6 +1071,7 @@ func (_c *UserCredentialCreateBulk) Save(ctx context.Context) ([]*UserCredential
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -499,6 +1122,385 @@ func (_c *UserCredentialCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *UserCredentialCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.UserCredential.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.UserCredentialUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *UserCredentialCreateBulk) OnConflict(opts ...sql.ConflictOption) *UserCredentialUpsertBulk {
+	_c.conflict = opts
+	return &UserCredentialUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.UserCredential.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *UserCredentialCreateBulk) OnConflictColumns(columns ...string) *UserCredentialUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &UserCredentialUpsertBulk{
+		create: _c,
+	}
+}
+
+// UserCredentialUpsertBulk is the builder for "upsert"-ing
+// a bulk of UserCredential nodes.
+type UserCredentialUpsertBulk struct {
+	create *UserCredentialCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.UserCredential.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(usercredential.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *UserCredentialUpsertBulk) UpdateNewValues() *UserCredentialUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(usercredential.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(usercredential.FieldCreateTime)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(usercredential.FieldTenantID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.UserCredential.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *UserCredentialUpsertBulk) Ignore() *UserCredentialUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *UserCredentialUpsertBulk) DoNothing() *UserCredentialUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the UserCredentialCreateBulk.OnConflict
+// documentation for more info.
+func (u *UserCredentialUpsertBulk) Update(set func(*UserCredentialUpsert)) *UserCredentialUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&UserCredentialUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *UserCredentialUpsertBulk) SetUpdateTime(v time.Time) *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *UserCredentialUpsertBulk) UpdateUpdateTime() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *UserCredentialUpsertBulk) ClearUpdateTime() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *UserCredentialUpsertBulk) SetDeleteTime(v time.Time) *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *UserCredentialUpsertBulk) UpdateDeleteTime() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *UserCredentialUpsertBulk) ClearDeleteTime() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *UserCredentialUpsertBulk) SetUserID(v uint32) *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// AddUserID adds v to the "user_id" field.
+func (u *UserCredentialUpsertBulk) AddUserID(v uint32) *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.AddUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *UserCredentialUpsertBulk) UpdateUserID() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (u *UserCredentialUpsertBulk) ClearUserID() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearUserID()
+	})
+}
+
+// SetIdentityType sets the "identity_type" field.
+func (u *UserCredentialUpsertBulk) SetIdentityType(v usercredential.IdentityType) *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetIdentityType(v)
+	})
+}
+
+// UpdateIdentityType sets the "identity_type" field to the value that was provided on create.
+func (u *UserCredentialUpsertBulk) UpdateIdentityType() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateIdentityType()
+	})
+}
+
+// ClearIdentityType clears the value of the "identity_type" field.
+func (u *UserCredentialUpsertBulk) ClearIdentityType() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearIdentityType()
+	})
+}
+
+// SetIdentifier sets the "identifier" field.
+func (u *UserCredentialUpsertBulk) SetIdentifier(v string) *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetIdentifier(v)
+	})
+}
+
+// UpdateIdentifier sets the "identifier" field to the value that was provided on create.
+func (u *UserCredentialUpsertBulk) UpdateIdentifier() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateIdentifier()
+	})
+}
+
+// ClearIdentifier clears the value of the "identifier" field.
+func (u *UserCredentialUpsertBulk) ClearIdentifier() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearIdentifier()
+	})
+}
+
+// SetCredentialType sets the "credential_type" field.
+func (u *UserCredentialUpsertBulk) SetCredentialType(v usercredential.CredentialType) *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetCredentialType(v)
+	})
+}
+
+// UpdateCredentialType sets the "credential_type" field to the value that was provided on create.
+func (u *UserCredentialUpsertBulk) UpdateCredentialType() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateCredentialType()
+	})
+}
+
+// ClearCredentialType clears the value of the "credential_type" field.
+func (u *UserCredentialUpsertBulk) ClearCredentialType() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearCredentialType()
+	})
+}
+
+// SetCredential sets the "credential" field.
+func (u *UserCredentialUpsertBulk) SetCredential(v string) *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetCredential(v)
+	})
+}
+
+// UpdateCredential sets the "credential" field to the value that was provided on create.
+func (u *UserCredentialUpsertBulk) UpdateCredential() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateCredential()
+	})
+}
+
+// ClearCredential clears the value of the "credential" field.
+func (u *UserCredentialUpsertBulk) ClearCredential() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearCredential()
+	})
+}
+
+// SetIsPrimary sets the "is_primary" field.
+func (u *UserCredentialUpsertBulk) SetIsPrimary(v bool) *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetIsPrimary(v)
+	})
+}
+
+// UpdateIsPrimary sets the "is_primary" field to the value that was provided on create.
+func (u *UserCredentialUpsertBulk) UpdateIsPrimary() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateIsPrimary()
+	})
+}
+
+// ClearIsPrimary clears the value of the "is_primary" field.
+func (u *UserCredentialUpsertBulk) ClearIsPrimary() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearIsPrimary()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *UserCredentialUpsertBulk) SetStatus(v usercredential.Status) *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *UserCredentialUpsertBulk) UpdateStatus() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *UserCredentialUpsertBulk) ClearStatus() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetExtraInfo sets the "extra_info" field.
+func (u *UserCredentialUpsertBulk) SetExtraInfo(v string) *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetExtraInfo(v)
+	})
+}
+
+// UpdateExtraInfo sets the "extra_info" field to the value that was provided on create.
+func (u *UserCredentialUpsertBulk) UpdateExtraInfo() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateExtraInfo()
+	})
+}
+
+// ClearExtraInfo clears the value of the "extra_info" field.
+func (u *UserCredentialUpsertBulk) ClearExtraInfo() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearExtraInfo()
+	})
+}
+
+// SetActivateToken sets the "activate_token" field.
+func (u *UserCredentialUpsertBulk) SetActivateToken(v string) *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetActivateToken(v)
+	})
+}
+
+// UpdateActivateToken sets the "activate_token" field to the value that was provided on create.
+func (u *UserCredentialUpsertBulk) UpdateActivateToken() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateActivateToken()
+	})
+}
+
+// ClearActivateToken clears the value of the "activate_token" field.
+func (u *UserCredentialUpsertBulk) ClearActivateToken() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearActivateToken()
+	})
+}
+
+// SetResetToken sets the "reset_token" field.
+func (u *UserCredentialUpsertBulk) SetResetToken(v string) *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.SetResetToken(v)
+	})
+}
+
+// UpdateResetToken sets the "reset_token" field to the value that was provided on create.
+func (u *UserCredentialUpsertBulk) UpdateResetToken() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.UpdateResetToken()
+	})
+}
+
+// ClearResetToken clears the value of the "reset_token" field.
+func (u *UserCredentialUpsertBulk) ClearResetToken() *UserCredentialUpsertBulk {
+	return u.Update(func(s *UserCredentialUpsert) {
+		s.ClearResetToken()
+	})
+}
+
+// Exec executes the query.
+func (u *UserCredentialUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the UserCredentialCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for UserCredentialCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *UserCredentialUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

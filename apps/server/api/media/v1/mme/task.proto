@@ -1,0 +1,139 @@
+syntax = "proto3";
+
+package media.mme.v1;
+
+// go_package 由 buf managed (go_package_prefix: framework/api/gen/go) 注入，勿手写。
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "pagination/v1/pagination.proto";
+
+// ============================================================================
+// ④ MME 加工任务服务（文档 04-MME §8.2 REST 契约）。
+// 覆盖：任务 CRUD（URL/本地）、手工 EDL 高光、分析触发、ZIP 导出入口、doctor 体检。
+// 枚举字段一律 string（跨系统契约纪律，禁止 proto enum 承载）。
+// ============================================================================
+
+service MmeTaskService {
+  // 任务列表（分页，formValues 走 query）
+  rpc List(pagination.PagingRequest) returns (ListMontageTasksResponse) {
+    option (google.api.http) = { get: "/api/v1/media/mme/tasks" };
+  }
+  // 任务详情（含素材信息与高光）
+  rpc Get(GetMontageTaskRequest) returns (MontageTask) {
+    option (google.api.http) = { get: "/api/v1/media/mme/tasks/{id}" };
+  }
+  // 创建任务（source_type=url 时走 yt-dlp 下载；=local 时复制本地文件入库）
+  rpc Create(CreateMontageTaskRequest) returns (MontageTask) {
+    option (google.api.http) = {
+      post: "/api/v1/media/mme/tasks"
+      body: "*"
+    };
+  }
+  // 删除任务（不删 Asset 底片，引用计数 -1）
+  rpc Delete(GetMontageTaskRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = { delete: "/api/v1/media/mme/tasks/{id}" };
+  }
+  // 高光候选列表（B 维度内容版本来源；origin=manual|auto）
+  rpc ListHighlights(GetMontageTaskRequest) returns (ListHighlightsResponse) {
+    option (google.api.http) = { get: "/api/v1/media/mme/tasks/{id}/highlights" };
+  }
+  // 全量覆盖手工 EDL（无 AI 时的内容版本入口）
+  rpc UpsertHighlights(UpsertHighlightsRequest) returns (ListHighlightsResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/media/mme/tasks/{id}/highlights"
+      body: "*"
+    };
+  }
+  // 触发分析（ASR → 章节/高光）；缺依赖时返回 MME_ASR_FAIL / MME_LLM_UNAVAILABLE
+  rpc Analyze(GetMontageTaskRequest) returns (MontageTask) {
+    option (google.api.http) = {
+      post: "/api/v1/media/mme/tasks/{id}:analyze"
+      body: "*"
+    };
+  }
+  // 基础设施体检：ffmpeg/ffprobe/yt-dlp/python/whisper/ollama/磁盘（文档 W1 门禁）
+  rpc Doctor(google.protobuf.Empty) returns (DoctorReport) {
+    option (google.api.http) = { get: "/api/v1/media/mme/doctor" };
+  }
+}
+
+// MontageTask 加工任务（Ent mme_montage_tasks 的 API 视图）。
+message MontageTask {
+  string id = 1;              // task_id，task_ 前缀
+  string title = 2;
+  string source_type = 3;     // url | local | intel | candidate
+  string source_ref = 4;      // URL / 本地路径 / asset://
+  string candidate_id = 5;    // 回指 ② TT 选题，可空
+  string intel_id = 6;        // 回指 ① IC 情报，可空
+  string asset_id = 7;        // 去重后的素材 as_
+  string user_intent = 8;     // M1-06 用户意图
+  string state = 9;           // created/downloading/downloaded/transcribing/analyzing/expanded/rendering/reviewing/done/failed
+  string prompt_version = 10; // 分析提示词版本（缓存 key 组成）
+  string asr_engine = 11;     // source_subtitle | whisper | funasr | cloud
+  string error_msg = 12;      // 可读错误（下载/分析失败原因）
+  string created_at = 13;     // RFC3339 UTC
+  string updated_at = 14;
+  AssetInfo asset = 15;       // 关联素材（可空）
+}
+
+// AssetInfo 素材去重库条目（FR-MIX-07）。
+message AssetInfo {
+  string asset_id = 1;
+  string source_url = 2;
+  double duration_sec = 3;
+  int32 width = 4;
+  int32 height = 5;
+  int64 size_bytes = 6;
+  int32 ref_count = 7;
+  string fingerprint = 8;
+}
+
+// HighlightCandidate 高光候选 / 内容版本（B 维度）。
+message HighlightCandidate {
+  string id = 1;        // h_ 前缀（手工）或分析产物 id
+  string label = 2;     // 「高光1」等展示名
+  double start_sec = 3;
+  double end_sec = 4;
+  string note = 5;      // 一句话说明（标题/要点）
+  string origin = 6;    // manual | auto
+}
+
+message CreateMontageTaskRequest {
+  string title = 1;
+  string source_type = 2; // url | local
+  string source_ref = 3;  // URL 或本机文件路径
+  string user_intent = 4;
+}
+
+message ListMontageTasksResponse {
+  repeated MontageTask items = 1;
+  uint32 total = 2;
+}
+
+message GetMontageTaskRequest {
+  string id = 1; // task_id
+}
+
+message ListHighlightsResponse {
+  repeated HighlightCandidate items = 1;
+}
+
+message UpsertHighlightsRequest {
+  string id = 1; // task_id（路径参数）
+  repeated HighlightCandidate items = 2;
+}
+
+// DoctorReport 基础设施体检结果（缺依赖必须诚实红标，UI 展示）。
+message DoctorReport {
+  bool ready = 1; // 关键依赖（ffmpeg/ffprobe/yt-dlp）是否齐备
+  repeated DoctorItem items = 2;
+}
+
+message DoctorItem {
+  string name = 1;     // ffmpeg / ffprobe / yt-dlp / python / whisper / ollama / disk / media_dir
+  bool ok = 2;
+  bool required = 3;   // 关键依赖（缺失则渲染链路不可用）
+  string version = 4;  // 探测到的版本号（未知为空）
+  string detail = 5;   // 可读建议（如「winget install --id Gyan.FFmpeg -e」）
+}

@@ -4,10 +4,12 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"framework/app/admin/internal/data/ent/tenant"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -17,6 +19,7 @@ type TenantCreate struct {
 	config
 	mutation *TenantMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -291,6 +294,7 @@ func (_c *TenantCreate) createSpec() (*Tenant, *sqlgraph.CreateSpec) {
 		_node = &Tenant{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(tenant.Table, sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -346,11 +350,613 @@ func (_c *TenantCreate) createSpec() (*Tenant, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Tenant.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.TenantUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *TenantCreate) OnConflict(opts ...sql.ConflictOption) *TenantUpsertOne {
+	_c.conflict = opts
+	return &TenantUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Tenant.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *TenantCreate) OnConflictColumns(columns ...string) *TenantUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &TenantUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// TenantUpsertOne is the builder for "upsert"-ing
+	//  one Tenant node.
+	TenantUpsertOne struct {
+		create *TenantCreate
+	}
+
+	// TenantUpsert is the "OnConflict" setter.
+	TenantUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *TenantUpsert) SetUpdateTime(v time.Time) *TenantUpsert {
+	u.Set(tenant.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *TenantUpsert) UpdateUpdateTime() *TenantUpsert {
+	u.SetExcluded(tenant.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *TenantUpsert) ClearUpdateTime() *TenantUpsert {
+	u.SetNull(tenant.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *TenantUpsert) SetDeleteTime(v time.Time) *TenantUpsert {
+	u.Set(tenant.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *TenantUpsert) UpdateDeleteTime() *TenantUpsert {
+	u.SetExcluded(tenant.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *TenantUpsert) ClearDeleteTime() *TenantUpsert {
+	u.SetNull(tenant.FieldDeleteTime)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *TenantUpsert) SetStatus(v tenant.Status) *TenantUpsert {
+	u.Set(tenant.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *TenantUpsert) UpdateStatus() *TenantUpsert {
+	u.SetExcluded(tenant.FieldStatus)
+	return u
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *TenantUpsert) ClearStatus() *TenantUpsert {
+	u.SetNull(tenant.FieldStatus)
+	return u
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *TenantUpsert) SetCreateBy(v uint32) *TenantUpsert {
+	u.Set(tenant.FieldCreateBy, v)
+	return u
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *TenantUpsert) UpdateCreateBy() *TenantUpsert {
+	u.SetExcluded(tenant.FieldCreateBy)
+	return u
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *TenantUpsert) AddCreateBy(v uint32) *TenantUpsert {
+	u.Add(tenant.FieldCreateBy, v)
+	return u
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *TenantUpsert) ClearCreateBy() *TenantUpsert {
+	u.SetNull(tenant.FieldCreateBy)
+	return u
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *TenantUpsert) SetUpdateBy(v uint32) *TenantUpsert {
+	u.Set(tenant.FieldUpdateBy, v)
+	return u
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *TenantUpsert) UpdateUpdateBy() *TenantUpsert {
+	u.SetExcluded(tenant.FieldUpdateBy)
+	return u
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *TenantUpsert) AddUpdateBy(v uint32) *TenantUpsert {
+	u.Add(tenant.FieldUpdateBy, v)
+	return u
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *TenantUpsert) ClearUpdateBy() *TenantUpsert {
+	u.SetNull(tenant.FieldUpdateBy)
+	return u
+}
+
+// SetRemark sets the "remark" field.
+func (u *TenantUpsert) SetRemark(v string) *TenantUpsert {
+	u.Set(tenant.FieldRemark, v)
+	return u
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *TenantUpsert) UpdateRemark() *TenantUpsert {
+	u.SetExcluded(tenant.FieldRemark)
+	return u
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *TenantUpsert) ClearRemark() *TenantUpsert {
+	u.SetNull(tenant.FieldRemark)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *TenantUpsert) SetName(v string) *TenantUpsert {
+	u.Set(tenant.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *TenantUpsert) UpdateName() *TenantUpsert {
+	u.SetExcluded(tenant.FieldName)
+	return u
+}
+
+// ClearName clears the value of the "name" field.
+func (u *TenantUpsert) ClearName() *TenantUpsert {
+	u.SetNull(tenant.FieldName)
+	return u
+}
+
+// SetCode sets the "code" field.
+func (u *TenantUpsert) SetCode(v string) *TenantUpsert {
+	u.Set(tenant.FieldCode, v)
+	return u
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *TenantUpsert) UpdateCode() *TenantUpsert {
+	u.SetExcluded(tenant.FieldCode)
+	return u
+}
+
+// ClearCode clears the value of the "code" field.
+func (u *TenantUpsert) ClearCode() *TenantUpsert {
+	u.SetNull(tenant.FieldCode)
+	return u
+}
+
+// SetMemberCount sets the "member_count" field.
+func (u *TenantUpsert) SetMemberCount(v int32) *TenantUpsert {
+	u.Set(tenant.FieldMemberCount, v)
+	return u
+}
+
+// UpdateMemberCount sets the "member_count" field to the value that was provided on create.
+func (u *TenantUpsert) UpdateMemberCount() *TenantUpsert {
+	u.SetExcluded(tenant.FieldMemberCount)
+	return u
+}
+
+// AddMemberCount adds v to the "member_count" field.
+func (u *TenantUpsert) AddMemberCount(v int32) *TenantUpsert {
+	u.Add(tenant.FieldMemberCount, v)
+	return u
+}
+
+// ClearMemberCount clears the value of the "member_count" field.
+func (u *TenantUpsert) ClearMemberCount() *TenantUpsert {
+	u.SetNull(tenant.FieldMemberCount)
+	return u
+}
+
+// SetSubscriptionAt sets the "subscription_at" field.
+func (u *TenantUpsert) SetSubscriptionAt(v time.Time) *TenantUpsert {
+	u.Set(tenant.FieldSubscriptionAt, v)
+	return u
+}
+
+// UpdateSubscriptionAt sets the "subscription_at" field to the value that was provided on create.
+func (u *TenantUpsert) UpdateSubscriptionAt() *TenantUpsert {
+	u.SetExcluded(tenant.FieldSubscriptionAt)
+	return u
+}
+
+// ClearSubscriptionAt clears the value of the "subscription_at" field.
+func (u *TenantUpsert) ClearSubscriptionAt() *TenantUpsert {
+	u.SetNull(tenant.FieldSubscriptionAt)
+	return u
+}
+
+// SetUnsubscribeAt sets the "unsubscribe_at" field.
+func (u *TenantUpsert) SetUnsubscribeAt(v time.Time) *TenantUpsert {
+	u.Set(tenant.FieldUnsubscribeAt, v)
+	return u
+}
+
+// UpdateUnsubscribeAt sets the "unsubscribe_at" field to the value that was provided on create.
+func (u *TenantUpsert) UpdateUnsubscribeAt() *TenantUpsert {
+	u.SetExcluded(tenant.FieldUnsubscribeAt)
+	return u
+}
+
+// ClearUnsubscribeAt clears the value of the "unsubscribe_at" field.
+func (u *TenantUpsert) ClearUnsubscribeAt() *TenantUpsert {
+	u.SetNull(tenant.FieldUnsubscribeAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Tenant.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(tenant.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *TenantUpsertOne) UpdateNewValues() *TenantUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(tenant.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(tenant.FieldCreateTime)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Tenant.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *TenantUpsertOne) Ignore() *TenantUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *TenantUpsertOne) DoNothing() *TenantUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the TenantCreate.OnConflict
+// documentation for more info.
+func (u *TenantUpsertOne) Update(set func(*TenantUpsert)) *TenantUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&TenantUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *TenantUpsertOne) SetUpdateTime(v time.Time) *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *TenantUpsertOne) UpdateUpdateTime() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *TenantUpsertOne) ClearUpdateTime() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *TenantUpsertOne) SetDeleteTime(v time.Time) *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *TenantUpsertOne) UpdateDeleteTime() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *TenantUpsertOne) ClearDeleteTime() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *TenantUpsertOne) SetStatus(v tenant.Status) *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *TenantUpsertOne) UpdateStatus() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *TenantUpsertOne) ClearStatus() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *TenantUpsertOne) SetCreateBy(v uint32) *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *TenantUpsertOne) AddCreateBy(v uint32) *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *TenantUpsertOne) UpdateCreateBy() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *TenantUpsertOne) ClearCreateBy() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *TenantUpsertOne) SetUpdateBy(v uint32) *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *TenantUpsertOne) AddUpdateBy(v uint32) *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *TenantUpsertOne) UpdateUpdateBy() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *TenantUpsertOne) ClearUpdateBy() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetRemark sets the "remark" field.
+func (u *TenantUpsertOne) SetRemark(v string) *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetRemark(v)
+	})
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *TenantUpsertOne) UpdateRemark() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateRemark()
+	})
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *TenantUpsertOne) ClearRemark() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearRemark()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *TenantUpsertOne) SetName(v string) *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *TenantUpsertOne) UpdateName() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateName()
+	})
+}
+
+// ClearName clears the value of the "name" field.
+func (u *TenantUpsertOne) ClearName() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearName()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *TenantUpsertOne) SetCode(v string) *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *TenantUpsertOne) UpdateCode() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateCode()
+	})
+}
+
+// ClearCode clears the value of the "code" field.
+func (u *TenantUpsertOne) ClearCode() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearCode()
+	})
+}
+
+// SetMemberCount sets the "member_count" field.
+func (u *TenantUpsertOne) SetMemberCount(v int32) *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetMemberCount(v)
+	})
+}
+
+// AddMemberCount adds v to the "member_count" field.
+func (u *TenantUpsertOne) AddMemberCount(v int32) *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.AddMemberCount(v)
+	})
+}
+
+// UpdateMemberCount sets the "member_count" field to the value that was provided on create.
+func (u *TenantUpsertOne) UpdateMemberCount() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateMemberCount()
+	})
+}
+
+// ClearMemberCount clears the value of the "member_count" field.
+func (u *TenantUpsertOne) ClearMemberCount() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearMemberCount()
+	})
+}
+
+// SetSubscriptionAt sets the "subscription_at" field.
+func (u *TenantUpsertOne) SetSubscriptionAt(v time.Time) *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetSubscriptionAt(v)
+	})
+}
+
+// UpdateSubscriptionAt sets the "subscription_at" field to the value that was provided on create.
+func (u *TenantUpsertOne) UpdateSubscriptionAt() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateSubscriptionAt()
+	})
+}
+
+// ClearSubscriptionAt clears the value of the "subscription_at" field.
+func (u *TenantUpsertOne) ClearSubscriptionAt() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearSubscriptionAt()
+	})
+}
+
+// SetUnsubscribeAt sets the "unsubscribe_at" field.
+func (u *TenantUpsertOne) SetUnsubscribeAt(v time.Time) *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetUnsubscribeAt(v)
+	})
+}
+
+// UpdateUnsubscribeAt sets the "unsubscribe_at" field to the value that was provided on create.
+func (u *TenantUpsertOne) UpdateUnsubscribeAt() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateUnsubscribeAt()
+	})
+}
+
+// ClearUnsubscribeAt clears the value of the "unsubscribe_at" field.
+func (u *TenantUpsertOne) ClearUnsubscribeAt() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearUnsubscribeAt()
+	})
+}
+
+// Exec executes the query.
+func (u *TenantUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for TenantCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *TenantUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *TenantUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *TenantUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // TenantCreateBulk is the builder for creating many Tenant entities in bulk.
 type TenantCreateBulk struct {
 	config
 	err      error
 	builders []*TenantCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Tenant entities in the database.
@@ -380,6 +986,7 @@ func (_c *TenantCreateBulk) Save(ctx context.Context) ([]*Tenant, error) {
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -430,6 +1037,375 @@ func (_c *TenantCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *TenantCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Tenant.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.TenantUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *TenantCreateBulk) OnConflict(opts ...sql.ConflictOption) *TenantUpsertBulk {
+	_c.conflict = opts
+	return &TenantUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Tenant.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *TenantCreateBulk) OnConflictColumns(columns ...string) *TenantUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &TenantUpsertBulk{
+		create: _c,
+	}
+}
+
+// TenantUpsertBulk is the builder for "upsert"-ing
+// a bulk of Tenant nodes.
+type TenantUpsertBulk struct {
+	create *TenantCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Tenant.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(tenant.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *TenantUpsertBulk) UpdateNewValues() *TenantUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(tenant.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(tenant.FieldCreateTime)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Tenant.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *TenantUpsertBulk) Ignore() *TenantUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *TenantUpsertBulk) DoNothing() *TenantUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the TenantCreateBulk.OnConflict
+// documentation for more info.
+func (u *TenantUpsertBulk) Update(set func(*TenantUpsert)) *TenantUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&TenantUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *TenantUpsertBulk) SetUpdateTime(v time.Time) *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *TenantUpsertBulk) UpdateUpdateTime() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *TenantUpsertBulk) ClearUpdateTime() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *TenantUpsertBulk) SetDeleteTime(v time.Time) *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *TenantUpsertBulk) UpdateDeleteTime() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *TenantUpsertBulk) ClearDeleteTime() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *TenantUpsertBulk) SetStatus(v tenant.Status) *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *TenantUpsertBulk) UpdateStatus() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *TenantUpsertBulk) ClearStatus() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *TenantUpsertBulk) SetCreateBy(v uint32) *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *TenantUpsertBulk) AddCreateBy(v uint32) *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *TenantUpsertBulk) UpdateCreateBy() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *TenantUpsertBulk) ClearCreateBy() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *TenantUpsertBulk) SetUpdateBy(v uint32) *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *TenantUpsertBulk) AddUpdateBy(v uint32) *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *TenantUpsertBulk) UpdateUpdateBy() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *TenantUpsertBulk) ClearUpdateBy() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetRemark sets the "remark" field.
+func (u *TenantUpsertBulk) SetRemark(v string) *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetRemark(v)
+	})
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *TenantUpsertBulk) UpdateRemark() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateRemark()
+	})
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *TenantUpsertBulk) ClearRemark() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearRemark()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *TenantUpsertBulk) SetName(v string) *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *TenantUpsertBulk) UpdateName() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateName()
+	})
+}
+
+// ClearName clears the value of the "name" field.
+func (u *TenantUpsertBulk) ClearName() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearName()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *TenantUpsertBulk) SetCode(v string) *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *TenantUpsertBulk) UpdateCode() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateCode()
+	})
+}
+
+// ClearCode clears the value of the "code" field.
+func (u *TenantUpsertBulk) ClearCode() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearCode()
+	})
+}
+
+// SetMemberCount sets the "member_count" field.
+func (u *TenantUpsertBulk) SetMemberCount(v int32) *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetMemberCount(v)
+	})
+}
+
+// AddMemberCount adds v to the "member_count" field.
+func (u *TenantUpsertBulk) AddMemberCount(v int32) *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.AddMemberCount(v)
+	})
+}
+
+// UpdateMemberCount sets the "member_count" field to the value that was provided on create.
+func (u *TenantUpsertBulk) UpdateMemberCount() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateMemberCount()
+	})
+}
+
+// ClearMemberCount clears the value of the "member_count" field.
+func (u *TenantUpsertBulk) ClearMemberCount() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearMemberCount()
+	})
+}
+
+// SetSubscriptionAt sets the "subscription_at" field.
+func (u *TenantUpsertBulk) SetSubscriptionAt(v time.Time) *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetSubscriptionAt(v)
+	})
+}
+
+// UpdateSubscriptionAt sets the "subscription_at" field to the value that was provided on create.
+func (u *TenantUpsertBulk) UpdateSubscriptionAt() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateSubscriptionAt()
+	})
+}
+
+// ClearSubscriptionAt clears the value of the "subscription_at" field.
+func (u *TenantUpsertBulk) ClearSubscriptionAt() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearSubscriptionAt()
+	})
+}
+
+// SetUnsubscribeAt sets the "unsubscribe_at" field.
+func (u *TenantUpsertBulk) SetUnsubscribeAt(v time.Time) *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetUnsubscribeAt(v)
+	})
+}
+
+// UpdateUnsubscribeAt sets the "unsubscribe_at" field to the value that was provided on create.
+func (u *TenantUpsertBulk) UpdateUnsubscribeAt() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateUnsubscribeAt()
+	})
+}
+
+// ClearUnsubscribeAt clears the value of the "unsubscribe_at" field.
+func (u *TenantUpsertBulk) ClearUnsubscribeAt() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearUnsubscribeAt()
+	})
+}
+
+// Exec executes the query.
+func (u *TenantUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the TenantCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for TenantCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *TenantUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

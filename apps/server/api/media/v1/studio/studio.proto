@@ -1,0 +1,164 @@
+syntax = "proto3";
+
+package media.studio.v1;
+
+// go_package 由 buf managed (go_package_prefix: framework/api/gen/go) 注入，勿手写。
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+// ============================================================================
+// media 服务（app/media）Studio API：任务工厂 + 引擎编排 + 环境体检。
+// 长任务权威进度不走本文件的消息轮询，而由裸端点承载（proto 无法表达）：
+//   GET /api/v1/media/jobs/{id}/events   （SSE，支持 ?after_seq=N 断线回放）
+//   GET /api/v1/media/ws/events          （WebSocket 轻量失效事件总线）
+//   GET /api/v1/media/artifacts/{job_id}/{name}（任务产物下载）
+// 三个裸端点均走与 admin 同密钥的 JWT（Header Authorization 或 ?token=）。
+// ============================================================================
+
+// ---------- 任务工厂 ----------
+
+service MediaJobsService {
+  // 提交任务（idempotency_key 幂等：重复提交返回既有任务）
+  rpc SubmitJob(SubmitJobRequest) returns (MediaJob) {
+    option (google.api.http) = { post: "/api/v1/media/studio/jobs" body: "*" };
+  }
+  // 任务列表（lane/state/type 过滤 + 分页）
+  rpc ListJobs(ListJobsRequest) returns (ListJobsResponse) {
+    option (google.api.http) = { get: "/api/v1/media/studio/jobs" };
+  }
+  // 任务详情（含进度/结果/错误与 queue_position）
+  rpc GetJob(JobIdRequest) returns (MediaJob) {
+    option (google.api.http) = { get: "/api/v1/media/studio/jobs/{id}" };
+  }
+  // 取消排队中/运行中的任务（运行中取消 = ctx cancel + 进程树终止）
+  rpc CancelJob(JobIdRequest) returns (MediaJob) {
+    option (google.api.http) = { post: "/api/v1/media/studio/jobs/{id}:cancel" body: "*" };
+  }
+  // 失败/已取消任务重试（attempt+1 重新入队）
+  rpc RetryJob(JobIdRequest) returns (MediaJob) {
+    option (google.api.http) = { post: "/api/v1/media/studio/jobs/{id}:retry" body: "*" };
+  }
+}
+
+// MediaJob 任务（media_jobs 表的 API 视图）。
+message MediaJob {
+  string id = 1;             // job_ 前缀
+  string lane = 2;           // infer | render | io
+  string type = 3;           // echo.synthesize | exec.probe | ...
+  string state = 4;          // queued | running | done | failed | cancelled
+  double progress = 5;       // 0–1
+  string payload_json = 6;
+  string result_json = 7;
+  string error_code = 8;
+  string error_msg = 9;
+  int32 attempt = 10;
+  string worker_id = 11;
+  string queued_at = 12;
+  string started_at = 13;
+  string finished_at = 14;
+  int32 queue_position = 15; // 仅 queued 时有意义（前面还有几个任务）
+  int64 last_seq = 16;       // 事件水位（SSE ?after_seq 的续传基准）
+}
+
+message SubmitJobRequest {
+  string lane = 1;             // 空则由服务端按 type 决定
+  string type = 2;             // 已注册 handler 名
+  string payload_json = 3;     // handler 自有载荷（JSON 对象字符串）
+  string idempotency_key = 4;  // 可选，唯一约束保证幂等
+}
+
+message ListJobsRequest {
+  uint32 page = 1;      // 1 起
+  uint32 page_size = 2; // 默认 20，上限 200
+  string state = 3;
+  string lane = 4;
+  string type = 5;
+}
+
+message ListJobsResponse {
+  repeated MediaJob items = 1;
+  uint32 total = 2;
+}
+
+message JobIdRequest {
+  string id = 1;
+}
+
+// ---------- 引擎编排 ----------
+
+service MediaEnginesService {
+  // 引擎清单（含可用性/路由状态/当前激活）
+  rpc ListEngines(google.protobuf.Empty) returns (ListEnginesResponse) {
+    option (google.api.http) = { get: "/api/v1/media/studio/engines" };
+  }
+  // 激活引擎；routing=unavailable 的引擎直接 400 拒绝（不静默降级）
+  rpc SelectEngine(SelectEngineRequest) returns (EngineView) {
+    option (google.api.http) = { post: "/api/v1/media/studio/engines/{id}:select" body: "*" };
+  }
+  // 引擎健康探针（真实跑一次可用性检查并计时）
+  rpc GetEngineHealth(JobIdRequest) returns (EngineHealth) {
+    option (google.api.http) = { get: "/api/v1/media/studio/engines/{id}/health" };
+  }
+}
+
+// EngineCaps 引擎声明式能力位（注册静态声明，不做运行时探测）。
+message EngineCaps {
+  repeated string gpu_compat = 1;  // cuda | rocm | metal | cpu 可执行环境
+  double min_vram_gb = 2;
+  bool supports_cloning = 3;
+  bool supports_emotion = 4;
+}
+
+message EngineView {
+  string id = 1;
+  string kind = 2;            // tts | asr | llm
+  string display_name = 3;
+  EngineCaps caps = 4;
+  bool available = 5;         // 引擎自述可用（is_available 语义）
+  string reason = 6;          // 不可用时的一句话稳定公开原因（内部诊断不外泄）
+  string routing = 7;         // accelerated | cpu_fallback | cpu_only | unavailable
+  string routing_notice = 8;  // cpu_fallback 时面向用户的提示
+  bool selected = 9;
+}
+
+message ListEnginesResponse {
+  repeated EngineView items = 1;
+  string active_id = 2;
+  string host_accel = 3;      // 宿主加速器探测结果：cuda | rocm | metal | none
+}
+
+message SelectEngineRequest {
+  string id = 1;
+}
+
+message EngineHealth {
+  string id = 1;
+  bool available = 2;
+  string reason = 3;
+  int64 latency_ms = 4;       // 本次可用性检查耗时
+  string routing = 5;
+}
+
+// ---------- 环境体检 ----------
+
+service MediaDoctorService {
+  // 可执行文件探测报告（ffmpeg/ffprobe/yt-dlp/python/ollama，按配置名单）
+  rpc GetDoctorReport(google.protobuf.Empty) returns (DoctorReport) {
+    option (google.api.http) = { get: "/api/v1/media/studio/doctor" };
+  }
+}
+
+message ProbeResult {
+  string name = 1;    // 配置项名（如 ffmpeg）
+  bool ok = 2;        // 找到且 --version 执行成功
+  string path = 3;    // 解析到的绝对路径
+  string version = 4; // 版本输出首行（截断）
+  string hint = 5;    // 失败时的修复指引
+}
+
+message DoctorReport {
+  repeated ProbeResult probes = 1;
+  string host_accel = 2;
+  string checked_at = 3;
+}

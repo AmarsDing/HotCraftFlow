@@ -9,6 +9,7 @@ import (
 	"framework/app/admin/internal/data/ent/storagelayer"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -18,6 +19,7 @@ type StorageLayerCreate struct {
 	config
 	mutation *StorageLayerMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -251,6 +253,7 @@ func (_c *StorageLayerCreate) createSpec() (*StorageLayer, *sqlgraph.CreateSpec)
 		_node = &StorageLayer{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(storagelayer.Table, sqlgraph.NewFieldSpec(storagelayer.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -294,11 +297,405 @@ func (_c *StorageLayerCreate) createSpec() (*StorageLayer, *sqlgraph.CreateSpec)
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.StorageLayer.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.StorageLayerUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *StorageLayerCreate) OnConflict(opts ...sql.ConflictOption) *StorageLayerUpsertOne {
+	_c.conflict = opts
+	return &StorageLayerUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.StorageLayer.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *StorageLayerCreate) OnConflictColumns(columns ...string) *StorageLayerUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &StorageLayerUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// StorageLayerUpsertOne is the builder for "upsert"-ing
+	//  one StorageLayer node.
+	StorageLayerUpsertOne struct {
+		create *StorageLayerCreate
+	}
+
+	// StorageLayerUpsert is the "OnConflict" setter.
+	StorageLayerUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *StorageLayerUpsert) SetUpdateTime(v time.Time) *StorageLayerUpsert {
+	u.Set(storagelayer.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *StorageLayerUpsert) UpdateUpdateTime() *StorageLayerUpsert {
+	u.SetExcluded(storagelayer.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *StorageLayerUpsert) ClearUpdateTime() *StorageLayerUpsert {
+	u.SetNull(storagelayer.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *StorageLayerUpsert) SetDeleteTime(v time.Time) *StorageLayerUpsert {
+	u.Set(storagelayer.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *StorageLayerUpsert) UpdateDeleteTime() *StorageLayerUpsert {
+	u.SetExcluded(storagelayer.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *StorageLayerUpsert) ClearDeleteTime() *StorageLayerUpsert {
+	u.SetNull(storagelayer.FieldDeleteTime)
+	return u
+}
+
+// SetBucket sets the "bucket" field.
+func (u *StorageLayerUpsert) SetBucket(v string) *StorageLayerUpsert {
+	u.Set(storagelayer.FieldBucket, v)
+	return u
+}
+
+// UpdateBucket sets the "bucket" field to the value that was provided on create.
+func (u *StorageLayerUpsert) UpdateBucket() *StorageLayerUpsert {
+	u.SetExcluded(storagelayer.FieldBucket)
+	return u
+}
+
+// SetObjectName sets the "object_name" field.
+func (u *StorageLayerUpsert) SetObjectName(v string) *StorageLayerUpsert {
+	u.Set(storagelayer.FieldObjectName, v)
+	return u
+}
+
+// UpdateObjectName sets the "object_name" field to the value that was provided on create.
+func (u *StorageLayerUpsert) UpdateObjectName() *StorageLayerUpsert {
+	u.SetExcluded(storagelayer.FieldObjectName)
+	return u
+}
+
+// SetLayer sets the "layer" field.
+func (u *StorageLayerUpsert) SetLayer(v string) *StorageLayerUpsert {
+	u.Set(storagelayer.FieldLayer, v)
+	return u
+}
+
+// UpdateLayer sets the "layer" field to the value that was provided on create.
+func (u *StorageLayerUpsert) UpdateLayer() *StorageLayerUpsert {
+	u.SetExcluded(storagelayer.FieldLayer)
+	return u
+}
+
+// SetMovedAt sets the "moved_at" field.
+func (u *StorageLayerUpsert) SetMovedAt(v time.Time) *StorageLayerUpsert {
+	u.Set(storagelayer.FieldMovedAt, v)
+	return u
+}
+
+// UpdateMovedAt sets the "moved_at" field to the value that was provided on create.
+func (u *StorageLayerUpsert) UpdateMovedAt() *StorageLayerUpsert {
+	u.SetExcluded(storagelayer.FieldMovedAt)
+	return u
+}
+
+// SetSizeBytes sets the "size_bytes" field.
+func (u *StorageLayerUpsert) SetSizeBytes(v int64) *StorageLayerUpsert {
+	u.Set(storagelayer.FieldSizeBytes, v)
+	return u
+}
+
+// UpdateSizeBytes sets the "size_bytes" field to the value that was provided on create.
+func (u *StorageLayerUpsert) UpdateSizeBytes() *StorageLayerUpsert {
+	u.SetExcluded(storagelayer.FieldSizeBytes)
+	return u
+}
+
+// AddSizeBytes adds v to the "size_bytes" field.
+func (u *StorageLayerUpsert) AddSizeBytes(v int64) *StorageLayerUpsert {
+	u.Add(storagelayer.FieldSizeBytes, v)
+	return u
+}
+
+// SetChecksum sets the "checksum" field.
+func (u *StorageLayerUpsert) SetChecksum(v string) *StorageLayerUpsert {
+	u.Set(storagelayer.FieldChecksum, v)
+	return u
+}
+
+// UpdateChecksum sets the "checksum" field to the value that was provided on create.
+func (u *StorageLayerUpsert) UpdateChecksum() *StorageLayerUpsert {
+	u.SetExcluded(storagelayer.FieldChecksum)
+	return u
+}
+
+// ClearChecksum clears the value of the "checksum" field.
+func (u *StorageLayerUpsert) ClearChecksum() *StorageLayerUpsert {
+	u.SetNull(storagelayer.FieldChecksum)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.StorageLayer.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(storagelayer.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *StorageLayerUpsertOne) UpdateNewValues() *StorageLayerUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(storagelayer.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(storagelayer.FieldCreateTime)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.StorageLayer.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *StorageLayerUpsertOne) Ignore() *StorageLayerUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *StorageLayerUpsertOne) DoNothing() *StorageLayerUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the StorageLayerCreate.OnConflict
+// documentation for more info.
+func (u *StorageLayerUpsertOne) Update(set func(*StorageLayerUpsert)) *StorageLayerUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&StorageLayerUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *StorageLayerUpsertOne) SetUpdateTime(v time.Time) *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *StorageLayerUpsertOne) UpdateUpdateTime() *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *StorageLayerUpsertOne) ClearUpdateTime() *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *StorageLayerUpsertOne) SetDeleteTime(v time.Time) *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *StorageLayerUpsertOne) UpdateDeleteTime() *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *StorageLayerUpsertOne) ClearDeleteTime() *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetBucket sets the "bucket" field.
+func (u *StorageLayerUpsertOne) SetBucket(v string) *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.SetBucket(v)
+	})
+}
+
+// UpdateBucket sets the "bucket" field to the value that was provided on create.
+func (u *StorageLayerUpsertOne) UpdateBucket() *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.UpdateBucket()
+	})
+}
+
+// SetObjectName sets the "object_name" field.
+func (u *StorageLayerUpsertOne) SetObjectName(v string) *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.SetObjectName(v)
+	})
+}
+
+// UpdateObjectName sets the "object_name" field to the value that was provided on create.
+func (u *StorageLayerUpsertOne) UpdateObjectName() *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.UpdateObjectName()
+	})
+}
+
+// SetLayer sets the "layer" field.
+func (u *StorageLayerUpsertOne) SetLayer(v string) *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.SetLayer(v)
+	})
+}
+
+// UpdateLayer sets the "layer" field to the value that was provided on create.
+func (u *StorageLayerUpsertOne) UpdateLayer() *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.UpdateLayer()
+	})
+}
+
+// SetMovedAt sets the "moved_at" field.
+func (u *StorageLayerUpsertOne) SetMovedAt(v time.Time) *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.SetMovedAt(v)
+	})
+}
+
+// UpdateMovedAt sets the "moved_at" field to the value that was provided on create.
+func (u *StorageLayerUpsertOne) UpdateMovedAt() *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.UpdateMovedAt()
+	})
+}
+
+// SetSizeBytes sets the "size_bytes" field.
+func (u *StorageLayerUpsertOne) SetSizeBytes(v int64) *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.SetSizeBytes(v)
+	})
+}
+
+// AddSizeBytes adds v to the "size_bytes" field.
+func (u *StorageLayerUpsertOne) AddSizeBytes(v int64) *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.AddSizeBytes(v)
+	})
+}
+
+// UpdateSizeBytes sets the "size_bytes" field to the value that was provided on create.
+func (u *StorageLayerUpsertOne) UpdateSizeBytes() *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.UpdateSizeBytes()
+	})
+}
+
+// SetChecksum sets the "checksum" field.
+func (u *StorageLayerUpsertOne) SetChecksum(v string) *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.SetChecksum(v)
+	})
+}
+
+// UpdateChecksum sets the "checksum" field to the value that was provided on create.
+func (u *StorageLayerUpsertOne) UpdateChecksum() *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.UpdateChecksum()
+	})
+}
+
+// ClearChecksum clears the value of the "checksum" field.
+func (u *StorageLayerUpsertOne) ClearChecksum() *StorageLayerUpsertOne {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.ClearChecksum()
+	})
+}
+
+// Exec executes the query.
+func (u *StorageLayerUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for StorageLayerCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *StorageLayerUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *StorageLayerUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *StorageLayerUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // StorageLayerCreateBulk is the builder for creating many StorageLayer entities in bulk.
 type StorageLayerCreateBulk struct {
 	config
 	err      error
 	builders []*StorageLayerCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the StorageLayer entities in the database.
@@ -328,6 +725,7 @@ func (_c *StorageLayerCreateBulk) Save(ctx context.Context) ([]*StorageLayer, er
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -378,6 +776,263 @@ func (_c *StorageLayerCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *StorageLayerCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.StorageLayer.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.StorageLayerUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *StorageLayerCreateBulk) OnConflict(opts ...sql.ConflictOption) *StorageLayerUpsertBulk {
+	_c.conflict = opts
+	return &StorageLayerUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.StorageLayer.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *StorageLayerCreateBulk) OnConflictColumns(columns ...string) *StorageLayerUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &StorageLayerUpsertBulk{
+		create: _c,
+	}
+}
+
+// StorageLayerUpsertBulk is the builder for "upsert"-ing
+// a bulk of StorageLayer nodes.
+type StorageLayerUpsertBulk struct {
+	create *StorageLayerCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.StorageLayer.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(storagelayer.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *StorageLayerUpsertBulk) UpdateNewValues() *StorageLayerUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(storagelayer.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(storagelayer.FieldCreateTime)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.StorageLayer.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *StorageLayerUpsertBulk) Ignore() *StorageLayerUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *StorageLayerUpsertBulk) DoNothing() *StorageLayerUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the StorageLayerCreateBulk.OnConflict
+// documentation for more info.
+func (u *StorageLayerUpsertBulk) Update(set func(*StorageLayerUpsert)) *StorageLayerUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&StorageLayerUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *StorageLayerUpsertBulk) SetUpdateTime(v time.Time) *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *StorageLayerUpsertBulk) UpdateUpdateTime() *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *StorageLayerUpsertBulk) ClearUpdateTime() *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *StorageLayerUpsertBulk) SetDeleteTime(v time.Time) *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *StorageLayerUpsertBulk) UpdateDeleteTime() *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *StorageLayerUpsertBulk) ClearDeleteTime() *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetBucket sets the "bucket" field.
+func (u *StorageLayerUpsertBulk) SetBucket(v string) *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.SetBucket(v)
+	})
+}
+
+// UpdateBucket sets the "bucket" field to the value that was provided on create.
+func (u *StorageLayerUpsertBulk) UpdateBucket() *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.UpdateBucket()
+	})
+}
+
+// SetObjectName sets the "object_name" field.
+func (u *StorageLayerUpsertBulk) SetObjectName(v string) *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.SetObjectName(v)
+	})
+}
+
+// UpdateObjectName sets the "object_name" field to the value that was provided on create.
+func (u *StorageLayerUpsertBulk) UpdateObjectName() *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.UpdateObjectName()
+	})
+}
+
+// SetLayer sets the "layer" field.
+func (u *StorageLayerUpsertBulk) SetLayer(v string) *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.SetLayer(v)
+	})
+}
+
+// UpdateLayer sets the "layer" field to the value that was provided on create.
+func (u *StorageLayerUpsertBulk) UpdateLayer() *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.UpdateLayer()
+	})
+}
+
+// SetMovedAt sets the "moved_at" field.
+func (u *StorageLayerUpsertBulk) SetMovedAt(v time.Time) *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.SetMovedAt(v)
+	})
+}
+
+// UpdateMovedAt sets the "moved_at" field to the value that was provided on create.
+func (u *StorageLayerUpsertBulk) UpdateMovedAt() *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.UpdateMovedAt()
+	})
+}
+
+// SetSizeBytes sets the "size_bytes" field.
+func (u *StorageLayerUpsertBulk) SetSizeBytes(v int64) *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.SetSizeBytes(v)
+	})
+}
+
+// AddSizeBytes adds v to the "size_bytes" field.
+func (u *StorageLayerUpsertBulk) AddSizeBytes(v int64) *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.AddSizeBytes(v)
+	})
+}
+
+// UpdateSizeBytes sets the "size_bytes" field to the value that was provided on create.
+func (u *StorageLayerUpsertBulk) UpdateSizeBytes() *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.UpdateSizeBytes()
+	})
+}
+
+// SetChecksum sets the "checksum" field.
+func (u *StorageLayerUpsertBulk) SetChecksum(v string) *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.SetChecksum(v)
+	})
+}
+
+// UpdateChecksum sets the "checksum" field to the value that was provided on create.
+func (u *StorageLayerUpsertBulk) UpdateChecksum() *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.UpdateChecksum()
+	})
+}
+
+// ClearChecksum clears the value of the "checksum" field.
+func (u *StorageLayerUpsertBulk) ClearChecksum() *StorageLayerUpsertBulk {
+	return u.Update(func(s *StorageLayerUpsert) {
+		s.ClearChecksum()
+	})
+}
+
+// Exec executes the query.
+func (u *StorageLayerUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the StorageLayerCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for StorageLayerCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *StorageLayerUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

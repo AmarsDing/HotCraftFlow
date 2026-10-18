@@ -47,6 +47,14 @@ var StreamDefs = []StreamDef{
 	// 断线补投 + 冷启动补窗，非历史存储（历史落 awos-pb awos_items）。awos.config.changed 为
 	// core NATS 瞬时广播，不入流。
 	{Name: "AWOS_DC", Subjects: []string{"awos.dc.>", "awos.quality.>"}, MaxAge: 30 * time.Minute},
+
+	// ---- 媒体矩阵域（HotCraftFlow 五子系统，契约 00-shared/01-data-contract.md §8.2）----
+	// MM_INTEL：① IC 原始片段与归一化产出（mm.intel.>），保留 90d。
+	// 生产者 IC；消费者 TT（全量 normalized）、MIA（C_market）、MME（B_material）、人工队列（blocked）。
+	{Name: "MM_INTEL", Subjects: []string{"mm.intel.>"}, MaxAge: 90 * 24 * time.Hour},
+	// MM_TREND：② TT 快照/突发/选题（mm.trend.>），保留 30d。
+	// 生产者 TT；消费者 TT 时序写入、推送服务、MME/MIA。
+	{Name: "MM_TREND", Subjects: []string{"mm.trend.>"}, MaxAge: 30 * 24 * time.Hour},
 }
 
 // ToNatsConfig 转为 nats.go StreamConfig（FileStorage + LimitsPolicy 全站统一）。

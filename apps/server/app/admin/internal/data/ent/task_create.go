@@ -4,11 +4,13 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	servicev1 "framework/api/gen/go/admin/v1"
 	"framework/app/admin/internal/data/ent/task"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -18,6 +20,7 @@ type TaskCreate struct {
 	config
 	mutation *TaskMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -296,6 +299,7 @@ func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		_node = &Task{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(task.Table, sqlgraph.NewFieldSpec(task.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -359,11 +363,642 @@ func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Task.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.TaskUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *TaskCreate) OnConflict(opts ...sql.ConflictOption) *TaskUpsertOne {
+	_c.conflict = opts
+	return &TaskUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Task.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *TaskCreate) OnConflictColumns(columns ...string) *TaskUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &TaskUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// TaskUpsertOne is the builder for "upsert"-ing
+	//  one Task node.
+	TaskUpsertOne struct {
+		create *TaskCreate
+	}
+
+	// TaskUpsert is the "OnConflict" setter.
+	TaskUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *TaskUpsert) SetUpdateTime(v time.Time) *TaskUpsert {
+	u.Set(task.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateUpdateTime() *TaskUpsert {
+	u.SetExcluded(task.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *TaskUpsert) ClearUpdateTime() *TaskUpsert {
+	u.SetNull(task.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *TaskUpsert) SetDeleteTime(v time.Time) *TaskUpsert {
+	u.Set(task.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateDeleteTime() *TaskUpsert {
+	u.SetExcluded(task.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *TaskUpsert) ClearDeleteTime() *TaskUpsert {
+	u.SetNull(task.FieldDeleteTime)
+	return u
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *TaskUpsert) SetCreateBy(v uint32) *TaskUpsert {
+	u.Set(task.FieldCreateBy, v)
+	return u
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateCreateBy() *TaskUpsert {
+	u.SetExcluded(task.FieldCreateBy)
+	return u
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *TaskUpsert) AddCreateBy(v uint32) *TaskUpsert {
+	u.Add(task.FieldCreateBy, v)
+	return u
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *TaskUpsert) ClearCreateBy() *TaskUpsert {
+	u.SetNull(task.FieldCreateBy)
+	return u
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *TaskUpsert) SetUpdateBy(v uint32) *TaskUpsert {
+	u.Set(task.FieldUpdateBy, v)
+	return u
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateUpdateBy() *TaskUpsert {
+	u.SetExcluded(task.FieldUpdateBy)
+	return u
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *TaskUpsert) AddUpdateBy(v uint32) *TaskUpsert {
+	u.Add(task.FieldUpdateBy, v)
+	return u
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *TaskUpsert) ClearUpdateBy() *TaskUpsert {
+	u.SetNull(task.FieldUpdateBy)
+	return u
+}
+
+// SetRemark sets the "remark" field.
+func (u *TaskUpsert) SetRemark(v string) *TaskUpsert {
+	u.Set(task.FieldRemark, v)
+	return u
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateRemark() *TaskUpsert {
+	u.SetExcluded(task.FieldRemark)
+	return u
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *TaskUpsert) ClearRemark() *TaskUpsert {
+	u.SetNull(task.FieldRemark)
+	return u
+}
+
+// SetType sets the "type" field.
+func (u *TaskUpsert) SetType(v task.Type) *TaskUpsert {
+	u.Set(task.FieldType, v)
+	return u
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateType() *TaskUpsert {
+	u.SetExcluded(task.FieldType)
+	return u
+}
+
+// ClearType clears the value of the "type" field.
+func (u *TaskUpsert) ClearType() *TaskUpsert {
+	u.SetNull(task.FieldType)
+	return u
+}
+
+// SetTypeName sets the "type_name" field.
+func (u *TaskUpsert) SetTypeName(v string) *TaskUpsert {
+	u.Set(task.FieldTypeName, v)
+	return u
+}
+
+// UpdateTypeName sets the "type_name" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateTypeName() *TaskUpsert {
+	u.SetExcluded(task.FieldTypeName)
+	return u
+}
+
+// ClearTypeName clears the value of the "type_name" field.
+func (u *TaskUpsert) ClearTypeName() *TaskUpsert {
+	u.SetNull(task.FieldTypeName)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *TaskUpsert) SetName(v string) *TaskUpsert {
+	u.Set(task.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateName() *TaskUpsert {
+	u.SetExcluded(task.FieldName)
+	return u
+}
+
+// ClearName clears the value of the "name" field.
+func (u *TaskUpsert) ClearName() *TaskUpsert {
+	u.SetNull(task.FieldName)
+	return u
+}
+
+// SetTaskPayload sets the "task_payload" field.
+func (u *TaskUpsert) SetTaskPayload(v string) *TaskUpsert {
+	u.Set(task.FieldTaskPayload, v)
+	return u
+}
+
+// UpdateTaskPayload sets the "task_payload" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateTaskPayload() *TaskUpsert {
+	u.SetExcluded(task.FieldTaskPayload)
+	return u
+}
+
+// ClearTaskPayload clears the value of the "task_payload" field.
+func (u *TaskUpsert) ClearTaskPayload() *TaskUpsert {
+	u.SetNull(task.FieldTaskPayload)
+	return u
+}
+
+// SetCronSpec sets the "cron_spec" field.
+func (u *TaskUpsert) SetCronSpec(v string) *TaskUpsert {
+	u.Set(task.FieldCronSpec, v)
+	return u
+}
+
+// UpdateCronSpec sets the "cron_spec" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateCronSpec() *TaskUpsert {
+	u.SetExcluded(task.FieldCronSpec)
+	return u
+}
+
+// ClearCronSpec clears the value of the "cron_spec" field.
+func (u *TaskUpsert) ClearCronSpec() *TaskUpsert {
+	u.SetNull(task.FieldCronSpec)
+	return u
+}
+
+// SetTaskOptions sets the "task_options" field.
+func (u *TaskUpsert) SetTaskOptions(v *servicev1.TaskOption) *TaskUpsert {
+	u.Set(task.FieldTaskOptions, v)
+	return u
+}
+
+// UpdateTaskOptions sets the "task_options" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateTaskOptions() *TaskUpsert {
+	u.SetExcluded(task.FieldTaskOptions)
+	return u
+}
+
+// ClearTaskOptions clears the value of the "task_options" field.
+func (u *TaskUpsert) ClearTaskOptions() *TaskUpsert {
+	u.SetNull(task.FieldTaskOptions)
+	return u
+}
+
+// SetEnable sets the "enable" field.
+func (u *TaskUpsert) SetEnable(v bool) *TaskUpsert {
+	u.Set(task.FieldEnable, v)
+	return u
+}
+
+// UpdateEnable sets the "enable" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateEnable() *TaskUpsert {
+	u.SetExcluded(task.FieldEnable)
+	return u
+}
+
+// ClearEnable clears the value of the "enable" field.
+func (u *TaskUpsert) ClearEnable() *TaskUpsert {
+	u.SetNull(task.FieldEnable)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Task.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(task.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *TaskUpsertOne) UpdateNewValues() *TaskUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(task.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(task.FieldCreateTime)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(task.FieldTenantID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Task.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *TaskUpsertOne) Ignore() *TaskUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *TaskUpsertOne) DoNothing() *TaskUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the TaskCreate.OnConflict
+// documentation for more info.
+func (u *TaskUpsertOne) Update(set func(*TaskUpsert)) *TaskUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&TaskUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *TaskUpsertOne) SetUpdateTime(v time.Time) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateUpdateTime() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *TaskUpsertOne) ClearUpdateTime() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *TaskUpsertOne) SetDeleteTime(v time.Time) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateDeleteTime() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *TaskUpsertOne) ClearDeleteTime() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *TaskUpsertOne) SetCreateBy(v uint32) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *TaskUpsertOne) AddCreateBy(v uint32) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateCreateBy() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *TaskUpsertOne) ClearCreateBy() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *TaskUpsertOne) SetUpdateBy(v uint32) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *TaskUpsertOne) AddUpdateBy(v uint32) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateUpdateBy() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *TaskUpsertOne) ClearUpdateBy() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetRemark sets the "remark" field.
+func (u *TaskUpsertOne) SetRemark(v string) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetRemark(v)
+	})
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateRemark() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateRemark()
+	})
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *TaskUpsertOne) ClearRemark() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearRemark()
+	})
+}
+
+// SetType sets the "type" field.
+func (u *TaskUpsertOne) SetType(v task.Type) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateType() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateType()
+	})
+}
+
+// ClearType clears the value of the "type" field.
+func (u *TaskUpsertOne) ClearType() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearType()
+	})
+}
+
+// SetTypeName sets the "type_name" field.
+func (u *TaskUpsertOne) SetTypeName(v string) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetTypeName(v)
+	})
+}
+
+// UpdateTypeName sets the "type_name" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateTypeName() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateTypeName()
+	})
+}
+
+// ClearTypeName clears the value of the "type_name" field.
+func (u *TaskUpsertOne) ClearTypeName() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearTypeName()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *TaskUpsertOne) SetName(v string) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateName() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateName()
+	})
+}
+
+// ClearName clears the value of the "name" field.
+func (u *TaskUpsertOne) ClearName() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearName()
+	})
+}
+
+// SetTaskPayload sets the "task_payload" field.
+func (u *TaskUpsertOne) SetTaskPayload(v string) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetTaskPayload(v)
+	})
+}
+
+// UpdateTaskPayload sets the "task_payload" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateTaskPayload() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateTaskPayload()
+	})
+}
+
+// ClearTaskPayload clears the value of the "task_payload" field.
+func (u *TaskUpsertOne) ClearTaskPayload() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearTaskPayload()
+	})
+}
+
+// SetCronSpec sets the "cron_spec" field.
+func (u *TaskUpsertOne) SetCronSpec(v string) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetCronSpec(v)
+	})
+}
+
+// UpdateCronSpec sets the "cron_spec" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateCronSpec() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateCronSpec()
+	})
+}
+
+// ClearCronSpec clears the value of the "cron_spec" field.
+func (u *TaskUpsertOne) ClearCronSpec() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearCronSpec()
+	})
+}
+
+// SetTaskOptions sets the "task_options" field.
+func (u *TaskUpsertOne) SetTaskOptions(v *servicev1.TaskOption) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetTaskOptions(v)
+	})
+}
+
+// UpdateTaskOptions sets the "task_options" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateTaskOptions() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateTaskOptions()
+	})
+}
+
+// ClearTaskOptions clears the value of the "task_options" field.
+func (u *TaskUpsertOne) ClearTaskOptions() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearTaskOptions()
+	})
+}
+
+// SetEnable sets the "enable" field.
+func (u *TaskUpsertOne) SetEnable(v bool) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetEnable(v)
+	})
+}
+
+// UpdateEnable sets the "enable" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateEnable() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateEnable()
+	})
+}
+
+// ClearEnable clears the value of the "enable" field.
+func (u *TaskUpsertOne) ClearEnable() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearEnable()
+	})
+}
+
+// Exec executes the query.
+func (u *TaskUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for TaskCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *TaskUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *TaskUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *TaskUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // TaskCreateBulk is the builder for creating many Task entities in bulk.
 type TaskCreateBulk struct {
 	config
 	err      error
 	builders []*TaskCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Task entities in the database.
@@ -392,6 +1027,7 @@ func (_c *TaskCreateBulk) Save(ctx context.Context) ([]*Task, error) {
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -442,6 +1078,392 @@ func (_c *TaskCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *TaskCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Task.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.TaskUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *TaskCreateBulk) OnConflict(opts ...sql.ConflictOption) *TaskUpsertBulk {
+	_c.conflict = opts
+	return &TaskUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Task.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *TaskCreateBulk) OnConflictColumns(columns ...string) *TaskUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &TaskUpsertBulk{
+		create: _c,
+	}
+}
+
+// TaskUpsertBulk is the builder for "upsert"-ing
+// a bulk of Task nodes.
+type TaskUpsertBulk struct {
+	create *TaskCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Task.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(task.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *TaskUpsertBulk) UpdateNewValues() *TaskUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(task.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(task.FieldCreateTime)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(task.FieldTenantID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Task.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *TaskUpsertBulk) Ignore() *TaskUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *TaskUpsertBulk) DoNothing() *TaskUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the TaskCreateBulk.OnConflict
+// documentation for more info.
+func (u *TaskUpsertBulk) Update(set func(*TaskUpsert)) *TaskUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&TaskUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *TaskUpsertBulk) SetUpdateTime(v time.Time) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateUpdateTime() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *TaskUpsertBulk) ClearUpdateTime() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *TaskUpsertBulk) SetDeleteTime(v time.Time) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateDeleteTime() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *TaskUpsertBulk) ClearDeleteTime() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *TaskUpsertBulk) SetCreateBy(v uint32) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *TaskUpsertBulk) AddCreateBy(v uint32) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateCreateBy() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *TaskUpsertBulk) ClearCreateBy() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *TaskUpsertBulk) SetUpdateBy(v uint32) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *TaskUpsertBulk) AddUpdateBy(v uint32) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateUpdateBy() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *TaskUpsertBulk) ClearUpdateBy() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetRemark sets the "remark" field.
+func (u *TaskUpsertBulk) SetRemark(v string) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetRemark(v)
+	})
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateRemark() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateRemark()
+	})
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *TaskUpsertBulk) ClearRemark() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearRemark()
+	})
+}
+
+// SetType sets the "type" field.
+func (u *TaskUpsertBulk) SetType(v task.Type) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateType() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateType()
+	})
+}
+
+// ClearType clears the value of the "type" field.
+func (u *TaskUpsertBulk) ClearType() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearType()
+	})
+}
+
+// SetTypeName sets the "type_name" field.
+func (u *TaskUpsertBulk) SetTypeName(v string) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetTypeName(v)
+	})
+}
+
+// UpdateTypeName sets the "type_name" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateTypeName() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateTypeName()
+	})
+}
+
+// ClearTypeName clears the value of the "type_name" field.
+func (u *TaskUpsertBulk) ClearTypeName() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearTypeName()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *TaskUpsertBulk) SetName(v string) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateName() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateName()
+	})
+}
+
+// ClearName clears the value of the "name" field.
+func (u *TaskUpsertBulk) ClearName() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearName()
+	})
+}
+
+// SetTaskPayload sets the "task_payload" field.
+func (u *TaskUpsertBulk) SetTaskPayload(v string) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetTaskPayload(v)
+	})
+}
+
+// UpdateTaskPayload sets the "task_payload" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateTaskPayload() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateTaskPayload()
+	})
+}
+
+// ClearTaskPayload clears the value of the "task_payload" field.
+func (u *TaskUpsertBulk) ClearTaskPayload() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearTaskPayload()
+	})
+}
+
+// SetCronSpec sets the "cron_spec" field.
+func (u *TaskUpsertBulk) SetCronSpec(v string) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetCronSpec(v)
+	})
+}
+
+// UpdateCronSpec sets the "cron_spec" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateCronSpec() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateCronSpec()
+	})
+}
+
+// ClearCronSpec clears the value of the "cron_spec" field.
+func (u *TaskUpsertBulk) ClearCronSpec() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearCronSpec()
+	})
+}
+
+// SetTaskOptions sets the "task_options" field.
+func (u *TaskUpsertBulk) SetTaskOptions(v *servicev1.TaskOption) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetTaskOptions(v)
+	})
+}
+
+// UpdateTaskOptions sets the "task_options" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateTaskOptions() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateTaskOptions()
+	})
+}
+
+// ClearTaskOptions clears the value of the "task_options" field.
+func (u *TaskUpsertBulk) ClearTaskOptions() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearTaskOptions()
+	})
+}
+
+// SetEnable sets the "enable" field.
+func (u *TaskUpsertBulk) SetEnable(v bool) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetEnable(v)
+	})
+}
+
+// UpdateEnable sets the "enable" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateEnable() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateEnable()
+	})
+}
+
+// ClearEnable clears the value of the "enable" field.
+func (u *TaskUpsertBulk) ClearEnable() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearEnable()
+	})
+}
+
+// Exec executes the query.
+func (u *TaskUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the TaskCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for TaskCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *TaskUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

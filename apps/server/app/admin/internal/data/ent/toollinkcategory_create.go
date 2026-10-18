@@ -4,10 +4,12 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"framework/app/admin/internal/data/ent/toollinkcategory"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -17,6 +19,7 @@ type ToolLinkCategoryCreate struct {
 	config
 	mutation *ToolLinkCategoryMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -268,6 +271,7 @@ func (_c *ToolLinkCategoryCreate) createSpec() (*ToolLinkCategory, *sqlgraph.Cre
 		_node = &ToolLinkCategory{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(toollinkcategory.Table, sqlgraph.NewFieldSpec(toollinkcategory.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -315,11 +319,535 @@ func (_c *ToolLinkCategoryCreate) createSpec() (*ToolLinkCategory, *sqlgraph.Cre
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ToolLinkCategory.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ToolLinkCategoryUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ToolLinkCategoryCreate) OnConflict(opts ...sql.ConflictOption) *ToolLinkCategoryUpsertOne {
+	_c.conflict = opts
+	return &ToolLinkCategoryUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ToolLinkCategory.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ToolLinkCategoryCreate) OnConflictColumns(columns ...string) *ToolLinkCategoryUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ToolLinkCategoryUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// ToolLinkCategoryUpsertOne is the builder for "upsert"-ing
+	//  one ToolLinkCategory node.
+	ToolLinkCategoryUpsertOne struct {
+		create *ToolLinkCategoryCreate
+	}
+
+	// ToolLinkCategoryUpsert is the "OnConflict" setter.
+	ToolLinkCategoryUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ToolLinkCategoryUpsert) SetUpdateTime(v time.Time) *ToolLinkCategoryUpsert {
+	u.Set(toollinkcategory.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsert) UpdateUpdateTime() *ToolLinkCategoryUpsert {
+	u.SetExcluded(toollinkcategory.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *ToolLinkCategoryUpsert) ClearUpdateTime() *ToolLinkCategoryUpsert {
+	u.SetNull(toollinkcategory.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *ToolLinkCategoryUpsert) SetDeleteTime(v time.Time) *ToolLinkCategoryUpsert {
+	u.Set(toollinkcategory.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsert) UpdateDeleteTime() *ToolLinkCategoryUpsert {
+	u.SetExcluded(toollinkcategory.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *ToolLinkCategoryUpsert) ClearDeleteTime() *ToolLinkCategoryUpsert {
+	u.SetNull(toollinkcategory.FieldDeleteTime)
+	return u
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *ToolLinkCategoryUpsert) SetCreateBy(v uint32) *ToolLinkCategoryUpsert {
+	u.Set(toollinkcategory.FieldCreateBy, v)
+	return u
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsert) UpdateCreateBy() *ToolLinkCategoryUpsert {
+	u.SetExcluded(toollinkcategory.FieldCreateBy)
+	return u
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *ToolLinkCategoryUpsert) AddCreateBy(v uint32) *ToolLinkCategoryUpsert {
+	u.Add(toollinkcategory.FieldCreateBy, v)
+	return u
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *ToolLinkCategoryUpsert) ClearCreateBy() *ToolLinkCategoryUpsert {
+	u.SetNull(toollinkcategory.FieldCreateBy)
+	return u
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *ToolLinkCategoryUpsert) SetUpdateBy(v uint32) *ToolLinkCategoryUpsert {
+	u.Set(toollinkcategory.FieldUpdateBy, v)
+	return u
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsert) UpdateUpdateBy() *ToolLinkCategoryUpsert {
+	u.SetExcluded(toollinkcategory.FieldUpdateBy)
+	return u
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *ToolLinkCategoryUpsert) AddUpdateBy(v uint32) *ToolLinkCategoryUpsert {
+	u.Add(toollinkcategory.FieldUpdateBy, v)
+	return u
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *ToolLinkCategoryUpsert) ClearUpdateBy() *ToolLinkCategoryUpsert {
+	u.SetNull(toollinkcategory.FieldUpdateBy)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *ToolLinkCategoryUpsert) SetStatus(v toollinkcategory.Status) *ToolLinkCategoryUpsert {
+	u.Set(toollinkcategory.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsert) UpdateStatus() *ToolLinkCategoryUpsert {
+	u.SetExcluded(toollinkcategory.FieldStatus)
+	return u
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *ToolLinkCategoryUpsert) ClearStatus() *ToolLinkCategoryUpsert {
+	u.SetNull(toollinkcategory.FieldStatus)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *ToolLinkCategoryUpsert) SetName(v string) *ToolLinkCategoryUpsert {
+	u.Set(toollinkcategory.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsert) UpdateName() *ToolLinkCategoryUpsert {
+	u.SetExcluded(toollinkcategory.FieldName)
+	return u
+}
+
+// ClearName clears the value of the "name" field.
+func (u *ToolLinkCategoryUpsert) ClearName() *ToolLinkCategoryUpsert {
+	u.SetNull(toollinkcategory.FieldName)
+	return u
+}
+
+// SetIcon sets the "icon" field.
+func (u *ToolLinkCategoryUpsert) SetIcon(v string) *ToolLinkCategoryUpsert {
+	u.Set(toollinkcategory.FieldIcon, v)
+	return u
+}
+
+// UpdateIcon sets the "icon" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsert) UpdateIcon() *ToolLinkCategoryUpsert {
+	u.SetExcluded(toollinkcategory.FieldIcon)
+	return u
+}
+
+// ClearIcon clears the value of the "icon" field.
+func (u *ToolLinkCategoryUpsert) ClearIcon() *ToolLinkCategoryUpsert {
+	u.SetNull(toollinkcategory.FieldIcon)
+	return u
+}
+
+// SetDescription sets the "description" field.
+func (u *ToolLinkCategoryUpsert) SetDescription(v string) *ToolLinkCategoryUpsert {
+	u.Set(toollinkcategory.FieldDescription, v)
+	return u
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsert) UpdateDescription() *ToolLinkCategoryUpsert {
+	u.SetExcluded(toollinkcategory.FieldDescription)
+	return u
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *ToolLinkCategoryUpsert) ClearDescription() *ToolLinkCategoryUpsert {
+	u.SetNull(toollinkcategory.FieldDescription)
+	return u
+}
+
+// SetSort sets the "sort" field.
+func (u *ToolLinkCategoryUpsert) SetSort(v int32) *ToolLinkCategoryUpsert {
+	u.Set(toollinkcategory.FieldSort, v)
+	return u
+}
+
+// UpdateSort sets the "sort" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsert) UpdateSort() *ToolLinkCategoryUpsert {
+	u.SetExcluded(toollinkcategory.FieldSort)
+	return u
+}
+
+// AddSort adds v to the "sort" field.
+func (u *ToolLinkCategoryUpsert) AddSort(v int32) *ToolLinkCategoryUpsert {
+	u.Add(toollinkcategory.FieldSort, v)
+	return u
+}
+
+// ClearSort clears the value of the "sort" field.
+func (u *ToolLinkCategoryUpsert) ClearSort() *ToolLinkCategoryUpsert {
+	u.SetNull(toollinkcategory.FieldSort)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.ToolLinkCategory.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(toollinkcategory.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ToolLinkCategoryUpsertOne) UpdateNewValues() *ToolLinkCategoryUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(toollinkcategory.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(toollinkcategory.FieldCreateTime)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ToolLinkCategory.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *ToolLinkCategoryUpsertOne) Ignore() *ToolLinkCategoryUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ToolLinkCategoryUpsertOne) DoNothing() *ToolLinkCategoryUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ToolLinkCategoryCreate.OnConflict
+// documentation for more info.
+func (u *ToolLinkCategoryUpsertOne) Update(set func(*ToolLinkCategoryUpsert)) *ToolLinkCategoryUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ToolLinkCategoryUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ToolLinkCategoryUpsertOne) SetUpdateTime(v time.Time) *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertOne) UpdateUpdateTime() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *ToolLinkCategoryUpsertOne) ClearUpdateTime() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *ToolLinkCategoryUpsertOne) SetDeleteTime(v time.Time) *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertOne) UpdateDeleteTime() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *ToolLinkCategoryUpsertOne) ClearDeleteTime() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *ToolLinkCategoryUpsertOne) SetCreateBy(v uint32) *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *ToolLinkCategoryUpsertOne) AddCreateBy(v uint32) *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertOne) UpdateCreateBy() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *ToolLinkCategoryUpsertOne) ClearCreateBy() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *ToolLinkCategoryUpsertOne) SetUpdateBy(v uint32) *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *ToolLinkCategoryUpsertOne) AddUpdateBy(v uint32) *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertOne) UpdateUpdateBy() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *ToolLinkCategoryUpsertOne) ClearUpdateBy() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *ToolLinkCategoryUpsertOne) SetStatus(v toollinkcategory.Status) *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertOne) UpdateStatus() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *ToolLinkCategoryUpsertOne) ClearStatus() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *ToolLinkCategoryUpsertOne) SetName(v string) *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertOne) UpdateName() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateName()
+	})
+}
+
+// ClearName clears the value of the "name" field.
+func (u *ToolLinkCategoryUpsertOne) ClearName() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearName()
+	})
+}
+
+// SetIcon sets the "icon" field.
+func (u *ToolLinkCategoryUpsertOne) SetIcon(v string) *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetIcon(v)
+	})
+}
+
+// UpdateIcon sets the "icon" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertOne) UpdateIcon() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateIcon()
+	})
+}
+
+// ClearIcon clears the value of the "icon" field.
+func (u *ToolLinkCategoryUpsertOne) ClearIcon() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearIcon()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *ToolLinkCategoryUpsertOne) SetDescription(v string) *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertOne) UpdateDescription() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *ToolLinkCategoryUpsertOne) ClearDescription() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetSort sets the "sort" field.
+func (u *ToolLinkCategoryUpsertOne) SetSort(v int32) *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetSort(v)
+	})
+}
+
+// AddSort adds v to the "sort" field.
+func (u *ToolLinkCategoryUpsertOne) AddSort(v int32) *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.AddSort(v)
+	})
+}
+
+// UpdateSort sets the "sort" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertOne) UpdateSort() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateSort()
+	})
+}
+
+// ClearSort clears the value of the "sort" field.
+func (u *ToolLinkCategoryUpsertOne) ClearSort() *ToolLinkCategoryUpsertOne {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearSort()
+	})
+}
+
+// Exec executes the query.
+func (u *ToolLinkCategoryUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ToolLinkCategoryCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ToolLinkCategoryUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *ToolLinkCategoryUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *ToolLinkCategoryUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // ToolLinkCategoryCreateBulk is the builder for creating many ToolLinkCategory entities in bulk.
 type ToolLinkCategoryCreateBulk struct {
 	config
 	err      error
 	builders []*ToolLinkCategoryCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the ToolLinkCategory entities in the database.
@@ -349,6 +877,7 @@ func (_c *ToolLinkCategoryCreateBulk) Save(ctx context.Context) ([]*ToolLinkCate
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -399,6 +928,333 @@ func (_c *ToolLinkCategoryCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *ToolLinkCategoryCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ToolLinkCategory.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ToolLinkCategoryUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ToolLinkCategoryCreateBulk) OnConflict(opts ...sql.ConflictOption) *ToolLinkCategoryUpsertBulk {
+	_c.conflict = opts
+	return &ToolLinkCategoryUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ToolLinkCategory.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ToolLinkCategoryCreateBulk) OnConflictColumns(columns ...string) *ToolLinkCategoryUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ToolLinkCategoryUpsertBulk{
+		create: _c,
+	}
+}
+
+// ToolLinkCategoryUpsertBulk is the builder for "upsert"-ing
+// a bulk of ToolLinkCategory nodes.
+type ToolLinkCategoryUpsertBulk struct {
+	create *ToolLinkCategoryCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.ToolLinkCategory.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(toollinkcategory.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ToolLinkCategoryUpsertBulk) UpdateNewValues() *ToolLinkCategoryUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(toollinkcategory.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(toollinkcategory.FieldCreateTime)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ToolLinkCategory.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *ToolLinkCategoryUpsertBulk) Ignore() *ToolLinkCategoryUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ToolLinkCategoryUpsertBulk) DoNothing() *ToolLinkCategoryUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ToolLinkCategoryCreateBulk.OnConflict
+// documentation for more info.
+func (u *ToolLinkCategoryUpsertBulk) Update(set func(*ToolLinkCategoryUpsert)) *ToolLinkCategoryUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ToolLinkCategoryUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *ToolLinkCategoryUpsertBulk) SetUpdateTime(v time.Time) *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertBulk) UpdateUpdateTime() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *ToolLinkCategoryUpsertBulk) ClearUpdateTime() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *ToolLinkCategoryUpsertBulk) SetDeleteTime(v time.Time) *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertBulk) UpdateDeleteTime() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *ToolLinkCategoryUpsertBulk) ClearDeleteTime() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *ToolLinkCategoryUpsertBulk) SetCreateBy(v uint32) *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *ToolLinkCategoryUpsertBulk) AddCreateBy(v uint32) *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertBulk) UpdateCreateBy() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *ToolLinkCategoryUpsertBulk) ClearCreateBy() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *ToolLinkCategoryUpsertBulk) SetUpdateBy(v uint32) *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *ToolLinkCategoryUpsertBulk) AddUpdateBy(v uint32) *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertBulk) UpdateUpdateBy() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *ToolLinkCategoryUpsertBulk) ClearUpdateBy() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *ToolLinkCategoryUpsertBulk) SetStatus(v toollinkcategory.Status) *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertBulk) UpdateStatus() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *ToolLinkCategoryUpsertBulk) ClearStatus() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *ToolLinkCategoryUpsertBulk) SetName(v string) *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertBulk) UpdateName() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateName()
+	})
+}
+
+// ClearName clears the value of the "name" field.
+func (u *ToolLinkCategoryUpsertBulk) ClearName() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearName()
+	})
+}
+
+// SetIcon sets the "icon" field.
+func (u *ToolLinkCategoryUpsertBulk) SetIcon(v string) *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetIcon(v)
+	})
+}
+
+// UpdateIcon sets the "icon" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertBulk) UpdateIcon() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateIcon()
+	})
+}
+
+// ClearIcon clears the value of the "icon" field.
+func (u *ToolLinkCategoryUpsertBulk) ClearIcon() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearIcon()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *ToolLinkCategoryUpsertBulk) SetDescription(v string) *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertBulk) UpdateDescription() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *ToolLinkCategoryUpsertBulk) ClearDescription() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetSort sets the "sort" field.
+func (u *ToolLinkCategoryUpsertBulk) SetSort(v int32) *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.SetSort(v)
+	})
+}
+
+// AddSort adds v to the "sort" field.
+func (u *ToolLinkCategoryUpsertBulk) AddSort(v int32) *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.AddSort(v)
+	})
+}
+
+// UpdateSort sets the "sort" field to the value that was provided on create.
+func (u *ToolLinkCategoryUpsertBulk) UpdateSort() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.UpdateSort()
+	})
+}
+
+// ClearSort clears the value of the "sort" field.
+func (u *ToolLinkCategoryUpsertBulk) ClearSort() *ToolLinkCategoryUpsertBulk {
+	return u.Update(func(s *ToolLinkCategoryUpsert) {
+		s.ClearSort()
+	})
+}
+
+// Exec executes the query.
+func (u *ToolLinkCategoryUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the ToolLinkCategoryCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ToolLinkCategoryCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ToolLinkCategoryUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

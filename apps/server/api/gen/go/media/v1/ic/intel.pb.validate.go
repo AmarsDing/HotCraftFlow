@@ -1309,3 +1309,1694 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = IntelWorkabilityValidationError{}
+
+// Validate checks the field values on ListIntelsRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *ListIntelsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListIntelsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListIntelsRequestMultiError, or nil if none found.
+func (m *ListIntelsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListIntelsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Page
+
+	// no validation rules for PageSize
+
+	// no validation rules for Platform
+
+	// no validation rules for Region
+
+	// no validation rules for Category
+
+	// no validation rules for ClusterId
+
+	// no validation rules for CollectMethod
+
+	// no validation rules for Keyword
+
+	// no validation rules for Entity
+
+	if all {
+		switch v := interface{}(m.GetCollectedFrom()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ListIntelsRequestValidationError{
+					field:  "CollectedFrom",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ListIntelsRequestValidationError{
+					field:  "CollectedFrom",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCollectedFrom()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ListIntelsRequestValidationError{
+				field:  "CollectedFrom",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetCollectedTo()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ListIntelsRequestValidationError{
+					field:  "CollectedTo",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ListIntelsRequestValidationError{
+					field:  "CollectedTo",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCollectedTo()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ListIntelsRequestValidationError{
+				field:  "CollectedTo",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for Gate
+
+	if len(errors) > 0 {
+		return ListIntelsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListIntelsRequestMultiError is an error wrapping multiple validation errors
+// returned by ListIntelsRequest.ValidateAll() if the designated constraints
+// aren't met.
+type ListIntelsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListIntelsRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListIntelsRequestMultiError) AllErrors() []error { return m }
+
+// ListIntelsRequestValidationError is the validation error returned by
+// ListIntelsRequest.Validate if the designated constraints aren't met.
+type ListIntelsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListIntelsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListIntelsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListIntelsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListIntelsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListIntelsRequestValidationError) ErrorName() string {
+	return "ListIntelsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListIntelsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListIntelsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListIntelsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListIntelsRequestValidationError{}
+
+// Validate checks the field values on ListIntelsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListIntelsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListIntelsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListIntelsResponseMultiError, or nil if none found.
+func (m *ListIntelsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListIntelsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetItems() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListIntelsResponseValidationError{
+						field:  fmt.Sprintf("Items[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListIntelsResponseValidationError{
+						field:  fmt.Sprintf("Items[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListIntelsResponseValidationError{
+					field:  fmt.Sprintf("Items[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for Total
+
+	if len(errors) > 0 {
+		return ListIntelsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListIntelsResponseMultiError is an error wrapping multiple validation errors
+// returned by ListIntelsResponse.ValidateAll() if the designated constraints
+// aren't met.
+type ListIntelsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListIntelsResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListIntelsResponseMultiError) AllErrors() []error { return m }
+
+// ListIntelsResponseValidationError is the validation error returned by
+// ListIntelsResponse.Validate if the designated constraints aren't met.
+type ListIntelsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListIntelsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListIntelsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListIntelsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListIntelsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListIntelsResponseValidationError) ErrorName() string {
+	return "ListIntelsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListIntelsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListIntelsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListIntelsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListIntelsResponseValidationError{}
+
+// Validate checks the field values on GetIntelRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *GetIntelRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetIntelRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetIntelRequestMultiError, or nil if none found.
+func (m *GetIntelRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetIntelRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	if len(errors) > 0 {
+		return GetIntelRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetIntelRequestMultiError is an error wrapping multiple validation errors
+// returned by GetIntelRequest.ValidateAll() if the designated constraints
+// aren't met.
+type GetIntelRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetIntelRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetIntelRequestMultiError) AllErrors() []error { return m }
+
+// GetIntelRequestValidationError is the validation error returned by
+// GetIntelRequest.Validate if the designated constraints aren't met.
+type GetIntelRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetIntelRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetIntelRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetIntelRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetIntelRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetIntelRequestValidationError) ErrorName() string { return "GetIntelRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GetIntelRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetIntelRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetIntelRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetIntelRequestValidationError{}
+
+// Validate checks the field values on SupplementIntelRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SupplementIntelRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SupplementIntelRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SupplementIntelRequestMultiError, or nil if none found.
+func (m *SupplementIntelRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SupplementIntelRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Text
+
+	if len(errors) > 0 {
+		return SupplementIntelRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// SupplementIntelRequestMultiError is an error wrapping multiple validation
+// errors returned by SupplementIntelRequest.ValidateAll() if the designated
+// constraints aren't met.
+type SupplementIntelRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SupplementIntelRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SupplementIntelRequestMultiError) AllErrors() []error { return m }
+
+// SupplementIntelRequestValidationError is the validation error returned by
+// SupplementIntelRequest.Validate if the designated constraints aren't met.
+type SupplementIntelRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SupplementIntelRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SupplementIntelRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SupplementIntelRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SupplementIntelRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SupplementIntelRequestValidationError) ErrorName() string {
+	return "SupplementIntelRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SupplementIntelRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSupplementIntelRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SupplementIntelRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SupplementIntelRequestValidationError{}
+
+// Validate checks the field values on SupplementIntelResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SupplementIntelResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SupplementIntelResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SupplementIntelResponseMultiError, or nil if none found.
+func (m *SupplementIntelResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SupplementIntelResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Ok
+
+	if len(errors) > 0 {
+		return SupplementIntelResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// SupplementIntelResponseMultiError is an error wrapping multiple validation
+// errors returned by SupplementIntelResponse.ValidateAll() if the designated
+// constraints aren't met.
+type SupplementIntelResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SupplementIntelResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SupplementIntelResponseMultiError) AllErrors() []error { return m }
+
+// SupplementIntelResponseValidationError is the validation error returned by
+// SupplementIntelResponse.Validate if the designated constraints aren't met.
+type SupplementIntelResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SupplementIntelResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SupplementIntelResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SupplementIntelResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SupplementIntelResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SupplementIntelResponseValidationError) ErrorName() string {
+	return "SupplementIntelResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SupplementIntelResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSupplementIntelResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SupplementIntelResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SupplementIntelResponseValidationError{}
+
+// Validate checks the field values on EvidenceExport with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *EvidenceExport) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on EvidenceExport with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in EvidenceExportMultiError,
+// or nil if none found.
+func (m *EvidenceExport) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *EvidenceExport) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for IntelId
+
+	// no validation rules for EvidenceId
+
+	// no validation rules for DownloadUrl
+
+	// no validation rules for ChainHash
+
+	// no validation rules for PrevHash
+
+	// no validation rules for RawHash
+
+	if len(errors) > 0 {
+		return EvidenceExportMultiError(errors)
+	}
+
+	return nil
+}
+
+// EvidenceExportMultiError is an error wrapping multiple validation errors
+// returned by EvidenceExport.ValidateAll() if the designated constraints
+// aren't met.
+type EvidenceExportMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m EvidenceExportMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m EvidenceExportMultiError) AllErrors() []error { return m }
+
+// EvidenceExportValidationError is the validation error returned by
+// EvidenceExport.Validate if the designated constraints aren't met.
+type EvidenceExportValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e EvidenceExportValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e EvidenceExportValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e EvidenceExportValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e EvidenceExportValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e EvidenceExportValidationError) ErrorName() string { return "EvidenceExportValidationError" }
+
+// Error satisfies the builtin error interface
+func (e EvidenceExportValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sEvidenceExport.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = EvidenceExportValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = EvidenceExportValidationError{}
+
+// Validate checks the field values on ExportEvidenceRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ExportEvidenceRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ExportEvidenceRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ExportEvidenceRequestMultiError, or nil if none found.
+func (m *ExportEvidenceRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ExportEvidenceRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Operator
+
+	if len(errors) > 0 {
+		return ExportEvidenceRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ExportEvidenceRequestMultiError is an error wrapping multiple validation
+// errors returned by ExportEvidenceRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ExportEvidenceRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ExportEvidenceRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ExportEvidenceRequestMultiError) AllErrors() []error { return m }
+
+// ExportEvidenceRequestValidationError is the validation error returned by
+// ExportEvidenceRequest.Validate if the designated constraints aren't met.
+type ExportEvidenceRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ExportEvidenceRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ExportEvidenceRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ExportEvidenceRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ExportEvidenceRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ExportEvidenceRequestValidationError) ErrorName() string {
+	return "ExportEvidenceRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ExportEvidenceRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sExportEvidenceRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ExportEvidenceRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ExportEvidenceRequestValidationError{}
+
+// Validate checks the field values on IntelCluster with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *IntelCluster) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on IntelCluster with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in IntelClusterMultiError, or
+// nil if none found.
+func (m *IntelCluster) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *IntelCluster) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Label
+
+	// no validation rules for MemberCount
+
+	// no validation rules for PlatformCount
+
+	// no validation rules for RepresentativeId
+
+	// no validation rules for Region
+
+	// no validation rules for MergedBy
+
+	// no validation rules for Status
+
+	if all {
+		switch v := interface{}(m.GetFirstSeenAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, IntelClusterValidationError{
+					field:  "FirstSeenAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, IntelClusterValidationError{
+					field:  "FirstSeenAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetFirstSeenAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return IntelClusterValidationError{
+				field:  "FirstSeenAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetLastSeenAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, IntelClusterValidationError{
+					field:  "LastSeenAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, IntelClusterValidationError{
+					field:  "LastSeenAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetLastSeenAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return IntelClusterValidationError{
+				field:  "LastSeenAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return IntelClusterMultiError(errors)
+	}
+
+	return nil
+}
+
+// IntelClusterMultiError is an error wrapping multiple validation errors
+// returned by IntelCluster.ValidateAll() if the designated constraints aren't met.
+type IntelClusterMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m IntelClusterMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m IntelClusterMultiError) AllErrors() []error { return m }
+
+// IntelClusterValidationError is the validation error returned by
+// IntelCluster.Validate if the designated constraints aren't met.
+type IntelClusterValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e IntelClusterValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e IntelClusterValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e IntelClusterValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e IntelClusterValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e IntelClusterValidationError) ErrorName() string { return "IntelClusterValidationError" }
+
+// Error satisfies the builtin error interface
+func (e IntelClusterValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sIntelCluster.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = IntelClusterValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = IntelClusterValidationError{}
+
+// Validate checks the field values on ListClustersRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListClustersRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListClustersRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListClustersRequestMultiError, or nil if none found.
+func (m *ListClustersRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListClustersRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Page
+
+	// no validation rules for PageSize
+
+	// no validation rules for Region
+
+	// no validation rules for Status
+
+	if len(errors) > 0 {
+		return ListClustersRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListClustersRequestMultiError is an error wrapping multiple validation
+// errors returned by ListClustersRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListClustersRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListClustersRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListClustersRequestMultiError) AllErrors() []error { return m }
+
+// ListClustersRequestValidationError is the validation error returned by
+// ListClustersRequest.Validate if the designated constraints aren't met.
+type ListClustersRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListClustersRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListClustersRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListClustersRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListClustersRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListClustersRequestValidationError) ErrorName() string {
+	return "ListClustersRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListClustersRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListClustersRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListClustersRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListClustersRequestValidationError{}
+
+// Validate checks the field values on ListClustersResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListClustersResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListClustersResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListClustersResponseMultiError, or nil if none found.
+func (m *ListClustersResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListClustersResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetItems() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListClustersResponseValidationError{
+						field:  fmt.Sprintf("Items[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListClustersResponseValidationError{
+						field:  fmt.Sprintf("Items[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListClustersResponseValidationError{
+					field:  fmt.Sprintf("Items[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for Total
+
+	if len(errors) > 0 {
+		return ListClustersResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListClustersResponseMultiError is an error wrapping multiple validation
+// errors returned by ListClustersResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ListClustersResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListClustersResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListClustersResponseMultiError) AllErrors() []error { return m }
+
+// ListClustersResponseValidationError is the validation error returned by
+// ListClustersResponse.Validate if the designated constraints aren't met.
+type ListClustersResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListClustersResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListClustersResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListClustersResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListClustersResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListClustersResponseValidationError) ErrorName() string {
+	return "ListClustersResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListClustersResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListClustersResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListClustersResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListClustersResponseValidationError{}
+
+// Validate checks the field values on SplitClusterRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SplitClusterRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SplitClusterRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SplitClusterRequestMultiError, or nil if none found.
+func (m *SplitClusterRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SplitClusterRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Operator
+
+	if len(errors) > 0 {
+		return SplitClusterRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// SplitClusterRequestMultiError is an error wrapping multiple validation
+// errors returned by SplitClusterRequest.ValidateAll() if the designated
+// constraints aren't met.
+type SplitClusterRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SplitClusterRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SplitClusterRequestMultiError) AllErrors() []error { return m }
+
+// SplitClusterRequestValidationError is the validation error returned by
+// SplitClusterRequest.Validate if the designated constraints aren't met.
+type SplitClusterRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SplitClusterRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SplitClusterRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SplitClusterRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SplitClusterRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SplitClusterRequestValidationError) ErrorName() string {
+	return "SplitClusterRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SplitClusterRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSplitClusterRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SplitClusterRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SplitClusterRequestValidationError{}
+
+// Validate checks the field values on SplitClusterResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SplitClusterResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SplitClusterResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SplitClusterResponseMultiError, or nil if none found.
+func (m *SplitClusterResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SplitClusterResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for NewClusterId
+
+	if len(errors) > 0 {
+		return SplitClusterResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// SplitClusterResponseMultiError is an error wrapping multiple validation
+// errors returned by SplitClusterResponse.ValidateAll() if the designated
+// constraints aren't met.
+type SplitClusterResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SplitClusterResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SplitClusterResponseMultiError) AllErrors() []error { return m }
+
+// SplitClusterResponseValidationError is the validation error returned by
+// SplitClusterResponse.Validate if the designated constraints aren't met.
+type SplitClusterResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SplitClusterResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SplitClusterResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SplitClusterResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SplitClusterResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SplitClusterResponseValidationError) ErrorName() string {
+	return "SplitClusterResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SplitClusterResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSplitClusterResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SplitClusterResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SplitClusterResponseValidationError{}
+
+// Validate checks the field values on MergeClusterRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *MergeClusterRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on MergeClusterRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// MergeClusterRequestMultiError, or nil if none found.
+func (m *MergeClusterRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *MergeClusterRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ToClusterId
+
+	// no validation rules for Reason
+
+	// no validation rules for Operator
+
+	if len(errors) > 0 {
+		return MergeClusterRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// MergeClusterRequestMultiError is an error wrapping multiple validation
+// errors returned by MergeClusterRequest.ValidateAll() if the designated
+// constraints aren't met.
+type MergeClusterRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m MergeClusterRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m MergeClusterRequestMultiError) AllErrors() []error { return m }
+
+// MergeClusterRequestValidationError is the validation error returned by
+// MergeClusterRequest.Validate if the designated constraints aren't met.
+type MergeClusterRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e MergeClusterRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e MergeClusterRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e MergeClusterRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e MergeClusterRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e MergeClusterRequestValidationError) ErrorName() string {
+	return "MergeClusterRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e MergeClusterRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sMergeClusterRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = MergeClusterRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = MergeClusterRequestValidationError{}
+
+// Validate checks the field values on MergeClusterResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *MergeClusterResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on MergeClusterResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// MergeClusterResponseMultiError, or nil if none found.
+func (m *MergeClusterResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *MergeClusterResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Ok
+
+	if len(errors) > 0 {
+		return MergeClusterResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// MergeClusterResponseMultiError is an error wrapping multiple validation
+// errors returned by MergeClusterResponse.ValidateAll() if the designated
+// constraints aren't met.
+type MergeClusterResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m MergeClusterResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m MergeClusterResponseMultiError) AllErrors() []error { return m }
+
+// MergeClusterResponseValidationError is the validation error returned by
+// MergeClusterResponse.Validate if the designated constraints aren't met.
+type MergeClusterResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e MergeClusterResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e MergeClusterResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e MergeClusterResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e MergeClusterResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e MergeClusterResponseValidationError) ErrorName() string {
+	return "MergeClusterResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e MergeClusterResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sMergeClusterResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = MergeClusterResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = MergeClusterResponseValidationError{}

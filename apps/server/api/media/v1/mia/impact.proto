@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package media.mia.v1;
 
+import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
 // ============================================================================
@@ -80,4 +81,137 @@ message TriggerSpec {
   string asset = 1 [json_name = "asset"];
   string direction = 2 [json_name = "direction"];
   double min_move_pct = 3 [json_name = "min_move_pct"];
+}
+
+// ============================================================================
+// REST 服务定义（FR-MIA-06/07/08/11/12 的管理与查询面）。
+// ============================================================================
+
+// ImpactCardListItem 影响卡列表视图（摘要字段，详情走 GetImpactCard）。
+message ImpactCardListItem {
+  string impact_id = 1 [json_name = "impact_id"];
+  string event_id = 2 [json_name = "event_id"];
+  string title = 3 [json_name = "title"];
+  string sentiment_label = 4 [json_name = "sentiment_label"];
+  double sentiment_score = 5 [json_name = "sentiment_score"];
+  string sentiment_engine = 6 [json_name = "sentiment_engine"];
+  double impact_score = 7 [json_name = "impact_score"];
+  string direction = 8 [json_name = "direction"];
+  int32 ttl_hours = 9 [json_name = "ttl_hours"];
+  string expires_at = 10 [json_name = "expires_at"]; // RFC3339 UTC
+  string occurred_at = 11 [json_name = "occurred_at"];
+  string created_at = 12 [json_name = "created_at"];
+  int32 affected_count = 13 [json_name = "affected_count"];
+  bool pushed = 14 [json_name = "pushed"];
+  bool no_mapping = 15 [json_name = "no_mapping"];
+}
+
+message ListImpactCardsRequest {
+  int32 page = 1 [json_name = "page"];
+  int32 page_size = 2 [json_name = "page_size"];
+  string direction = 3 [json_name = "direction"];       // bullish|bearish|neutral
+  double min_score = 4 [json_name = "min_score"];
+  bool include_expired = 5 [json_name = "include_expired"]; // 默认只看未过期（TTL 纪律）
+  string occurred_after = 6 [json_name = "occurred_after"];
+}
+
+message ListImpactCardsResponse {
+  repeated ImpactCardListItem items = 1 [json_name = "items"];
+  int32 total = 2 [json_name = "total"];
+}
+
+message GetImpactCardRequest {
+  string impact_id = 1 [json_name = "impact_id"];
+}
+
+// GetImpactCardResponse 详情：完整契约卡 + 存储侧附加字段。
+message GetImpactCardResponse {
+  ImpactCard card = 1 [json_name = "card"];
+  string impact_id = 2 [json_name = "impact_id"];
+  string event_id = 3 [json_name = "event_id"];
+  string expires_at = 4 [json_name = "expires_at"];
+  string created_at = 5 [json_name = "created_at"];
+  bool pushed = 6 [json_name = "pushed"];
+  bool no_mapping = 7 [json_name = "no_mapping"];
+  string rule_version = 8 [json_name = "rule_version"];
+}
+
+// CalibrationBucket 按规则的校准统计桶（FR-MIA-11，P2）。
+message CalibrationBucket {
+  string rule_id = 1 [json_name = "rule_id"];
+  int32 samples = 2 [json_name = "samples"];
+  double hit_rate = 3 [json_name = "hit_rate"];
+}
+
+message GetCalibrationRequest {
+  string since = 1 [json_name = "since"];
+  string until = 2 [json_name = "until"];
+}
+
+// CalibrationReport 校准报告。固定提示：校准参考，非预测准确率承诺。
+message CalibrationReport {
+  repeated CalibrationBucket buckets = 1 [json_name = "buckets"];
+  int32 total_samples = 2 [json_name = "total_samples"];
+  string window = 3 [json_name = "window"];
+  string note = 4 [json_name = "note"];
+  bool enabled = 5 [json_name = "enabled"]; // verify.enabled=false 时返回空报告
+}
+
+// TransmissionRuleItem 传导规则列表视图（FR-MIA-08：每条带 confidence 与 note）。
+message TransmissionRuleItem {
+  int64 id = 1 [json_name = "id"];
+  TransmissionRule rule = 2 [json_name = "rule"];
+  bool enabled = 3 [json_name = "enabled"];
+  int32 hit_count = 4 [json_name = "hit_count"];
+  int32 correct_count = 5 [json_name = "correct_count"];
+}
+
+message ListTransmissionRulesRequest {
+  bool enabled_only = 1 [json_name = "enabled_only"];
+}
+
+message ListTransmissionRulesResponse {
+  repeated TransmissionRuleItem items = 1 [json_name = "items"];
+}
+
+// GetQuoteRequest 行情只读查询。
+// symbol 走 query（BTC/USDT 含斜杠，不能用路径参数）。
+message GetQuoteRequest {
+  string symbol = 1 [json_name = "symbol"];
+}
+
+message OhlcvBar {
+  string t = 1 [json_name = "t"]; // bucket 时间 RFC3339
+  double open = 2 [json_name = "open"];
+  double high = 3 [json_name = "high"];
+  double low = 4 [json_name = "low"];
+  double close = 5 [json_name = "close"];
+  double volume = 6 [json_name = "volume"];
+}
+
+message GetQuoteResponse {
+  string symbol = 1 [json_name = "symbol"];
+  string provider = 2 [json_name = "provider"];
+  repeated OhlcvBar bars = 3 [json_name = "bars"];
+  string fetched_at = 4 [json_name = "fetched_at"];
+  bool from_cache = 5 [json_name = "from_cache"];
+}
+
+// ImpactService 影响卡查询、校准报告、传导规则、行情只读查询。
+service ImpactService {
+  rpc ListImpactCards(ListImpactCardsRequest) returns (ListImpactCardsResponse) {
+    option (google.api.http) = { get: "/api/v1/media/mia/impacts" };
+  }
+  rpc GetImpactCard(GetImpactCardRequest) returns (GetImpactCardResponse) {
+    option (google.api.http) = { get: "/api/v1/media/mia/impact/{impact_id}" };
+  }
+  rpc GetCalibration(GetCalibrationRequest) returns (CalibrationReport) {
+    option (google.api.http) = { get: "/api/v1/media/mia/calibration" };
+  }
+  rpc ListTransmissionRules(ListTransmissionRulesRequest) returns (ListTransmissionRulesResponse) {
+    option (google.api.http) = { get: "/api/v1/media/mia/rules" };
+  }
+  rpc GetQuote(GetQuoteRequest) returns (GetQuoteResponse) {
+    option (google.api.http) = { get: "/api/v1/media/mia/quotes" };
+  }
 }

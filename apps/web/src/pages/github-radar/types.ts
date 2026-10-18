@@ -82,6 +82,93 @@ export type TreeNode = {
   size: number;
 };
 
+// ── 归一化层：kratos 生成客户端回 camelCase，本地类型为 snake_case。
+// 全模块只在入口经这些函数转换一次；组件内部只读本地 snake_case 类型，
+// 杜绝「某组件空转」的大小写错配 bug 类。
+export function normalizeRepo(r: Record<string, unknown>): RepoItem {
+  return {
+    id: String(r.id ?? ''),
+    full_name: String(r.full_name ?? r.fullName ?? ''),
+    description: String(r.description ?? ''),
+    language: String(r.language ?? ''),
+    topics: (r.topics as string[]) || [],
+    stars: Number(r.stars ?? 0),
+    forks: Number(r.forks ?? 0),
+    rank: Number(r.rank ?? 0),
+    stars_delta: Number(r.stars_delta ?? r.starsDelta ?? 0),
+    is_new: Boolean(r.is_new ?? r.isNew),
+    html_url: String(r.html_url ?? r.htmlUrl ?? ''),
+    sparkline: ((r.sparkline as number[]) || []).map(Number),
+    license: String(r.license ?? '') || undefined,
+    license_spdx: String(r.license_spdx ?? r.licenseSpdx ?? '') || undefined,
+    homepage: String(r.homepage ?? '') || undefined,
+    open_issues: Number(r.open_issues ?? r.openIssues ?? 0) || undefined,
+    watchers: Number(r.watchers ?? 0) || undefined,
+    contributors: (r.contributors as string[]) || undefined,
+    created_at: String(r.created_at ?? r.createdAt ?? '') || undefined,
+    updated_at: String(r.updated_at ?? r.updatedAt ?? '') || undefined,
+    pushed_at: String(r.pushed_at ?? r.pushedAt ?? '') || undefined,
+    clone_url: String(r.clone_url ?? r.cloneUrl ?? '') || undefined,
+    ssh_url: String(r.ssh_url ?? r.sshUrl ?? '') || undefined,
+    zip_url: String(r.zip_url ?? r.zipUrl ?? '') || undefined,
+    default_branch: String(r.default_branch ?? r.defaultBranch ?? '') || undefined,
+    languages: ((r.languages as Array<Record<string, unknown>>) || []).map((l) => ({
+      name: String(l.name ?? ''),
+      bytes: Number(l.bytes ?? 0),
+      percent: Number(l.percent ?? 0),
+    })),
+    readme_excerpt: String(r.readme_excerpt ?? r.readmeExcerpt ?? '') || undefined,
+  };
+}
+
+export function normalizeWatch(r: Record<string, unknown>): WatchItem {
+  return {
+    id: String(r.id ?? ''),
+    full_name: String(r.full_name ?? r.fullName ?? ''),
+    stars: Number(r.stars ?? 0),
+    stars_delta: Number(r.stars_delta ?? r.starsDelta ?? 0),
+    unread_count: Number(r.unread_count ?? r.unreadCount ?? 0),
+    sparkline: ((r.sparkline as number[]) || []).map(Number),
+    html_url: String(r.html_url ?? r.htmlUrl ?? ''),
+  };
+}
+
+export function normalizeWatchEvent(r: Record<string, unknown>): WatchEvent {
+  return {
+    id: String(r.id ?? ''),
+    full_name: String(r.full_name ?? r.fullName ?? ''),
+    kind: String(r.kind ?? ''),
+    message: String(r.message ?? ''),
+    created_at: String(r.created_at ?? r.createdAt ?? ''),
+    read: Boolean(r.read),
+  };
+}
+
+export function normalizeNotification(r: Record<string, unknown>): RadarNotification {
+  return {
+    id: String(r.id ?? ''),
+    title: String(r.title ?? ''),
+    body: String(r.body ?? ''),
+    kind: String(r.kind ?? ''),
+    created_at: String(r.created_at ?? r.createdAt ?? ''),
+    read: Boolean(r.read),
+  };
+}
+
+export function normalizeInsight(r: Record<string, unknown>): AIInsight {
+  const level = String(r.level ?? 'summary');
+  return {
+    full_name: String(r.full_name ?? r.fullName ?? ''),
+    level: (level === 'brief' || level === 'summary' || level === 'deep' ? level : 'summary') as AIInsight['level'],
+    content_markdown: String(r.content_markdown ?? r.contentMarkdown ?? ''),
+    model: String(r.model ?? ''),
+    generated_at: String(r.generated_at ?? r.generatedAt ?? ''),
+    cached: Boolean(r.cached),
+    duration_ms: Number(r.duration_ms ?? r.durationMs ?? 0),
+    error: String(r.error ?? ''),
+  };
+}
+
 export function splitFullName(full: string) {
   const i = full.indexOf('/');
   if (i < 0) return { owner: '', name: full };
@@ -98,16 +185,16 @@ export function exactCount(n: number): string {
   return n.toLocaleString('en-US');
 }
 
-/** 相对时间：刚刚 / N 分钟前 / N 小时前 / N 天前 / 日期 */
-export function relTime(iso?: string): string {
+/** 相对时间：刚刚 / N 分钟前 / N 小时前 / N 天前 / 日期（i18n 键 githubRadar.time.*） */
+export function relTime(iso: string | undefined, t: (key: string, args?: Record<string, unknown>) => string): string {
   if (!iso) return '—';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '—';
   const diff = Date.now() - d.getTime();
-  if (diff < 60_000) return '刚刚';
-  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} 分钟前`;
-  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)} 小时前`;
-  if (diff < 30 * 86_400_000) return `${Math.floor(diff / 86_400_000)} 天前`;
+  if (diff < 60_000) return t('githubRadar.time.justNow');
+  if (diff < 3_600_000) return t('githubRadar.time.minutesAgo', { n: Math.floor(diff / 60_000) });
+  if (diff < 86_400_000) return t('githubRadar.time.hoursAgo', { n: Math.floor(diff / 3_600_000) });
+  if (diff < 30 * 86_400_000) return t('githubRadar.time.daysAgo', { n: Math.floor(diff / 86_400_000) });
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
@@ -160,6 +247,20 @@ export function formatBytes(n: number): string {
   if (n >= 1024 * 1024) return `${(n / 1024 / 1024).toFixed(1)} MB`;
   if (n >= 1024) return `${(n / 1024).toFixed(1)} KB`;
   return `${n} B`;
+}
+
+/** 事件/通知 kind → 图标（当前仅产生 stars；release/description/daily_digest 为 proto 预留即映射） */
+export function radarKindIcon(kind: string): string {
+  switch (kind) {
+    case 'release':
+      return 'new_releases';
+    case 'description':
+      return 'edit_note';
+    case 'daily_digest':
+      return 'summarize';
+    default:
+      return 'star';
+  }
 }
 
 // label/desc 为中文 fallback；展示层（RepoInsight）以 i18n githubRadar.insightLevel.* 覆盖实现多语言。

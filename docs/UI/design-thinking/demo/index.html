@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HOTCRAFTFLOW // NIGHT SHIFT — 设计哲学检验台</title>
+<style>
+/* ==========================================================================
+   检验对象：docs/UI/design-thinking/ 五篇文档的全部核心论断
+   实现纪律：所有参数从 tokens-base.css 与各分册复制，不临场发明
+   ========================================================================== */
+:root{
+  /* 总论#1 近黑不是纯黑（青灰倾向，袭 GrokBot 一系） */
+  --bg-page:#0A0E10; --bg-card:#0C0C18; --bg-elev:#12161F; --bg-inset:#15181F;
+  /* 总论#2 发丝线 */
+  --line:rgba(255,255,255,.08); --hair:rgba(255,255,255,.05); --line-2:rgba(255,255,255,.14);
+  /* 文字四级 */
+  --tx1:#F5F3FF; --tx2:#A9AEBC; --tx3:#61667A; --tx4:#4A5060;
+  /* 总论#3 一色一语义（语义轨） */
+  --green:#52D89D; --red:#F05959; --amber:#F6C157; --pink:#F25E97;
+  /* 交互轨（总论#3 双轨立法；长桥决策1） */
+  --accent:#41D2F3; --cyan:#41D2F3; --blue:#4C86F9; --purple:#A489FA;
+  /* 派生公式 12% 底 / 35-45% 线 / 100% 字 */
+  --green-bg:rgba(82,216,157,.12); --amber-bg:rgba(246,193,87,.10); --red-bg:rgba(240,89,89,.10);
+  --amber-line:rgba(246,193,87,.45);
+  /* 总论#8 同色辉光，特许制 */
+  --glow-green:0 0 22px -6px rgba(82,216,157,.55);
+  --glow-gold:0 0 0 1px rgba(246,193,87,.38),0 16px 44px -12px rgba(246,193,87,.30);
+  /* 总论#7 动效令牌 */
+  --e-out:cubic-bezier(.2,.9,.2,1); --d-micro:120ms; --d-fast:180ms; --d-base:260ms; --d-slow:500ms; --d-flash:600ms;
+  --mono:'JetBrains Mono','Cascadia Code',Consolas,monospace;
+  --ui:'Inter',system-ui,'PingFang SC','Microsoft YaHei',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--bg-page); color:var(--tx1); font-family:var(--ui); font-size:12px;
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+/* GrokBot 决策10：彩色光斑"房间"，卡片是夜里的灯 */
+.room{position:fixed;inset:0;pointer-events:none;filter:blur(90px);opacity:.5}
+.room i{position:absolute;border-radius:50%}
+.room i:nth-child(1){width:520px;height:520px;left:-140px;top:-160px;background:radial-gradient(circle,rgba(65,180,243,.20),transparent 70%)}
+.room i:nth-child(2){width:460px;height:460px;right:-120px;bottom:-180px;background:radial-gradient(circle,rgba(246,193,87,.14),transparent 70%)}
+.room i:nth-child(3){width:380px;height:380px;right:8%;top:-120px;background:radial-gradient(circle,rgba(242,94,151,.12),transparent 70%)}
+.room i:nth-child(4){width:300px;height:300px;left:12%;bottom:-100px;background:radial-gradient(circle,rgba(164,137,250,.12),transparent 70%)}
+
+/* ---------------- 窗口（GrokBot 决策9：交通灯 = 最便宜的"真应用"税） ------------- */
+.win{
+  position:relative; width:1240px; height:768px; background:var(--bg-card);
+  border:1px solid var(--line); border-radius:14px; overflow:hidden;
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.03) inset;
+  display:flex; flex-direction:column;
+}
+.chrome{
+  height:34px; flex:none; display:flex; align-items:center; gap:8px; padding:0 14px;
+  background:var(--bg-elev); border-bottom:1px solid var(--line);
+  font-family:var(--mono); font-size:10px; color:var(--tx3); letter-spacing:.08em;
+}
+.chrome b{width:11px;height:11px;border-radius:50%;display:inline-block;margin-right:6px}
+.chrome b:nth-child(1){background:#FF5F57}.chrome b:nth-child(2){background:#FEBC2E}.chrome b:nth-child(3){background:#28C840}
+.chrome span{margin-left:10px}
+.chrome .dbg{margin-left:auto;color:var(--tx4)}
+
+/* ---------------- 顶栏 ---------------- */
+.top{flex:none;display:flex;align-items:center;gap:14px;padding:10px 16px 8px;border-bottom:1px solid var(--hair)}
+.sq{width:26px;height:26px;border-radius:6px;background:rgba(76,134,249,.14);border:1px solid rgba(76,134,249,.5);
+    color:#9DB6F2;font-family:var(--mono);font-weight:700;font-size:10px;display:grid;place-items:center;letter-spacing:0}
+h1{font-size:15px;font-weight:700;letter-spacing:.02em}
+h1 .mono{color:var(--tx3);font-weight:500}
+.micro{font-size:9.5px;font-weight:600;letter-spacing:.14em;color:var(--tx4);text-transform:uppercase}
+.badge{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 7px;border-radius:3px}
+.b-live{background:rgba(240,89,89,.14);color:#F2喜|}
+</style>
+</head>
+</html>

@@ -1063,11 +1063,12 @@ export const radarTrendingService = {
 };
 
 export const radarRepoService = {
-  getRepo(fullName: string, opts: { includeReadme?: boolean; insightLevel?: string } = {}) {
+  getRepo(fullName: string, opts: { includeReadme?: boolean; insightLevel?: string; cacheOnly?: boolean } = {}) {
     return radarRepoClient.GetRepo({
       fullName,
       includeReadme: opts.includeReadme ?? false,
       insightLevel: opts.insightLevel || undefined,
+      insightCacheOnly: opts.cacheOnly ?? false,
     }) as Promise<GetRepoResponse>;
   },
   getTree(fullName: string, branch?: string) {

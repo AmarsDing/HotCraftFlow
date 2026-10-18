@@ -1,0 +1,114 @@
+syntax = "proto3";
+
+package media.ic.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "media/v1/ic/intel.proto";
+import "media/v1/ic/source.proto";
+
+// ============================================================================
+// IntelCollectorService —— 采集器管理、手动触发、健康度、死信重放
+// （文档 01-IC/02 §6.2、评审 B-13/S-13）。
+// ============================================================================
+
+// FetchURLRequest 单 URL 补采（FR-INT-04 手贴续跑入口之一）。
+message FetchURLRequest {
+  string url = 1 [json_name = "url"];
+  // method ∈ {api, crawl}（service 层校验；hotlist/rss 走周期调度）
+  string method = 2 [json_name = "method"];
+}
+
+// SourceHealthEntry 单信源健康度条目（NFR-IC-05）。
+message SourceHealthEntry {
+  string source_id = 1 [json_name = "source_id"];
+  string platform  = 2 [json_name = "platform"];
+  string method    = 3 [json_name = "method"];
+  SourceHealth health = 4 [json_name = "health"];
+  string circuit_status = 5 [json_name = "circuit_status"]; // active | paused | disabled
+  google.protobuf.Timestamp last_run_at = 6 [json_name = "last_run_at"];
+}
+
+message GetCollectorHealthRequest {
+  string platform = 1 [json_name = "platform"]; // 可选过滤
+}
+message GetCollectorHealthResponse {
+  repeated SourceHealthEntry items = 1 [json_name = "items"];
+}
+
+// ---------- 采集运行记录（审计） ----------
+
+message CollectRun {
+  string id = 1 [json_name = "id"]; // run_ 前缀
+  string source_id = 2 [json_name = "source_id"];
+  string trigger = 3 [json_name = "trigger"]; // cron | manual | retry
+  google.protobuf.Timestamp started_at = 4 [json_name = "started_at"];
+  google.protobuf.Timestamp finished_at = 5 [json_name = "finished_at"];
+  int32 fetched = 6 [json_name = "fetched"];
+  int32 normalized = 7 [json_name = "normalized"];
+  int32 merged = 8 [json_name = "merged"];
+  int32 blocked = 9 [json_name = "blocked"];
+  int32 skipped = 10 [json_name = "skipped"];
+  string status = 11 [json_name = "status"]; // running | succeeded | failed
+  string error_code = 12 [json_name = "error_code"];
+}
+
+message ListCollectRunsRequest {
+  int32  page = 1 [json_name = "page"];
+  int32  page_size = 2 [json_name = "page_size"];
+  string source_id = 3 [json_name = "source_id"];
+}
+message ListCollectRunsResponse {
+  repeated CollectRun items = 1 [json_name = "items"];
+  int32 total = 2 [json_name = "total"];
+}
+
+// ---------- 死信（S-13） ----------
+
+message DeadLetter {
+  string id = 1 [json_name = "id"];
+  string task_type = 2 [json_name = "task_type"];
+  string error_code = 3 [json_name = "error_code"];
+  string error_msg = 4 [json_name = "error_msg"];
+  int32 attempt = 5 [json_name = "attempt"];
+  google.protobuf.Timestamp first_failed_at = 6 [json_name = "first_failed_at"];
+  google.protobuf.Timestamp last_failed_at = 7 [json_name = "last_failed_at"];
+  string status = 8 [json_name = "status"]; // pending | replayed | discarded
+  string replayed_by = 9 [json_name = "replayed_by"];
+  google.protobuf.Timestamp replayed_at = 10 [json_name = "replayed_at"];
+}
+
+message ListDeadLettersRequest {
+  int32  page = 1 [json_name = "page"];
+  int32  page_size = 2 [json_name = "page_size"];
+  string status = 3 [json_name = "status"];
+}
+message ListDeadLettersResponse {
+  repeated DeadLetter items = 1 [json_name = "items"];
+  int32 total = 2 [json_name = "total"];
+}
+
+message ReplayDeadLetterRequest {
+  string id = 1 [json_name = "id"];
+  string operator = 2 [json_name = "operator"]; // 审计必填（S-13）
+}
+message ReplayDeadLetterResponse { bool ok = 1 [json_name = "ok"]; }
+
+// IntelCollectorService 采集器管理与健康度。
+service IntelCollectorService {
+  rpc FetchURL(FetchURLRequest) returns (IntelItem) {
+    option (google.api.http) = { post: "/api/v1/media/ic/collector/fetch" body: "*" };
+  }
+  rpc GetCollectorHealth(GetCollectorHealthRequest) returns (GetCollectorHealthResponse) {
+    option (google.api.http) = { get: "/api/v1/media/ic/collector/health" };
+  }
+  rpc ListCollectRuns(ListCollectRunsRequest) returns (ListCollectRunsResponse) {
+    option (google.api.http) = { get: "/api/v1/media/ic/runs" };
+  }
+  rpc ListDeadLetters(ListDeadLettersRequest) returns (ListDeadLettersResponse) {
+    option (google.api.http) = { get: "/api/v1/media/ic/dead-letters" };
+  }
+  rpc ReplayDeadLetter(ReplayDeadLetterRequest) returns (ReplayDeadLetterResponse) {
+    option (google.api.http) = { post: "/api/v1/media/ic/dead-letters/{id}/replay" body: "*" };
+  }
+}

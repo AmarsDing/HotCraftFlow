@@ -8,10 +8,13 @@ import "google/api/annotations.proto";
 import "radar/v1/trending.proto";
 
 // GetRepoRequest 仓库详情。insight_level: '' 不带出 | brief | summary | deep。
+// insight_cache_only: true 时只读 24h 本地总结缓存（绝不触发生成/烧每日配额），
+// 用于详情面板打开时的快照预取；未命中则 insight 为空。
 message GetRepoRequest {
   string full_name = 1;
   bool include_readme = 2;
   string insight_level = 3;
+  bool insight_cache_only = 4;
 }
 
 message GetRepoResponse {

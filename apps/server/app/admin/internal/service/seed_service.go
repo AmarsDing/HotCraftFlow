@@ -90,6 +90,18 @@ func (s *SeedService) seedAll(ctx context.Context) error {
 		}
 	} else {
 		s.log.Infof("menus already seeded (%d rows), skip full menu seed", menuCount)
+		// MIA 菜单按 id 幂等 upsert：全量种子跳过时仍保证 03-MIA 页面入口存在。
+		for _, r := range miaMenuSeedRecords() {
+			if err := s.upsertSeedMenu(ctx, r); err != nil {
+				s.log.Errorf("seed mia menu [%d %s] failed: %v", r.id, r.title, err)
+			}
+		}
+		// MAP 菜单同理（05-MAP 媒体发布矩阵页面入口）。
+		for _, r := range mapMenuSeedRecords() {
+			if err := s.upsertSeedMenu(ctx, r); err != nil {
+				s.log.Errorf("seed map menu [%d %s] failed: %v", r.id, r.title, err)
+			}
+		}
 	}
 
 	if err := s.menuUC.ResetSequence(ctx); err != nil {
@@ -160,7 +172,52 @@ func (s *SeedService) seedMenus(ctx context.Context) error {
 			return err
 		}
 	}
+	for _, r := range miaMenuSeedRecords() {
+		if err := s.upsertSeedMenu(ctx, r); err != nil {
+			return err
+		}
+	}
+	for _, r := range mapMenuSeedRecords() {
+		if err := s.upsertSeedMenu(ctx, r); err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+// miaMenuSeedRecords 03-MIA 市场影响分析菜单（详细设计 §8 落地清单）。
+// 独立种子函数并按 id upsert：老库 menuCount>0 全量种子跳过时，可临时调用补齐。
+func miaMenuSeedRecords() []seedMenuRecord {
+	return []seedMenuRecord{
+		{id: 70, mType: adminV1.MenuType_FOLDER, path: "/media/mia", redirect: "/media/mia/impacts",
+			name: "MediaMia", title: "市场影响MIA", icon: "trending_up", order: 26},
+		{id: 71, parentID: 70, mType: adminV1.MenuType_MENU, path: "/media/mia/impacts",
+			name: "MediaMiaImpacts", component: "media/mia/ImpactListPage", title: "影响卡", icon: "bolt", order: 1},
+		{id: 72, parentID: 70, mType: adminV1.MenuType_MENU, path: "/media/mia/events",
+			name: "MediaMiaEvents", component: "media/mia/EventListPage", title: "事件卡", icon: "event_note", order: 2},
+		{id: 73, parentID: 70, mType: adminV1.MenuType_MENU, path: "/media/mia/mappings",
+			name: "MediaMiaMappings", component: "media/mia/MappingPage", title: "资产映射", icon: "account_tree", order: 3},
+		{id: 74, parentID: 70, mType: adminV1.MenuType_MENU, path: "/media/mia/calibration",
+			name: "MediaMiaCalibration", component: "media/mia/CalibrationPage", title: "规则校准", icon: "tune", order: 4},
+	}
+}
+
+// mapMenuSeedRecords ⑤ MAP 媒体自动化发布矩阵菜单（详细设计 §8.2 路由矩阵的前端入口）。
+// id 80-84（70-74 已被 03-MIA 占用）；按 id 幂等 upsert，并列于 miaMenuSeedRecords。
+// 详情页 /media/map/dispatch-units/:id 只在路由表，不进菜单（走组件内跳转）。
+func mapMenuSeedRecords() []seedMenuRecord {
+	return []seedMenuRecord{
+		{id: 80, mType: adminV1.MenuType_FOLDER, path: "/media/map", redirect: "/media/map/approvals",
+			name: "MediaMap", title: "发布矩阵MAP", icon: "publish", order: 27},
+		{id: 81, parentID: 80, mType: adminV1.MenuType_MENU, path: "/media/map/approvals",
+			name: "MediaMapApprovals", component: "media/map/MapApprovalsPage", title: "审批队列", icon: "fact_check", order: 1},
+		{id: 82, parentID: 80, mType: adminV1.MenuType_MENU, path: "/media/map/accounts",
+			name: "MediaMapAccounts", component: "media/map/MapAccountsPage", title: "账号池", icon: "manage_accounts", order: 2},
+		{id: 83, parentID: 80, mType: adminV1.MenuType_MENU, path: "/media/map/calendar",
+			name: "MediaMapCalendar", component: "media/map/MapCalendarPage", title: "矩阵日历", icon: "calendar_month", order: 3},
+		{id: 84, parentID: 80, mType: adminV1.MenuType_MENU, path: "/media/map/receipts",
+			name: "MediaMapReceipts", component: "media/map/MapReceiptsPage", title: "发布回执", icon: "receipt_long", order: 4},
+	}
 }
 
 func (s *SeedService) upsertSeedMenu(ctx context.Context, r seedMenuRecord) error {

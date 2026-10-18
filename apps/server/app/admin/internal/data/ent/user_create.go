@@ -9,6 +9,7 @@ import (
 	"framework/app/admin/internal/data/ent/user"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -18,6 +19,7 @@ type UserCreate struct {
 	config
 	mutation *UserMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateBy sets the "create_by" field.
@@ -711,6 +713,7 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node = &User{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(user.Table, sqlgraph.NewFieldSpec(user.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -854,11 +857,1425 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.User.Create().
+//		SetCreateBy(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.UserUpsert) {
+//			SetCreateBy(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *UserCreate) OnConflict(opts ...sql.ConflictOption) *UserUpsertOne {
+	_c.conflict = opts
+	return &UserUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.User.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *UserCreate) OnConflictColumns(columns ...string) *UserUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &UserUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// UserUpsertOne is the builder for "upsert"-ing
+	//  one User node.
+	UserUpsertOne struct {
+		create *UserCreate
+	}
+
+	// UserUpsert is the "OnConflict" setter.
+	UserUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetCreateBy sets the "create_by" field.
+func (u *UserUpsert) SetCreateBy(v uint32) *UserUpsert {
+	u.Set(user.FieldCreateBy, v)
+	return u
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *UserUpsert) UpdateCreateBy() *UserUpsert {
+	u.SetExcluded(user.FieldCreateBy)
+	return u
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *UserUpsert) AddCreateBy(v uint32) *UserUpsert {
+	u.Add(user.FieldCreateBy, v)
+	return u
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *UserUpsert) ClearCreateBy() *UserUpsert {
+	u.SetNull(user.FieldCreateBy)
+	return u
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *UserUpsert) SetUpdateBy(v uint32) *UserUpsert {
+	u.Set(user.FieldUpdateBy, v)
+	return u
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *UserUpsert) UpdateUpdateBy() *UserUpsert {
+	u.SetExcluded(user.FieldUpdateBy)
+	return u
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *UserUpsert) AddUpdateBy(v uint32) *UserUpsert {
+	u.Add(user.FieldUpdateBy, v)
+	return u
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *UserUpsert) ClearUpdateBy() *UserUpsert {
+	u.SetNull(user.FieldUpdateBy)
+	return u
+}
+
+// SetDeleteBy sets the "delete_by" field.
+func (u *UserUpsert) SetDeleteBy(v uint32) *UserUpsert {
+	u.Set(user.FieldDeleteBy, v)
+	return u
+}
+
+// UpdateDeleteBy sets the "delete_by" field to the value that was provided on create.
+func (u *UserUpsert) UpdateDeleteBy() *UserUpsert {
+	u.SetExcluded(user.FieldDeleteBy)
+	return u
+}
+
+// AddDeleteBy adds v to the "delete_by" field.
+func (u *UserUpsert) AddDeleteBy(v uint32) *UserUpsert {
+	u.Add(user.FieldDeleteBy, v)
+	return u
+}
+
+// ClearDeleteBy clears the value of the "delete_by" field.
+func (u *UserUpsert) ClearDeleteBy() *UserUpsert {
+	u.SetNull(user.FieldDeleteBy)
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *UserUpsert) SetUpdateTime(v time.Time) *UserUpsert {
+	u.Set(user.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *UserUpsert) UpdateUpdateTime() *UserUpsert {
+	u.SetExcluded(user.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *UserUpsert) ClearUpdateTime() *UserUpsert {
+	u.SetNull(user.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *UserUpsert) SetDeleteTime(v time.Time) *UserUpsert {
+	u.Set(user.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *UserUpsert) UpdateDeleteTime() *UserUpsert {
+	u.SetExcluded(user.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *UserUpsert) ClearDeleteTime() *UserUpsert {
+	u.SetNull(user.FieldDeleteTime)
+	return u
+}
+
+// SetRemark sets the "remark" field.
+func (u *UserUpsert) SetRemark(v string) *UserUpsert {
+	u.Set(user.FieldRemark, v)
+	return u
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *UserUpsert) UpdateRemark() *UserUpsert {
+	u.SetExcluded(user.FieldRemark)
+	return u
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *UserUpsert) ClearRemark() *UserUpsert {
+	u.SetNull(user.FieldRemark)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *UserUpsert) SetStatus(v user.Status) *UserUpsert {
+	u.Set(user.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *UserUpsert) UpdateStatus() *UserUpsert {
+	u.SetExcluded(user.FieldStatus)
+	return u
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *UserUpsert) ClearStatus() *UserUpsert {
+	u.SetNull(user.FieldStatus)
+	return u
+}
+
+// SetNickname sets the "nickname" field.
+func (u *UserUpsert) SetNickname(v string) *UserUpsert {
+	u.Set(user.FieldNickname, v)
+	return u
+}
+
+// UpdateNickname sets the "nickname" field to the value that was provided on create.
+func (u *UserUpsert) UpdateNickname() *UserUpsert {
+	u.SetExcluded(user.FieldNickname)
+	return u
+}
+
+// ClearNickname clears the value of the "nickname" field.
+func (u *UserUpsert) ClearNickname() *UserUpsert {
+	u.SetNull(user.FieldNickname)
+	return u
+}
+
+// SetRealname sets the "realname" field.
+func (u *UserUpsert) SetRealname(v string) *UserUpsert {
+	u.Set(user.FieldRealname, v)
+	return u
+}
+
+// UpdateRealname sets the "realname" field to the value that was provided on create.
+func (u *UserUpsert) UpdateRealname() *UserUpsert {
+	u.SetExcluded(user.FieldRealname)
+	return u
+}
+
+// ClearRealname clears the value of the "realname" field.
+func (u *UserUpsert) ClearRealname() *UserUpsert {
+	u.SetNull(user.FieldRealname)
+	return u
+}
+
+// SetEmail sets the "email" field.
+func (u *UserUpsert) SetEmail(v string) *UserUpsert {
+	u.Set(user.FieldEmail, v)
+	return u
+}
+
+// UpdateEmail sets the "email" field to the value that was provided on create.
+func (u *UserUpsert) UpdateEmail() *UserUpsert {
+	u.SetExcluded(user.FieldEmail)
+	return u
+}
+
+// ClearEmail clears the value of the "email" field.
+func (u *UserUpsert) ClearEmail() *UserUpsert {
+	u.SetNull(user.FieldEmail)
+	return u
+}
+
+// SetMobile sets the "mobile" field.
+func (u *UserUpsert) SetMobile(v string) *UserUpsert {
+	u.Set(user.FieldMobile, v)
+	return u
+}
+
+// UpdateMobile sets the "mobile" field to the value that was provided on create.
+func (u *UserUpsert) UpdateMobile() *UserUpsert {
+	u.SetExcluded(user.FieldMobile)
+	return u
+}
+
+// ClearMobile clears the value of the "mobile" field.
+func (u *UserUpsert) ClearMobile() *UserUpsert {
+	u.SetNull(user.FieldMobile)
+	return u
+}
+
+// SetTelephone sets the "telephone" field.
+func (u *UserUpsert) SetTelephone(v string) *UserUpsert {
+	u.Set(user.FieldTelephone, v)
+	return u
+}
+
+// UpdateTelephone sets the "telephone" field to the value that was provided on create.
+func (u *UserUpsert) UpdateTelephone() *UserUpsert {
+	u.SetExcluded(user.FieldTelephone)
+	return u
+}
+
+// ClearTelephone clears the value of the "telephone" field.
+func (u *UserUpsert) ClearTelephone() *UserUpsert {
+	u.SetNull(user.FieldTelephone)
+	return u
+}
+
+// SetAvatar sets the "avatar" field.
+func (u *UserUpsert) SetAvatar(v string) *UserUpsert {
+	u.Set(user.FieldAvatar, v)
+	return u
+}
+
+// UpdateAvatar sets the "avatar" field to the value that was provided on create.
+func (u *UserUpsert) UpdateAvatar() *UserUpsert {
+	u.SetExcluded(user.FieldAvatar)
+	return u
+}
+
+// ClearAvatar clears the value of the "avatar" field.
+func (u *UserUpsert) ClearAvatar() *UserUpsert {
+	u.SetNull(user.FieldAvatar)
+	return u
+}
+
+// SetAddress sets the "address" field.
+func (u *UserUpsert) SetAddress(v string) *UserUpsert {
+	u.Set(user.FieldAddress, v)
+	return u
+}
+
+// UpdateAddress sets the "address" field to the value that was provided on create.
+func (u *UserUpsert) UpdateAddress() *UserUpsert {
+	u.SetExcluded(user.FieldAddress)
+	return u
+}
+
+// ClearAddress clears the value of the "address" field.
+func (u *UserUpsert) ClearAddress() *UserUpsert {
+	u.SetNull(user.FieldAddress)
+	return u
+}
+
+// SetRegion sets the "region" field.
+func (u *UserUpsert) SetRegion(v string) *UserUpsert {
+	u.Set(user.FieldRegion, v)
+	return u
+}
+
+// UpdateRegion sets the "region" field to the value that was provided on create.
+func (u *UserUpsert) UpdateRegion() *UserUpsert {
+	u.SetExcluded(user.FieldRegion)
+	return u
+}
+
+// ClearRegion clears the value of the "region" field.
+func (u *UserUpsert) ClearRegion() *UserUpsert {
+	u.SetNull(user.FieldRegion)
+	return u
+}
+
+// SetDescription sets the "description" field.
+func (u *UserUpsert) SetDescription(v string) *UserUpsert {
+	u.Set(user.FieldDescription, v)
+	return u
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *UserUpsert) UpdateDescription() *UserUpsert {
+	u.SetExcluded(user.FieldDescription)
+	return u
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *UserUpsert) ClearDescription() *UserUpsert {
+	u.SetNull(user.FieldDescription)
+	return u
+}
+
+// SetGender sets the "gender" field.
+func (u *UserUpsert) SetGender(v user.Gender) *UserUpsert {
+	u.Set(user.FieldGender, v)
+	return u
+}
+
+// UpdateGender sets the "gender" field to the value that was provided on create.
+func (u *UserUpsert) UpdateGender() *UserUpsert {
+	u.SetExcluded(user.FieldGender)
+	return u
+}
+
+// ClearGender clears the value of the "gender" field.
+func (u *UserUpsert) ClearGender() *UserUpsert {
+	u.SetNull(user.FieldGender)
+	return u
+}
+
+// SetAuthority sets the "authority" field.
+func (u *UserUpsert) SetAuthority(v user.Authority) *UserUpsert {
+	u.Set(user.FieldAuthority, v)
+	return u
+}
+
+// UpdateAuthority sets the "authority" field to the value that was provided on create.
+func (u *UserUpsert) UpdateAuthority() *UserUpsert {
+	u.SetExcluded(user.FieldAuthority)
+	return u
+}
+
+// ClearAuthority clears the value of the "authority" field.
+func (u *UserUpsert) ClearAuthority() *UserUpsert {
+	u.SetNull(user.FieldAuthority)
+	return u
+}
+
+// SetLastLoginTime sets the "last_login_time" field.
+func (u *UserUpsert) SetLastLoginTime(v time.Time) *UserUpsert {
+	u.Set(user.FieldLastLoginTime, v)
+	return u
+}
+
+// UpdateLastLoginTime sets the "last_login_time" field to the value that was provided on create.
+func (u *UserUpsert) UpdateLastLoginTime() *UserUpsert {
+	u.SetExcluded(user.FieldLastLoginTime)
+	return u
+}
+
+// ClearLastLoginTime clears the value of the "last_login_time" field.
+func (u *UserUpsert) ClearLastLoginTime() *UserUpsert {
+	u.SetNull(user.FieldLastLoginTime)
+	return u
+}
+
+// SetLastLoginIP sets the "last_login_ip" field.
+func (u *UserUpsert) SetLastLoginIP(v string) *UserUpsert {
+	u.Set(user.FieldLastLoginIP, v)
+	return u
+}
+
+// UpdateLastLoginIP sets the "last_login_ip" field to the value that was provided on create.
+func (u *UserUpsert) UpdateLastLoginIP() *UserUpsert {
+	u.SetExcluded(user.FieldLastLoginIP)
+	return u
+}
+
+// ClearLastLoginIP clears the value of the "last_login_ip" field.
+func (u *UserUpsert) ClearLastLoginIP() *UserUpsert {
+	u.SetNull(user.FieldLastLoginIP)
+	return u
+}
+
+// SetDeptID sets the "dept_id" field.
+func (u *UserUpsert) SetDeptID(v uint32) *UserUpsert {
+	u.Set(user.FieldDeptID, v)
+	return u
+}
+
+// UpdateDeptID sets the "dept_id" field to the value that was provided on create.
+func (u *UserUpsert) UpdateDeptID() *UserUpsert {
+	u.SetExcluded(user.FieldDeptID)
+	return u
+}
+
+// AddDeptID adds v to the "dept_id" field.
+func (u *UserUpsert) AddDeptID(v uint32) *UserUpsert {
+	u.Add(user.FieldDeptID, v)
+	return u
+}
+
+// ClearDeptID clears the value of the "dept_id" field.
+func (u *UserUpsert) ClearDeptID() *UserUpsert {
+	u.SetNull(user.FieldDeptID)
+	return u
+}
+
+// SetPositionID sets the "position_id" field.
+func (u *UserUpsert) SetPositionID(v uint32) *UserUpsert {
+	u.Set(user.FieldPositionID, v)
+	return u
+}
+
+// UpdatePositionID sets the "position_id" field to the value that was provided on create.
+func (u *UserUpsert) UpdatePositionID() *UserUpsert {
+	u.SetExcluded(user.FieldPositionID)
+	return u
+}
+
+// AddPositionID adds v to the "position_id" field.
+func (u *UserUpsert) AddPositionID(v uint32) *UserUpsert {
+	u.Add(user.FieldPositionID, v)
+	return u
+}
+
+// ClearPositionID clears the value of the "position_id" field.
+func (u *UserUpsert) ClearPositionID() *UserUpsert {
+	u.SetNull(user.FieldPositionID)
+	return u
+}
+
+// SetWorkID sets the "work_id" field.
+func (u *UserUpsert) SetWorkID(v uint32) *UserUpsert {
+	u.Set(user.FieldWorkID, v)
+	return u
+}
+
+// UpdateWorkID sets the "work_id" field to the value that was provided on create.
+func (u *UserUpsert) UpdateWorkID() *UserUpsert {
+	u.SetExcluded(user.FieldWorkID)
+	return u
+}
+
+// AddWorkID adds v to the "work_id" field.
+func (u *UserUpsert) AddWorkID(v uint32) *UserUpsert {
+	u.Add(user.FieldWorkID, v)
+	return u
+}
+
+// ClearWorkID clears the value of the "work_id" field.
+func (u *UserUpsert) ClearWorkID() *UserUpsert {
+	u.SetNull(user.FieldWorkID)
+	return u
+}
+
+// SetPwdChangedAt sets the "pwd_changed_at" field.
+func (u *UserUpsert) SetPwdChangedAt(v time.Time) *UserUpsert {
+	u.Set(user.FieldPwdChangedAt, v)
+	return u
+}
+
+// UpdatePwdChangedAt sets the "pwd_changed_at" field to the value that was provided on create.
+func (u *UserUpsert) UpdatePwdChangedAt() *UserUpsert {
+	u.SetExcluded(user.FieldPwdChangedAt)
+	return u
+}
+
+// ClearPwdChangedAt clears the value of the "pwd_changed_at" field.
+func (u *UserUpsert) ClearPwdChangedAt() *UserUpsert {
+	u.SetNull(user.FieldPwdChangedAt)
+	return u
+}
+
+// SetPwdExpireAt sets the "pwd_expire_at" field.
+func (u *UserUpsert) SetPwdExpireAt(v time.Time) *UserUpsert {
+	u.Set(user.FieldPwdExpireAt, v)
+	return u
+}
+
+// UpdatePwdExpireAt sets the "pwd_expire_at" field to the value that was provided on create.
+func (u *UserUpsert) UpdatePwdExpireAt() *UserUpsert {
+	u.SetExcluded(user.FieldPwdExpireAt)
+	return u
+}
+
+// ClearPwdExpireAt clears the value of the "pwd_expire_at" field.
+func (u *UserUpsert) ClearPwdExpireAt() *UserUpsert {
+	u.SetNull(user.FieldPwdExpireAt)
+	return u
+}
+
+// SetLoginFailCount sets the "login_fail_count" field.
+func (u *UserUpsert) SetLoginFailCount(v int) *UserUpsert {
+	u.Set(user.FieldLoginFailCount, v)
+	return u
+}
+
+// UpdateLoginFailCount sets the "login_fail_count" field to the value that was provided on create.
+func (u *UserUpsert) UpdateLoginFailCount() *UserUpsert {
+	u.SetExcluded(user.FieldLoginFailCount)
+	return u
+}
+
+// AddLoginFailCount adds v to the "login_fail_count" field.
+func (u *UserUpsert) AddLoginFailCount(v int) *UserUpsert {
+	u.Add(user.FieldLoginFailCount, v)
+	return u
+}
+
+// SetLockedUntil sets the "locked_until" field.
+func (u *UserUpsert) SetLockedUntil(v time.Time) *UserUpsert {
+	u.Set(user.FieldLockedUntil, v)
+	return u
+}
+
+// UpdateLockedUntil sets the "locked_until" field to the value that was provided on create.
+func (u *UserUpsert) UpdateLockedUntil() *UserUpsert {
+	u.SetExcluded(user.FieldLockedUntil)
+	return u
+}
+
+// ClearLockedUntil clears the value of the "locked_until" field.
+func (u *UserUpsert) ClearLockedUntil() *UserUpsert {
+	u.SetNull(user.FieldLockedUntil)
+	return u
+}
+
+// SetMaxConcurrent sets the "max_concurrent" field.
+func (u *UserUpsert) SetMaxConcurrent(v int) *UserUpsert {
+	u.Set(user.FieldMaxConcurrent, v)
+	return u
+}
+
+// UpdateMaxConcurrent sets the "max_concurrent" field to the value that was provided on create.
+func (u *UserUpsert) UpdateMaxConcurrent() *UserUpsert {
+	u.SetExcluded(user.FieldMaxConcurrent)
+	return u
+}
+
+// AddMaxConcurrent adds v to the "max_concurrent" field.
+func (u *UserUpsert) AddMaxConcurrent(v int) *UserUpsert {
+	u.Add(user.FieldMaxConcurrent, v)
+	return u
+}
+
+// SetMfaEnabled sets the "mfa_enabled" field.
+func (u *UserUpsert) SetMfaEnabled(v bool) *UserUpsert {
+	u.Set(user.FieldMfaEnabled, v)
+	return u
+}
+
+// UpdateMfaEnabled sets the "mfa_enabled" field to the value that was provided on create.
+func (u *UserUpsert) UpdateMfaEnabled() *UserUpsert {
+	u.SetExcluded(user.FieldMfaEnabled)
+	return u
+}
+
+// SetMfaSecret sets the "mfa_secret" field.
+func (u *UserUpsert) SetMfaSecret(v string) *UserUpsert {
+	u.Set(user.FieldMfaSecret, v)
+	return u
+}
+
+// UpdateMfaSecret sets the "mfa_secret" field to the value that was provided on create.
+func (u *UserUpsert) UpdateMfaSecret() *UserUpsert {
+	u.SetExcluded(user.FieldMfaSecret)
+	return u
+}
+
+// ClearMfaSecret clears the value of the "mfa_secret" field.
+func (u *UserUpsert) ClearMfaSecret() *UserUpsert {
+	u.SetNull(user.FieldMfaSecret)
+	return u
+}
+
+// SetOperationPassword sets the "operation_password" field.
+func (u *UserUpsert) SetOperationPassword(v string) *UserUpsert {
+	u.Set(user.FieldOperationPassword, v)
+	return u
+}
+
+// UpdateOperationPassword sets the "operation_password" field to the value that was provided on create.
+func (u *UserUpsert) UpdateOperationPassword() *UserUpsert {
+	u.SetExcluded(user.FieldOperationPassword)
+	return u
+}
+
+// ClearOperationPassword clears the value of the "operation_password" field.
+func (u *UserUpsert) ClearOperationPassword() *UserUpsert {
+	u.SetNull(user.FieldOperationPassword)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.User.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(user.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *UserUpsertOne) UpdateNewValues() *UserUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(user.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(user.FieldCreateTime)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(user.FieldTenantID)
+		}
+		if _, exists := u.create.mutation.Username(); exists {
+			s.SetIgnore(user.FieldUsername)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.User.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *UserUpsertOne) Ignore() *UserUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *UserUpsertOne) DoNothing() *UserUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the UserCreate.OnConflict
+// documentation for more info.
+func (u *UserUpsertOne) Update(set func(*UserUpsert)) *UserUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&UserUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *UserUpsertOne) SetCreateBy(v uint32) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *UserUpsertOne) AddCreateBy(v uint32) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateCreateBy() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *UserUpsertOne) ClearCreateBy() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *UserUpsertOne) SetUpdateBy(v uint32) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *UserUpsertOne) AddUpdateBy(v uint32) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateUpdateBy() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *UserUpsertOne) ClearUpdateBy() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetDeleteBy sets the "delete_by" field.
+func (u *UserUpsertOne) SetDeleteBy(v uint32) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetDeleteBy(v)
+	})
+}
+
+// AddDeleteBy adds v to the "delete_by" field.
+func (u *UserUpsertOne) AddDeleteBy(v uint32) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.AddDeleteBy(v)
+	})
+}
+
+// UpdateDeleteBy sets the "delete_by" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateDeleteBy() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateDeleteBy()
+	})
+}
+
+// ClearDeleteBy clears the value of the "delete_by" field.
+func (u *UserUpsertOne) ClearDeleteBy() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearDeleteBy()
+	})
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *UserUpsertOne) SetUpdateTime(v time.Time) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateUpdateTime() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *UserUpsertOne) ClearUpdateTime() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *UserUpsertOne) SetDeleteTime(v time.Time) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateDeleteTime() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *UserUpsertOne) ClearDeleteTime() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetRemark sets the "remark" field.
+func (u *UserUpsertOne) SetRemark(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetRemark(v)
+	})
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateRemark() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateRemark()
+	})
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *UserUpsertOne) ClearRemark() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearRemark()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *UserUpsertOne) SetStatus(v user.Status) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateStatus() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *UserUpsertOne) ClearStatus() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetNickname sets the "nickname" field.
+func (u *UserUpsertOne) SetNickname(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetNickname(v)
+	})
+}
+
+// UpdateNickname sets the "nickname" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateNickname() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateNickname()
+	})
+}
+
+// ClearNickname clears the value of the "nickname" field.
+func (u *UserUpsertOne) ClearNickname() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearNickname()
+	})
+}
+
+// SetRealname sets the "realname" field.
+func (u *UserUpsertOne) SetRealname(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetRealname(v)
+	})
+}
+
+// UpdateRealname sets the "realname" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateRealname() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateRealname()
+	})
+}
+
+// ClearRealname clears the value of the "realname" field.
+func (u *UserUpsertOne) ClearRealname() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearRealname()
+	})
+}
+
+// SetEmail sets the "email" field.
+func (u *UserUpsertOne) SetEmail(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetEmail(v)
+	})
+}
+
+// UpdateEmail sets the "email" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateEmail() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateEmail()
+	})
+}
+
+// ClearEmail clears the value of the "email" field.
+func (u *UserUpsertOne) ClearEmail() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearEmail()
+	})
+}
+
+// SetMobile sets the "mobile" field.
+func (u *UserUpsertOne) SetMobile(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetMobile(v)
+	})
+}
+
+// UpdateMobile sets the "mobile" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateMobile() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateMobile()
+	})
+}
+
+// ClearMobile clears the value of the "mobile" field.
+func (u *UserUpsertOne) ClearMobile() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearMobile()
+	})
+}
+
+// SetTelephone sets the "telephone" field.
+func (u *UserUpsertOne) SetTelephone(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetTelephone(v)
+	})
+}
+
+// UpdateTelephone sets the "telephone" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateTelephone() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateTelephone()
+	})
+}
+
+// ClearTelephone clears the value of the "telephone" field.
+func (u *UserUpsertOne) ClearTelephone() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearTelephone()
+	})
+}
+
+// SetAvatar sets the "avatar" field.
+func (u *UserUpsertOne) SetAvatar(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetAvatar(v)
+	})
+}
+
+// UpdateAvatar sets the "avatar" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateAvatar() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateAvatar()
+	})
+}
+
+// ClearAvatar clears the value of the "avatar" field.
+func (u *UserUpsertOne) ClearAvatar() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearAvatar()
+	})
+}
+
+// SetAddress sets the "address" field.
+func (u *UserUpsertOne) SetAddress(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetAddress(v)
+	})
+}
+
+// UpdateAddress sets the "address" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateAddress() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateAddress()
+	})
+}
+
+// ClearAddress clears the value of the "address" field.
+func (u *UserUpsertOne) ClearAddress() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearAddress()
+	})
+}
+
+// SetRegion sets the "region" field.
+func (u *UserUpsertOne) SetRegion(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetRegion(v)
+	})
+}
+
+// UpdateRegion sets the "region" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateRegion() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateRegion()
+	})
+}
+
+// ClearRegion clears the value of the "region" field.
+func (u *UserUpsertOne) ClearRegion() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearRegion()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *UserUpsertOne) SetDescription(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateDescription() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *UserUpsertOne) ClearDescription() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetGender sets the "gender" field.
+func (u *UserUpsertOne) SetGender(v user.Gender) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetGender(v)
+	})
+}
+
+// UpdateGender sets the "gender" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateGender() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateGender()
+	})
+}
+
+// ClearGender clears the value of the "gender" field.
+func (u *UserUpsertOne) ClearGender() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearGender()
+	})
+}
+
+// SetAuthority sets the "authority" field.
+func (u *UserUpsertOne) SetAuthority(v user.Authority) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetAuthority(v)
+	})
+}
+
+// UpdateAuthority sets the "authority" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateAuthority() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateAuthority()
+	})
+}
+
+// ClearAuthority clears the value of the "authority" field.
+func (u *UserUpsertOne) ClearAuthority() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearAuthority()
+	})
+}
+
+// SetLastLoginTime sets the "last_login_time" field.
+func (u *UserUpsertOne) SetLastLoginTime(v time.Time) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetLastLoginTime(v)
+	})
+}
+
+// UpdateLastLoginTime sets the "last_login_time" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateLastLoginTime() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateLastLoginTime()
+	})
+}
+
+// ClearLastLoginTime clears the value of the "last_login_time" field.
+func (u *UserUpsertOne) ClearLastLoginTime() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearLastLoginTime()
+	})
+}
+
+// SetLastLoginIP sets the "last_login_ip" field.
+func (u *UserUpsertOne) SetLastLoginIP(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetLastLoginIP(v)
+	})
+}
+
+// UpdateLastLoginIP sets the "last_login_ip" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateLastLoginIP() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateLastLoginIP()
+	})
+}
+
+// ClearLastLoginIP clears the value of the "last_login_ip" field.
+func (u *UserUpsertOne) ClearLastLoginIP() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearLastLoginIP()
+	})
+}
+
+// SetDeptID sets the "dept_id" field.
+func (u *UserUpsertOne) SetDeptID(v uint32) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetDeptID(v)
+	})
+}
+
+// AddDeptID adds v to the "dept_id" field.
+func (u *UserUpsertOne) AddDeptID(v uint32) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.AddDeptID(v)
+	})
+}
+
+// UpdateDeptID sets the "dept_id" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateDeptID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateDeptID()
+	})
+}
+
+// ClearDeptID clears the value of the "dept_id" field.
+func (u *UserUpsertOne) ClearDeptID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearDeptID()
+	})
+}
+
+// SetPositionID sets the "position_id" field.
+func (u *UserUpsertOne) SetPositionID(v uint32) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetPositionID(v)
+	})
+}
+
+// AddPositionID adds v to the "position_id" field.
+func (u *UserUpsertOne) AddPositionID(v uint32) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.AddPositionID(v)
+	})
+}
+
+// UpdatePositionID sets the "position_id" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdatePositionID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdatePositionID()
+	})
+}
+
+// ClearPositionID clears the value of the "position_id" field.
+func (u *UserUpsertOne) ClearPositionID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearPositionID()
+	})
+}
+
+// SetWorkID sets the "work_id" field.
+func (u *UserUpsertOne) SetWorkID(v uint32) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetWorkID(v)
+	})
+}
+
+// AddWorkID adds v to the "work_id" field.
+func (u *UserUpsertOne) AddWorkID(v uint32) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.AddWorkID(v)
+	})
+}
+
+// UpdateWorkID sets the "work_id" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateWorkID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateWorkID()
+	})
+}
+
+// ClearWorkID clears the value of the "work_id" field.
+func (u *UserUpsertOne) ClearWorkID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearWorkID()
+	})
+}
+
+// SetPwdChangedAt sets the "pwd_changed_at" field.
+func (u *UserUpsertOne) SetPwdChangedAt(v time.Time) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetPwdChangedAt(v)
+	})
+}
+
+// UpdatePwdChangedAt sets the "pwd_changed_at" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdatePwdChangedAt() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdatePwdChangedAt()
+	})
+}
+
+// ClearPwdChangedAt clears the value of the "pwd_changed_at" field.
+func (u *UserUpsertOne) ClearPwdChangedAt() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearPwdChangedAt()
+	})
+}
+
+// SetPwdExpireAt sets the "pwd_expire_at" field.
+func (u *UserUpsertOne) SetPwdExpireAt(v time.Time) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetPwdExpireAt(v)
+	})
+}
+
+// UpdatePwdExpireAt sets the "pwd_expire_at" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdatePwdExpireAt() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdatePwdExpireAt()
+	})
+}
+
+// ClearPwdExpireAt clears the value of the "pwd_expire_at" field.
+func (u *UserUpsertOne) ClearPwdExpireAt() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearPwdExpireAt()
+	})
+}
+
+// SetLoginFailCount sets the "login_fail_count" field.
+func (u *UserUpsertOne) SetLoginFailCount(v int) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetLoginFailCount(v)
+	})
+}
+
+// AddLoginFailCount adds v to the "login_fail_count" field.
+func (u *UserUpsertOne) AddLoginFailCount(v int) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.AddLoginFailCount(v)
+	})
+}
+
+// UpdateLoginFailCount sets the "login_fail_count" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateLoginFailCount() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateLoginFailCount()
+	})
+}
+
+// SetLockedUntil sets the "locked_until" field.
+func (u *UserUpsertOne) SetLockedUntil(v time.Time) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetLockedUntil(v)
+	})
+}
+
+// UpdateLockedUntil sets the "locked_until" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateLockedUntil() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateLockedUntil()
+	})
+}
+
+// ClearLockedUntil clears the value of the "locked_until" field.
+func (u *UserUpsertOne) ClearLockedUntil() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearLockedUntil()
+	})
+}
+
+// SetMaxConcurrent sets the "max_concurrent" field.
+func (u *UserUpsertOne) SetMaxConcurrent(v int) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetMaxConcurrent(v)
+	})
+}
+
+// AddMaxConcurrent adds v to the "max_concurrent" field.
+func (u *UserUpsertOne) AddMaxConcurrent(v int) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.AddMaxConcurrent(v)
+	})
+}
+
+// UpdateMaxConcurrent sets the "max_concurrent" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateMaxConcurrent() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateMaxConcurrent()
+	})
+}
+
+// SetMfaEnabled sets the "mfa_enabled" field.
+func (u *UserUpsertOne) SetMfaEnabled(v bool) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetMfaEnabled(v)
+	})
+}
+
+// UpdateMfaEnabled sets the "mfa_enabled" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateMfaEnabled() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateMfaEnabled()
+	})
+}
+
+// SetMfaSecret sets the "mfa_secret" field.
+func (u *UserUpsertOne) SetMfaSecret(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetMfaSecret(v)
+	})
+}
+
+// UpdateMfaSecret sets the "mfa_secret" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateMfaSecret() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateMfaSecret()
+	})
+}
+
+// ClearMfaSecret clears the value of the "mfa_secret" field.
+func (u *UserUpsertOne) ClearMfaSecret() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearMfaSecret()
+	})
+}
+
+// SetOperationPassword sets the "operation_password" field.
+func (u *UserUpsertOne) SetOperationPassword(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetOperationPassword(v)
+	})
+}
+
+// UpdateOperationPassword sets the "operation_password" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateOperationPassword() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateOperationPassword()
+	})
+}
+
+// ClearOperationPassword clears the value of the "operation_password" field.
+func (u *UserUpsertOne) ClearOperationPassword() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearOperationPassword()
+	})
+}
+
+// Exec executes the query.
+func (u *UserUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for UserCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *UserUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *UserUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *UserUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // UserCreateBulk is the builder for creating many User entities in bulk.
 type UserCreateBulk struct {
 	config
 	err      error
 	builders []*UserCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the User entities in the database.
@@ -888,6 +2305,7 @@ func (_c *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -938,6 +2356,815 @@ func (_c *UserCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *UserCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.User.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.UserUpsert) {
+//			SetCreateBy(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *UserCreateBulk) OnConflict(opts ...sql.ConflictOption) *UserUpsertBulk {
+	_c.conflict = opts
+	return &UserUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.User.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *UserCreateBulk) OnConflictColumns(columns ...string) *UserUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &UserUpsertBulk{
+		create: _c,
+	}
+}
+
+// UserUpsertBulk is the builder for "upsert"-ing
+// a bulk of User nodes.
+type UserUpsertBulk struct {
+	create *UserCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.User.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(user.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *UserUpsertBulk) UpdateNewValues() *UserUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(user.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(user.FieldCreateTime)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(user.FieldTenantID)
+			}
+			if _, exists := b.mutation.Username(); exists {
+				s.SetIgnore(user.FieldUsername)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.User.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *UserUpsertBulk) Ignore() *UserUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *UserUpsertBulk) DoNothing() *UserUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the UserCreateBulk.OnConflict
+// documentation for more info.
+func (u *UserUpsertBulk) Update(set func(*UserUpsert)) *UserUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&UserUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *UserUpsertBulk) SetCreateBy(v uint32) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *UserUpsertBulk) AddCreateBy(v uint32) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateCreateBy() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *UserUpsertBulk) ClearCreateBy() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *UserUpsertBulk) SetUpdateBy(v uint32) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *UserUpsertBulk) AddUpdateBy(v uint32) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateUpdateBy() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *UserUpsertBulk) ClearUpdateBy() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetDeleteBy sets the "delete_by" field.
+func (u *UserUpsertBulk) SetDeleteBy(v uint32) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetDeleteBy(v)
+	})
+}
+
+// AddDeleteBy adds v to the "delete_by" field.
+func (u *UserUpsertBulk) AddDeleteBy(v uint32) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.AddDeleteBy(v)
+	})
+}
+
+// UpdateDeleteBy sets the "delete_by" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateDeleteBy() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateDeleteBy()
+	})
+}
+
+// ClearDeleteBy clears the value of the "delete_by" field.
+func (u *UserUpsertBulk) ClearDeleteBy() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearDeleteBy()
+	})
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *UserUpsertBulk) SetUpdateTime(v time.Time) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateUpdateTime() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *UserUpsertBulk) ClearUpdateTime() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *UserUpsertBulk) SetDeleteTime(v time.Time) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateDeleteTime() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *UserUpsertBulk) ClearDeleteTime() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetRemark sets the "remark" field.
+func (u *UserUpsertBulk) SetRemark(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetRemark(v)
+	})
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateRemark() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateRemark()
+	})
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *UserUpsertBulk) ClearRemark() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearRemark()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *UserUpsertBulk) SetStatus(v user.Status) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateStatus() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *UserUpsertBulk) ClearStatus() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetNickname sets the "nickname" field.
+func (u *UserUpsertBulk) SetNickname(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetNickname(v)
+	})
+}
+
+// UpdateNickname sets the "nickname" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateNickname() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateNickname()
+	})
+}
+
+// ClearNickname clears the value of the "nickname" field.
+func (u *UserUpsertBulk) ClearNickname() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearNickname()
+	})
+}
+
+// SetRealname sets the "realname" field.
+func (u *UserUpsertBulk) SetRealname(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetRealname(v)
+	})
+}
+
+// UpdateRealname sets the "realname" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateRealname() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateRealname()
+	})
+}
+
+// ClearRealname clears the value of the "realname" field.
+func (u *UserUpsertBulk) ClearRealname() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearRealname()
+	})
+}
+
+// SetEmail sets the "email" field.
+func (u *UserUpsertBulk) SetEmail(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetEmail(v)
+	})
+}
+
+// UpdateEmail sets the "email" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateEmail() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateEmail()
+	})
+}
+
+// ClearEmail clears the value of the "email" field.
+func (u *UserUpsertBulk) ClearEmail() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearEmail()
+	})
+}
+
+// SetMobile sets the "mobile" field.
+func (u *UserUpsertBulk) SetMobile(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetMobile(v)
+	})
+}
+
+// UpdateMobile sets the "mobile" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateMobile() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateMobile()
+	})
+}
+
+// ClearMobile clears the value of the "mobile" field.
+func (u *UserUpsertBulk) ClearMobile() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearMobile()
+	})
+}
+
+// SetTelephone sets the "telephone" field.
+func (u *UserUpsertBulk) SetTelephone(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetTelephone(v)
+	})
+}
+
+// UpdateTelephone sets the "telephone" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateTelephone() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateTelephone()
+	})
+}
+
+// ClearTelephone clears the value of the "telephone" field.
+func (u *UserUpsertBulk) ClearTelephone() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearTelephone()
+	})
+}
+
+// SetAvatar sets the "avatar" field.
+func (u *UserUpsertBulk) SetAvatar(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetAvatar(v)
+	})
+}
+
+// UpdateAvatar sets the "avatar" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateAvatar() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateAvatar()
+	})
+}
+
+// ClearAvatar clears the value of the "avatar" field.
+func (u *UserUpsertBulk) ClearAvatar() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearAvatar()
+	})
+}
+
+// SetAddress sets the "address" field.
+func (u *UserUpsertBulk) SetAddress(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetAddress(v)
+	})
+}
+
+// UpdateAddress sets the "address" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateAddress() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateAddress()
+	})
+}
+
+// ClearAddress clears the value of the "address" field.
+func (u *UserUpsertBulk) ClearAddress() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearAddress()
+	})
+}
+
+// SetRegion sets the "region" field.
+func (u *UserUpsertBulk) SetRegion(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetRegion(v)
+	})
+}
+
+// UpdateRegion sets the "region" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateRegion() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateRegion()
+	})
+}
+
+// ClearRegion clears the value of the "region" field.
+func (u *UserUpsertBulk) ClearRegion() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearRegion()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *UserUpsertBulk) SetDescription(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateDescription() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *UserUpsertBulk) ClearDescription() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetGender sets the "gender" field.
+func (u *UserUpsertBulk) SetGender(v user.Gender) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetGender(v)
+	})
+}
+
+// UpdateGender sets the "gender" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateGender() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateGender()
+	})
+}
+
+// ClearGender clears the value of the "gender" field.
+func (u *UserUpsertBulk) ClearGender() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearGender()
+	})
+}
+
+// SetAuthority sets the "authority" field.
+func (u *UserUpsertBulk) SetAuthority(v user.Authority) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetAuthority(v)
+	})
+}
+
+// UpdateAuthority sets the "authority" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateAuthority() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateAuthority()
+	})
+}
+
+// ClearAuthority clears the value of the "authority" field.
+func (u *UserUpsertBulk) ClearAuthority() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearAuthority()
+	})
+}
+
+// SetLastLoginTime sets the "last_login_time" field.
+func (u *UserUpsertBulk) SetLastLoginTime(v time.Time) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetLastLoginTime(v)
+	})
+}
+
+// UpdateLastLoginTime sets the "last_login_time" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateLastLoginTime() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateLastLoginTime()
+	})
+}
+
+// ClearLastLoginTime clears the value of the "last_login_time" field.
+func (u *UserUpsertBulk) ClearLastLoginTime() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearLastLoginTime()
+	})
+}
+
+// SetLastLoginIP sets the "last_login_ip" field.
+func (u *UserUpsertBulk) SetLastLoginIP(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetLastLoginIP(v)
+	})
+}
+
+// UpdateLastLoginIP sets the "last_login_ip" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateLastLoginIP() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateLastLoginIP()
+	})
+}
+
+// ClearLastLoginIP clears the value of the "last_login_ip" field.
+func (u *UserUpsertBulk) ClearLastLoginIP() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearLastLoginIP()
+	})
+}
+
+// SetDeptID sets the "dept_id" field.
+func (u *UserUpsertBulk) SetDeptID(v uint32) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetDeptID(v)
+	})
+}
+
+// AddDeptID adds v to the "dept_id" field.
+func (u *UserUpsertBulk) AddDeptID(v uint32) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.AddDeptID(v)
+	})
+}
+
+// UpdateDeptID sets the "dept_id" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateDeptID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateDeptID()
+	})
+}
+
+// ClearDeptID clears the value of the "dept_id" field.
+func (u *UserUpsertBulk) ClearDeptID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearDeptID()
+	})
+}
+
+// SetPositionID sets the "position_id" field.
+func (u *UserUpsertBulk) SetPositionID(v uint32) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetPositionID(v)
+	})
+}
+
+// AddPositionID adds v to the "position_id" field.
+func (u *UserUpsertBulk) AddPositionID(v uint32) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.AddPositionID(v)
+	})
+}
+
+// UpdatePositionID sets the "position_id" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdatePositionID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdatePositionID()
+	})
+}
+
+// ClearPositionID clears the value of the "position_id" field.
+func (u *UserUpsertBulk) ClearPositionID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearPositionID()
+	})
+}
+
+// SetWorkID sets the "work_id" field.
+func (u *UserUpsertBulk) SetWorkID(v uint32) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetWorkID(v)
+	})
+}
+
+// AddWorkID adds v to the "work_id" field.
+func (u *UserUpsertBulk) AddWorkID(v uint32) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.AddWorkID(v)
+	})
+}
+
+// UpdateWorkID sets the "work_id" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateWorkID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateWorkID()
+	})
+}
+
+// ClearWorkID clears the value of the "work_id" field.
+func (u *UserUpsertBulk) ClearWorkID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearWorkID()
+	})
+}
+
+// SetPwdChangedAt sets the "pwd_changed_at" field.
+func (u *UserUpsertBulk) SetPwdChangedAt(v time.Time) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetPwdChangedAt(v)
+	})
+}
+
+// UpdatePwdChangedAt sets the "pwd_changed_at" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdatePwdChangedAt() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdatePwdChangedAt()
+	})
+}
+
+// ClearPwdChangedAt clears the value of the "pwd_changed_at" field.
+func (u *UserUpsertBulk) ClearPwdChangedAt() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearPwdChangedAt()
+	})
+}
+
+// SetPwdExpireAt sets the "pwd_expire_at" field.
+func (u *UserUpsertBulk) SetPwdExpireAt(v time.Time) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetPwdExpireAt(v)
+	})
+}
+
+// UpdatePwdExpireAt sets the "pwd_expire_at" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdatePwdExpireAt() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdatePwdExpireAt()
+	})
+}
+
+// ClearPwdExpireAt clears the value of the "pwd_expire_at" field.
+func (u *UserUpsertBulk) ClearPwdExpireAt() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearPwdExpireAt()
+	})
+}
+
+// SetLoginFailCount sets the "login_fail_count" field.
+func (u *UserUpsertBulk) SetLoginFailCount(v int) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetLoginFailCount(v)
+	})
+}
+
+// AddLoginFailCount adds v to the "login_fail_count" field.
+func (u *UserUpsertBulk) AddLoginFailCount(v int) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.AddLoginFailCount(v)
+	})
+}
+
+// UpdateLoginFailCount sets the "login_fail_count" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateLoginFailCount() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateLoginFailCount()
+	})
+}
+
+// SetLockedUntil sets the "locked_until" field.
+func (u *UserUpsertBulk) SetLockedUntil(v time.Time) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetLockedUntil(v)
+	})
+}
+
+// UpdateLockedUntil sets the "locked_until" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateLockedUntil() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateLockedUntil()
+	})
+}
+
+// ClearLockedUntil clears the value of the "locked_until" field.
+func (u *UserUpsertBulk) ClearLockedUntil() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearLockedUntil()
+	})
+}
+
+// SetMaxConcurrent sets the "max_concurrent" field.
+func (u *UserUpsertBulk) SetMaxConcurrent(v int) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetMaxConcurrent(v)
+	})
+}
+
+// AddMaxConcurrent adds v to the "max_concurrent" field.
+func (u *UserUpsertBulk) AddMaxConcurrent(v int) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.AddMaxConcurrent(v)
+	})
+}
+
+// UpdateMaxConcurrent sets the "max_concurrent" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateMaxConcurrent() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateMaxConcurrent()
+	})
+}
+
+// SetMfaEnabled sets the "mfa_enabled" field.
+func (u *UserUpsertBulk) SetMfaEnabled(v bool) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetMfaEnabled(v)
+	})
+}
+
+// UpdateMfaEnabled sets the "mfa_enabled" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateMfaEnabled() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateMfaEnabled()
+	})
+}
+
+// SetMfaSecret sets the "mfa_secret" field.
+func (u *UserUpsertBulk) SetMfaSecret(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetMfaSecret(v)
+	})
+}
+
+// UpdateMfaSecret sets the "mfa_secret" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateMfaSecret() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateMfaSecret()
+	})
+}
+
+// ClearMfaSecret clears the value of the "mfa_secret" field.
+func (u *UserUpsertBulk) ClearMfaSecret() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearMfaSecret()
+	})
+}
+
+// SetOperationPassword sets the "operation_password" field.
+func (u *UserUpsertBulk) SetOperationPassword(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetOperationPassword(v)
+	})
+}
+
+// UpdateOperationPassword sets the "operation_password" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateOperationPassword() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateOperationPassword()
+	})
+}
+
+// ClearOperationPassword clears the value of the "operation_password" field.
+func (u *UserUpsertBulk) ClearOperationPassword() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearOperationPassword()
+	})
+}
+
+// Exec executes the query.
+func (u *UserUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the UserCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for UserCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *UserUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

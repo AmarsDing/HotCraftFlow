@@ -38,6 +38,7 @@ type AssetHit struct {
 	DirectionBias mediacontract.Direction
 	Confidence    float64
 	RuleID        string
+	Notes         string // 映射行的理由说明（路径生成「映射依据」段，详细设计 §2.6）
 }
 
 // EntityMapping 是映射表的一条记录（实体 → 标的）。
@@ -49,6 +50,7 @@ type EntityMapping struct {
 	DirectionBias mediacontract.Direction
 	BaseConfidence float64
 	RuleID        string
+	Notes         string // 映射行的理由说明
 }
 
 // LinkConfidenceThreshold 低于此置信度的实体不进 MIA 链接（契约 §1：0.6）。
@@ -93,6 +95,7 @@ func LinkEntity(e mediacontract.Entity, mappings []EntityMapping) []AssetHit {
 				DirectionBias: m.DirectionBias,
 				Confidence:    conf * e.Confidence, // 乘上实体自身置信度
 				RuleID:        m.RuleID,
+				Notes:         m.Notes,
 			})
 		}
 	}

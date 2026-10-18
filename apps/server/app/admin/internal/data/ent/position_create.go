@@ -9,6 +9,7 @@ import (
 	"framework/app/admin/internal/data/ent/position"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -18,6 +19,7 @@ type PositionCreate struct {
 	config
 	mutation *PositionMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -348,6 +350,7 @@ func (_c *PositionCreate) createSpec() (*Position, *sqlgraph.CreateSpec) {
 		_node = &Position{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(position.Table, sqlgraph.NewFieldSpec(position.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -436,11 +439,590 @@ func (_c *PositionCreate) createSpec() (*Position, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Position.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.PositionUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *PositionCreate) OnConflict(opts ...sql.ConflictOption) *PositionUpsertOne {
+	_c.conflict = opts
+	return &PositionUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Position.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *PositionCreate) OnConflictColumns(columns ...string) *PositionUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &PositionUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// PositionUpsertOne is the builder for "upsert"-ing
+	//  one Position node.
+	PositionUpsertOne struct {
+		create *PositionCreate
+	}
+
+	// PositionUpsert is the "OnConflict" setter.
+	PositionUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *PositionUpsert) SetUpdateTime(v time.Time) *PositionUpsert {
+	u.Set(position.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *PositionUpsert) UpdateUpdateTime() *PositionUpsert {
+	u.SetExcluded(position.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *PositionUpsert) ClearUpdateTime() *PositionUpsert {
+	u.SetNull(position.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *PositionUpsert) SetDeleteTime(v time.Time) *PositionUpsert {
+	u.Set(position.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *PositionUpsert) UpdateDeleteTime() *PositionUpsert {
+	u.SetExcluded(position.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *PositionUpsert) ClearDeleteTime() *PositionUpsert {
+	u.SetNull(position.FieldDeleteTime)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *PositionUpsert) SetStatus(v position.Status) *PositionUpsert {
+	u.Set(position.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *PositionUpsert) UpdateStatus() *PositionUpsert {
+	u.SetExcluded(position.FieldStatus)
+	return u
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *PositionUpsert) ClearStatus() *PositionUpsert {
+	u.SetNull(position.FieldStatus)
+	return u
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *PositionUpsert) SetCreateBy(v uint32) *PositionUpsert {
+	u.Set(position.FieldCreateBy, v)
+	return u
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *PositionUpsert) UpdateCreateBy() *PositionUpsert {
+	u.SetExcluded(position.FieldCreateBy)
+	return u
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *PositionUpsert) AddCreateBy(v uint32) *PositionUpsert {
+	u.Add(position.FieldCreateBy, v)
+	return u
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *PositionUpsert) ClearCreateBy() *PositionUpsert {
+	u.SetNull(position.FieldCreateBy)
+	return u
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *PositionUpsert) SetUpdateBy(v uint32) *PositionUpsert {
+	u.Set(position.FieldUpdateBy, v)
+	return u
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *PositionUpsert) UpdateUpdateBy() *PositionUpsert {
+	u.SetExcluded(position.FieldUpdateBy)
+	return u
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *PositionUpsert) AddUpdateBy(v uint32) *PositionUpsert {
+	u.Add(position.FieldUpdateBy, v)
+	return u
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *PositionUpsert) ClearUpdateBy() *PositionUpsert {
+	u.SetNull(position.FieldUpdateBy)
+	return u
+}
+
+// SetRemark sets the "remark" field.
+func (u *PositionUpsert) SetRemark(v string) *PositionUpsert {
+	u.Set(position.FieldRemark, v)
+	return u
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *PositionUpsert) UpdateRemark() *PositionUpsert {
+	u.SetExcluded(position.FieldRemark)
+	return u
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *PositionUpsert) ClearRemark() *PositionUpsert {
+	u.SetNull(position.FieldRemark)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *PositionUpsert) SetName(v string) *PositionUpsert {
+	u.Set(position.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *PositionUpsert) UpdateName() *PositionUpsert {
+	u.SetExcluded(position.FieldName)
+	return u
+}
+
+// SetCode sets the "code" field.
+func (u *PositionUpsert) SetCode(v string) *PositionUpsert {
+	u.Set(position.FieldCode, v)
+	return u
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *PositionUpsert) UpdateCode() *PositionUpsert {
+	u.SetExcluded(position.FieldCode)
+	return u
+}
+
+// SetDeptID sets the "dept_id" field.
+func (u *PositionUpsert) SetDeptID(v uint32) *PositionUpsert {
+	u.Set(position.FieldDeptID, v)
+	return u
+}
+
+// UpdateDeptID sets the "dept_id" field to the value that was provided on create.
+func (u *PositionUpsert) UpdateDeptID() *PositionUpsert {
+	u.SetExcluded(position.FieldDeptID)
+	return u
+}
+
+// AddDeptID adds v to the "dept_id" field.
+func (u *PositionUpsert) AddDeptID(v uint32) *PositionUpsert {
+	u.Add(position.FieldDeptID, v)
+	return u
+}
+
+// ClearDeptID clears the value of the "dept_id" field.
+func (u *PositionUpsert) ClearDeptID() *PositionUpsert {
+	u.SetNull(position.FieldDeptID)
+	return u
+}
+
+// SetParentID sets the "parent_id" field.
+func (u *PositionUpsert) SetParentID(v uint32) *PositionUpsert {
+	u.Set(position.FieldParentID, v)
+	return u
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *PositionUpsert) UpdateParentID() *PositionUpsert {
+	u.SetExcluded(position.FieldParentID)
+	return u
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *PositionUpsert) ClearParentID() *PositionUpsert {
+	u.SetNull(position.FieldParentID)
+	return u
+}
+
+// SetSortID sets the "sort_id" field.
+func (u *PositionUpsert) SetSortID(v int32) *PositionUpsert {
+	u.Set(position.FieldSortID, v)
+	return u
+}
+
+// UpdateSortID sets the "sort_id" field to the value that was provided on create.
+func (u *PositionUpsert) UpdateSortID() *PositionUpsert {
+	u.SetExcluded(position.FieldSortID)
+	return u
+}
+
+// AddSortID adds v to the "sort_id" field.
+func (u *PositionUpsert) AddSortID(v int32) *PositionUpsert {
+	u.Add(position.FieldSortID, v)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Position.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(position.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *PositionUpsertOne) UpdateNewValues() *PositionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(position.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(position.FieldCreateTime)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(position.FieldTenantID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Position.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *PositionUpsertOne) Ignore() *PositionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *PositionUpsertOne) DoNothing() *PositionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the PositionCreate.OnConflict
+// documentation for more info.
+func (u *PositionUpsertOne) Update(set func(*PositionUpsert)) *PositionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&PositionUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *PositionUpsertOne) SetUpdateTime(v time.Time) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *PositionUpsertOne) UpdateUpdateTime() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *PositionUpsertOne) ClearUpdateTime() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *PositionUpsertOne) SetDeleteTime(v time.Time) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *PositionUpsertOne) UpdateDeleteTime() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *PositionUpsertOne) ClearDeleteTime() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *PositionUpsertOne) SetStatus(v position.Status) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *PositionUpsertOne) UpdateStatus() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *PositionUpsertOne) ClearStatus() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *PositionUpsertOne) SetCreateBy(v uint32) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *PositionUpsertOne) AddCreateBy(v uint32) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *PositionUpsertOne) UpdateCreateBy() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *PositionUpsertOne) ClearCreateBy() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *PositionUpsertOne) SetUpdateBy(v uint32) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *PositionUpsertOne) AddUpdateBy(v uint32) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *PositionUpsertOne) UpdateUpdateBy() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *PositionUpsertOne) ClearUpdateBy() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetRemark sets the "remark" field.
+func (u *PositionUpsertOne) SetRemark(v string) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetRemark(v)
+	})
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *PositionUpsertOne) UpdateRemark() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateRemark()
+	})
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *PositionUpsertOne) ClearRemark() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearRemark()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *PositionUpsertOne) SetName(v string) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *PositionUpsertOne) UpdateName() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *PositionUpsertOne) SetCode(v string) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *PositionUpsertOne) UpdateCode() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateCode()
+	})
+}
+
+// SetDeptID sets the "dept_id" field.
+func (u *PositionUpsertOne) SetDeptID(v uint32) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetDeptID(v)
+	})
+}
+
+// AddDeptID adds v to the "dept_id" field.
+func (u *PositionUpsertOne) AddDeptID(v uint32) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.AddDeptID(v)
+	})
+}
+
+// UpdateDeptID sets the "dept_id" field to the value that was provided on create.
+func (u *PositionUpsertOne) UpdateDeptID() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateDeptID()
+	})
+}
+
+// ClearDeptID clears the value of the "dept_id" field.
+func (u *PositionUpsertOne) ClearDeptID() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearDeptID()
+	})
+}
+
+// SetParentID sets the "parent_id" field.
+func (u *PositionUpsertOne) SetParentID(v uint32) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetParentID(v)
+	})
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *PositionUpsertOne) UpdateParentID() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateParentID()
+	})
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *PositionUpsertOne) ClearParentID() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearParentID()
+	})
+}
+
+// SetSortID sets the "sort_id" field.
+func (u *PositionUpsertOne) SetSortID(v int32) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetSortID(v)
+	})
+}
+
+// AddSortID adds v to the "sort_id" field.
+func (u *PositionUpsertOne) AddSortID(v int32) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.AddSortID(v)
+	})
+}
+
+// UpdateSortID sets the "sort_id" field to the value that was provided on create.
+func (u *PositionUpsertOne) UpdateSortID() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateSortID()
+	})
+}
+
+// Exec executes the query.
+func (u *PositionUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for PositionCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *PositionUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *PositionUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *PositionUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // PositionCreateBulk is the builder for creating many Position entities in bulk.
 type PositionCreateBulk struct {
 	config
 	err      error
 	builders []*PositionCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Position entities in the database.
@@ -470,6 +1052,7 @@ func (_c *PositionCreateBulk) Save(ctx context.Context) ([]*Position, error) {
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -520,6 +1103,364 @@ func (_c *PositionCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *PositionCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Position.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.PositionUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *PositionCreateBulk) OnConflict(opts ...sql.ConflictOption) *PositionUpsertBulk {
+	_c.conflict = opts
+	return &PositionUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Position.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *PositionCreateBulk) OnConflictColumns(columns ...string) *PositionUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &PositionUpsertBulk{
+		create: _c,
+	}
+}
+
+// PositionUpsertBulk is the builder for "upsert"-ing
+// a bulk of Position nodes.
+type PositionUpsertBulk struct {
+	create *PositionCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Position.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(position.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *PositionUpsertBulk) UpdateNewValues() *PositionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(position.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(position.FieldCreateTime)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(position.FieldTenantID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Position.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *PositionUpsertBulk) Ignore() *PositionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *PositionUpsertBulk) DoNothing() *PositionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the PositionCreateBulk.OnConflict
+// documentation for more info.
+func (u *PositionUpsertBulk) Update(set func(*PositionUpsert)) *PositionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&PositionUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *PositionUpsertBulk) SetUpdateTime(v time.Time) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *PositionUpsertBulk) UpdateUpdateTime() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *PositionUpsertBulk) ClearUpdateTime() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *PositionUpsertBulk) SetDeleteTime(v time.Time) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *PositionUpsertBulk) UpdateDeleteTime() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *PositionUpsertBulk) ClearDeleteTime() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *PositionUpsertBulk) SetStatus(v position.Status) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *PositionUpsertBulk) UpdateStatus() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *PositionUpsertBulk) ClearStatus() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *PositionUpsertBulk) SetCreateBy(v uint32) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *PositionUpsertBulk) AddCreateBy(v uint32) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *PositionUpsertBulk) UpdateCreateBy() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *PositionUpsertBulk) ClearCreateBy() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *PositionUpsertBulk) SetUpdateBy(v uint32) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *PositionUpsertBulk) AddUpdateBy(v uint32) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *PositionUpsertBulk) UpdateUpdateBy() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *PositionUpsertBulk) ClearUpdateBy() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetRemark sets the "remark" field.
+func (u *PositionUpsertBulk) SetRemark(v string) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetRemark(v)
+	})
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *PositionUpsertBulk) UpdateRemark() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateRemark()
+	})
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *PositionUpsertBulk) ClearRemark() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearRemark()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *PositionUpsertBulk) SetName(v string) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *PositionUpsertBulk) UpdateName() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *PositionUpsertBulk) SetCode(v string) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *PositionUpsertBulk) UpdateCode() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateCode()
+	})
+}
+
+// SetDeptID sets the "dept_id" field.
+func (u *PositionUpsertBulk) SetDeptID(v uint32) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetDeptID(v)
+	})
+}
+
+// AddDeptID adds v to the "dept_id" field.
+func (u *PositionUpsertBulk) AddDeptID(v uint32) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.AddDeptID(v)
+	})
+}
+
+// UpdateDeptID sets the "dept_id" field to the value that was provided on create.
+func (u *PositionUpsertBulk) UpdateDeptID() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateDeptID()
+	})
+}
+
+// ClearDeptID clears the value of the "dept_id" field.
+func (u *PositionUpsertBulk) ClearDeptID() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearDeptID()
+	})
+}
+
+// SetParentID sets the "parent_id" field.
+func (u *PositionUpsertBulk) SetParentID(v uint32) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetParentID(v)
+	})
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *PositionUpsertBulk) UpdateParentID() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateParentID()
+	})
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *PositionUpsertBulk) ClearParentID() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearParentID()
+	})
+}
+
+// SetSortID sets the "sort_id" field.
+func (u *PositionUpsertBulk) SetSortID(v int32) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetSortID(v)
+	})
+}
+
+// AddSortID adds v to the "sort_id" field.
+func (u *PositionUpsertBulk) AddSortID(v int32) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.AddSortID(v)
+	})
+}
+
+// UpdateSortID sets the "sort_id" field to the value that was provided on create.
+func (u *PositionUpsertBulk) UpdateSortID() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateSortID()
+	})
+}
+
+// Exec executes the query.
+func (u *PositionUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the PositionCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for PositionCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *PositionUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

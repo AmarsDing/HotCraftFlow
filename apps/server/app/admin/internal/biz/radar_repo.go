@@ -66,7 +66,8 @@ type RadarCloneResult struct {
 }
 
 // GetRepo 详情（可选 README + 指定等级 Insight）。
-func (uc *RadarRepoUsecase) GetRepo(ctx context.Context, fullName string, includeReadme bool, insightLevel string) (repo *RadarRepoView, readme string, insight *RadarInsight, stale bool, staleReason string, err error) {
+// insightCacheOnly 为 true 时仅回读 24h 本地缓存快照（不触发生成），未命中 insight 为空。
+func (uc *RadarRepoUsecase) GetRepo(ctx context.Context, fullName string, includeReadme bool, insightLevel string, insightCacheOnly bool) (repo *RadarRepoView, readme string, insight *RadarInsight, stale bool, staleReason string, err error) {
 	normalized, verr := validateFullName(fullName)
 	if verr != nil {
 		return nil, "", nil, false, "", verr
@@ -83,11 +84,15 @@ func (uc *RadarRepoUsecase) GetRepo(ctx context.Context, fullName string, includ
 		}
 	}
 	if insightLevel != "" {
-		ins, ierr := uc.insight.Generate(ctx, fullName, insightLevel)
-		if ierr != nil {
-			return nil, "", nil, false, "", ierr
+		if insightCacheOnly {
+			insight = uc.insight.GetCached(fullName, insightLevel)
+		} else {
+			ins, ierr := uc.insight.Generate(ctx, fullName, insightLevel)
+			if ierr != nil {
+				return nil, "", nil, false, "", ierr
+			}
+			insight = ins
 		}
-		insight = ins
 	}
 	return repo, readme, insight, false, "", nil
 }

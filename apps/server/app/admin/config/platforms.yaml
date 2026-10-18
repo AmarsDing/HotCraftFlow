@@ -1,0 +1,314 @@
+# ⑤ MAP 平台能力配置（05-MAP/02-概要设计.md §4 平台清单 + 03-详细设计.md §2 Capability）
+# 语义：
+#  - 注册表（publishadapters）回答「能不能发」——V1 仅 mock 已实装；
+#    本表回答「平台长什么样」——渠道建档时固化 capability 快照，发布时按快照做文案截断/规格校验。
+#  - enabled=true 但无适配器注册的平台：发布请求明确报 MAP_ADAPTER_NOT_FOUND（ADR-MAP-05，不静默降级）。
+#  - 🔴 visibility_default 恒 "private"（NFR-MAP-01）。
+#  - douyin/kuaishou/xiaohongshu 需企业资质/官方授权（requires_qualification: true）。
+#  - wechat_channels 无开放发布 API，V1 不支持（enabled: false，诚实标注）。
+map_platforms:
+
+  # ---------- 国际平台 ----------
+  youtube:
+    enabled: true
+    requires_qualification: false
+    note: "官方 Data API v3；凭据为 OAuth2 refresh_token；上传走 resumable upload"
+    visibility_default: "private"
+    capability:
+      video: true
+      image_text: false           # 社区帖/图文 Phase 3
+      native_schedule: true        # 平台原生排期（publishAt）
+      draft_state: true
+      analytics: true
+      max_duration_sec: 43200      # 12h
+      max_size_bytes: 274877906944 # 256GiB
+      aspect_ratios: ["16:9", "9:16", "1:1"]
+      title_max_len: 100
+      desc_max_len: 5000
+
+  bilibili:
+    enabled: true
+    requires_qualification: false
+    note: "开放平台投稿接口；个人开发者可申请；web 端 cookie 投稿不作生产路径"
+    visibility_default: "private"
+    capability:
+      video: true
+      image_text: false
+      native_schedule: true        # 定时投稿
+      draft_state: true
+      analytics: true
+      max_duration_sec: 36000      # 10h
+      max_size_bytes: 34359738368  # 32GiB
+      aspect_ratios: ["16:9", "4:3", "1:1", "9:16"]
+      title_max_len: 80
+      desc_max_len: 2000
+
+  x:
+    enabled: true
+    requires_qualification: false
+    note: "X API v2 media upload + tweets；Free 档发推额度极低（每日 17 条应用级）"
+    visibility_default: "private"
+    capability:
+      video: true
+      image_text: true
+      native_schedule: false       # 官方 API 无原生排期（premium 网页端功能）
+      draft_state: false
+      analytics: true
+      max_duration_sec: 140        # 免费档 2:20；Blue 订阅更长，按免费档保守值
+      max_size_bytes: 536870912    # 512MiB
+      aspect_ratios: ["16:9", "1:1", "4:5", "9:16"]
+      title_max_len: 0             # 推文无标题（正文 280，介入 copy_rewriter 的 desc 截断）
+      desc_max_len: 280
+
+  threads:
+    enabled: true
+    requires_qualification: false
+    note: "Meta Threads API（2024-06 GA）；OAuth + graph.threads.net"
+    visibility_default: "private"
+    capability:
+      video: true
+      image_text: true
+      native_schedule: false
+      draft_state: false
+      analytics: true
+      max_duration_sec: 300        # 5min
+      max_size_bytes: 1073741824   # ~1GiB（官方未明示，保守值）
+      aspect_ratios: ["16:9", "1:1", "4:5", "9:16"]
+      title_max_len: 0
+      desc_max_len: 500
+
+  linkedin:
+    enabled: true
+    requires_qualification: false
+    note: "Share API / ugcPosts；组织页发布须 w_organization_social 授权"
+    visibility_default: "private"
+    capability:
+      video: true
+      image_text: true
+      native_schedule: true        # 原生排期（2023-11+ 支持 scheduled posts）
+      draft_state: true
+      analytics: true
+      max_duration_sec: 600        # 10min
+      max_size_bytes: 5368709120   # 5GiB
+      aspect_ratios: ["16:9", "1:1", "9:16"]
+      title_max_len: 200
+      desc_max_len: 3000
+
+  reddit:
+    enabled: true
+    requires_qualification: false
+    note: "官方 API 提交 link/self/video post；subreddit 规则各异（爬虫式发布违反条款）"
+    visibility_default: "private"
+    capability:
+      video: true
+      image_text: true
+      native_schedule: false
+      draft_state: false
+      analytics: false             # 无公开 per-post 统计 API（仅 vote 数经 listing）
+      max_duration_sec: 900        # 15min
+      max_size_bytes: 1073741824   # 1GiB
+      aspect_ratios: ["16:9", "1:1", "4:5", "9:16"]
+      title_max_len: 300
+      desc_max_len: 40000
+
+  telegram:
+    enabled: true
+    requires_qualification: false
+    note: "Bot API sendVideo/sendPhoto 到频道；bot 须为频道管理员"
+    visibility_default: "private"
+    capability:
+      video: true
+      image_text: true
+      native_schedule: false
+      draft_state: false
+      analytics: false
+      max_duration_sec: 0          # 未设上限（受 50MiB 文件大小约束为主）
+      max_size_bytes: 52428800     # 50MiB（Bot API 上传硬上限；本地 Bot API server 可放宽）
+      aspect_ratios: ["16:9", "1:1", "4:5", "9:16"]
+      title_max_len: 0
+      desc_max_len: 1024           # caption 上限
+
+  tiktok:
+    enabled: true
+    requires_qualification: true
+    note: "Content Posting API 须应用审核（unaudited 应用仅能发 SELF_ONLY 私密草稿）"
+    visibility_default: "private"
+    capability:
+      video: true
+      image_text: true             # photo post
+      native_schedule: false
+      draft_state: true            # SELF_ONLY 草稿态（upload → 应用内手动发布）
+      analytics: true
+      max_duration_sec: 600        # 10min
+      max_size_bytes: 4294967296   # 4GiB
+      aspect_ratios: ["9:16", "1:1", "16:9"]
+      title_max_len: 0
+      desc_max_len: 2200
+
+  instagram:
+    enabled: true
+    requires_qualification: true
+    note: "IG Graph API Content Publishing 须企业认证账号（Business/Creator 绑定 FB Page）"
+    visibility_default: "private"
+    capability:
+      video: true                  # Reels
+      image_text: true
+      native_schedule: true        # 原生排期（Business 账号）
+      draft_state: true            # container 两阶段（MEDIA/MEDIA_PUBLISH）
+      analytics: true
+      max_duration_sec: 900        # Reels 15min
+      max_size_bytes: 4294967296   # 4GiB
+      aspect_ratios: ["9:16", "1:1", "4:5"]
+      title_max_len: 0
+      desc_max_len: 2200
+
+  # ---------- 国内平台（企业资质 🔴） ----------
+  douyin:
+    enabled: true
+    requires_qualification: true   # 🔴 开放平台视频发布须企业认证主体
+    note: "抖音开放平台 video/create + upload；个人主体额度与能力受限，生产须企业资质"
+    visibility_default: "private"
+    capability:
+      video: true
+      image_text: true             # 图文
+      native_schedule: true        # 定时发布
+      draft_state: true
+      analytics: true
+      max_duration_sec: 3600
+      max_size_bytes: 4294967296
+      aspect_ratios: ["9:16", "16:9", "1:1"]
+      title_max_len: 55            # 标题 55 字
+      desc_max_len: 1000
+
+  kuaishou:
+    enabled: true
+    requires_qualification: true   # 🔴 快手开放平台内容发布须企业资质/服务商
+    note: "快手开放平台 photo/publish 两阶段上传发布"
+    visibility_default: "private"
+    capability:
+      video: true
+      image_text: true
+      native_schedule: false
+      draft_state: true
+      analytics: true
+      max_duration_sec: 3600
+      max_size_bytes: 4294967296
+      aspect_ratios: ["9:16", "16:9", "1:1"]
+      title_max_len: 0
+      desc_max_len: 2000
+
+  xiaohongshu:
+    enabled: true
+    requires_qualification: true   # 🔴 蒲公英/开放平台内容能力须品牌企业账号
+    note: "小红书无公开通用发布 API；内容合作走蒲公英开放平台，个人号无合规自动发布路径"
+    visibility_default: "private"
+    capability:
+      video: true
+      image_text: true             # 图文为主
+      native_schedule: true
+      draft_state: true
+      analytics: true
+      max_duration_sec: 1800
+      max_size_bytes: 2147483648
+      aspect_ratios: ["3:4", "9:16", "1:1"]
+      title_max_len: 20            # 标题 20 字
+      desc_max_len: 1000
+
+  weibo:
+    enabled: true
+    requires_qualification: false
+    note: "微博开放平台 statuses/share 视频上传须 scope 授权；图文 share 接口可用"
+    visibility_default: "private"
+    capability:
+      video: true
+      image_text: true
+      native_schedule: false
+      draft_state: false
+      analytics: true
+      max_duration_sec: 900
+      max_size_bytes: 1073741824
+      aspect_ratios: ["16:9", "9:16", "1:1"]
+      title_max_len: 0
+      desc_max_len: 2000
+
+  zhihu:
+    enabled: true
+    requires_qualification: false
+    note: "知乎无公开通用发布 API；机构号内容管理接口须申请；V1 仅建档占位"
+    visibility_default: "private"
+    capability:
+      video: true
+      image_text: true
+      native_schedule: false
+      draft_state: true
+      analytics: false
+      max_duration_sec: 1800
+      max_size_bytes: 1073741824
+      aspect_ratios: ["16:9", "9:16", "1:1"]
+      title_max_len: 100
+      desc_max_len: 0
+
+  toutiao:
+    enabled: true
+    requires_qualification: true
+    note: "头条号 mp.toutiao.com 无公开 API；内容发布走内部/服务商通道（随字节系资质）"
+    visibility_default: "private"
+    capability:
+      video: true
+      image_text: true
+      native_schedule: true
+      draft_state: true
+      analytics: true
+      max_duration_sec: 3600
+      max_size_bytes: 4294967296
+      aspect_ratios: ["16:9", "9:16", "1:1"]
+      title_max_len: 30
+      desc_max_len: 2000
+
+  baijiahao:
+    enabled: true
+    requires_qualification: true
+    note: "百家号无公开通用发布 API；MCN/机构合作通道"
+    visibility_default: "private"
+    capability:
+      video: true
+      image_text: true
+      native_schedule: true
+      draft_state: true
+      analytics: true
+      max_duration_sec: 3600
+      max_size_bytes: 4294967296
+      aspect_ratios: ["16:9", "9:16", "1:1"]
+      title_max_len: 50
+      desc_max_len: 2000
+
+  # ---------- 明确不支持（诚实空态） ----------
+  wechat_channels:
+    enabled: false                 # 🔴 微信视频号无开放发布 API（仅小商店/机构定制通道）
+    requires_qualification: true
+    note: "无开放发布 API，V1 不支持；如接入机构定制通道需另行评审（ADR-MAP 待定）"
+    visibility_default: "private"
+    capability:
+      video: false
+      image_text: false
+      native_schedule: false
+      draft_state: false
+      analytics: false
+
+  # ---------- dev/test 联调 ----------
+  mock:
+    enabled: true
+    requires_qualification: false
+    note: "mock 适配器（MAP_MOCK_MODE 五态驱动）；仅 dev/test 建渠道，生产禁止"
+    visibility_default: "private"
+    capability:
+      video: true
+      image_text: true
+      native_schedule: true
+      draft_state: true
+      analytics: true
+      max_duration_sec: 7200
+      max_size_bytes: 4294967296
+      aspect_ratios: ["16:9", "9:16", "1:1"]
+      title_max_len: 100
+      desc_max_len: 2000

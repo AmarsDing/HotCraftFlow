@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dots · Node Map — UI 复刻演示（校核版）</title>
+<style>
+:root{
+  --bg:#0D0E10; --surface-1:#101018; --surface-2:#161820; --surface-3:#181A22;
+  --border:#23262E; --dot-grid:#16181D;
+  --text-1:#E5E6EB; --text-2:#9AA0AE; --text-3:#6B7280;
+  --c-amber:#E8A33D; --c-blue:#3E8FE0; --c-magenta:#C93DB8;
+  --c-green:#5FBF4A; --c-pink:#E36BB0; --c-red:#FF6D61;
+  --radius-card:14px; --radius-pill:999px;
+  --font-sans:"Inter","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --font-serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --font-mono:"JetBrains Mono","SF Mono",Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--text-1); font-family:var(--font-sans);
+  background-image:radial-gradient(var(--dot-grid) 1px, transparent 1px);
+  background-size:24px 24px;
+  overflow:hidden;
+}
+.mono{font-family:var(--font-mono); font-variant-numeric:tabular-nums}
+.label{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3)}
+.card{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius-card);position:relative}
+
+/* ---------- top bar ---------- */
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 26px 10px}
+.brand{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3)}
+.brand b{color:var(--text-2);font-weight:600}
+.tabs{display:flex;gap:22px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3)}
+.tabs span{cursor:pointer;padding-bottom:3px}
+.tabs span.on{color:var(--text-1);border-bottom:2px solid var(--c-amber)}
+
+/* ---------- 主栅格：6 列 + 2 走廊 ---------- */
+.app{
+  display:grid;
+  grid-template-columns:19.4% 1fr 14.4% 1fr 9.8% 10.8% 11% 13.6%;
+  grid-template-rows:auto minmax(0,1fr);
+  gap:0 0;
+  padding:6px 24px 0;
+  height:calc(100vh - 46px - 96px);
+}
+.lane{padding:0 0 0 0}
+.gutter{position:relative}
+.corridor{position:relative;overflow:visible}
+.corridor svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+
+/* 行 1：标题 / 时钟 / 统计 */
+.headline{padding:8px 4px 0}
+.headline h1{font-family:var(--font-serif);font-size:30px;line-height:1.12;font-weight:600;letter-spacing:-.01em}
+.headline p{margin-top:8px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--c-red);font-weight:600;line-height:1.7}
+.clock{background:var(--surface-2);border:1px solid var(--border);border-radius:16px;padding:14px 20px;margin:0 8px}
+.clock .day{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3)}
+.clock .time{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:40px;font-weight:700;line-height:1.12;margin:2px 0 4px}
+.clock .online{font-size:11.5px;color:var(--c-green)}
+.clock .online i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--c-green);margin-right:6px;box-shadow:0 0 8px var(--c-green)}
+.stats{background:var(--surface-2);border:1px solid var(--border);border-radius:16px;padding:14px 18px;margin:0 0 0 8px}
+.stats .pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.pill{display:inline-flex;justify-content:space-between;align-items:center;gap:8px;height:23px;padding:0 10px;border-radius:var(--radius-pill);font-size:11px}
+.pill b{font-family:var(--font-mono)}
+.stats .note{margin-top:10px;font-size:10.5px;color:var(--text-3);line-height:1.5}
+
+/* ---------- SOURCE 列 ---------- */
+.src-col{display:flex;flex-direction:column;gap:10px;overflow-y:auto;scrollbar-width:none;padding:2px 8px 12px 0}
+.src-col::-webkit-scrollbar{display:none}
+.src{padding:10px 12px 10px 16px;overflow:visible;flex:none}
+.src::before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:4px;border-radius:4px;background:var(--accent)}
+.src .name{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-top:5px}
+.src .ctx{margin-top:7px;display:inline-flex;align-items:center;gap:6px;height:20px;padding:0 9px;border-radius:var(--radius-pill);background:#1A1D26;font-size:10.5px;color:var(--accent)}
+.src .tasks{margin-top:7px;display:flex;flex-direction:column;gap:4px}
+.task{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text-3)}
+.task .box{width:12px;height:12px;border-radius:3px;border:1px solid var(--border);flex:none;display:flex;align-items:center;justify-content:center}
+.task.done{color:var(--text-1)}
+.task.done .box{background:var(--accent);border-color:var(--accent)}
+.task.done .box::after{content:"";width:6px;height:3px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translate(0px,-1px)}
+.src .outs{position:absolute;right:-3px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:5px}
+.src .outs i{width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent)}
+.src .sub{margin-top:7px;display:flex;flex-direction:column;gap:2px}
+.src .sub span{font-size:10.5px;color:var(--text-3)}
+.src .sub span::before{content:"▸ ";color:var(--text-3)}
+
+/* ---------- DOTCORE 枢纽 ---------- */
+.hub{background:var(--surface-3);padding:13px 14px;margin:0 8px;overflow-y:auto;scrollbar-width:none}
+.hub::-webkit-scrollbar{display:none}
+.hub .top{display:flex;gap:11px;align-items:center}
+.hub .logo{width:26px;height:26px;border-radius:50%;border:4px solid #fff;position:relative;flex:none;animation:spin 14s linear infinite}
+.hub .logo::after{content:"";position:absolute;right:-6px;top:6px;width:7px;height:7px;border-radius:50%;background:var(--c-amber);box-shadow:0 0 8px var(--c-amber)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hub h2{font-size:15px;letter-spacing:.06em}
+.hub .sub{font-size:10.5px;color:var(--text-3);margin-top:2px}
+.hub .sub b{color:var(--text-2);font-weight:500}
+.hub .grp{margin-top:11px}
+.hub .grp .label{margin-bottom:3px}
+.hub .item{font-size:11px;color:var(--text-2);line-height:19px;padding-left:9px;border-left:2px solid transparent}
+.hub .item.on{color:var(--text-1);border-left-color:var(--c-amber);background:linear-gradient(90deg,rgba(232,163,61,.08),transparent 60%)}
+.hub .outs{position:absolute;right:-3px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:space-evenly}
+.hub .outs i{width:5px;height:5px;border-radius:50%;background:var(--c-amber);opacity:.55}
+
+/* ---------- 智能体带：DOT / JOB / RULE / ACTIVITY ---------- */
+.bands{display:grid;grid-template-columns:subgrid;grid-column:5 / 9;grid-template-rows:repeat(5,minmax(0,1fr)) auto;gap:8px 10px;padding:2px 0 10px;min-height:0}
+.band{display:contents}
+.bcard{padding:8px 10px;display:flex;flex-direction:column;gap:4px;min-width:0;overflow:hidden}
+.bcard .idx{font-size:9.5px;color:var(--text-3);font-family:var(--font-mono)}
+
+/* DOT 身份卡 */
+.dot .ava{width:38px;height:38px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.5));align-self:center;margin:1px 0}
+.dot .handle{font-family:var(--font-mono);font-size:10px;color:var(--text-2);text-align:center;white-space:nowrap;overflow:hidden}
+.dot .status{align-self:center;height:18px;padding:0 9px;border-radius:var(--radius-pill);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center}
+.st-working,.st-running{background:rgba(232,163,61,.18);color:var(--c-amber)}
+.st-paused{background:rgba(75,85,99,.18);color:#8B93A1}
+.st-idle{background:rgba(75,85,99,.14);color:var(--text-3)}
+
+/* JOB 任务卡 */
+.job .name{font-size:13.5px;font-weight:700;letter-spacing:.04em;white-space:nowrap}
+.job .sel{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;height:20px;padding:0 9px;border-radius:var(--radius-pill);background:#1A1D26;font-size:10px;color:var(--text-2)}
+.job .ticks{display:flex;gap:3px}
+.job .ticks i{width:12px;height:3px;border-radius:2px;background:color-mix(in srgb, var(--accent) 60%, transparent)}
+.job .prog{align-self:flex-start;display:flex;align-items:center;gap:7px;height:22px;padding:0 10px;border-radius:var(--radius-pill);font-size:10.5px;color:#fff;background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 72%, #fff))}
+.job .prog b{font-family:var(--font-mono);font-size:11px}
+.job .wake{font-size:10px;color:var(--text-3)}
+
+/* RULE 策略卡 */
+.rule .chk{display:flex;align-items:center;gap:7px;font-size:10.5px;color:var(--text-2)}
+.rule .chk .box{width:11px;height:11px;border-radius:3px;border:1px solid var(--border);flex:none;display:flex;align-items:center;justify-content:center}
+.rule .chk.on .box{background:var(--accent);border-color:var(--accent)}
+.rule .chk.on .box::after{content:"";width:6px;height:3px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translate(0px,-1px)}
+.rule .foot{margin-top:auto;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3)}
+
+/* ACTIVITY 运行卡 */
+.actc .head{display:flex;justify-content:space-between;align-items:center}
+.actc .title{font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.actc .timer{align-self:flex-start;display:inline-flex;gap:7px;align-items:center;height:20px;padding:0 10px;border-radius:var(--radius-pill);background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 72%, #fff));font-size:10px;color:#fff}
+.actc .timer b{font-family:var(--font-mono)}
+.actc .metrics{display:flex;flex-direction:column;gap:3px;font-size:10.5px;color:var(--text-3)}
+.actc .metrics span{display:flex;justify-content:space-between}
+.actc .metrics b{color:var(--text-1);font-family:var(--font-mono)}
+.actc .links{display:flex;flex-direction:column;gap:2px;font-size:10px;color:var(--text-3)}
+.actc .links span::before{content:"▸ "}
+.live{display:flex;align-items:center;gap:4px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--c-red)}
+.live i{width:5px;height:5px;border-radius:50%;background:var(--c-red);animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ---------- 06 / YOU 审阅卡（跨四列） ---------- */
+.review{grid-column:1 / -1;padding:11px 14px;display:flex;flex-direction:column;gap:6px}
+.review .head{display:flex;justify-content:space-between;align-items:center}
+.review .online{font-size:10.5px;color:var(--text-3)}
+.review .online i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--c-green);margin-right:5px}
+.review .rows{display:grid;grid-template-columns:repeat(4,1fr);gap:0 14px}
+.review .row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dashed #1C1F27;font-size:11px;min-width:0}
+.review .tick{width:14px;height:14px;border-radius:50%;background:rgba(63,191,143,.16);color:var(--c-green);display:flex;align-items:center;justify-content:center;font-size:8px;flex:none}
+.review .who{font-family:var(--font-mono);color:var(--text-1);flex:none;font-size:10px}
+.review .what{color:var(--text-2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.review .when{font-family:var(--font-mono);color:var(--text-3);flex:none;font-size:10px}
+.review .foot{font-size:10.5px;color:var(--text-3);font-style:italic}
+
+/* ---------- timeline ---------- */
+.timeline{height:96px;position:relative;padding:0 26px}
+.tl-track{position:absolute;left:26px;right:26px;top:44px;height:1px;background:#2A2E38}
+.tl-hour{position:absolute;top:30px;transform:translateX(-50%);font-family:var(--font-mono);font-size:10px;color:var(--text-3)}
+.tl-hour::after{content:"";position:absolute;left:50%;top:14px;width:1px;height:8px;background:#2A2E38}
+.tl-ev{position:absolute;top:39px;width:10px;height:10px;transform:translateX(-50%) rotate(45deg);border-radius:2px}
+.tl-day{position:absolute;left:26px;top:56px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--c-red);font-weight:600}
+#tl-now{position:absolute;top:31px;transform:translateX(-50%);height:26px;padding:0 12px;border-radius:var(--radius-pill);background:var(--c-red);color:#fff;font-family:var(--font-mono);font-size:12px;display:flex;align-items:center;box-shadow:0 0 14px rgba(255,109,97,.45);white-space:nowrap}
+#tl-now::after{content:"";position:absolute;left:50%;top:26px;width:1px;height:18px;background:var(--c-red)}
+
+@media (prefers-reduced-motion: reduce){
+  .hub .logo,.live i{animation:none}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><b>DOTS ENGINEER</b> &nbsp;/&nbsp; NODE MAP</div>
+  <nav class="tabs"><span>OPENAI</span><span class="on">DOTS</span><span>24/7 LAUNCH TEAM</span></nav>
+</header>
+
+<main class="app">
+  <!-- ===== 行 1：标题 | 时钟 | 统计 ===== -->
+  <div class="lane headline" style="grid-column:1">
+    <h1>Five dots.<br>One launch team.</h1>
+    <p>One job each.<br>One memory.<br>You sign off.</p>
+  </div>
+  <div class="gutter" style="grid-column:2"></div>
+  <div class="lane" style="grid-column:3"><div class="clock">
+    <div class="day">DAY 1 · 24H IN 20S</div>
+    <div class="time mono" id="clock">20:01</div>
+    <div class="online"><i></i>you: online</div>
+  </div></div>
+  <div class="lane" style="grid-column:4 / 9"><div class="stats">
+    <div class="label">Viewer · Activity</div>
+    <div class="pills">
+      <span class="pill" style="background:rgba(63,191,143,.16);color:#5FD3A5">working <b>1</b></span>
+      <span class="pill" style="background:rgba(75,85,99,.16);color:#9AA0AE">waiting on you <b>0</b></span>
+      <span class="pill" style="background:rgba(75,85,99,.16);color:#8B93A1">paused <b>4</b></span>
+      <span class="pill" style="background:rgba(62,143,224,.16);color:#6FB3F0">its own call <b>1</b></span>
+      <span class="pill" style="background:rgba(232,163,61,.16);color:#EFBB63">schedule <b>2</b></span>
+      <span class="pill" style="background:rgba(255,109,97,.16);color:#FF9080">event <b>4</b></span>
+    </div>
+    <div class="note">three ways to wake: its own call, a saved schedule, an event</div>
+  </div></div>
+
+  <!-- ===== 行 2：SOURCE | 走廊A | DOTCORE | 走廊B | DOT | JOB | RULE | ACTIVITY ===== -->
+  <div class="lane" style="grid-column:1;min-height:0;display:flex"><div class="src-col" id="sources"></div></div>
+  <div class="gutter corridor" style="grid-column:2"><svg id="flowsA"></svg></div>
+  <div class="lane" style="grid-column:3;min-height:0;display:flex"><div class="card hub" id="hub" style="flex:1">
+    <div class="top">
+      <div class="logo"></div>
+      <div>
+        <h2>DOTCORE</h2>
+        <div class="sub"><b>GPT-6 Astra</b> · one memory · 24/7</div>
+      </div>
+    </div>
+    <div class="grp"><div class="label">Channels</div>
+      <div class="item on">ChatGPT</div>
+      <div class="item">Slack / Teams / Voice call / Text (US beta)</div>
+    </div>
+    <div class="grp"><div class="label">Memory</div>
+      <div class="item">conversation context · ChatGPT memory · its own notes</div>
+    </div>
+    <div class="grp"><div class="label">Triggers</div>
+      <div class="item">its own call · schedule · event</div>
+    </div>
+    <div class="grp"><div class="label">Rules</div>
+      <div class="item">act without asking · pre-approved · ask before · hand off to you</div>
+    </div>
+    <div class="grp"><div class="label">Computers</div>
+      <div class="item">cloud computer · cloud browser · your computer (off) · Codex cloud</div>
+    </div>
+    <div class="grp"><div class="label">Apps · 4,000+</div>
+      <div class="item">Gmail · Google Drive · GitHub · Calendar · +3,996 more</div>
+    </div>
+    <div class="grp"><div class="label">Safety & Switches</div>
+      <div class="item">built-in protection · sign-in requests · custom rules</div>
+      <div class="item">Pause · Activity · Scheduled · Reset</div>
+    </div>
+    <div class="outs" id="hub-outs"></div>
+  </div></div>
+  <div class="gutter corridor" style="grid-column:4"><svg id="flowsB"></svg></div>
+
+  <!-- 智能体带（DOT/JOB/RULE/ACTIVITY × 5 + 审阅） -->
+  <div class="bands" id="bands"></div>
+
+  <!-- ===== 行 3：占位（时间轴在 main 外通栏） ===== -->
+</main>
+
+<footer class="timeline" id="timeline">
+  <div class="tl-track"></div>
+  <div class="tl-day">THE DAY</div>
+  <div id="tl-now" class="mono">20:01</div>
+</footer>
+
+<script>
+/* ==================== 数据（一实体一色） ==================== */
+const AGENTS = [
+  {id:"researcher", n:"01", name:"RESEARCHER",  color:"#E8A33D", handle:"@you-research", trigger:"schedule",     status:"working", progress:0.39, wake:"wakes on schedule", ava:"bear"},
+  {id:"builder",    n:"02", name:"APP BUILDER", color:"#3E8FE0", handle:"@you-builder",  trigger:"event",        status:"paused",  progress:1,    wake:"wakes on event",    ava:"blob"},
+  {id:"launch",     n:"03", name:"LAUNCH LEAD", color:"#C93DB8", handle:"@you-launch",   trigger:"its own call", status:"paused",  progress:1,    wake:"wakes itself",      ava:"heart"},
+  {id:"sales",      n:"04", name:"SALES LEAD",  color:"#5FBF4A", handle:"@you-sales",    trigger:"event",        status:"paused",  progress:1,    wake:"wakes on event",    ava:"frog"},
+  {id:"creator",    n:"05", name:"CREATOR",     color:"#E36BB0", handle:"@you-creator",  trigger:"event",        status:"paused",  progress:1,    wake:"wakes on event",    ava:"bear2"},
+];
+const ACTIVITIES = [
+  {n:"01", title:"22:00 metrics sweep",         live:true,  timer:"0:45", results:0, req:0, notes:"3 new today"},
+  {n:"02", title:"checkout complaints: fix …",  live:false, timer:"1:00", results:1, req:1, notes:"3 new today"},
+  {n:"03", title:"feature set moved, rework …", live:false, timer:"1:00", results:4, req:0, notes:"steered mid-task"},
+  {n:"04", title:"deal requirements shifted",   live:false, timer:"1:00", results:2, req:0, notes:"3 new today"},
+  {n:"05", title:"new interview: episode + p…", live:false, timer:"1:00", results:5, req:0, notes:"3 new today"},
+];
+const SOURCES = [
+  {idx:"01 / SOURCE", name:"SLACK",        color:"#D946C8", ctx:"#bugs",         outs:3, tasks:[["new bug reports",1],["DM me",1],["mentions",1],["#general (never post)",0]]},
+  {idx:"02 / SOURCE", name:"GMAIL",        color:"#E05A5A", ctx:"deal threads",  outs:2, tasks:[["read",1],["send",0],["drafts for review",0]]},
+  {idx:"03 / SOURCE", name:"GOOGLE DRIVE", color:"#E8A33D", ctx:"launch docs",   outs:2, tasks:[["read",0],["update the draft",1],["share private details",0]]},
+  {idx:"04 / SOURCE", name:"GITHUB",       color:"#7B68E8", ctx:"checkout repo", outs:3, tasks:[["investigate issues",1],["prepare PRs",1],["merge",0]]},
+  {idx:"05 / SOURCE", name:"CALENDAR",     color:"#3E8FE0", ctx:"today · CET",   outs:2, tasks:[["read events",1],["invite my team",1],["decline for me",0]]},
+  {idx:"06 / SOURCE", name:"FEEDBACK",     color:"#3FBF8F", ctx:"tickets+calls", outs:3, tasks:[["customer feedback",1],["new datasets",1],["interview transcripts",1]]},
+  {idx:"07 / SCHEDULED", name:"3 ACTIVE",  color:"#E8A33D", ctx:null,            outs:0, tasks:[["08:00 CET calendar brief",1],["09:00 CET #client-requests",1],["22:00 metrics sweep",1]],
+   sub:["time zone + end date","which changes notify you","where results go"]},
+];
+const REVIEW = [
+  ["@you-research","2 surprises in the figur…","06:45"],
+  ["@you-builder","draft PR + tests + de…","12:09"],
+  ["@you-sales","reply to client outside t…","17:08"],
+  ["@you-creator","social posts in your voi…","18:56"],
+];
+const EVENTS = [
+  [1,"#E36BB0"],[3.2,"#E8A33D"],[9,"#3E8FE0"],[10.4,"#C93DB8"],
+  [13,"#5FBF4A"],[16,"#E36BB0"],[18,"#E8A33D"],[21,"#3E8FE0"],
+];
+
+/* ==================== 头像（简化吉祥物 SVG） ==================== */
+function avatar(kind, color){
+  if(kind==="bear"||kind==="bear2"){
+    const hp = kind==="bear2";
+    return `<svg class="ava" viewBox="0 0 60 60">
+      <circle cx="17" cy="14" r="8" fill="${color}"/><circle cx="43" cy="14" r="8" fill="${color}"/>
+      ${hp?`<rect x="12" y="10" width="36" height="7" rx="3.5" fill="#15171D"/><rect x="26" y="2" width="8" height="12" rx="4" fill="#15171D"/>`:""}
+      <circle cx="30" cy="34" r="19" fill="${color}"/>
+      <circle cx="23" cy="31" r="5.4" fill="#fff"/><circle cx="37" cy="31" r="5.4" fill="#fff"/>
+      <circle cx="23.5" cy="31.5" r="2.4" fill="#15171D"/><circle cx="37.5" cy="31.5" r="2.4" fill="#15171D"/>
+      <ellipse cx="30" cy="41" rx="5" ry="3.6" fill="#fff" opacity=".9"/>
+      <circle cx="30" cy="39.6" r="1.6" fill="#15171D"/>
+    </svg>`;
+  }
+  if(kind==="blob"){
+    return `<svg class="ava" viewBox="0 0 60 60">
+      <path d="M14 30 C10 14 26 8 33 14 C42 8 54 16 48 32 C52 46 34 54 24 46 C12 44 8 40 14 30Z" fill="${color}"/>
+      <rect x="16" y="6" width="28" height="8" rx="4" transform="rotate(-8 30 10)" fill="#15171D"/>
+      <circle cx="24" cy="28" r="4.6" fill="#fff"/><circle cx="38" cy="27" r="4.6" fill="#fff"/>
+      <circle cx="24.6" cy="28.4" r="2.1" fill="#15171D"/><circle cx="38.6" cy="27.4" r="2.1" fill="#15171D"/>
+      <path d="M25 38 Q31 43 37 38" stroke="#15171D" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </svg>`;
+  }
+  if(kind==="heart"){
+    return `<svg class="ava" viewBox="0 0 60 60">
+      <path d="M30 52 C10 38 6 24 14 16 C21 9 30 14 30 22 C30 14 39 9 46 16 C54 24 50 38 30 52Z" fill="${color}"/>
+      <rect x="14" y="20" width="32" height="9" rx="4.5" fill="#15171D"/>
+      <circle cx="24" cy="32" r="4.2" fill="#15171D"/><circle cx="38" cy="32" r="4.2" fill="#15171D"/>
+      <path d="M26 41 Q31 45 36 41" stroke="#15171D" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </svg>`;
+  }
+  return `<svg class="ava" viewBox="0 0 60 60">
+    <circle cx="19" cy="18" r="9" fill="${color}"/><circle cx="41" cy="18" r="9" fill="${color}"/>
+    <ellipse cx="30" cy="34" rx="20" ry="16" fill="${color}"/>
+    <circle cx="19" cy="17" r="5" fill="#fff"/><circle cx="41" cy="17" r="5" fill="#fff"/>
+    <circle cx="19.5" cy="17.5" r="2.3" fill="#15171D"/><circle cx="41.5" cy="17.5" r="2.3" fill="#15171D"/>
+    <path d="M21 38 Q30 47 39 38" stroke="#15171D" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+
+/* ==================== 渲染 ==================== */
+const $ = s => document.querySelector(s);
+
+/* SOURCE 列 */
+const sourcesEl = $("#sources");
+SOURCES.forEach(s=>{
+  const el = document.createElement("div");
+  el.className = "card src";
+  el.style.setProperty("--accent", s.color);
+  el.innerHTML = `
+    <div class="label mono">${s.idx}</div>
+    <div class="name">${s.name}</div>
+    ${s.ctx?`<div class="ctx">${s.ctx} ▾</div>`:""}
+    <div class="tasks">${s.tasks.map(([t,d])=>`<div class="task ${d?"done":""}"><span class="box"></span>${t}</div>`).join("")}</div>
+    ${s.sub?`<div class="sub">${s.sub.map(x=>`<span>${x}</span>`).join("")}</div>`:""}
+    ${s.outs?`<div class="outs">${Array.from({length:s.outs},()=>"<i></i>").join("")}</div>`:""}`;
+  sourcesEl.appendChild(el);
+});
+
+/* 智能体带：5 行 × 4 列 + 审阅卡 */
+const bandsEl = $("#bands");
+AGENTS.forEach((a,i)=>{
+  const act = ACTIVITIES[i];
+  const band = document.createElement("div");
+  band.className = "band";
+  band.style.setProperty("--accent", a.color);
+  band.innerHTML = `
+    <div class="card bcard dot" id="dot-${a.id}">
+      <div class="idx">${a.n} / DOT</div>
+      ${avatar(a.ava, a.color)}
+      <div class="handle">${a.handle}</div>
+      <span class="status st-${a.status}">${a.status}</span>
+    </div>
+    <div class="card bcard job" id="job-${a.id}">
+      <div class="idx">${a.n} / JOB</div>
+      <div class="name">${a.name}</div>
+      <div class="sel">${a.trigger} ▾</div>
+      <div class="ticks">${"<i></i>".repeat(5)}</div>
+      <div class="prog"><span>progress</span><b class="pval mono">${a.status==="working"?"39%":"100%"}</b></div>
+      <div class="wake">${a.wake}</div>
+    </div>
+    <div class="card bcard rule">
+      <div class="idx">${a.n} / RULE</div>
+      <div class="sel" style="align-self:flex-start;display:inline-flex;align-items:center;gap:6px;height:20px;padding:0 9px;border-radius:999px;background:#1A1D26;font-size:10px;color:var(--text-2)">ChatGPT ▾</div>
+      <div class="chk on"><span class="box"></span>pre-approved</div>
+      <div class="chk"><span class="box"></span>needs you</div>
+      <div class="foot">${a.status==="working"?"running":"paused"}</div>
+    </div>
+    <div class="card bcard actc">
+      <div class="head"><span class="idx">${a.n} / ACTIVITY</span>${act.live?'<span class="live"><i></i>Live</span>':""}</div>
+      <div class="title">${act.title}</div>
+      <div class="timer"><span>progress</span><b class="mono">${act.timer}</b></div>
+      <div class="metrics"><span>results <b>${act.results}</b></span><span>requests <b>${act.req}</b></span></div>
+      <div class="links"><span>files · results</span><span>notes · ${act.notes}</span></div>
+    </div>`;
+  bandsEl.appendChild(band);
+});
+/* 06 / YOU 审阅卡 */
+const review = document.createElement("div");
+review.className = "card review";
+review.innerHTML = `
+  <div class="head">
+    <div class="label">06 / YOU · REVIEW + SIGN OFF</div>
+    <div class="online"><i></i>online 8</div>
+  </div>
+  <div class="rows">${REVIEW.map(([w,d,t])=>`
+    <div class="row"><span class="tick">✓</span><span class="who">${w}</span><span class="what">${d}</span><span class="when mono">${t}</span></div>`).join("")}
+  </div>
+  <div class="foot">some steps never leave your hands: a password change is one</div>`;
+bandsEl.appendChild(review);
+
+/* ==================== 时间轴 ==================== */
+const tl = $("#timeline");
+EVENTS.forEach(([h,c])=>{
+  const d = document.createElement("div");
+  d.className = "tl-ev"; d.style.left = `calc(26px + ${h/24} * (100% - 52px))`;
+  d.style.background = c; d.style.boxShadow = `0 0 8px ${c}66`;
+  tl.appendChild(d);
+});
+for(let h=0; h<=24; h+=3){
+  const l = document.createElement("div");
+  l.className = "tl-hour"; l.style.left = `calc(26px + ${h/24} * (100% - 52px))`;
+  l.textContent = String(h).padStart(2,"0");
+  tl.appendChild(l);
+}
+
+/* ==================== 快进时钟 + 时间轴标记（同一时间源） ==================== */
+const START = 3*3600 + 51*60;      // 03:51
+const SPEED = 72 * 60;             // 72 分钟/秒
+const fmt = s => [Math.floor(s/3600), Math.floor(s%3600/60)].map(v=>String(v).padStart(2,"0")).join(":");
+const clockEl = $("#clock"), nowEl = $("#tl-now");
+let daySec = START;
+function clockLoop(now){
+  if(!clockLoop.last) clockLoop.last = now;
+  const dt = (now - clockLoop.last)/1000; clockLoop.last = now;
+  daySec = (daySec + dt * SPEED) % 86400;
+  const hhmm = fmt(daySec);
+  clockEl.textContent = hhmm;
+  nowEl.textContent = hhmm;
+  nowEl.style.left = `calc(26px + ${daySec/86400} * (100% - 52px))`;
+  requestAnimationFrame(clockLoop);
+}
+requestAnimationFrame(clockLoop);
+
+/* ==================== 连线走廊（琥珀虚线 + 流动粒子） ==================== */
+const N_PARTICLES = 3, SPEED_PX = 120;
+const runners = [];
+function wire(svg, x0, y0, x1, y1, color, active, dashed){
+  const mx = (x0+x1)/2;
+  const d = `M ${x0} ${y0} C ${mx} ${y0}, ${mx} ${y1}, ${x1} ${y1}`;
+  const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+  path.setAttribute("d", d); path.setAttribute("fill","none");
+  path.setAttribute("stroke", color); path.setAttribute("stroke-width","1.5");
+  if(dashed) path.setAttribute("stroke-dasharray","4 5");
+  path.setAttribute("opacity", active ? ".6" : ".25");
+  svg.appendChild(path);
+  if(!active) return;
+  const dots = [];
+  for(let i=0;i<N_PARTICLES;i++){
+    const c = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("r","2.5"); c.setAttribute("fill", color);
+    c.style.filter = `drop-shadow(0 0 4px ${color})`;
+    svg.appendChild(c); dots.push({el:c, phase:i/N_PARTICLES});
+  }
+  runners.push({path, dots, len: path.getTotalLength()});
+}
+function buildFlows(){
+  runners.length = 0;
+  /* 走廊 A：SOURCE 右缘 → DOTCORE 左缘 */
+  const A = $("#flowsA"), hub = $("#hub");
+  const boxA = A.getBoundingClientRect();
+  A.setAttribute("viewBox", `0 0 ${boxA.width} ${boxA.height}`);
+  A.innerHTML = "";
+  const hubBox = hub.getBoundingClientRect();
+  const hubMidY = hubBox.top + hubBox.height/2 - boxA.top;
+  document.querySelectorAll(".src").forEach(card=>{
+    const r = card.getBoundingClientRect();
+    if(r.bottom < boxA.top || r.top > boxA.bottom) return; // 只画可见卡
+    const y0 = r.top + r.height/2 - boxA.top;
+    wire(A, 0, y0, boxA.width, hubMidY, "#E8A33D", false, true);
+  });
+  wire(A, 0, hubMidY - 60, boxA.width, hubMidY, "#E8A33D", true, true);
+  /* 走廊 B：DOTCORE 右缘 → 各 DOT 卡左缘 */
+  const B = $("#flowsB");
+  const boxB = B.getBoundingClientRect();
+  B.setAttribute("viewBox", `0 0 ${boxB.width} ${boxB.height}`);
+  B.innerHTML = "";
+  const hubMidY2 = hubBox.top + hubBox.height/2 - boxB.top;
+  AGENTS.forEach(a=>{
+    const card = document.getElementById("dot-"+a.id);
+    const r = card.getBoundingClientRect();
+    const y1 = r.top + r.height/2 - boxB.top;
+    const active = a.status === "working";
+    wire(B, 0, hubMidY2, boxB.width, y1, "#E8A33D", active, true);
+  });
+}
+function particleLoop(){
+  const t = performance.now()/1000;
+  runners.forEach(({path, dots, len})=>{
+    dots.forEach(({el, phase})=>{
+      const p = path.getPointAtLength(((phase + t*SPEED_PX/len)%1)*len);
+      el.setAttribute("cx", p.x); el.setAttribute("cy", p.y);
+    });
+  });
+  requestAnimationFrame(particleLoop);
+}
+requestAnimationFrame(buildFlows);
+requestAnimationFrame(particleLoop);
+window.addEventListener("resize", ()=>{ clearTimeout(window.__rt); window.__rt = setTimeout(buildFlows, 200); });
+$("#sources").addEventListener("scroll", ()=>{ clearTimeout(window.__st); window.__st = setTimeout(buildFlows, 120); });
+
+/* ==================== 事件驱动的进度阶跃 ==================== */
+function setProgress(agentId, value){
+  const pill = document.querySelector(`#job-${agentId} .prog`);
+  pill.querySelector("b").textContent = value;
+  pill.animate([{filter:"brightness(1.9)"},{filter:"brightness(1)"}],{duration:320});
+}
+// 复刻视频脚本：t≈4.2s / 5.2s / 8.1s 出现阶跃
+setTimeout(()=>setProgress("researcher","52%"), 4200);
+setTimeout(()=>setProgress("researcher","66%"), 5200);
+setTimeout(()=>setProgress("researcher","78%"), 8100);
+setTimeout(()=>setProgress("researcher","39%"), 15800); // 循环复位
+</script>
+</body>
+</html>

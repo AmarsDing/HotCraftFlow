@@ -4,10 +4,12 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"framework/app/admin/internal/data/ent/privatemessage"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -17,6 +19,7 @@ type PrivateMessageCreate struct {
 	config
 	mutation *PrivateMessageMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -228,6 +231,7 @@ func (_c *PrivateMessageCreate) createSpec() (*PrivateMessage, *sqlgraph.CreateS
 		_node = &PrivateMessage{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(privatemessage.Table, sqlgraph.NewFieldSpec(privatemessage.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -271,11 +275,447 @@ func (_c *PrivateMessageCreate) createSpec() (*PrivateMessage, *sqlgraph.CreateS
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.PrivateMessage.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.PrivateMessageUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *PrivateMessageCreate) OnConflict(opts ...sql.ConflictOption) *PrivateMessageUpsertOne {
+	_c.conflict = opts
+	return &PrivateMessageUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.PrivateMessage.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *PrivateMessageCreate) OnConflictColumns(columns ...string) *PrivateMessageUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &PrivateMessageUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// PrivateMessageUpsertOne is the builder for "upsert"-ing
+	//  one PrivateMessage node.
+	PrivateMessageUpsertOne struct {
+		create *PrivateMessageCreate
+	}
+
+	// PrivateMessageUpsert is the "OnConflict" setter.
+	PrivateMessageUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *PrivateMessageUpsert) SetUpdateTime(v time.Time) *PrivateMessageUpsert {
+	u.Set(privatemessage.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *PrivateMessageUpsert) UpdateUpdateTime() *PrivateMessageUpsert {
+	u.SetExcluded(privatemessage.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *PrivateMessageUpsert) ClearUpdateTime() *PrivateMessageUpsert {
+	u.SetNull(privatemessage.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *PrivateMessageUpsert) SetDeleteTime(v time.Time) *PrivateMessageUpsert {
+	u.Set(privatemessage.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *PrivateMessageUpsert) UpdateDeleteTime() *PrivateMessageUpsert {
+	u.SetExcluded(privatemessage.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *PrivateMessageUpsert) ClearDeleteTime() *PrivateMessageUpsert {
+	u.SetNull(privatemessage.FieldDeleteTime)
+	return u
+}
+
+// SetSubject sets the "subject" field.
+func (u *PrivateMessageUpsert) SetSubject(v string) *PrivateMessageUpsert {
+	u.Set(privatemessage.FieldSubject, v)
+	return u
+}
+
+// UpdateSubject sets the "subject" field to the value that was provided on create.
+func (u *PrivateMessageUpsert) UpdateSubject() *PrivateMessageUpsert {
+	u.SetExcluded(privatemessage.FieldSubject)
+	return u
+}
+
+// ClearSubject clears the value of the "subject" field.
+func (u *PrivateMessageUpsert) ClearSubject() *PrivateMessageUpsert {
+	u.SetNull(privatemessage.FieldSubject)
+	return u
+}
+
+// SetContent sets the "content" field.
+func (u *PrivateMessageUpsert) SetContent(v string) *PrivateMessageUpsert {
+	u.Set(privatemessage.FieldContent, v)
+	return u
+}
+
+// UpdateContent sets the "content" field to the value that was provided on create.
+func (u *PrivateMessageUpsert) UpdateContent() *PrivateMessageUpsert {
+	u.SetExcluded(privatemessage.FieldContent)
+	return u
+}
+
+// ClearContent clears the value of the "content" field.
+func (u *PrivateMessageUpsert) ClearContent() *PrivateMessageUpsert {
+	u.SetNull(privatemessage.FieldContent)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *PrivateMessageUpsert) SetStatus(v privatemessage.Status) *PrivateMessageUpsert {
+	u.Set(privatemessage.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *PrivateMessageUpsert) UpdateStatus() *PrivateMessageUpsert {
+	u.SetExcluded(privatemessage.FieldStatus)
+	return u
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *PrivateMessageUpsert) ClearStatus() *PrivateMessageUpsert {
+	u.SetNull(privatemessage.FieldStatus)
+	return u
+}
+
+// SetSenderID sets the "sender_id" field.
+func (u *PrivateMessageUpsert) SetSenderID(v uint32) *PrivateMessageUpsert {
+	u.Set(privatemessage.FieldSenderID, v)
+	return u
+}
+
+// UpdateSenderID sets the "sender_id" field to the value that was provided on create.
+func (u *PrivateMessageUpsert) UpdateSenderID() *PrivateMessageUpsert {
+	u.SetExcluded(privatemessage.FieldSenderID)
+	return u
+}
+
+// AddSenderID adds v to the "sender_id" field.
+func (u *PrivateMessageUpsert) AddSenderID(v uint32) *PrivateMessageUpsert {
+	u.Add(privatemessage.FieldSenderID, v)
+	return u
+}
+
+// ClearSenderID clears the value of the "sender_id" field.
+func (u *PrivateMessageUpsert) ClearSenderID() *PrivateMessageUpsert {
+	u.SetNull(privatemessage.FieldSenderID)
+	return u
+}
+
+// SetReceiverID sets the "receiver_id" field.
+func (u *PrivateMessageUpsert) SetReceiverID(v uint32) *PrivateMessageUpsert {
+	u.Set(privatemessage.FieldReceiverID, v)
+	return u
+}
+
+// UpdateReceiverID sets the "receiver_id" field to the value that was provided on create.
+func (u *PrivateMessageUpsert) UpdateReceiverID() *PrivateMessageUpsert {
+	u.SetExcluded(privatemessage.FieldReceiverID)
+	return u
+}
+
+// AddReceiverID adds v to the "receiver_id" field.
+func (u *PrivateMessageUpsert) AddReceiverID(v uint32) *PrivateMessageUpsert {
+	u.Add(privatemessage.FieldReceiverID, v)
+	return u
+}
+
+// ClearReceiverID clears the value of the "receiver_id" field.
+func (u *PrivateMessageUpsert) ClearReceiverID() *PrivateMessageUpsert {
+	u.SetNull(privatemessage.FieldReceiverID)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.PrivateMessage.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(privatemessage.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *PrivateMessageUpsertOne) UpdateNewValues() *PrivateMessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(privatemessage.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(privatemessage.FieldCreateTime)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(privatemessage.FieldTenantID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.PrivateMessage.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *PrivateMessageUpsertOne) Ignore() *PrivateMessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *PrivateMessageUpsertOne) DoNothing() *PrivateMessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the PrivateMessageCreate.OnConflict
+// documentation for more info.
+func (u *PrivateMessageUpsertOne) Update(set func(*PrivateMessageUpsert)) *PrivateMessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&PrivateMessageUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *PrivateMessageUpsertOne) SetUpdateTime(v time.Time) *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *PrivateMessageUpsertOne) UpdateUpdateTime() *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *PrivateMessageUpsertOne) ClearUpdateTime() *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *PrivateMessageUpsertOne) SetDeleteTime(v time.Time) *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *PrivateMessageUpsertOne) UpdateDeleteTime() *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *PrivateMessageUpsertOne) ClearDeleteTime() *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetSubject sets the "subject" field.
+func (u *PrivateMessageUpsertOne) SetSubject(v string) *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.SetSubject(v)
+	})
+}
+
+// UpdateSubject sets the "subject" field to the value that was provided on create.
+func (u *PrivateMessageUpsertOne) UpdateSubject() *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.UpdateSubject()
+	})
+}
+
+// ClearSubject clears the value of the "subject" field.
+func (u *PrivateMessageUpsertOne) ClearSubject() *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.ClearSubject()
+	})
+}
+
+// SetContent sets the "content" field.
+func (u *PrivateMessageUpsertOne) SetContent(v string) *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.SetContent(v)
+	})
+}
+
+// UpdateContent sets the "content" field to the value that was provided on create.
+func (u *PrivateMessageUpsertOne) UpdateContent() *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.UpdateContent()
+	})
+}
+
+// ClearContent clears the value of the "content" field.
+func (u *PrivateMessageUpsertOne) ClearContent() *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.ClearContent()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *PrivateMessageUpsertOne) SetStatus(v privatemessage.Status) *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *PrivateMessageUpsertOne) UpdateStatus() *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *PrivateMessageUpsertOne) ClearStatus() *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetSenderID sets the "sender_id" field.
+func (u *PrivateMessageUpsertOne) SetSenderID(v uint32) *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.SetSenderID(v)
+	})
+}
+
+// AddSenderID adds v to the "sender_id" field.
+func (u *PrivateMessageUpsertOne) AddSenderID(v uint32) *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.AddSenderID(v)
+	})
+}
+
+// UpdateSenderID sets the "sender_id" field to the value that was provided on create.
+func (u *PrivateMessageUpsertOne) UpdateSenderID() *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.UpdateSenderID()
+	})
+}
+
+// ClearSenderID clears the value of the "sender_id" field.
+func (u *PrivateMessageUpsertOne) ClearSenderID() *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.ClearSenderID()
+	})
+}
+
+// SetReceiverID sets the "receiver_id" field.
+func (u *PrivateMessageUpsertOne) SetReceiverID(v uint32) *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.SetReceiverID(v)
+	})
+}
+
+// AddReceiverID adds v to the "receiver_id" field.
+func (u *PrivateMessageUpsertOne) AddReceiverID(v uint32) *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.AddReceiverID(v)
+	})
+}
+
+// UpdateReceiverID sets the "receiver_id" field to the value that was provided on create.
+func (u *PrivateMessageUpsertOne) UpdateReceiverID() *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.UpdateReceiverID()
+	})
+}
+
+// ClearReceiverID clears the value of the "receiver_id" field.
+func (u *PrivateMessageUpsertOne) ClearReceiverID() *PrivateMessageUpsertOne {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.ClearReceiverID()
+	})
+}
+
+// Exec executes the query.
+func (u *PrivateMessageUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for PrivateMessageCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *PrivateMessageUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *PrivateMessageUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *PrivateMessageUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // PrivateMessageCreateBulk is the builder for creating many PrivateMessage entities in bulk.
 type PrivateMessageCreateBulk struct {
 	config
 	err      error
 	builders []*PrivateMessageCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the PrivateMessage entities in the database.
@@ -304,6 +744,7 @@ func (_c *PrivateMessageCreateBulk) Save(ctx context.Context) ([]*PrivateMessage
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -354,6 +795,287 @@ func (_c *PrivateMessageCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *PrivateMessageCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.PrivateMessage.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.PrivateMessageUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *PrivateMessageCreateBulk) OnConflict(opts ...sql.ConflictOption) *PrivateMessageUpsertBulk {
+	_c.conflict = opts
+	return &PrivateMessageUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.PrivateMessage.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *PrivateMessageCreateBulk) OnConflictColumns(columns ...string) *PrivateMessageUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &PrivateMessageUpsertBulk{
+		create: _c,
+	}
+}
+
+// PrivateMessageUpsertBulk is the builder for "upsert"-ing
+// a bulk of PrivateMessage nodes.
+type PrivateMessageUpsertBulk struct {
+	create *PrivateMessageCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.PrivateMessage.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(privatemessage.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *PrivateMessageUpsertBulk) UpdateNewValues() *PrivateMessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(privatemessage.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(privatemessage.FieldCreateTime)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(privatemessage.FieldTenantID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.PrivateMessage.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *PrivateMessageUpsertBulk) Ignore() *PrivateMessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *PrivateMessageUpsertBulk) DoNothing() *PrivateMessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the PrivateMessageCreateBulk.OnConflict
+// documentation for more info.
+func (u *PrivateMessageUpsertBulk) Update(set func(*PrivateMessageUpsert)) *PrivateMessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&PrivateMessageUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *PrivateMessageUpsertBulk) SetUpdateTime(v time.Time) *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *PrivateMessageUpsertBulk) UpdateUpdateTime() *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *PrivateMessageUpsertBulk) ClearUpdateTime() *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *PrivateMessageUpsertBulk) SetDeleteTime(v time.Time) *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *PrivateMessageUpsertBulk) UpdateDeleteTime() *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *PrivateMessageUpsertBulk) ClearDeleteTime() *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetSubject sets the "subject" field.
+func (u *PrivateMessageUpsertBulk) SetSubject(v string) *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.SetSubject(v)
+	})
+}
+
+// UpdateSubject sets the "subject" field to the value that was provided on create.
+func (u *PrivateMessageUpsertBulk) UpdateSubject() *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.UpdateSubject()
+	})
+}
+
+// ClearSubject clears the value of the "subject" field.
+func (u *PrivateMessageUpsertBulk) ClearSubject() *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.ClearSubject()
+	})
+}
+
+// SetContent sets the "content" field.
+func (u *PrivateMessageUpsertBulk) SetContent(v string) *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.SetContent(v)
+	})
+}
+
+// UpdateContent sets the "content" field to the value that was provided on create.
+func (u *PrivateMessageUpsertBulk) UpdateContent() *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.UpdateContent()
+	})
+}
+
+// ClearContent clears the value of the "content" field.
+func (u *PrivateMessageUpsertBulk) ClearContent() *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.ClearContent()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *PrivateMessageUpsertBulk) SetStatus(v privatemessage.Status) *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *PrivateMessageUpsertBulk) UpdateStatus() *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// ClearStatus clears the value of the "status" field.
+func (u *PrivateMessageUpsertBulk) ClearStatus() *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.ClearStatus()
+	})
+}
+
+// SetSenderID sets the "sender_id" field.
+func (u *PrivateMessageUpsertBulk) SetSenderID(v uint32) *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.SetSenderID(v)
+	})
+}
+
+// AddSenderID adds v to the "sender_id" field.
+func (u *PrivateMessageUpsertBulk) AddSenderID(v uint32) *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.AddSenderID(v)
+	})
+}
+
+// UpdateSenderID sets the "sender_id" field to the value that was provided on create.
+func (u *PrivateMessageUpsertBulk) UpdateSenderID() *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.UpdateSenderID()
+	})
+}
+
+// ClearSenderID clears the value of the "sender_id" field.
+func (u *PrivateMessageUpsertBulk) ClearSenderID() *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.ClearSenderID()
+	})
+}
+
+// SetReceiverID sets the "receiver_id" field.
+func (u *PrivateMessageUpsertBulk) SetReceiverID(v uint32) *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.SetReceiverID(v)
+	})
+}
+
+// AddReceiverID adds v to the "receiver_id" field.
+func (u *PrivateMessageUpsertBulk) AddReceiverID(v uint32) *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.AddReceiverID(v)
+	})
+}
+
+// UpdateReceiverID sets the "receiver_id" field to the value that was provided on create.
+func (u *PrivateMessageUpsertBulk) UpdateReceiverID() *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.UpdateReceiverID()
+	})
+}
+
+// ClearReceiverID clears the value of the "receiver_id" field.
+func (u *PrivateMessageUpsertBulk) ClearReceiverID() *PrivateMessageUpsertBulk {
+	return u.Update(func(s *PrivateMessageUpsert) {
+		s.ClearReceiverID()
+	})
+}
+
+// Exec executes the query.
+func (u *PrivateMessageUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the PrivateMessageCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for PrivateMessageCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *PrivateMessageUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

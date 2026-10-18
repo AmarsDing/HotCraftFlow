@@ -84,6 +84,46 @@ var ProviderSet = wire.NewSet(
 	NewRadarWatchEventRepo,
 	NewRadarUserConfigRepo,
 
+	NewMiaEntityMappingRepo,
+	NewMiaNarrativeMappingRepo,
+	NewMiaEventCardRepo,
+	NewMiaImpactCardRepo,
+	NewMiaTransmissionRuleRepo,
+	NewMiaQuoteCacheRepo,
+	// 情感三引擎（finbert/llm-cloud/ollama）为同型多实例，
+	// 由 NewMiaSentimentOrchestrator 内部自装配，不单独进集合（wire 会重复绑定）。
+	NewMiaSentimentOrchestrator,
+	NewMiaCCXTQuoteProvider,
+	NewMiaBlockedOpenBBProvider,
+	NewMiaQuoteService,
+	NewMiaWebhookSender,
+
+	NewIntelItemRepo,
+	NewIntelSourceRepo,
+	NewCredentialAccountRepo,
+	NewEvidenceRepo,
+	NewIntelClusterRepo,
+	NewDedupSampleRepo,
+	NewComplianceRuleRepo,
+	NewAuthorizationRecordRepo,
+	NewCollectRunRepo,
+	NewDeadLetterRepo,
+
+	// ---- ④ MME（构造器本身已返回 biz 接口，无需 wire.Bind）----
+	NewMmeTaskRepo,
+	NewMmeAssetRepo,
+	NewMmeAnalysisCacheRepo,
+	NewMmeVariantSetRepo,
+	NewMmeVariantRepo,
+	NewMmeRenderJobRepo,
+	NewMmeTemplateRepo,
+	NewMmeMediaStorage,
+	NewYtdlpDownloader,
+	NewFfprobeProber,
+	NewWhisperASR,
+	NewOllamaLLM,
+	NewFFmpegRenderer,
+
 	wire.Bind(new(biz.MenuRepo), new(*MenuRepo)),
 	wire.Bind(new(biz.ApiResourceRepo), new(*ApiResourceRepo)),
 	wire.Bind(new(biz.NotificationMessageRepo), new(*NotificationMessageRepo)),
@@ -92,9 +132,8 @@ var ProviderSet = wire.NewSet(
 	wire.Bind(new(biz.PrivateMessageRepo), new(*PrivateMessageRepo)),
 	wire.Bind(new(biz.AdminLoginRestrictionRepo), new(*AdminLoginRestrictionRepo)),
 	wire.Bind(new(biz.UserTokenRepo), new(*UserTokenCacheRepo)),
-	wire.Bind(new(biz.RadarWatchRepo), new(*RadarWatchRepo)),
-	wire.Bind(new(biz.RadarWatchEventRepo), new(*RadarWatchEventRepo)),
-	wire.Bind(new(biz.RadarUserConfigRepo), new(*RadarUserConfigRepo)),
+	// NewRadarWatchRepo / ...Event / ...UserConfig 构造器本身已返回 biz 接口，
+	// 无需 wire.Bind（重复绑定 wire 编译失败）。
 	wire.Bind(new(biz.LoginFailCounterRepo), new(*LoginFailCounterRepo)),
 	wire.Bind(new(biz.PasswordHistoryRepo), new(*PasswordHistoryRepo)),
 	wire.Bind(new(biz.UserRepo), new(*UserRepo)),
@@ -110,6 +149,7 @@ var ProviderSet = wire.NewSet(
 	wire.Bind(new(biz.AuthorizerPort), new(*Authorizer)),
 	wire.Bind(new(biz.InternalMessageNotifier), new(*NotificationMessageRepo)),
 	wire.Bind(new(biz.RedisStore), new(*RedisClient)),
+	// NewIntelXxxRepo 构造器本身已返回 biz 接口，无需 wire.Bind（重复绑定 wire 编译失败）。
 )
 
 // Data .

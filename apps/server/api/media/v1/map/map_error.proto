@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package media.map.v1;
+
+import "errors/errors.proto";
+
+// MapErrorReason ⑤ MAP 错误码（详细设计 §9 错误码表）。
+// reason 字符串即契约错误码（MAP_*），前端按 reason 做精确提示。
+// 🔴 安全类（自批/自动化/未审批/可见性）一律 4xx 且必须记录审计留痕。
+enum MapErrorReason {
+  option (errors.default_code) = 500;
+
+  // 400
+  MAP_BAD_REQUEST = 0 [(errors.code) = 400];              // 请求参数错误
+  MAP_VISIBILITY_NO_REASON = 1 [(errors.code) = 400];     // 🔴 非 private 且无 override_reason
+  MAP_ADAPTER_NOT_FOUND = 2 [(errors.code) = 400];        // 平台适配器不存在（明确报错，不静默降级）
+  MAP_CAPABILITY_UNSUPPORTED = 3 [(errors.code) = 400];   // 平台不支持该能力
+  MAP_TRANSCODE_FAIL = 4 [(errors.code) = 400];           // 规格转码失败（不阻断草稿，随响应警告返回）
+  MAP_REJECT_REASON_REQUIRED = 5 [(errors.code) = 400];   // 🔴 驳回必须填写原因
+  MAP_PUBLIC_CONFIRM_REQUIRED = 6 [(errors.code) = 400];  // 🔴 非 private 发布必须显式 confirm_public（二次确认）
+
+  // 403 🔴 审批门禁
+  MAP_NOT_APPROVED = 100 [(errors.code) = 403];           // 🔴 未审批即发布
+  MAP_SELF_APPROVAL = 101 [(errors.code) = 403];          // 🔴 自批（提交者=审批者）
+  MAP_AUTOMATION_DENIED = 102 [(errors.code) = 403];      // 🔴 自动化身份审批/发布
+  MAP_APPROVER_MISMATCH = 103 [(errors.code) = 403];      // 审批人重复审批/审批队列状态不允许
+
+  // 404
+  MAP_NOT_FOUND = 200 [(errors.code) = 404];              // 资源不存在
+  MAP_CHANNEL_NOT_FOUND = 201 [(errors.code) = 404];      // 渠道（platform:slot）不存在
+
+  // 409
+  MAP_INVALID_STATE = 300 [(errors.code) = 409];          // 状态机非法流转
+  MAP_ACCOUNT_PAUSED = 301 [(errors.code) = 409];         // 账号熔断中（返回恢复时间）
+  MAP_CREDENTIAL_INVALID = 302 [(errors.code) = 409];     // 凭据失效（不清凭据，引导重新授权）
+  MAP_ALREADY_PUBLISHING = 303 [(errors.code) = 409];     // 幂等锁冲突：同 unit 正在发布中
+  MAP_ALREADY_PUBLISHED = 304 [(errors.code) = 409];      // 已发布（幂等：返回已有回执）
+
+  // 429
+  MAP_QUOTA_EXCEEDED = 400 [(errors.code) = 429];         // 24h 总量/平台小时/账号间隔超限（需人工解除）
+  MAP_RATE_LIMITED = 401 [(errors.code) = 429];           // 平台限流（退避重试，尊重 Retry-After）
+
+  // 500
+  MAP_INTERNAL = 500 [(errors.code) = 500];               // 内部错误
+  MAP_UPSTREAM_ERROR = 501 [(errors.code) = 500];         // 平台返回错误（已脱敏转译）
+}

@@ -7,6 +7,7 @@
 package icv1
 
 import (
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -678,11 +679,928 @@ func (x *IntelWorkability) GetReason() string {
 	return ""
 }
 
+type ListIntelsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,proto3" json:"page_size,omitempty"`
+	Platform      string                 `protobuf:"bytes,3,opt,name=platform,proto3" json:"platform,omitempty"`
+	Region        string                 `protobuf:"bytes,4,opt,name=region,proto3" json:"region,omitempty"`
+	Category      string                 `protobuf:"bytes,5,opt,name=category,proto3" json:"category,omitempty"` // A_hot | B_material | C_market | D_compliance
+	ClusterId     string                 `protobuf:"bytes,6,opt,name=cluster_id,proto3" json:"cluster_id,omitempty"`
+	CollectMethod string                 `protobuf:"bytes,7,opt,name=collect_method,proto3" json:"collect_method,omitempty"`
+	// FR-INT-14：全文检索（V1 降级 ILIKE，评审 B-19）+ 实体值过滤 + 时间范围（UTC RFC3339）
+	Keyword       string                 `protobuf:"bytes,8,opt,name=keyword,proto3" json:"keyword,omitempty"`
+	Entity        string                 `protobuf:"bytes,9,opt,name=entity,proto3" json:"entity,omitempty"`
+	CollectedFrom *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=collected_from,proto3" json:"collected_from,omitempty"`
+	CollectedTo   *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=collected_to,proto3" json:"collected_to,omitempty"`
+	// 合规复核队列过滤：gate = pass | review | block
+	Gate          string `protobuf:"bytes,12,opt,name=gate,proto3" json:"gate,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListIntelsRequest) Reset() {
+	*x = ListIntelsRequest{}
+	mi := &file_media_v1_ic_intel_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListIntelsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListIntelsRequest) ProtoMessage() {}
+
+func (x *ListIntelsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_ic_intel_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListIntelsRequest.ProtoReflect.Descriptor instead.
+func (*ListIntelsRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_ic_intel_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *ListIntelsRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListIntelsRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListIntelsRequest) GetPlatform() string {
+	if x != nil {
+		return x.Platform
+	}
+	return ""
+}
+
+func (x *ListIntelsRequest) GetRegion() string {
+	if x != nil {
+		return x.Region
+	}
+	return ""
+}
+
+func (x *ListIntelsRequest) GetCategory() string {
+	if x != nil {
+		return x.Category
+	}
+	return ""
+}
+
+func (x *ListIntelsRequest) GetClusterId() string {
+	if x != nil {
+		return x.ClusterId
+	}
+	return ""
+}
+
+func (x *ListIntelsRequest) GetCollectMethod() string {
+	if x != nil {
+		return x.CollectMethod
+	}
+	return ""
+}
+
+func (x *ListIntelsRequest) GetKeyword() string {
+	if x != nil {
+		return x.Keyword
+	}
+	return ""
+}
+
+func (x *ListIntelsRequest) GetEntity() string {
+	if x != nil {
+		return x.Entity
+	}
+	return ""
+}
+
+func (x *ListIntelsRequest) GetCollectedFrom() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CollectedFrom
+	}
+	return nil
+}
+
+func (x *ListIntelsRequest) GetCollectedTo() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CollectedTo
+	}
+	return nil
+}
+
+func (x *ListIntelsRequest) GetGate() string {
+	if x != nil {
+		return x.Gate
+	}
+	return ""
+}
+
+type ListIntelsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*IntelItem           `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListIntelsResponse) Reset() {
+	*x = ListIntelsResponse{}
+	mi := &file_media_v1_ic_intel_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListIntelsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListIntelsResponse) ProtoMessage() {}
+
+func (x *ListIntelsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_ic_intel_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListIntelsResponse.ProtoReflect.Descriptor instead.
+func (*ListIntelsResponse) Descriptor() ([]byte, []int) {
+	return file_media_v1_ic_intel_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ListIntelsResponse) GetItems() []*IntelItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *ListIntelsResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+type GetIntelRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetIntelRequest) Reset() {
+	*x = GetIntelRequest{}
+	mi := &file_media_v1_ic_intel_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetIntelRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetIntelRequest) ProtoMessage() {}
+
+func (x *GetIntelRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_ic_intel_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetIntelRequest.ProtoReflect.Descriptor instead.
+func (*GetIntelRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_ic_intel_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GetIntelRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+// SupplementIntelRequest 手贴正文续跑（FR-INT-04 降级路径）。
+// 评审 C-12：手贴不新建 IntelItem，而是对既有条目 UPDATE payload.text。
+type SupplementIntelRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Text          string                 `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SupplementIntelRequest) Reset() {
+	*x = SupplementIntelRequest{}
+	mi := &file_media_v1_ic_intel_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SupplementIntelRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SupplementIntelRequest) ProtoMessage() {}
+
+func (x *SupplementIntelRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_ic_intel_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SupplementIntelRequest.ProtoReflect.Descriptor instead.
+func (*SupplementIntelRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_ic_intel_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *SupplementIntelRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *SupplementIntelRequest) GetText() string {
+	if x != nil {
+		return x.Text
+	}
+	return ""
+}
+
+type SupplementIntelResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ok            bool                   `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SupplementIntelResponse) Reset() {
+	*x = SupplementIntelResponse{}
+	mi := &file_media_v1_ic_intel_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SupplementIntelResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SupplementIntelResponse) ProtoMessage() {}
+
+func (x *SupplementIntelResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_ic_intel_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SupplementIntelResponse.ProtoReflect.Descriptor instead.
+func (*SupplementIntelResponse) Descriptor() ([]byte, []int) {
+	return file_media_v1_ic_intel_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *SupplementIntelResponse) GetOk() bool {
+	if x != nil {
+		return x.Ok
+	}
+	return false
+}
+
+// EvidenceExport 证据包元数据（ZIP 字节流走独立下载 handler，03 §6）。
+type EvidenceExport struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	IntelId       string                 `protobuf:"bytes,1,opt,name=intel_id,proto3" json:"intel_id,omitempty"`
+	EvidenceId    string                 `protobuf:"bytes,2,opt,name=evidence_id,proto3" json:"evidence_id,omitempty"`
+	DownloadUrl   string                 `protobuf:"bytes,3,opt,name=download_url,proto3" json:"download_url,omitempty"`
+	ChainHash     string                 `protobuf:"bytes,4,opt,name=chain_hash,proto3" json:"chain_hash,omitempty"`
+	PrevHash      string                 `protobuf:"bytes,5,opt,name=prev_hash,proto3" json:"prev_hash,omitempty"`
+	RawHash       string                 `protobuf:"bytes,6,opt,name=raw_hash,proto3" json:"raw_hash,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EvidenceExport) Reset() {
+	*x = EvidenceExport{}
+	mi := &file_media_v1_ic_intel_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EvidenceExport) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EvidenceExport) ProtoMessage() {}
+
+func (x *EvidenceExport) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_ic_intel_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EvidenceExport.ProtoReflect.Descriptor instead.
+func (*EvidenceExport) Descriptor() ([]byte, []int) {
+	return file_media_v1_ic_intel_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *EvidenceExport) GetIntelId() string {
+	if x != nil {
+		return x.IntelId
+	}
+	return ""
+}
+
+func (x *EvidenceExport) GetEvidenceId() string {
+	if x != nil {
+		return x.EvidenceId
+	}
+	return ""
+}
+
+func (x *EvidenceExport) GetDownloadUrl() string {
+	if x != nil {
+		return x.DownloadUrl
+	}
+	return ""
+}
+
+func (x *EvidenceExport) GetChainHash() string {
+	if x != nil {
+		return x.ChainHash
+	}
+	return ""
+}
+
+func (x *EvidenceExport) GetPrevHash() string {
+	if x != nil {
+		return x.PrevHash
+	}
+	return ""
+}
+
+func (x *EvidenceExport) GetRawHash() string {
+	if x != nil {
+		return x.RawHash
+	}
+	return ""
+}
+
+type ExportEvidenceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Operator      string                 `protobuf:"bytes,2,opt,name=operator,proto3" json:"operator,omitempty"` // 导出审计（评审 M-19，必填）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ExportEvidenceRequest) Reset() {
+	*x = ExportEvidenceRequest{}
+	mi := &file_media_v1_ic_intel_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExportEvidenceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExportEvidenceRequest) ProtoMessage() {}
+
+func (x *ExportEvidenceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_ic_intel_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExportEvidenceRequest.ProtoReflect.Descriptor instead.
+func (*ExportEvidenceRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_ic_intel_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ExportEvidenceRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ExportEvidenceRequest) GetOperator() string {
+	if x != nil {
+		return x.Operator
+	}
+	return ""
+}
+
+type IntelCluster struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Id               string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // cl_ 前缀
+	Label            string                 `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
+	MemberCount      int32                  `protobuf:"varint,3,opt,name=member_count,proto3" json:"member_count,omitempty"`
+	PlatformCount    int32                  `protobuf:"varint,4,opt,name=platform_count,proto3" json:"platform_count,omitempty"`
+	RepresentativeId string                 `protobuf:"bytes,5,opt,name=representative_id,proto3" json:"representative_id,omitempty"`
+	Region           string                 `protobuf:"bytes,6,opt,name=region,proto3" json:"region,omitempty"`
+	MergedBy         string                 `protobuf:"bytes,7,opt,name=merged_by,proto3" json:"merged_by,omitempty"` // url | fingerprint | embedding | manual
+	Status           string                 `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`       // open | closed
+	FirstSeenAt      *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=first_seen_at,proto3" json:"first_seen_at,omitempty"`
+	LastSeenAt       *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=last_seen_at,proto3" json:"last_seen_at,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *IntelCluster) Reset() {
+	*x = IntelCluster{}
+	mi := &file_media_v1_ic_intel_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IntelCluster) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IntelCluster) ProtoMessage() {}
+
+func (x *IntelCluster) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_ic_intel_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IntelCluster.ProtoReflect.Descriptor instead.
+func (*IntelCluster) Descriptor() ([]byte, []int) {
+	return file_media_v1_ic_intel_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *IntelCluster) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *IntelCluster) GetLabel() string {
+	if x != nil {
+		return x.Label
+	}
+	return ""
+}
+
+func (x *IntelCluster) GetMemberCount() int32 {
+	if x != nil {
+		return x.MemberCount
+	}
+	return 0
+}
+
+func (x *IntelCluster) GetPlatformCount() int32 {
+	if x != nil {
+		return x.PlatformCount
+	}
+	return 0
+}
+
+func (x *IntelCluster) GetRepresentativeId() string {
+	if x != nil {
+		return x.RepresentativeId
+	}
+	return ""
+}
+
+func (x *IntelCluster) GetRegion() string {
+	if x != nil {
+		return x.Region
+	}
+	return ""
+}
+
+func (x *IntelCluster) GetMergedBy() string {
+	if x != nil {
+		return x.MergedBy
+	}
+	return ""
+}
+
+func (x *IntelCluster) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *IntelCluster) GetFirstSeenAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.FirstSeenAt
+	}
+	return nil
+}
+
+func (x *IntelCluster) GetLastSeenAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastSeenAt
+	}
+	return nil
+}
+
+type ListClustersRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,proto3" json:"page_size,omitempty"`
+	Region        string                 `protobuf:"bytes,3,opt,name=region,proto3" json:"region,omitempty"`
+	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListClustersRequest) Reset() {
+	*x = ListClustersRequest{}
+	mi := &file_media_v1_ic_intel_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListClustersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListClustersRequest) ProtoMessage() {}
+
+func (x *ListClustersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_ic_intel_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListClustersRequest.ProtoReflect.Descriptor instead.
+func (*ListClustersRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_ic_intel_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *ListClustersRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListClustersRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListClustersRequest) GetRegion() string {
+	if x != nil {
+		return x.Region
+	}
+	return ""
+}
+
+func (x *ListClustersRequest) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+type ListClustersResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*IntelCluster        `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListClustersResponse) Reset() {
+	*x = ListClustersResponse{}
+	mi := &file_media_v1_ic_intel_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListClustersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListClustersResponse) ProtoMessage() {}
+
+func (x *ListClustersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_ic_intel_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListClustersResponse.ProtoReflect.Descriptor instead.
+func (*ListClustersResponse) Descriptor() ([]byte, []int) {
+	return file_media_v1_ic_intel_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *ListClustersResponse) GetItems() []*IntelCluster {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *ListClustersResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+type SplitClusterRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	IntelIds      []string               `protobuf:"bytes,2,rep,name=intel_ids,proto3" json:"intel_ids,omitempty"` // 要劈出的条目
+	Operator      string                 `protobuf:"bytes,3,opt,name=operator,proto3" json:"operator,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SplitClusterRequest) Reset() {
+	*x = SplitClusterRequest{}
+	mi := &file_media_v1_ic_intel_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SplitClusterRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SplitClusterRequest) ProtoMessage() {}
+
+func (x *SplitClusterRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_ic_intel_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SplitClusterRequest.ProtoReflect.Descriptor instead.
+func (*SplitClusterRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_ic_intel_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *SplitClusterRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *SplitClusterRequest) GetIntelIds() []string {
+	if x != nil {
+		return x.IntelIds
+	}
+	return nil
+}
+
+func (x *SplitClusterRequest) GetOperator() string {
+	if x != nil {
+		return x.Operator
+	}
+	return ""
+}
+
+type SplitClusterResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NewClusterId  string                 `protobuf:"bytes,1,opt,name=new_cluster_id,proto3" json:"new_cluster_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SplitClusterResponse) Reset() {
+	*x = SplitClusterResponse{}
+	mi := &file_media_v1_ic_intel_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SplitClusterResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SplitClusterResponse) ProtoMessage() {}
+
+func (x *SplitClusterResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_ic_intel_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SplitClusterResponse.ProtoReflect.Descriptor instead.
+func (*SplitClusterResponse) Descriptor() ([]byte, []int) {
+	return file_media_v1_ic_intel_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *SplitClusterResponse) GetNewClusterId() string {
+	if x != nil {
+		return x.NewClusterId
+	}
+	return ""
+}
+
+type MergeClusterRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	FromClusterIds []string               `protobuf:"bytes,1,rep,name=from_cluster_ids,proto3" json:"from_cluster_ids,omitempty"`
+	ToClusterId    string                 `protobuf:"bytes,2,opt,name=to_cluster_id,proto3" json:"to_cluster_id,omitempty"`
+	Reason         string                 `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`
+	Operator       string                 `protobuf:"bytes,4,opt,name=operator,proto3" json:"operator,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *MergeClusterRequest) Reset() {
+	*x = MergeClusterRequest{}
+	mi := &file_media_v1_ic_intel_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MergeClusterRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MergeClusterRequest) ProtoMessage() {}
+
+func (x *MergeClusterRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_ic_intel_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MergeClusterRequest.ProtoReflect.Descriptor instead.
+func (*MergeClusterRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_ic_intel_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *MergeClusterRequest) GetFromClusterIds() []string {
+	if x != nil {
+		return x.FromClusterIds
+	}
+	return nil
+}
+
+func (x *MergeClusterRequest) GetToClusterId() string {
+	if x != nil {
+		return x.ToClusterId
+	}
+	return ""
+}
+
+func (x *MergeClusterRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *MergeClusterRequest) GetOperator() string {
+	if x != nil {
+		return x.Operator
+	}
+	return ""
+}
+
+type MergeClusterResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ok            bool                   `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MergeClusterResponse) Reset() {
+	*x = MergeClusterResponse{}
+	mi := &file_media_v1_ic_intel_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MergeClusterResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MergeClusterResponse) ProtoMessage() {}
+
+func (x *MergeClusterResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_ic_intel_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MergeClusterResponse.ProtoReflect.Descriptor instead.
+func (*MergeClusterResponse) Descriptor() ([]byte, []int) {
+	return file_media_v1_ic_intel_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *MergeClusterResponse) GetOk() bool {
+	if x != nil {
+		return x.Ok
+	}
+	return false
+}
+
 var File_media_v1_ic_intel_proto protoreflect.FileDescriptor
 
 const file_media_v1_ic_intel_proto_rawDesc = "" +
 	"\n" +
-	"\x17media/v1/ic/intel.proto\x12\vmedia.ic.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe9\x03\n" +
+	"\x17media/v1/ic/intel.proto\x12\vmedia.ic.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe9\x03\n" +
 	"\tIntelItem\x12 \n" +
 	"\vapi_version\x18\x01 \x01(\tR\vapi_version\x12\x1a\n" +
 	"\bintel_id\x18\x02 \x01(\tR\bintel_id\x124\n" +
@@ -747,7 +1665,87 @@ const file_media_v1_ic_intel_proto_rawDesc = "" +
 	"\areasons\x18\x02 \x03(\tR\areasons\"@\n" +
 	"\x10IntelWorkability\x12\x14\n" +
 	"\x05score\x18\x01 \x01(\x01R\x05score\x12\x16\n" +
-	"\x06reason\x18\x02 \x01(\tR\x06reasonB\x92\x01\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"\xa7\x03\n" +
+	"\x11ListIntelsRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1c\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\tpage_size\x12\x1a\n" +
+	"\bplatform\x18\x03 \x01(\tR\bplatform\x12\x16\n" +
+	"\x06region\x18\x04 \x01(\tR\x06region\x12\x1a\n" +
+	"\bcategory\x18\x05 \x01(\tR\bcategory\x12\x1e\n" +
+	"\n" +
+	"cluster_id\x18\x06 \x01(\tR\n" +
+	"cluster_id\x12&\n" +
+	"\x0ecollect_method\x18\a \x01(\tR\x0ecollect_method\x12\x18\n" +
+	"\akeyword\x18\b \x01(\tR\akeyword\x12\x16\n" +
+	"\x06entity\x18\t \x01(\tR\x06entity\x12B\n" +
+	"\x0ecollected_from\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\x0ecollected_from\x12>\n" +
+	"\fcollected_to\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\fcollected_to\x12\x12\n" +
+	"\x04gate\x18\f \x01(\tR\x04gate\"X\n" +
+	"\x12ListIntelsResponse\x12,\n" +
+	"\x05items\x18\x01 \x03(\v2\x16.media.ic.v1.IntelItemR\x05items\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"!\n" +
+	"\x0fGetIntelRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"<\n" +
+	"\x16SupplementIntelRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04text\x18\x02 \x01(\tR\x04text\")\n" +
+	"\x17SupplementIntelResponse\x12\x0e\n" +
+	"\x02ok\x18\x01 \x01(\bR\x02ok\"\xcc\x01\n" +
+	"\x0eEvidenceExport\x12\x1a\n" +
+	"\bintel_id\x18\x01 \x01(\tR\bintel_id\x12 \n" +
+	"\vevidence_id\x18\x02 \x01(\tR\vevidence_id\x12\"\n" +
+	"\fdownload_url\x18\x03 \x01(\tR\fdownload_url\x12\x1e\n" +
+	"\n" +
+	"chain_hash\x18\x04 \x01(\tR\n" +
+	"chain_hash\x12\x1c\n" +
+	"\tprev_hash\x18\x05 \x01(\tR\tprev_hash\x12\x1a\n" +
+	"\braw_hash\x18\x06 \x01(\tR\braw_hash\"C\n" +
+	"\x15ExportEvidenceRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
+	"\boperator\x18\x02 \x01(\tR\boperator\"\xfe\x02\n" +
+	"\fIntelCluster\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05label\x18\x02 \x01(\tR\x05label\x12\"\n" +
+	"\fmember_count\x18\x03 \x01(\x05R\fmember_count\x12&\n" +
+	"\x0eplatform_count\x18\x04 \x01(\x05R\x0eplatform_count\x12,\n" +
+	"\x11representative_id\x18\x05 \x01(\tR\x11representative_id\x12\x16\n" +
+	"\x06region\x18\x06 \x01(\tR\x06region\x12\x1c\n" +
+	"\tmerged_by\x18\a \x01(\tR\tmerged_by\x12\x16\n" +
+	"\x06status\x18\b \x01(\tR\x06status\x12@\n" +
+	"\rfirst_seen_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\rfirst_seen_at\x12>\n" +
+	"\flast_seen_at\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\flast_seen_at\"w\n" +
+	"\x13ListClustersRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1c\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\tpage_size\x12\x16\n" +
+	"\x06region\x18\x03 \x01(\tR\x06region\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\"]\n" +
+	"\x14ListClustersResponse\x12/\n" +
+	"\x05items\x18\x01 \x03(\v2\x19.media.ic.v1.IntelClusterR\x05items\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"_\n" +
+	"\x13SplitClusterRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1c\n" +
+	"\tintel_ids\x18\x02 \x03(\tR\tintel_ids\x12\x1a\n" +
+	"\boperator\x18\x03 \x01(\tR\boperator\">\n" +
+	"\x14SplitClusterResponse\x12&\n" +
+	"\x0enew_cluster_id\x18\x01 \x01(\tR\x0enew_cluster_id\"\x9b\x01\n" +
+	"\x13MergeClusterRequest\x12*\n" +
+	"\x10from_cluster_ids\x18\x01 \x03(\tR\x10from_cluster_ids\x12$\n" +
+	"\rto_cluster_id\x18\x02 \x01(\tR\rto_cluster_id\x12\x16\n" +
+	"\x06reason\x18\x03 \x01(\tR\x06reason\x12\x1a\n" +
+	"\boperator\x18\x04 \x01(\tR\boperator\"&\n" +
+	"\x14MergeClusterResponse\x12\x0e\n" +
+	"\x02ok\x18\x01 \x01(\bR\x02ok2\xfc\x06\n" +
+	"\fIntelService\x12n\n" +
+	"\n" +
+	"ListIntels\x12\x1e.media.ic.v1.ListIntelsRequest\x1a\x1f.media.ic.v1.ListIntelsResponse\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/api/v1/media/ic/intels\x12f\n" +
+	"\bGetIntel\x12\x1c.media.ic.v1.GetIntelRequest\x1a\x16.media.ic.v1.IntelItem\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/api/v1/media/ic/intels/{id}\x12\x90\x01\n" +
+	"\x0fSupplementIntel\x12#.media.ic.v1.SupplementIntelRequest\x1a$.media.ic.v1.SupplementIntelResponse\"2\x82\xd3\xe4\x93\x02,:\x01*\"'/api/v1/media/ic/intels/{id}/supplement\x12\x80\x01\n" +
+	"\x0eExportEvidence\x12\".media.ic.v1.ExportEvidenceRequest\x1a\x1b.media.ic.v1.EvidenceExport\"-\x82\xd3\xe4\x93\x02'\x12%/api/v1/media/ic/intels/{id}/evidence\x12v\n" +
+	"\fListClusters\x12 .media.ic.v1.ListClustersRequest\x1a!.media.ic.v1.ListClustersResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/api/v1/media/ic/clusters\x12\x84\x01\n" +
+	"\fSplitCluster\x12 .media.ic.v1.SplitClusterRequest\x1a!.media.ic.v1.SplitClusterResponse\"/\x82\xd3\xe4\x93\x02):\x01*\"$/api/v1/media/ic/clusters/{id}/split\x12\x7f\n" +
+	"\fMergeCluster\x12 .media.ic.v1.MergeClusterRequest\x1a!.media.ic.v1.MergeClusterResponse\"*\x82\xd3\xe4\x93\x02$:\x01*\"\x1f/api/v1/media/ic/clusters/mergeB\x92\x01\n" +
 	"\x0fcom.media.ic.v1B\n" +
 	"IntelProtoP\x01Z%framework/api/gen/go/media/v1/ic;icv1\xa2\x02\x03MIX\xaa\x02\vMedia.Ic.V1\xca\x02\vMedia\\Ic\\V1\xe2\x02\x17Media\\Ic\\V1\\GPBMetadata\xea\x02\rMedia::Ic::V1b\x06proto3"
 
@@ -763,19 +1761,33 @@ func file_media_v1_ic_intel_proto_rawDescGZIP() []byte {
 	return file_media_v1_ic_intel_proto_rawDescData
 }
 
-var file_media_v1_ic_intel_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_media_v1_ic_intel_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_media_v1_ic_intel_proto_goTypes = []any{
-	(*IntelItem)(nil),             // 0: media.ic.v1.IntelItem
-	(*IntelItemSource)(nil),       // 1: media.ic.v1.IntelItemSource
-	(*IntelEvidence)(nil),         // 2: media.ic.v1.IntelEvidence
-	(*IntelPayload)(nil),          // 3: media.ic.v1.IntelPayload
-	(*IntelEntity)(nil),           // 4: media.ic.v1.IntelEntity
-	(*IntelMetrics)(nil),          // 5: media.ic.v1.IntelMetrics
-	(*IntelDedup)(nil),            // 6: media.ic.v1.IntelDedup
-	(*IntelCompliance)(nil),       // 7: media.ic.v1.IntelCompliance
-	(*IntelWorkability)(nil),      // 8: media.ic.v1.IntelWorkability
-	nil,                           // 9: media.ic.v1.IntelEvidence.HttpHeadersEntry
-	(*timestamppb.Timestamp)(nil), // 10: google.protobuf.Timestamp
+	(*IntelItem)(nil),               // 0: media.ic.v1.IntelItem
+	(*IntelItemSource)(nil),         // 1: media.ic.v1.IntelItemSource
+	(*IntelEvidence)(nil),           // 2: media.ic.v1.IntelEvidence
+	(*IntelPayload)(nil),            // 3: media.ic.v1.IntelPayload
+	(*IntelEntity)(nil),             // 4: media.ic.v1.IntelEntity
+	(*IntelMetrics)(nil),            // 5: media.ic.v1.IntelMetrics
+	(*IntelDedup)(nil),              // 6: media.ic.v1.IntelDedup
+	(*IntelCompliance)(nil),         // 7: media.ic.v1.IntelCompliance
+	(*IntelWorkability)(nil),        // 8: media.ic.v1.IntelWorkability
+	(*ListIntelsRequest)(nil),       // 9: media.ic.v1.ListIntelsRequest
+	(*ListIntelsResponse)(nil),      // 10: media.ic.v1.ListIntelsResponse
+	(*GetIntelRequest)(nil),         // 11: media.ic.v1.GetIntelRequest
+	(*SupplementIntelRequest)(nil),  // 12: media.ic.v1.SupplementIntelRequest
+	(*SupplementIntelResponse)(nil), // 13: media.ic.v1.SupplementIntelResponse
+	(*EvidenceExport)(nil),          // 14: media.ic.v1.EvidenceExport
+	(*ExportEvidenceRequest)(nil),   // 15: media.ic.v1.ExportEvidenceRequest
+	(*IntelCluster)(nil),            // 16: media.ic.v1.IntelCluster
+	(*ListClustersRequest)(nil),     // 17: media.ic.v1.ListClustersRequest
+	(*ListClustersResponse)(nil),    // 18: media.ic.v1.ListClustersResponse
+	(*SplitClusterRequest)(nil),     // 19: media.ic.v1.SplitClusterRequest
+	(*SplitClusterResponse)(nil),    // 20: media.ic.v1.SplitClusterResponse
+	(*MergeClusterRequest)(nil),     // 21: media.ic.v1.MergeClusterRequest
+	(*MergeClusterResponse)(nil),    // 22: media.ic.v1.MergeClusterResponse
+	nil,                             // 23: media.ic.v1.IntelEvidence.HttpHeadersEntry
+	(*timestamppb.Timestamp)(nil),   // 24: google.protobuf.Timestamp
 }
 var file_media_v1_ic_intel_proto_depIdxs = []int32{
 	1,  // 0: media.ic.v1.IntelItem.source:type_name -> media.ic.v1.IntelItemSource
@@ -785,16 +1797,36 @@ var file_media_v1_ic_intel_proto_depIdxs = []int32{
 	6,  // 4: media.ic.v1.IntelItem.dedup:type_name -> media.ic.v1.IntelDedup
 	7,  // 5: media.ic.v1.IntelItem.compliance:type_name -> media.ic.v1.IntelCompliance
 	8,  // 6: media.ic.v1.IntelItem.workability:type_name -> media.ic.v1.IntelWorkability
-	10, // 7: media.ic.v1.IntelItemSource.collected_at:type_name -> google.protobuf.Timestamp
-	10, // 8: media.ic.v1.IntelItemSource.published_at:type_name -> google.protobuf.Timestamp
+	24, // 7: media.ic.v1.IntelItemSource.collected_at:type_name -> google.protobuf.Timestamp
+	24, // 8: media.ic.v1.IntelItemSource.published_at:type_name -> google.protobuf.Timestamp
 	2,  // 9: media.ic.v1.IntelItemSource.evidence:type_name -> media.ic.v1.IntelEvidence
-	9,  // 10: media.ic.v1.IntelEvidence.http_headers:type_name -> media.ic.v1.IntelEvidence.HttpHeadersEntry
-	10, // 11: media.ic.v1.IntelMetrics.as_of:type_name -> google.protobuf.Timestamp
-	12, // [12:12] is the sub-list for method output_type
-	12, // [12:12] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	23, // 10: media.ic.v1.IntelEvidence.http_headers:type_name -> media.ic.v1.IntelEvidence.HttpHeadersEntry
+	24, // 11: media.ic.v1.IntelMetrics.as_of:type_name -> google.protobuf.Timestamp
+	24, // 12: media.ic.v1.ListIntelsRequest.collected_from:type_name -> google.protobuf.Timestamp
+	24, // 13: media.ic.v1.ListIntelsRequest.collected_to:type_name -> google.protobuf.Timestamp
+	0,  // 14: media.ic.v1.ListIntelsResponse.items:type_name -> media.ic.v1.IntelItem
+	24, // 15: media.ic.v1.IntelCluster.first_seen_at:type_name -> google.protobuf.Timestamp
+	24, // 16: media.ic.v1.IntelCluster.last_seen_at:type_name -> google.protobuf.Timestamp
+	16, // 17: media.ic.v1.ListClustersResponse.items:type_name -> media.ic.v1.IntelCluster
+	9,  // 18: media.ic.v1.IntelService.ListIntels:input_type -> media.ic.v1.ListIntelsRequest
+	11, // 19: media.ic.v1.IntelService.GetIntel:input_type -> media.ic.v1.GetIntelRequest
+	12, // 20: media.ic.v1.IntelService.SupplementIntel:input_type -> media.ic.v1.SupplementIntelRequest
+	15, // 21: media.ic.v1.IntelService.ExportEvidence:input_type -> media.ic.v1.ExportEvidenceRequest
+	17, // 22: media.ic.v1.IntelService.ListClusters:input_type -> media.ic.v1.ListClustersRequest
+	19, // 23: media.ic.v1.IntelService.SplitCluster:input_type -> media.ic.v1.SplitClusterRequest
+	21, // 24: media.ic.v1.IntelService.MergeCluster:input_type -> media.ic.v1.MergeClusterRequest
+	10, // 25: media.ic.v1.IntelService.ListIntels:output_type -> media.ic.v1.ListIntelsResponse
+	0,  // 26: media.ic.v1.IntelService.GetIntel:output_type -> media.ic.v1.IntelItem
+	13, // 27: media.ic.v1.IntelService.SupplementIntel:output_type -> media.ic.v1.SupplementIntelResponse
+	14, // 28: media.ic.v1.IntelService.ExportEvidence:output_type -> media.ic.v1.EvidenceExport
+	18, // 29: media.ic.v1.IntelService.ListClusters:output_type -> media.ic.v1.ListClustersResponse
+	20, // 30: media.ic.v1.IntelService.SplitCluster:output_type -> media.ic.v1.SplitClusterResponse
+	22, // 31: media.ic.v1.IntelService.MergeCluster:output_type -> media.ic.v1.MergeClusterResponse
+	25, // [25:32] is the sub-list for method output_type
+	18, // [18:25] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_media_v1_ic_intel_proto_init() }
@@ -808,9 +1840,9 @@ func file_media_v1_ic_intel_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_media_v1_ic_intel_proto_rawDesc), len(file_media_v1_ic_intel_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   24,
 			NumExtensions: 0,
-			NumServices:   0,
+			NumServices:   1,
 		},
 		GoTypes:           file_media_v1_ic_intel_proto_goTypes,
 		DependencyIndexes: file_media_v1_ic_intel_proto_depIdxs,

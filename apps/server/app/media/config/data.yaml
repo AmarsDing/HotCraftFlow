@@ -1,0 +1,11 @@
+# media 私有数据源覆盖（公共 conf/data.yaml 的 source 为占位符 CHANGE_ME，
+# 本地开发 PG 按 infra/docker-compose.yml 的口径连 5434/123456）。
+# 生产部署以环境变量/部署注入替换本文件。
+data:
+  database:
+    driver: "postgres"
+    source: "host=localhost port=5434 user=postgres password=123456 dbname=framework sslmode=disable"
+    migrate: false          # media 表由 jobstore.EnsureSchema 自管，不走 ent 迁移
+    debug: false
+    enable_trace: false
+    enable_metrics: false

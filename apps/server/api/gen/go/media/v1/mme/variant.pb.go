@@ -7,8 +7,10 @@
 package mmev1
 
 import (
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -516,11 +518,1112 @@ func (x *DiffCheck) GetWarn() bool {
 	return false
 }
 
+// VariantItem 单变体的 API 视图（比契约 Variant 多渲染/选择/降级状态）。
+type VariantItem struct {
+	state          protoimpl.MessageState   `protogen:"open.v1"`
+	Id             string                   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // variant_id，v_ 前缀
+	SetId          string                   `protobuf:"bytes,2,opt,name=set_id,json=setId,proto3" json:"set_id,omitempty"`
+	ContentVersion string                   `protobuf:"bytes,3,opt,name=content_version,json=contentVersion,proto3" json:"content_version,omitempty"` // B 维度
+	Aspect         string                   `protobuf:"bytes,4,opt,name=aspect,proto3" json:"aspect,omitempty"`                                       // 9:16 / 1:1 / 16:9
+	HookId         string                   `protobuf:"bytes,5,opt,name=hook_id,json=hookId,proto3" json:"hook_id,omitempty"`                         // C 维度
+	CoverId        string                   `protobuf:"bytes,6,opt,name=cover_id,json=coverId,proto3" json:"cover_id,omitempty"`
+	EdlRef         string                   `protobuf:"bytes,7,opt,name=edl_ref,json=edlRef,proto3" json:"edl_ref,omitempty"` // 切点定义（JSON start/end）
+	DurationSec    float64                  `protobuf:"fixed64,8,opt,name=duration_sec,json=durationSec,proto3" json:"duration_sec,omitempty"`
+	VideoPath      string                   `protobuf:"bytes,9,opt,name=video_path,json=videoPath,proto3" json:"video_path,omitempty"`
+	CoverPath      string                   `protobuf:"bytes,10,opt,name=cover_path,json=coverPath,proto3" json:"cover_path,omitempty"`
+	CaptionStyle   string                   `protobuf:"bytes,11,opt,name=caption_style,json=captionStyle,proto3" json:"caption_style,omitempty"` // simple | dynamic
+	SrtPath        string                   `protobuf:"bytes,12,opt,name=srt_path,json=srtPath,proto3" json:"srt_path,omitempty"`
+	Copy           map[string]*PlatformCopy `protobuf:"bytes,13,rep,name=copy,proto3" json:"copy,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	ManifestPath   string                   `protobuf:"bytes,14,opt,name=manifest_path,json=manifestPath,proto3" json:"manifest_path,omitempty"`
+	Qc             *QC                      `protobuf:"bytes,15,opt,name=qc,proto3" json:"qc,omitempty"`
+	RenderState    string                   `protobuf:"bytes,16,opt,name=render_state,json=renderState,proto3" json:"render_state,omitempty"` // pending | running | done | failed
+	RenderError    string                   `protobuf:"bytes,17,opt,name=render_error,json=renderError,proto3" json:"render_error,omitempty"`
+	Selected       bool                     `protobuf:"varint,18,opt,name=selected,proto3" json:"selected,omitempty"`                             // 展开后可删减；只渲染 selected=true
+	CopyDegraded   bool                     `protobuf:"varint,19,opt,name=copy_degraded,json=copyDegraded,proto3" json:"copy_degraded,omitempty"` // true = LLM 不可用时的模板降级文案（诚实标注）
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *VariantItem) Reset() {
+	*x = VariantItem{}
+	mi := &file_media_v1_mme_variant_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VariantItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VariantItem) ProtoMessage() {}
+
+func (x *VariantItem) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mme_variant_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VariantItem.ProtoReflect.Descriptor instead.
+func (*VariantItem) Descriptor() ([]byte, []int) {
+	return file_media_v1_mme_variant_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *VariantItem) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *VariantItem) GetSetId() string {
+	if x != nil {
+		return x.SetId
+	}
+	return ""
+}
+
+func (x *VariantItem) GetContentVersion() string {
+	if x != nil {
+		return x.ContentVersion
+	}
+	return ""
+}
+
+func (x *VariantItem) GetAspect() string {
+	if x != nil {
+		return x.Aspect
+	}
+	return ""
+}
+
+func (x *VariantItem) GetHookId() string {
+	if x != nil {
+		return x.HookId
+	}
+	return ""
+}
+
+func (x *VariantItem) GetCoverId() string {
+	if x != nil {
+		return x.CoverId
+	}
+	return ""
+}
+
+func (x *VariantItem) GetEdlRef() string {
+	if x != nil {
+		return x.EdlRef
+	}
+	return ""
+}
+
+func (x *VariantItem) GetDurationSec() float64 {
+	if x != nil {
+		return x.DurationSec
+	}
+	return 0
+}
+
+func (x *VariantItem) GetVideoPath() string {
+	if x != nil {
+		return x.VideoPath
+	}
+	return ""
+}
+
+func (x *VariantItem) GetCoverPath() string {
+	if x != nil {
+		return x.CoverPath
+	}
+	return ""
+}
+
+func (x *VariantItem) GetCaptionStyle() string {
+	if x != nil {
+		return x.CaptionStyle
+	}
+	return ""
+}
+
+func (x *VariantItem) GetSrtPath() string {
+	if x != nil {
+		return x.SrtPath
+	}
+	return ""
+}
+
+func (x *VariantItem) GetCopy() map[string]*PlatformCopy {
+	if x != nil {
+		return x.Copy
+	}
+	return nil
+}
+
+func (x *VariantItem) GetManifestPath() string {
+	if x != nil {
+		return x.ManifestPath
+	}
+	return ""
+}
+
+func (x *VariantItem) GetQc() *QC {
+	if x != nil {
+		return x.Qc
+	}
+	return nil
+}
+
+func (x *VariantItem) GetRenderState() string {
+	if x != nil {
+		return x.RenderState
+	}
+	return ""
+}
+
+func (x *VariantItem) GetRenderError() string {
+	if x != nil {
+		return x.RenderError
+	}
+	return ""
+}
+
+func (x *VariantItem) GetSelected() bool {
+	if x != nil {
+		return x.Selected
+	}
+	return false
+}
+
+func (x *VariantItem) GetCopyDegraded() bool {
+	if x != nil {
+		return x.CopyDegraded
+	}
+	return false
+}
+
+// VariantSetView 变体簇管理视图（含全部变体与差异化结果）。
+type VariantSetView struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // vs_ 前缀
+	TaskId        string                 `protobuf:"bytes,2,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	CandidateId   string                 `protobuf:"bytes,3,opt,name=candidate_id,json=candidateId,proto3" json:"candidate_id,omitempty"`
+	AssetId       string                 `protobuf:"bytes,4,opt,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
+	TranscriptRef string                 `protobuf:"bytes,5,opt,name=transcript_ref,json=transcriptRef,proto3" json:"transcript_ref,omitempty"`
+	State         string                 `protobuf:"bytes,6,opt,name=state,proto3" json:"state,omitempty"` // planned | rendering | review | approved | rejected
+	VariantCount  int32                  `protobuf:"varint,7,opt,name=variant_count,json=variantCount,proto3" json:"variant_count,omitempty"`
+	DiffCheck     *DiffResult            `protobuf:"bytes,8,opt,name=diff_check,json=diffCheck,proto3" json:"diff_check,omitempty"`
+	TemplateId    string                 `protobuf:"bytes,9,opt,name=template_id,json=templateId,proto3" json:"template_id,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Variants      []*VariantItem         `protobuf:"bytes,11,rep,name=variants,proto3" json:"variants,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VariantSetView) Reset() {
+	*x = VariantSetView{}
+	mi := &file_media_v1_mme_variant_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VariantSetView) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VariantSetView) ProtoMessage() {}
+
+func (x *VariantSetView) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mme_variant_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VariantSetView.ProtoReflect.Descriptor instead.
+func (*VariantSetView) Descriptor() ([]byte, []int) {
+	return file_media_v1_mme_variant_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *VariantSetView) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *VariantSetView) GetTaskId() string {
+	if x != nil {
+		return x.TaskId
+	}
+	return ""
+}
+
+func (x *VariantSetView) GetCandidateId() string {
+	if x != nil {
+		return x.CandidateId
+	}
+	return ""
+}
+
+func (x *VariantSetView) GetAssetId() string {
+	if x != nil {
+		return x.AssetId
+	}
+	return ""
+}
+
+func (x *VariantSetView) GetTranscriptRef() string {
+	if x != nil {
+		return x.TranscriptRef
+	}
+	return ""
+}
+
+func (x *VariantSetView) GetState() string {
+	if x != nil {
+		return x.State
+	}
+	return ""
+}
+
+func (x *VariantSetView) GetVariantCount() int32 {
+	if x != nil {
+		return x.VariantCount
+	}
+	return 0
+}
+
+func (x *VariantSetView) GetDiffCheck() *DiffResult {
+	if x != nil {
+		return x.DiffCheck
+	}
+	return nil
+}
+
+func (x *VariantSetView) GetTemplateId() string {
+	if x != nil {
+		return x.TemplateId
+	}
+	return ""
+}
+
+func (x *VariantSetView) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *VariantSetView) GetVariants() []*VariantItem {
+	if x != nil {
+		return x.Variants
+	}
+	return nil
+}
+
+// HookSpec Hook（前 3s）规格（C 维度）。
+type HookSpec struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`       // hook_a / hook_b ...
+	Label         string                 `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"` // 展示名
+	Text          string                 `protobuf:"bytes,3,opt,name=text,proto3" json:"text,omitempty"`   // Hook 文案（可选，渲染烧入）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HookSpec) Reset() {
+	*x = HookSpec{}
+	mi := &file_media_v1_mme_variant_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HookSpec) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HookSpec) ProtoMessage() {}
+
+func (x *HookSpec) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mme_variant_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HookSpec.ProtoReflect.Descriptor instead.
+func (*HookSpec) Descriptor() ([]byte, []int) {
+	return file_media_v1_mme_variant_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *HookSpec) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *HookSpec) GetLabel() string {
+	if x != nil {
+		return x.Label
+	}
+	return ""
+}
+
+func (x *HookSpec) GetText() string {
+	if x != nil {
+		return x.Text
+	}
+	return ""
+}
+
+// ExpandRequest 矩阵展开请求。
+type ExpandRequest struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	TaskId            string                 `protobuf:"bytes,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	ContentVersionIds []string               `protobuf:"bytes,2,rep,name=content_version_ids,json=contentVersionIds,proto3" json:"content_version_ids,omitempty"` // 空 = 全部高光候选
+	Aspects           []string               `protobuf:"bytes,3,rep,name=aspects,proto3" json:"aspects,omitempty"`                                                // 空 = 默认 [9:16, 1:1, 16:9]
+	Hooks             []*HookSpec            `protobuf:"bytes,4,rep,name=hooks,proto3" json:"hooks,omitempty"`                                                    // 空 = 默认 hook_a/hook_b
+	TemplateId        string                 `protobuf:"bytes,5,opt,name=template_id,json=templateId,proto3" json:"template_id,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *ExpandRequest) Reset() {
+	*x = ExpandRequest{}
+	mi := &file_media_v1_mme_variant_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExpandRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExpandRequest) ProtoMessage() {}
+
+func (x *ExpandRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mme_variant_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExpandRequest.ProtoReflect.Descriptor instead.
+func (*ExpandRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_mme_variant_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ExpandRequest) GetTaskId() string {
+	if x != nil {
+		return x.TaskId
+	}
+	return ""
+}
+
+func (x *ExpandRequest) GetContentVersionIds() []string {
+	if x != nil {
+		return x.ContentVersionIds
+	}
+	return nil
+}
+
+func (x *ExpandRequest) GetAspects() []string {
+	if x != nil {
+		return x.Aspects
+	}
+	return nil
+}
+
+func (x *ExpandRequest) GetHooks() []*HookSpec {
+	if x != nil {
+		return x.Hooks
+	}
+	return nil
+}
+
+func (x *ExpandRequest) GetTemplateId() string {
+	if x != nil {
+		return x.TemplateId
+	}
+	return ""
+}
+
+type GetVariantSetRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // variant_set_id
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetVariantSetRequest) Reset() {
+	*x = GetVariantSetRequest{}
+	mi := &file_media_v1_mme_variant_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetVariantSetRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetVariantSetRequest) ProtoMessage() {}
+
+func (x *GetVariantSetRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mme_variant_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetVariantSetRequest.ProtoReflect.Descriptor instead.
+func (*GetVariantSetRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_mme_variant_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GetVariantSetRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+// UpdateSelectionRequest 全量新 selected 集合。
+type UpdateSelectionRequest struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Id                 string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // variant_set_id
+	SelectedVariantIds []string               `protobuf:"bytes,2,rep,name=selected_variant_ids,json=selectedVariantIds,proto3" json:"selected_variant_ids,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *UpdateSelectionRequest) Reset() {
+	*x = UpdateSelectionRequest{}
+	mi := &file_media_v1_mme_variant_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateSelectionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateSelectionRequest) ProtoMessage() {}
+
+func (x *UpdateSelectionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mme_variant_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateSelectionRequest.ProtoReflect.Descriptor instead.
+func (*UpdateSelectionRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_mme_variant_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *UpdateSelectionRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateSelectionRequest) GetSelectedVariantIds() []string {
+	if x != nil {
+		return x.SelectedVariantIds
+	}
+	return nil
+}
+
+type RenderRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // variant_set_id
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RenderRequest) Reset() {
+	*x = RenderRequest{}
+	mi := &file_media_v1_mme_variant_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RenderRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RenderRequest) ProtoMessage() {}
+
+func (x *RenderRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mme_variant_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RenderRequest.ProtoReflect.Descriptor instead.
+func (*RenderRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_mme_variant_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *RenderRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type RenderResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Queued        int32                  `protobuf:"varint,1,opt,name=queued,proto3" json:"queued,omitempty"`                              // 新入队数
+	Skipped       int32                  `protobuf:"varint,2,opt,name=skipped,proto3" json:"skipped,omitempty"`                            // 因未选/状态不可渲被跳过
+	AlreadyDone   int32                  `protobuf:"varint,3,opt,name=already_done,json=alreadyDone,proto3" json:"already_done,omitempty"` // 已渲完复用
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RenderResponse) Reset() {
+	*x = RenderResponse{}
+	mi := &file_media_v1_mme_variant_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RenderResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RenderResponse) ProtoMessage() {}
+
+func (x *RenderResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mme_variant_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RenderResponse.ProtoReflect.Descriptor instead.
+func (*RenderResponse) Descriptor() ([]byte, []int) {
+	return file_media_v1_mme_variant_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *RenderResponse) GetQueued() int32 {
+	if x != nil {
+		return x.Queued
+	}
+	return 0
+}
+
+func (x *RenderResponse) GetSkipped() int32 {
+	if x != nil {
+		return x.Skipped
+	}
+	return 0
+}
+
+func (x *RenderResponse) GetAlreadyDone() int32 {
+	if x != nil {
+		return x.AlreadyDone
+	}
+	return 0
+}
+
+// ReviewRequest 批量审核。rejections 的 reason 必填（服务端强制）。
+type ReviewRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // variant_set_id
+	ApprovedIds   []string               `protobuf:"bytes,2,rep,name=approved_ids,json=approvedIds,proto3" json:"approved_ids,omitempty"`
+	Rejections    []*Rejection           `protobuf:"bytes,3,rep,name=rejections,proto3" json:"rejections,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReviewRequest) Reset() {
+	*x = ReviewRequest{}
+	mi := &file_media_v1_mme_variant_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReviewRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReviewRequest) ProtoMessage() {}
+
+func (x *ReviewRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mme_variant_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReviewRequest.ProtoReflect.Descriptor instead.
+func (*ReviewRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_mme_variant_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ReviewRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ReviewRequest) GetApprovedIds() []string {
+	if x != nil {
+		return x.ApprovedIds
+	}
+	return nil
+}
+
+func (x *ReviewRequest) GetRejections() []*Rejection {
+	if x != nil {
+		return x.Rejections
+	}
+	return nil
+}
+
+type Rejection struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	VariantId     string                 `protobuf:"bytes,1,opt,name=variant_id,json=variantId,proto3" json:"variant_id,omitempty"`
+	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Rejection) Reset() {
+	*x = Rejection{}
+	mi := &file_media_v1_mme_variant_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Rejection) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Rejection) ProtoMessage() {}
+
+func (x *Rejection) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mme_variant_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Rejection.ProtoReflect.Descriptor instead.
+func (*Rejection) Descriptor() ([]byte, []int) {
+	return file_media_v1_mme_variant_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *Rejection) GetVariantId() string {
+	if x != nil {
+		return x.VariantId
+	}
+	return ""
+}
+
+func (x *Rejection) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+// PairSimilarity 一对变体的相似度（各维度 0~1）。
+type PairSimilarity struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	VariantA      string                 `protobuf:"bytes,1,opt,name=variant_a,json=variantA,proto3" json:"variant_a,omitempty"`
+	VariantB      string                 `protobuf:"bytes,2,opt,name=variant_b,json=variantB,proto3" json:"variant_b,omitempty"`
+	Visual        float64                `protobuf:"fixed64,3,opt,name=visual,proto3" json:"visual,omitempty"`   // 关键帧哈希序列相似度（ffmpeg 缺失时跳过记 -1）
+	Hook          float64                `protobuf:"fixed64,4,opt,name=hook,proto3" json:"hook,omitempty"`       // 前 3s 相似度（可选）
+	Copy          float64                `protobuf:"fixed64,5,opt,name=copy,proto3" json:"copy,omitempty"`       // 文案 SimHash 相似度
+	Overall       float64                `protobuf:"fixed64,6,opt,name=overall,proto3" json:"overall,omitempty"` // max(visual, hook, copy)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PairSimilarity) Reset() {
+	*x = PairSimilarity{}
+	mi := &file_media_v1_mme_variant_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PairSimilarity) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PairSimilarity) ProtoMessage() {}
+
+func (x *PairSimilarity) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mme_variant_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PairSimilarity.ProtoReflect.Descriptor instead.
+func (*PairSimilarity) Descriptor() ([]byte, []int) {
+	return file_media_v1_mme_variant_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *PairSimilarity) GetVariantA() string {
+	if x != nil {
+		return x.VariantA
+	}
+	return ""
+}
+
+func (x *PairSimilarity) GetVariantB() string {
+	if x != nil {
+		return x.VariantB
+	}
+	return ""
+}
+
+func (x *PairSimilarity) GetVisual() float64 {
+	if x != nil {
+		return x.Visual
+	}
+	return 0
+}
+
+func (x *PairSimilarity) GetHook() float64 {
+	if x != nil {
+		return x.Hook
+	}
+	return 0
+}
+
+func (x *PairSimilarity) GetCopy() float64 {
+	if x != nil {
+		return x.Copy
+	}
+	return 0
+}
+
+func (x *PairSimilarity) GetOverall() float64 {
+	if x != nil {
+		return x.Overall
+	}
+	return 0
+}
+
+// DiffResult 差异化检查结果（FR-MIX-05）。
+type DiffResult struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	MinPairSimilarity float64                `protobuf:"fixed64,1,opt,name=min_pair_similarity,json=minPairSimilarity,proto3" json:"min_pair_similarity,omitempty"` // 所有对中overall的最大相似度（越高越危险）
+	Warn              bool                   `protobuf:"varint,2,opt,name=warn,proto3" json:"warn,omitempty"`                                                       // >= 阈值 0.90
+	Pairs             []*PairSimilarity      `protobuf:"bytes,3,rep,name=pairs,proto3" json:"pairs,omitempty"`
+	Summary           string                 `protobuf:"bytes,4,opt,name=summary,proto3" json:"summary,omitempty"` // 可读说明（含被跳过维度的诚实声明）
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *DiffResult) Reset() {
+	*x = DiffResult{}
+	mi := &file_media_v1_mme_variant_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DiffResult) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DiffResult) ProtoMessage() {}
+
+func (x *DiffResult) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mme_variant_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DiffResult.ProtoReflect.Descriptor instead.
+func (*DiffResult) Descriptor() ([]byte, []int) {
+	return file_media_v1_mme_variant_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *DiffResult) GetMinPairSimilarity() float64 {
+	if x != nil {
+		return x.MinPairSimilarity
+	}
+	return 0
+}
+
+func (x *DiffResult) GetWarn() bool {
+	if x != nil {
+		return x.Warn
+	}
+	return false
+}
+
+func (x *DiffResult) GetPairs() []*PairSimilarity {
+	if x != nil {
+		return x.Pairs
+	}
+	return nil
+}
+
+func (x *DiffResult) GetSummary() string {
+	if x != nil {
+		return x.Summary
+	}
+	return ""
+}
+
+// MontageTemplate 混剪模板（FR-MIX-08）。
+type MontageTemplate struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	IntroPath     string                 `protobuf:"bytes,3,opt,name=intro_path,json=introPath,proto3" json:"intro_path,omitempty"`
+	OutroPath     string                 `protobuf:"bytes,4,opt,name=outro_path,json=outroPath,proto3" json:"outro_path,omitempty"`
+	Transition    string                 `protobuf:"bytes,5,opt,name=transition,proto3" json:"transition,omitempty"`                      // cut | fade | slide
+	CaptionSkin   string                 `protobuf:"bytes,6,opt,name=caption_skin,json=captionSkin,proto3" json:"caption_skin,omitempty"` // 字幕皮肤（JSON 串）
+	Enabled       bool                   `protobuf:"varint,7,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MontageTemplate) Reset() {
+	*x = MontageTemplate{}
+	mi := &file_media_v1_mme_variant_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MontageTemplate) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MontageTemplate) ProtoMessage() {}
+
+func (x *MontageTemplate) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mme_variant_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MontageTemplate.ProtoReflect.Descriptor instead.
+func (*MontageTemplate) Descriptor() ([]byte, []int) {
+	return file_media_v1_mme_variant_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *MontageTemplate) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *MontageTemplate) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *MontageTemplate) GetIntroPath() string {
+	if x != nil {
+		return x.IntroPath
+	}
+	return ""
+}
+
+func (x *MontageTemplate) GetOutroPath() string {
+	if x != nil {
+		return x.OutroPath
+	}
+	return ""
+}
+
+func (x *MontageTemplate) GetTransition() string {
+	if x != nil {
+		return x.Transition
+	}
+	return ""
+}
+
+func (x *MontageTemplate) GetCaptionSkin() string {
+	if x != nil {
+		return x.CaptionSkin
+	}
+	return ""
+}
+
+func (x *MontageTemplate) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
+type ListTemplatesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*MontageTemplate     `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListTemplatesResponse) Reset() {
+	*x = ListTemplatesResponse{}
+	mi := &file_media_v1_mme_variant_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListTemplatesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListTemplatesResponse) ProtoMessage() {}
+
+func (x *ListTemplatesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mme_variant_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListTemplatesResponse.ProtoReflect.Descriptor instead.
+func (*ListTemplatesResponse) Descriptor() ([]byte, []int) {
+	return file_media_v1_mme_variant_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *ListTemplatesResponse) GetItems() []*MontageTemplate {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+type RerenderVariantRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // variant_id
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RerenderVariantRequest) Reset() {
+	*x = RerenderVariantRequest{}
+	mi := &file_media_v1_mme_variant_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RerenderVariantRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RerenderVariantRequest) ProtoMessage() {}
+
+func (x *RerenderVariantRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mme_variant_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RerenderVariantRequest.ProtoReflect.Descriptor instead.
+func (*RerenderVariantRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_mme_variant_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *RerenderVariantRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
 var File_media_v1_mme_variant_proto protoreflect.FileDescriptor
 
 const file_media_v1_mme_variant_proto_rawDesc = "" +
 	"\n" +
-	"\x1amedia/v1/mme/variant.proto\x12\fmedia.mme.v1\"\xf7\x01\n" +
+	"\x1amedia/v1/mme/variant.proto\x12\fmedia.mme.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\"\xf7\x01\n" +
 	"\n" +
 	"VariantSet\x12 \n" +
 	"\vapi_version\x18\x01 \x01(\tR\vapi_version\x12&\n" +
@@ -570,7 +1673,122 @@ const file_media_v1_mme_variant_proto_rawDesc = "" +
 	"\x05score\x18\x03 \x01(\x01R\x05score\"Q\n" +
 	"\tDiffCheck\x120\n" +
 	"\x13min_pair_similarity\x18\x01 \x01(\x01R\x13min_pair_similarity\x12\x12\n" +
-	"\x04warn\x18\x02 \x01(\bR\x04warnB\x9b\x01\n" +
+	"\x04warn\x18\x02 \x01(\bR\x04warn\"\xbf\x05\n" +
+	"\vVariantItem\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x15\n" +
+	"\x06set_id\x18\x02 \x01(\tR\x05setId\x12'\n" +
+	"\x0fcontent_version\x18\x03 \x01(\tR\x0econtentVersion\x12\x16\n" +
+	"\x06aspect\x18\x04 \x01(\tR\x06aspect\x12\x17\n" +
+	"\ahook_id\x18\x05 \x01(\tR\x06hookId\x12\x19\n" +
+	"\bcover_id\x18\x06 \x01(\tR\acoverId\x12\x17\n" +
+	"\aedl_ref\x18\a \x01(\tR\x06edlRef\x12!\n" +
+	"\fduration_sec\x18\b \x01(\x01R\vdurationSec\x12\x1d\n" +
+	"\n" +
+	"video_path\x18\t \x01(\tR\tvideoPath\x12\x1d\n" +
+	"\n" +
+	"cover_path\x18\n" +
+	" \x01(\tR\tcoverPath\x12#\n" +
+	"\rcaption_style\x18\v \x01(\tR\fcaptionStyle\x12\x19\n" +
+	"\bsrt_path\x18\f \x01(\tR\asrtPath\x127\n" +
+	"\x04copy\x18\r \x03(\v2#.media.mme.v1.VariantItem.CopyEntryR\x04copy\x12#\n" +
+	"\rmanifest_path\x18\x0e \x01(\tR\fmanifestPath\x12 \n" +
+	"\x02qc\x18\x0f \x01(\v2\x10.media.mme.v1.QCR\x02qc\x12!\n" +
+	"\frender_state\x18\x10 \x01(\tR\vrenderState\x12!\n" +
+	"\frender_error\x18\x11 \x01(\tR\vrenderError\x12\x1a\n" +
+	"\bselected\x18\x12 \x01(\bR\bselected\x12#\n" +
+	"\rcopy_degraded\x18\x13 \x01(\bR\fcopyDegraded\x1aS\n" +
+	"\tCopyEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x120\n" +
+	"\x05value\x18\x02 \x01(\v2\x1a.media.mme.v1.PlatformCopyR\x05value:\x028\x01\"\x89\x03\n" +
+	"\x0eVariantSetView\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
+	"\atask_id\x18\x02 \x01(\tR\x06taskId\x12!\n" +
+	"\fcandidate_id\x18\x03 \x01(\tR\vcandidateId\x12\x19\n" +
+	"\basset_id\x18\x04 \x01(\tR\aassetId\x12%\n" +
+	"\x0etranscript_ref\x18\x05 \x01(\tR\rtranscriptRef\x12\x14\n" +
+	"\x05state\x18\x06 \x01(\tR\x05state\x12#\n" +
+	"\rvariant_count\x18\a \x01(\x05R\fvariantCount\x127\n" +
+	"\n" +
+	"diff_check\x18\b \x01(\v2\x18.media.mme.v1.DiffResultR\tdiffCheck\x12\x1f\n" +
+	"\vtemplate_id\x18\t \x01(\tR\n" +
+	"templateId\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\n" +
+	" \x01(\tR\tcreatedAt\x125\n" +
+	"\bvariants\x18\v \x03(\v2\x19.media.mme.v1.VariantItemR\bvariants\"D\n" +
+	"\bHookSpec\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05label\x18\x02 \x01(\tR\x05label\x12\x12\n" +
+	"\x04text\x18\x03 \x01(\tR\x04text\"\xc1\x01\n" +
+	"\rExpandRequest\x12\x17\n" +
+	"\atask_id\x18\x01 \x01(\tR\x06taskId\x12.\n" +
+	"\x13content_version_ids\x18\x02 \x03(\tR\x11contentVersionIds\x12\x18\n" +
+	"\aaspects\x18\x03 \x03(\tR\aaspects\x12,\n" +
+	"\x05hooks\x18\x04 \x03(\v2\x16.media.mme.v1.HookSpecR\x05hooks\x12\x1f\n" +
+	"\vtemplate_id\x18\x05 \x01(\tR\n" +
+	"templateId\"&\n" +
+	"\x14GetVariantSetRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"Z\n" +
+	"\x16UpdateSelectionRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x120\n" +
+	"\x14selected_variant_ids\x18\x02 \x03(\tR\x12selectedVariantIds\"\x1f\n" +
+	"\rRenderRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"e\n" +
+	"\x0eRenderResponse\x12\x16\n" +
+	"\x06queued\x18\x01 \x01(\x05R\x06queued\x12\x18\n" +
+	"\askipped\x18\x02 \x01(\x05R\askipped\x12!\n" +
+	"\falready_done\x18\x03 \x01(\x05R\valreadyDone\"{\n" +
+	"\rReviewRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
+	"\fapproved_ids\x18\x02 \x03(\tR\vapprovedIds\x127\n" +
+	"\n" +
+	"rejections\x18\x03 \x03(\v2\x17.media.mme.v1.RejectionR\n" +
+	"rejections\"B\n" +
+	"\tRejection\x12\x1d\n" +
+	"\n" +
+	"variant_id\x18\x01 \x01(\tR\tvariantId\x12\x16\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"\xa4\x01\n" +
+	"\x0ePairSimilarity\x12\x1b\n" +
+	"\tvariant_a\x18\x01 \x01(\tR\bvariantA\x12\x1b\n" +
+	"\tvariant_b\x18\x02 \x01(\tR\bvariantB\x12\x16\n" +
+	"\x06visual\x18\x03 \x01(\x01R\x06visual\x12\x12\n" +
+	"\x04hook\x18\x04 \x01(\x01R\x04hook\x12\x12\n" +
+	"\x04copy\x18\x05 \x01(\x01R\x04copy\x12\x18\n" +
+	"\aoverall\x18\x06 \x01(\x01R\aoverall\"\x9e\x01\n" +
+	"\n" +
+	"DiffResult\x12.\n" +
+	"\x13min_pair_similarity\x18\x01 \x01(\x01R\x11minPairSimilarity\x12\x12\n" +
+	"\x04warn\x18\x02 \x01(\bR\x04warn\x122\n" +
+	"\x05pairs\x18\x03 \x03(\v2\x1c.media.mme.v1.PairSimilarityR\x05pairs\x12\x18\n" +
+	"\asummary\x18\x04 \x01(\tR\asummary\"\xd0\x01\n" +
+	"\x0fMontageTemplate\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1d\n" +
+	"\n" +
+	"intro_path\x18\x03 \x01(\tR\tintroPath\x12\x1d\n" +
+	"\n" +
+	"outro_path\x18\x04 \x01(\tR\toutroPath\x12\x1e\n" +
+	"\n" +
+	"transition\x18\x05 \x01(\tR\n" +
+	"transition\x12!\n" +
+	"\fcaption_skin\x18\x06 \x01(\tR\vcaptionSkin\x12\x18\n" +
+	"\aenabled\x18\a \x01(\bR\aenabled\"L\n" +
+	"\x15ListTemplatesResponse\x123\n" +
+	"\x05items\x18\x01 \x03(\v2\x1d.media.mme.v1.MontageTemplateR\x05items\"(\n" +
+	"\x16RerenderVariantRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id2\xb0\n" +
+	"\n" +
+	"\x11MmeVariantService\x12x\n" +
+	"\x06Expand\x12\x1b.media.mme.v1.ExpandRequest\x1a\x1c.media.mme.v1.VariantSetView\"3\x82\xd3\xe4\x93\x02-:\x01*\"(/api/v1/media/mme/tasks/{task_id}/expand\x12~\n" +
+	"\rGetVariantSet\x12\".media.mme.v1.GetVariantSetRequest\x1a\x1c.media.mme.v1.VariantSetView\"+\x82\xd3\xe4\x93\x02%\x12#/api/v1/media/mme/variant-sets/{id}\x12\x8f\x01\n" +
+	"\x0fUpdateSelection\x12$.media.mme.v1.UpdateSelectionRequest\x1a\x1c.media.mme.v1.VariantSetView\"8\x82\xd3\xe4\x93\x022:\x01*2-/api/v1/media/mme/variant-sets/{id}/selection\x12z\n" +
+	"\x06Render\x12\x1b.media.mme.v1.RenderRequest\x1a\x1c.media.mme.v1.RenderResponse\"5\x82\xd3\xe4\x93\x02/:\x01*\"*/api/v1/media/mme/variant-sets/{id}:render\x12z\n" +
+	"\x06Review\x12\x1b.media.mme.v1.ReviewRequest\x1a\x1c.media.mme.v1.VariantSetView\"5\x82\xd3\xe4\x93\x02/:\x01*\"*/api/v1/media/mme/variant-sets/{id}/review\x12\x84\x01\n" +
+	"\fGetDiffCheck\x12\".media.mme.v1.GetVariantSetRequest\x1a\x18.media.mme.v1.DiffResult\"6\x82\xd3\xe4\x93\x020\x12./api/v1/media/mme/variant-sets/{id}/diff-check\x12\x91\x01\n" +
+	"\x0fRecalcDiffCheck\x12\".media.mme.v1.GetVariantSetRequest\x1a\x18.media.mme.v1.DiffResult\"@\x82\xd3\xe4\x93\x02::\x01*\"5/api/v1/media/mme/variant-sets/{id}/diff-check:recalc\x12\x81\x01\n" +
+	"\bDispatch\x12\".media.mme.v1.GetVariantSetRequest\x1a\x18.media.mme.v1.VariantSet\"7\x82\xd3\xe4\x93\x021:\x01*\",/api/v1/media/mme/variant-sets/{id}:dispatch\x12q\n" +
+	"\rListTemplates\x12\x16.google.protobuf.Empty\x1a#.media.mme.v1.ListTemplatesResponse\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/api/v1/media/mme/templates\x12\x84\x01\n" +
+	"\x0fRerenderVariant\x12$.media.mme.v1.RerenderVariantRequest\x1a\x16.google.protobuf.Empty\"3\x82\xd3\xe4\x93\x02-:\x01*\"(/api/v1/media/mme/variants/{id}:rerenderB\x9b\x01\n" +
 	"\x10com.media.mme.v1B\fVariantProtoP\x01Z'framework/api/gen/go/media/v1/mme;mmev1\xa2\x02\x03MMX\xaa\x02\fMedia.Mme.V1\xca\x02\fMedia\\Mme\\V1\xe2\x02\x18Media\\Mme\\V1\\GPBMetadata\xea\x02\x0eMedia::Mme::V1b\x06proto3"
 
 var (
@@ -585,30 +1803,76 @@ func file_media_v1_mme_variant_proto_rawDescGZIP() []byte {
 	return file_media_v1_mme_variant_proto_rawDescData
 }
 
-var file_media_v1_mme_variant_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_media_v1_mme_variant_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_media_v1_mme_variant_proto_goTypes = []any{
-	(*VariantSet)(nil),    // 0: media.mme.v1.VariantSet
-	(*VariantOrigin)(nil), // 1: media.mme.v1.VariantOrigin
-	(*Variant)(nil),       // 2: media.mme.v1.Variant
-	(*Captions)(nil),      // 3: media.mme.v1.Captions
-	(*PlatformCopy)(nil),  // 4: media.mme.v1.PlatformCopy
-	(*QC)(nil),            // 5: media.mme.v1.QC
-	(*DiffCheck)(nil),     // 6: media.mme.v1.DiffCheck
-	nil,                   // 7: media.mme.v1.Variant.CopyEntry
+	(*VariantSet)(nil),             // 0: media.mme.v1.VariantSet
+	(*VariantOrigin)(nil),          // 1: media.mme.v1.VariantOrigin
+	(*Variant)(nil),                // 2: media.mme.v1.Variant
+	(*Captions)(nil),               // 3: media.mme.v1.Captions
+	(*PlatformCopy)(nil),           // 4: media.mme.v1.PlatformCopy
+	(*QC)(nil),                     // 5: media.mme.v1.QC
+	(*DiffCheck)(nil),              // 6: media.mme.v1.DiffCheck
+	(*VariantItem)(nil),            // 7: media.mme.v1.VariantItem
+	(*VariantSetView)(nil),         // 8: media.mme.v1.VariantSetView
+	(*HookSpec)(nil),               // 9: media.mme.v1.HookSpec
+	(*ExpandRequest)(nil),          // 10: media.mme.v1.ExpandRequest
+	(*GetVariantSetRequest)(nil),   // 11: media.mme.v1.GetVariantSetRequest
+	(*UpdateSelectionRequest)(nil), // 12: media.mme.v1.UpdateSelectionRequest
+	(*RenderRequest)(nil),          // 13: media.mme.v1.RenderRequest
+	(*RenderResponse)(nil),         // 14: media.mme.v1.RenderResponse
+	(*ReviewRequest)(nil),          // 15: media.mme.v1.ReviewRequest
+	(*Rejection)(nil),              // 16: media.mme.v1.Rejection
+	(*PairSimilarity)(nil),         // 17: media.mme.v1.PairSimilarity
+	(*DiffResult)(nil),             // 18: media.mme.v1.DiffResult
+	(*MontageTemplate)(nil),        // 19: media.mme.v1.MontageTemplate
+	(*ListTemplatesResponse)(nil),  // 20: media.mme.v1.ListTemplatesResponse
+	(*RerenderVariantRequest)(nil), // 21: media.mme.v1.RerenderVariantRequest
+	nil,                            // 22: media.mme.v1.Variant.CopyEntry
+	nil,                            // 23: media.mme.v1.VariantItem.CopyEntry
+	(*emptypb.Empty)(nil),          // 24: google.protobuf.Empty
 }
 var file_media_v1_mme_variant_proto_depIdxs = []int32{
-	1, // 0: media.mme.v1.VariantSet.origin:type_name -> media.mme.v1.VariantOrigin
-	2, // 1: media.mme.v1.VariantSet.variants:type_name -> media.mme.v1.Variant
-	6, // 2: media.mme.v1.VariantSet.diff_check:type_name -> media.mme.v1.DiffCheck
-	3, // 3: media.mme.v1.Variant.captions:type_name -> media.mme.v1.Captions
-	7, // 4: media.mme.v1.Variant.copy:type_name -> media.mme.v1.Variant.CopyEntry
-	5, // 5: media.mme.v1.Variant.qc:type_name -> media.mme.v1.QC
-	4, // 6: media.mme.v1.Variant.CopyEntry.value:type_name -> media.mme.v1.PlatformCopy
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	1,  // 0: media.mme.v1.VariantSet.origin:type_name -> media.mme.v1.VariantOrigin
+	2,  // 1: media.mme.v1.VariantSet.variants:type_name -> media.mme.v1.Variant
+	6,  // 2: media.mme.v1.VariantSet.diff_check:type_name -> media.mme.v1.DiffCheck
+	3,  // 3: media.mme.v1.Variant.captions:type_name -> media.mme.v1.Captions
+	22, // 4: media.mme.v1.Variant.copy:type_name -> media.mme.v1.Variant.CopyEntry
+	5,  // 5: media.mme.v1.Variant.qc:type_name -> media.mme.v1.QC
+	23, // 6: media.mme.v1.VariantItem.copy:type_name -> media.mme.v1.VariantItem.CopyEntry
+	5,  // 7: media.mme.v1.VariantItem.qc:type_name -> media.mme.v1.QC
+	18, // 8: media.mme.v1.VariantSetView.diff_check:type_name -> media.mme.v1.DiffResult
+	7,  // 9: media.mme.v1.VariantSetView.variants:type_name -> media.mme.v1.VariantItem
+	9,  // 10: media.mme.v1.ExpandRequest.hooks:type_name -> media.mme.v1.HookSpec
+	16, // 11: media.mme.v1.ReviewRequest.rejections:type_name -> media.mme.v1.Rejection
+	17, // 12: media.mme.v1.DiffResult.pairs:type_name -> media.mme.v1.PairSimilarity
+	19, // 13: media.mme.v1.ListTemplatesResponse.items:type_name -> media.mme.v1.MontageTemplate
+	4,  // 14: media.mme.v1.Variant.CopyEntry.value:type_name -> media.mme.v1.PlatformCopy
+	4,  // 15: media.mme.v1.VariantItem.CopyEntry.value:type_name -> media.mme.v1.PlatformCopy
+	10, // 16: media.mme.v1.MmeVariantService.Expand:input_type -> media.mme.v1.ExpandRequest
+	11, // 17: media.mme.v1.MmeVariantService.GetVariantSet:input_type -> media.mme.v1.GetVariantSetRequest
+	12, // 18: media.mme.v1.MmeVariantService.UpdateSelection:input_type -> media.mme.v1.UpdateSelectionRequest
+	13, // 19: media.mme.v1.MmeVariantService.Render:input_type -> media.mme.v1.RenderRequest
+	15, // 20: media.mme.v1.MmeVariantService.Review:input_type -> media.mme.v1.ReviewRequest
+	11, // 21: media.mme.v1.MmeVariantService.GetDiffCheck:input_type -> media.mme.v1.GetVariantSetRequest
+	11, // 22: media.mme.v1.MmeVariantService.RecalcDiffCheck:input_type -> media.mme.v1.GetVariantSetRequest
+	11, // 23: media.mme.v1.MmeVariantService.Dispatch:input_type -> media.mme.v1.GetVariantSetRequest
+	24, // 24: media.mme.v1.MmeVariantService.ListTemplates:input_type -> google.protobuf.Empty
+	21, // 25: media.mme.v1.MmeVariantService.RerenderVariant:input_type -> media.mme.v1.RerenderVariantRequest
+	8,  // 26: media.mme.v1.MmeVariantService.Expand:output_type -> media.mme.v1.VariantSetView
+	8,  // 27: media.mme.v1.MmeVariantService.GetVariantSet:output_type -> media.mme.v1.VariantSetView
+	8,  // 28: media.mme.v1.MmeVariantService.UpdateSelection:output_type -> media.mme.v1.VariantSetView
+	14, // 29: media.mme.v1.MmeVariantService.Render:output_type -> media.mme.v1.RenderResponse
+	8,  // 30: media.mme.v1.MmeVariantService.Review:output_type -> media.mme.v1.VariantSetView
+	18, // 31: media.mme.v1.MmeVariantService.GetDiffCheck:output_type -> media.mme.v1.DiffResult
+	18, // 32: media.mme.v1.MmeVariantService.RecalcDiffCheck:output_type -> media.mme.v1.DiffResult
+	0,  // 33: media.mme.v1.MmeVariantService.Dispatch:output_type -> media.mme.v1.VariantSet
+	20, // 34: media.mme.v1.MmeVariantService.ListTemplates:output_type -> media.mme.v1.ListTemplatesResponse
+	24, // 35: media.mme.v1.MmeVariantService.RerenderVariant:output_type -> google.protobuf.Empty
+	26, // [26:36] is the sub-list for method output_type
+	16, // [16:26] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_media_v1_mme_variant_proto_init() }
@@ -622,9 +1886,9 @@ func file_media_v1_mme_variant_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_media_v1_mme_variant_proto_rawDesc), len(file_media_v1_mme_variant_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   24,
 			NumExtensions: 0,
-			NumServices:   0,
+			NumServices:   1,
 		},
 		GoTypes:           file_media_v1_mme_variant_proto_goTypes,
 		DependencyIndexes: file_media_v1_mme_variant_proto_depIdxs,

@@ -18,11 +18,32 @@ type AdminOperationLog func(*sql.Selector)
 // ApiResource is the predicate function for apiresource builders.
 type ApiResource func(*sql.Selector)
 
+// AuthorizationRecord is the predicate function for authorizationrecord builders.
+type AuthorizationRecord func(*sql.Selector)
+
 // CasbinRule is the predicate function for casbinrule builders.
 type CasbinRule func(*sql.Selector)
 
+// ClusterMergeEvent is the predicate function for clustermergeevent builders.
+type ClusterMergeEvent func(*sql.Selector)
+
+// CollectRun is the predicate function for collectrun builders.
+type CollectRun func(*sql.Selector)
+
+// ComplianceRule is the predicate function for compliancerule builders.
+type ComplianceRule func(*sql.Selector)
+
+// CredentialAccount is the predicate function for credentialaccount builders.
+type CredentialAccount func(*sql.Selector)
+
 // DataPermission is the predicate function for datapermission builders.
 type DataPermission func(*sql.Selector)
+
+// DeadLetter is the predicate function for deadletter builders.
+type DeadLetter func(*sql.Selector)
+
+// DedupSample is the predicate function for dedupsample builders.
+type DedupSample func(*sql.Selector)
 
 // Department is the predicate function for department builders.
 type Department func(*sql.Selector)
@@ -33,14 +54,83 @@ type Dict func(*sql.Selector)
 // DictCategory is the predicate function for dictcategory builders.
 type DictCategory func(*sql.Selector)
 
+// EntityAssetMapping is the predicate function for entityassetmapping builders.
+type EntityAssetMapping func(*sql.Selector)
+
+// EvidenceSnapshot is the predicate function for evidencesnapshot builders.
+type EvidenceSnapshot func(*sql.Selector)
+
 // File is the predicate function for file builders.
 type File func(*sql.Selector)
+
+// IntelCluster is the predicate function for intelcluster builders.
+type IntelCluster func(*sql.Selector)
+
+// IntelItem is the predicate function for intelitem builders.
+type IntelItem func(*sql.Selector)
+
+// IntelSource is the predicate function for intelsource builders.
+type IntelSource func(*sql.Selector)
 
 // LoginFailCounter is the predicate function for loginfailcounter builders.
 type LoginFailCounter func(*sql.Selector)
 
+// MapApprovalRecord is the predicate function for mapapprovalrecord builders.
+type MapApprovalRecord func(*sql.Selector)
+
+// MapDispatchUnit is the predicate function for mapdispatchunit builders.
+type MapDispatchUnit func(*sql.Selector)
+
+// MapPerformanceSnapshot is the predicate function for mapperformancesnapshot builders.
+type MapPerformanceSnapshot func(*sql.Selector)
+
+// MapPublishAccount is the predicate function for mappublishaccount builders.
+type MapPublishAccount func(*sql.Selector)
+
+// MapPublishChannel is the predicate function for mappublishchannel builders.
+type MapPublishChannel func(*sql.Selector)
+
+// MapPublishReceipt is the predicate function for mappublishreceipt builders.
+type MapPublishReceipt func(*sql.Selector)
+
 // Menu is the predicate function for menu builders.
 type Menu func(*sql.Selector)
+
+// MiaEventCard is the predicate function for miaeventcard builders.
+type MiaEventCard func(*sql.Selector)
+
+// MiaImpactCard is the predicate function for miaimpactcard builders.
+type MiaImpactCard func(*sql.Selector)
+
+// MiaQuoteCache is the predicate function for miaquotecache builders.
+type MiaQuoteCache func(*sql.Selector)
+
+// MiaTransmissionRule is the predicate function for miatransmissionrule builders.
+type MiaTransmissionRule func(*sql.Selector)
+
+// MmeAnalysisCache is the predicate function for mmeanalysiscache builders.
+type MmeAnalysisCache func(*sql.Selector)
+
+// MmeAsset is the predicate function for mmeasset builders.
+type MmeAsset func(*sql.Selector)
+
+// MmeMontageTask is the predicate function for mmemontagetask builders.
+type MmeMontageTask func(*sql.Selector)
+
+// MmeRenderJob is the predicate function for mmerenderjob builders.
+type MmeRenderJob func(*sql.Selector)
+
+// MmeTemplate is the predicate function for mmetemplate builders.
+type MmeTemplate func(*sql.Selector)
+
+// MmeVariant is the predicate function for mmevariant builders.
+type MmeVariant func(*sql.Selector)
+
+// MmeVariantSet is the predicate function for mmevariantset builders.
+type MmeVariantSet func(*sql.Selector)
+
+// NarrativeCoinMapping is the predicate function for narrativecoinmapping builders.
+type NarrativeCoinMapping func(*sql.Selector)
 
 // NotificationMessage is the predicate function for notificationmessage builders.
 type NotificationMessage func(*sql.Selector)
@@ -116,6 +206,12 @@ type ToolLinkSsoTicket func(*sql.Selector)
 
 // ToolLinkUserMark is the predicate function for toollinkusermark builders.
 type ToolLinkUserMark func(*sql.Selector)
+
+// Topic is the predicate function for topic builders.
+type Topic func(*sql.Selector)
+
+// TopicSource is the predicate function for topicsource builders.
+type TopicSource func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

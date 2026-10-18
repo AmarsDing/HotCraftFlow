@@ -56,5 +56,1046 @@ export type DiffCheck = {
   warn: boolean | undefined;
 };
 
+// VariantItem 单变体的 API 视图（比契约 Variant 多渲染/选择/降级状态）。
+export type VariantItem = {
+  id: string | undefined;
+  setId: string | undefined;
+  contentVersion: string | undefined;
+  aspect: string | undefined;
+  hookId: string | undefined;
+  coverId: string | undefined;
+  edlRef: string | undefined;
+  durationSec: number | undefined;
+  videoPath: string | undefined;
+  coverPath: string | undefined;
+  captionStyle: string | undefined;
+  srtPath: string | undefined;
+  copy: { [key: string]: PlatformCopy } | undefined;
+  manifestPath: string | undefined;
+  qc: QC | undefined;
+  renderState: string | undefined;
+  renderError: string | undefined;
+  selected: boolean | undefined;
+  copyDegraded: boolean | undefined;
+};
+
+// VariantSetView 变体簇管理视图（含全部变体与差异化结果）。
+export type VariantSetView = {
+  id: string | undefined;
+  taskId: string | undefined;
+  candidateId: string | undefined;
+  assetId: string | undefined;
+  transcriptRef: string | undefined;
+  state: string | undefined;
+  variantCount: number | undefined;
+  diffCheck: DiffResult | undefined;
+  templateId: string | undefined;
+  createdAt: string | undefined;
+  variants: VariantItem[] | undefined;
+};
+
+// DiffResult 差异化检查结果（FR-MIX-05）。
+export type DiffResult = {
+  minPairSimilarity: number | undefined;
+  warn: boolean | undefined;
+  pairs: PairSimilarity[] | undefined;
+  summary: string | undefined;
+};
+
+// PairSimilarity 一对变体的相似度（各维度 0~1）。
+export type PairSimilarity = {
+  variantA: string | undefined;
+  variantB: string | undefined;
+  visual: number | undefined;
+  hook: number | undefined;
+  copy: number | undefined;
+  overall: number | undefined;
+};
+
+// HookSpec Hook（前 3s）规格（C 维度）。
+export type HookSpec = {
+  id: string | undefined;
+  label: string | undefined;
+  text: string | undefined;
+};
+
+// ExpandRequest 矩阵展开请求。
+export type ExpandRequest = {
+  taskId: string | undefined;
+  contentVersionIds: string[] | undefined;
+  aspects: string[] | undefined;
+  hooks: HookSpec[] | undefined;
+  templateId: string | undefined;
+};
+
+export type GetVariantSetRequest = {
+  id: string | undefined;
+};
+
+// UpdateSelectionRequest 全量新 selected 集合。
+export type UpdateSelectionRequest = {
+  id: string | undefined;
+  selectedVariantIds: string[] | undefined;
+};
+
+export type RenderRequest = {
+  id: string | undefined;
+};
+
+export type RenderResponse = {
+  queued: number | undefined;
+  skipped: number | undefined;
+  alreadyDone: number | undefined;
+};
+
+// ReviewRequest 批量审核。rejections 的 reason 必填（服务端强制）。
+export type ReviewRequest = {
+  id: string | undefined;
+  approvedIds: string[] | undefined;
+  rejections: Rejection[] | undefined;
+};
+
+export type Rejection = {
+  variantId: string | undefined;
+  reason: string | undefined;
+};
+
+// MontageTemplate 混剪模板（FR-MIX-08）。
+export type MontageTemplate = {
+  id: string | undefined;
+  name: string | undefined;
+  introPath: string | undefined;
+  outroPath: string | undefined;
+  transition: string | undefined;
+  captionSkin: string | undefined;
+  enabled: boolean | undefined;
+};
+
+export type ListTemplatesResponse = {
+  items: MontageTemplate[] | undefined;
+};
+
+export type RerenderVariantRequest = {
+  id: string | undefined;
+};
+
+export interface MmeVariantService {
+  // ★ 矩阵展开：内容版本 × 画幅 × Hook 笛卡尔积（纯元数据，秒级），全部 selected=true
+  Expand(request: ExpandRequest): Promise<VariantSetView>;
+  // 变体簇详情（矩阵网格数据）
+  GetVariantSet(request: GetVariantSetRequest): Promise<VariantSetView>;
+  // 删减变体组合（全量新集合幂等覆盖；只渲染 selected=true 的）
+  UpdateSelection(request: UpdateSelectionRequest): Promise<VariantSetView>;
+  // ★ 批量渲染：对 selected=true 且未完成的变体建 RenderJob 入队
+  Render(request: RenderRequest): Promise<RenderResponse>;
+  // ★ 批量审核：批准/驳回（驳回必须填原因）；QC 硬门禁在服务端强制
+  Review(request: ReviewRequest): Promise<VariantSetView>;
+  // 差异化度检查结果（FR-MIX-05，强提示不硬阻断）
+  GetDiffCheck(request: GetVariantSetRequest): Promise<DiffResult>;
+  // 重算差异化检查
+  RecalcDiffCheck(request: GetVariantSetRequest): Promise<DiffResult>;
+  // 送 ⑤ MAP：产出契约 VariantSet 并发布 mm.mme.variant.ready.v1
+  Dispatch(request: GetVariantSetRequest): Promise<VariantSet>;
+  // 混剪模板列表（FR-MIX-08）
+  ListTemplates(request: wellKnownEmpty): Promise<ListTemplatesResponse>;
+  // 单条变体重渲
+  RerenderVariant(request: RerenderVariantRequest): Promise<wellKnownEmpty>;
+}
+
+type RequestType = {
+  path: string;
+  method: string;
+  body: string | null;
+};
+
+type RequestHandler = (request: RequestType, meta: { service: string, method: string }) => Promise<unknown>;
+
+export function createMmeVariantServiceClient(
+  handler: RequestHandler
+): MmeVariantService {
+  return {
+    Expand(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.taskId) {
+        throw new Error("missing required field request.task_id");
+      }
+      const path = `api/v1/media/mme/tasks/${request.taskId}/expand`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MmeVariantService",
+        method: "Expand",
+      }) as Promise<VariantSetView>;
+    },
+    GetVariantSet(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mme/variant-sets/${request.id}`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MmeVariantService",
+        method: "GetVariantSet",
+      }) as Promise<VariantSetView>;
+    },
+    UpdateSelection(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mme/variant-sets/${request.id}/selection`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "PATCH",
+        body,
+      }, {
+        service: "MmeVariantService",
+        method: "UpdateSelection",
+      }) as Promise<VariantSetView>;
+    },
+    Render(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mme/variant-sets/${request.id}:render`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MmeVariantService",
+        method: "Render",
+      }) as Promise<RenderResponse>;
+    },
+    Review(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mme/variant-sets/${request.id}/review`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MmeVariantService",
+        method: "Review",
+      }) as Promise<VariantSetView>;
+    },
+    GetDiffCheck(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mme/variant-sets/${request.id}/diff-check`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MmeVariantService",
+        method: "GetDiffCheck",
+      }) as Promise<DiffResult>;
+    },
+    RecalcDiffCheck(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mme/variant-sets/${request.id}/diff-check:recalc`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MmeVariantService",
+        method: "RecalcDiffCheck",
+      }) as Promise<DiffResult>;
+    },
+    Dispatch(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mme/variant-sets/${request.id}:dispatch`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MmeVariantService",
+        method: "Dispatch",
+      }) as Promise<VariantSet>;
+    },
+    ListTemplates(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mme/templates`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MmeVariantService",
+        method: "ListTemplates",
+      }) as Promise<ListTemplatesResponse>;
+    },
+    RerenderVariant(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mme/variants/${request.id}:rerender`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MmeVariantService",
+        method: "RerenderVariant",
+      }) as Promise<wellKnownEmpty>;
+    },
+  };
+}
+// An empty JSON object
+type wellKnownEmpty = Record<never, never>;
+
+// RenderJob 渲染任务（Ent mme_render_jobs 的 API 视图）。
+export type RenderJob = {
+  id: string | undefined;
+  variantId: string | undefined;
+  state: string | undefined;
+  progress: number | undefined;
+  startedAt: string | undefined;
+  finishedAt: string | undefined;
+  workerId: string | undefined;
+  errorCode: string | undefined;
+  errorMsg: string | undefined;
+  intermediatePath: string | undefined;
+  attempt: number | undefined;
+  etaSec: number | undefined;
+  // —— 联表展示字段（UI 免二次查询）——
+  aspect: string | undefined;
+  contentVersion: string | undefined;
+  durationSec: number | undefined;
+  setId: string | undefined;
+};
+
+export type ListRenderJobsResponse = {
+  items: RenderJob[] | undefined;
+  total: number | undefined;
+};
+
+export type RetryJobRequest = {
+  id: string | undefined;
+};
+
+// SetRenderProgress 变体簇级渲染进度聚合。
+export type SetRenderProgress = {
+  setId: string | undefined;
+  total: number | undefined;
+  queued: number | undefined;
+  running: number | undefined;
+  done: number | undefined;
+  failed: number | undefined;
+  cancelled: number | undefined;
+  overallProgress: number | undefined;
+  etaSec: number | undefined;
+  jobs: RenderJob[] | undefined;
+};
+
+export interface MmeRenderService {
+  // 渲染任务列表（全局队列视图，可按 variant_id 过滤：formValues.variant_id）
+  ListJobs(request: pagination_PagingRequest): Promise<ListRenderJobsResponse>;
+  // 某变体簇的渲染进度（含 ETA）
+  GetSetProgress(request: GetVariantSetRequest): Promise<SetRenderProgress>;
+  // 失败任务重试（attempt+1，重新入队；保留上次中间产物供排查）
+  RetryJob(request: RetryJobRequest): Promise<wellKnownEmpty>;
+  // 取消排队中/运行中的任务
+  CancelJob(request: RetryJobRequest): Promise<wellKnownEmpty>;
+}
+
+export function createMmeRenderServiceClient(
+  handler: RequestHandler
+): MmeRenderService {
+  return {
+    ListJobs(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mme/render/jobs`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.pageSize) {
+        queryParams.push(`pageSize=${encodeURIComponent(request.pageSize.toString())}`)
+      }
+      if (request.offset) {
+        queryParams.push(`offset=${encodeURIComponent(request.offset.toString())}`)
+      }
+      if (request.limit) {
+        queryParams.push(`limit=${encodeURIComponent(request.limit.toString())}`)
+      }
+      if (request.token) {
+        queryParams.push(`token=${encodeURIComponent(request.token.toString())}`)
+      }
+      if (request.noPaging) {
+        queryParams.push(`noPaging=${encodeURIComponent(request.noPaging.toString())}`)
+      }
+      if (request.query) {
+        queryParams.push(`query=${encodeURIComponent(request.query.toString())}`)
+      }
+      if (request.filter) {
+        queryParams.push(`filter=${encodeURIComponent(request.filter.toString())}`)
+      }
+      if (request.filterExpr?.type) {
+        queryParams.push(`filterExpr.type=${encodeURIComponent(request.filterExpr.type.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.field) {
+        queryParams.push(`filterExpr.conditions.field=${encodeURIComponent(request.filterExpr.conditions.field.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.op) {
+        queryParams.push(`filterExpr.conditions.op=${encodeURIComponent(request.filterExpr.conditions.op.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.value) {
+        queryParams.push(`filterExpr.conditions.value=${encodeURIComponent(request.filterExpr.conditions.value.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.jsonValue) {
+        queryParams.push(`filterExpr.conditions.jsonValue=${encodeURIComponent(request.filterExpr.conditions.jsonValue.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.values) {
+        request.filterExpr.conditions.values.forEach((x) => {
+          queryParams.push(`filterExpr.conditions.values=${encodeURIComponent(x.toString())}`)
+        })
+      }
+      if (request.filterExpr?.conditions?.datePart) {
+        queryParams.push(`filterExpr.conditions.datePart=${encodeURIComponent(request.filterExpr.conditions.datePart.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.jsonPath) {
+        queryParams.push(`filterExpr.conditions.jsonPath=${encodeURIComponent(request.filterExpr.conditions.jsonPath.toString())}`)
+      }
+      if (request.orderBy) {
+        queryParams.push(`orderBy=${encodeURIComponent(request.orderBy.toString())}`)
+      }
+      if (request.sorting?.field) {
+        queryParams.push(`sorting.field=${encodeURIComponent(request.sorting.field.toString())}`)
+      }
+      if (request.sorting?.direction) {
+        queryParams.push(`sorting.direction=${encodeURIComponent(request.sorting.direction.toString())}`)
+      }
+      if (request.fieldMask) {
+        queryParams.push(`fieldMask=${encodeURIComponent(request.fieldMask.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MmeRenderService",
+        method: "ListJobs",
+      }) as Promise<ListRenderJobsResponse>;
+    },
+    GetSetProgress(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mme/variant-sets/${request.id}/render-progress`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MmeRenderService",
+        method: "GetSetProgress",
+      }) as Promise<SetRenderProgress>;
+    },
+    RetryJob(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mme/render/jobs/${request.id}:retry`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MmeRenderService",
+        method: "RetryJob",
+      }) as Promise<wellKnownEmpty>;
+    },
+    CancelJob(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mme/render/jobs/${request.id}:cancel`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MmeRenderService",
+        method: "CancelJob",
+      }) as Promise<wellKnownEmpty>;
+    },
+  };
+}
+// ------------------------------
+// 分页通用请求
+// ------------------------------
+export type pagination_PagingRequest = {
+  // 当前页码（从1开始，默认1）
+  page?: number;
+  // 每页条数（默认10，建议设置上限如100）
+  pageSize?: number;
+  // 跳过的记录数（从0开始，默认0）
+  offset?: number;
+  // 最多返回的记录数（默认10，建议设置上限如100）
+  limit?: number;
+  // 上一页最后一条记录的游标（如ID/时间戳+ID，首次请求为空）
+  token?: string;
+  // 是否不分页，如果为true，则page和pageSize参数无效。
+  noPaging?: boolean;
+  // JSON字符串过滤条件，基础语法：{"field1":"val1", "field2___icontains":"val2"}，具体请参见：https://github.com/tx7do/go-crud/tree/main/pagination/filter/README.md
+  query?: string;
+  // Google AIP规范字符串过滤条件
+  filter?: string;
+  // 复杂过滤表达式（优先使用）
+  filterExpr?: pagination_FilterExpr;
+  // 排序条件
+  orderBy?: string;
+  // 排序规则
+  sorting: pagination_Sorting[] | undefined;
+  // 字段掩码，其作用为SELECT中的字段，其语法为使用逗号分隔字段名，例如：id,realName,userName。如果为空则选中所有字段，即SELECT *。
+  fieldMask?: wellKnownFieldMask;
+};
+
+// 过滤表达式
+export type pagination_FilterExpr = {
+  // 过滤表达式类型
+  type: pagination_ExprType | undefined;
+  // 条件列表
+  conditions: pagination_FilterCondition[] | undefined;
+  // 子表达式列表
+  groups: pagination_FilterExpr[] | undefined;
+};
+
+// 过滤表达式类型
+export type pagination_ExprType =
+  | "EXPR_TYPE_UNSPECIFIED"
+  | "AND"
+  | "OR";
+// 过滤条件
+export type pagination_FilterCondition = {
+  // 过滤字段名
+  field: string | undefined;
+  // 过滤操作符
+  op: pagination_Operator | undefined;
+  // 过滤值（单值）
+  value?: string;
+  // 当需要使用非字符串类型的比较值（对象/数组/数字/布尔）时使用此字段，
+  // 使用 google.protobuf.Value 能表达任意 JSON 值。
+  jsonValue?: wellKnownValue;
+  // 过滤值（多值，如IN操作符）
+  values: string[] | undefined;
+  // 日期时间部分（可选，仅在字段为日期时间类型时使用）
+  datePart?: pagination_DatePart;
+  // 当字段为 JSON/JSONB 类型时，可指定要抽取的子路径（例如: "meta.user.name" 或 JSONPath）
+  // 服务端应把此路径用于 JSON_EXTRACT / -> 操作，再对抽取结果应用 op。
+  jsonPath?: string;
+};
+
+// 操作符枚举
+export type pagination_Operator =
+  // 未指定
+  | "OPERATOR_UNSPECIFIED"
+  // 基本比较
+  | "EQ"
+  | "NEQ"
+  | "GT"
+  | "GTE"
+  | "LT"
+  | "LTE"
+  // 模糊 / 大小写不敏感模糊 / 非模糊
+  | "LIKE"
+  | "ILIKE"
+  | "NOT_LIKE"
+  // 集合操作
+  | "IN"
+  | "NIN"
+  // 空值判断
+  | "IS_NULL"
+  | "IS_NOT_NULL"
+  // 范围与正则
+  | "BETWEEN"
+  | "REGEXP"
+  | "IREGEXP"
+  // 语义化的字符串操作
+  | "CONTAINS"
+  | "STARTS_WITH"
+  | "ENDS_WITH"
+  | "ICONTAINS"
+  | "ISTARTS_WITH"
+  | "IENDS_WITH"
+  // JSON / 数组 / 集合相关（按需在服务端映射为具体 DB 运算）
+  | "JSON_CONTAINS"
+  | "ARRAY_CONTAINS"
+  | "EXISTS"
+  | "SEARCH"
+  | "EXACT"
+  | "IEXACT";
+type wellKnownValue = unknown;
+
+// 日期时间部分枚举
+export type pagination_DatePart =
+  | "DATE_PART_UNSPECIFIED"
+  | "DATE"
+  | "YEAR"
+  | "ISO_YEAR"
+  | "QUARTER"
+  | "MONTH"
+  | "WEEK"
+  | "WEEK_DAY"
+  | "ISO_WEEK_DAY"
+  | "DAY"
+  | "TIME"
+  | "HOUR"
+  | "MINUTE"
+  | "SECOND"
+  | "MICROSECOND";
+// 排序规则（分页场景通常需配合排序保证结果稳定）
+export type pagination_Sorting = {
+  // 排序字段（如"id"、"create_time"）
+  field: string | undefined;
+  // 排序方向
+  direction: pagination_Sorting_Direction | undefined;
+};
+
+// 排序方向（ASC/DESC，默认ASC）
+export type pagination_Sorting_Direction =
+  | "ASC"
+  | "DESC";
+// In JSON, a field mask is encoded as a single string where paths are
+// separated by a comma. Fields name in each path are converted
+// to/from lower-camel naming conventions.
+// As an example, consider the following message declarations:
+//
+//     message Profile {
+//       User user = 1;
+//       Photo photo = 2;
+//     }
+//     message User {
+//       string display_name = 1;
+//       string address = 2;
+//     }
+//
+// In proto a field mask for `Profile` may look as such:
+//
+//     mask {
+//       paths: "user.display_name"
+//       paths: "photo"
+//     }
+//
+// In JSON, the same mask is represented as below:
+//
+//     {
+//       mask: "user.displayName,photo"
+//     }
+type wellKnownFieldMask = string;
+
+// MontageTask 加工任务（Ent mme_montage_tasks 的 API 视图）。
+export type MontageTask = {
+  id: string | undefined;
+  title: string | undefined;
+  sourceType: string | undefined;
+  sourceRef: string | undefined;
+  candidateId: string | undefined;
+  intelId: string | undefined;
+  assetId: string | undefined;
+  userIntent: string | undefined;
+  state: string | undefined;
+  promptVersion: string | undefined;
+  asrEngine: string | undefined;
+  errorMsg: string | undefined;
+  createdAt: string | undefined;
+  updatedAt: string | undefined;
+  asset: AssetInfo | undefined;
+};
+
+// AssetInfo 素材去重库条目（FR-MIX-07）。
+export type AssetInfo = {
+  assetId: string | undefined;
+  sourceUrl: string | undefined;
+  durationSec: number | undefined;
+  width: number | undefined;
+  height: number | undefined;
+  sizeBytes: number | undefined;
+  refCount: number | undefined;
+  fingerprint: string | undefined;
+};
+
+// HighlightCandidate 高光候选 / 内容版本（B 维度）。
+export type HighlightCandidate = {
+  id: string | undefined;
+  label: string | undefined;
+  startSec: number | undefined;
+  endSec: number | undefined;
+  note: string | undefined;
+  origin: string | undefined;
+};
+
+export type CreateMontageTaskRequest = {
+  title: string | undefined;
+  sourceType: string | undefined;
+  sourceRef: string | undefined;
+  userIntent: string | undefined;
+};
+
+export type ListMontageTasksResponse = {
+  items: MontageTask[] | undefined;
+  total: number | undefined;
+};
+
+export type GetMontageTaskRequest = {
+  id: string | undefined;
+};
+
+export type ListHighlightsResponse = {
+  items: HighlightCandidate[] | undefined;
+};
+
+export type UpsertHighlightsRequest = {
+  id: string | undefined;
+  items: HighlightCandidate[] | undefined;
+};
+
+// DoctorReport 基础设施体检结果（缺依赖必须诚实红标，UI 展示）。
+export type DoctorReport = {
+  ready: boolean | undefined;
+  items: DoctorItem[] | undefined;
+};
+
+export type DoctorItem = {
+  name: string | undefined;
+  ok: boolean | undefined;
+  required: boolean | undefined;
+  version: string | undefined;
+  detail: string | undefined;
+};
+
+export interface MmeTaskService {
+  // 任务列表（分页，formValues 走 query）
+  List(request: pagination_PagingRequest): Promise<ListMontageTasksResponse>;
+  // 任务详情（含素材信息与高光）
+  Get(request: GetMontageTaskRequest): Promise<MontageTask>;
+  // 创建任务（source_type=url 时走 yt-dlp 下载；=local 时复制本地文件入库）
+  Create(request: CreateMontageTaskRequest): Promise<MontageTask>;
+  // 删除任务（不删 Asset 底片，引用计数 -1）
+  Delete(request: GetMontageTaskRequest): Promise<wellKnownEmpty>;
+  // 高光候选列表（B 维度内容版本来源；origin=manual|auto）
+  ListHighlights(request: GetMontageTaskRequest): Promise<ListHighlightsResponse>;
+  // 全量覆盖手工 EDL（无 AI 时的内容版本入口）
+  UpsertHighlights(request: UpsertHighlightsRequest): Promise<ListHighlightsResponse>;
+  // 触发分析（ASR → 章节/高光）；缺依赖时返回 MME_ASR_FAIL / MME_LLM_UNAVAILABLE
+  Analyze(request: GetMontageTaskRequest): Promise<MontageTask>;
+  // 基础设施体检：ffmpeg/ffprobe/yt-dlp/python/whisper/ollama/磁盘（文档 W1 门禁）
+  Doctor(request: wellKnownEmpty): Promise<DoctorReport>;
+}
+
+export function createMmeTaskServiceClient(
+  handler: RequestHandler
+): MmeTaskService {
+  return {
+    List(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mme/tasks`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.pageSize) {
+        queryParams.push(`pageSize=${encodeURIComponent(request.pageSize.toString())}`)
+      }
+      if (request.offset) {
+        queryParams.push(`offset=${encodeURIComponent(request.offset.toString())}`)
+      }
+      if (request.limit) {
+        queryParams.push(`limit=${encodeURIComponent(request.limit.toString())}`)
+      }
+      if (request.token) {
+        queryParams.push(`token=${encodeURIComponent(request.token.toString())}`)
+      }
+      if (request.noPaging) {
+        queryParams.push(`noPaging=${encodeURIComponent(request.noPaging.toString())}`)
+      }
+      if (request.query) {
+        queryParams.push(`query=${encodeURIComponent(request.query.toString())}`)
+      }
+      if (request.filter) {
+        queryParams.push(`filter=${encodeURIComponent(request.filter.toString())}`)
+      }
+      if (request.filterExpr?.type) {
+        queryParams.push(`filterExpr.type=${encodeURIComponent(request.filterExpr.type.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.field) {
+        queryParams.push(`filterExpr.conditions.field=${encodeURIComponent(request.filterExpr.conditions.field.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.op) {
+        queryParams.push(`filterExpr.conditions.op=${encodeURIComponent(request.filterExpr.conditions.op.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.value) {
+        queryParams.push(`filterExpr.conditions.value=${encodeURIComponent(request.filterExpr.conditions.value.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.jsonValue) {
+        queryParams.push(`filterExpr.conditions.jsonValue=${encodeURIComponent(request.filterExpr.conditions.jsonValue.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.values) {
+        request.filterExpr.conditions.values.forEach((x) => {
+          queryParams.push(`filterExpr.conditions.values=${encodeURIComponent(x.toString())}`)
+        })
+      }
+      if (request.filterExpr?.conditions?.datePart) {
+        queryParams.push(`filterExpr.conditions.datePart=${encodeURIComponent(request.filterExpr.conditions.datePart.toString())}`)
+      }
+      if (request.filterExpr?.conditions?.jsonPath) {
+        queryParams.push(`filterExpr.conditions.jsonPath=${encodeURIComponent(request.filterExpr.conditions.jsonPath.toString())}`)
+      }
+      if (request.orderBy) {
+        queryParams.push(`orderBy=${encodeURIComponent(request.orderBy.toString())}`)
+      }
+      if (request.sorting?.field) {
+        queryParams.push(`sorting.field=${encodeURIComponent(request.sorting.field.toString())}`)
+      }
+      if (request.sorting?.direction) {
+        queryParams.push(`sorting.direction=${encodeURIComponent(request.sorting.direction.toString())}`)
+      }
+      if (request.fieldMask) {
+        queryParams.push(`fieldMask=${encodeURIComponent(request.fieldMask.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MmeTaskService",
+        method: "List",
+      }) as Promise<ListMontageTasksResponse>;
+    },
+    Get(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mme/tasks/${request.id}`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MmeTaskService",
+        method: "Get",
+      }) as Promise<MontageTask>;
+    },
+    Create(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mme/tasks`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MmeTaskService",
+        method: "Create",
+      }) as Promise<MontageTask>;
+    },
+    Delete(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mme/tasks/${request.id}`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "DELETE",
+        body,
+      }, {
+        service: "MmeTaskService",
+        method: "Delete",
+      }) as Promise<wellKnownEmpty>;
+    },
+    ListHighlights(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mme/tasks/${request.id}/highlights`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MmeTaskService",
+        method: "ListHighlights",
+      }) as Promise<ListHighlightsResponse>;
+    },
+    UpsertHighlights(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mme/tasks/${request.id}/highlights`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "PUT",
+        body,
+      }, {
+        service: "MmeTaskService",
+        method: "UpsertHighlights",
+      }) as Promise<ListHighlightsResponse>;
+    },
+    Analyze(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.id) {
+        throw new Error("missing required field request.id");
+      }
+      const path = `api/v1/media/mme/tasks/${request.id}:analyze`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "MmeTaskService",
+        method: "Analyze",
+      }) as Promise<MontageTask>;
+    },
+    Doctor(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mme/doctor`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MmeTaskService",
+        method: "Doctor",
+      }) as Promise<DoctorReport>;
+    },
+  };
+}
 
 // @@protoc_insertion_point(typescript-http-eof)

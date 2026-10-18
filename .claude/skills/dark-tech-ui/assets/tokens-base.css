@@ -1,0 +1,112 @@
+/* ==========================================================================
+   dark-tech-ui · 通用基线 token（四套系统提炼的最大公约数）
+   用法：直接引入后，按产品语义改 --accent 系即可；风格化细则见各 references。
+   ========================================================================== */
+
+:root {
+  /* ---- 背景阶梯：近黑不是纯黑；层级靠明度递进，不靠投影 ---- */
+  --bg-page:  #0A0E10;   /* 页面底（近黑，可带一点青/蓝倾向） */
+  --bg-card:  #0C0C18;   /* 卡片/面板 */
+  --bg-elev:  #12161F;   /* 浮起层（hover 卡、弹窗） */
+  --bg-inset: #15181F;   /* 内嵌块（输入框、高亮行） */
+  --bg-hover: rgba(255,255,255,.04);
+  --bg-active: rgba(255,255,255,.07);
+  --bg-chip:  rgba(255,255,255,.05);
+
+  /* ---- 描边三档：发丝线分层是暗色系分层的主角 ---- */
+  --line:   rgba(255,255,255,.08);
+  --line-2: rgba(255,255,255,.14);
+  --line-3: rgba(255,255,255,.22);
+  --hairline: 1px solid var(--line);
+
+  /* ---- 文字四级（深色下最小 10px，对比度 ≥ 4.5:1） ---- */
+  --text-1: #F5F3FF;
+  --text-2: #A9AEBC;
+  --text-3: #61667A;
+  --text-4: #4A5060;
+
+  /* ---- 语义强调色：一色一语义，零例外 ---- */
+  --accent: #41D2F3;   /* 交互主色（选中/链接/激活）——按产品改这一个变量 */
+  --green:  #52D89D;   /* 成功/收入/健康 */
+  --cyan:   #41D2F3;
+  --pink:   #F25E97;   /* 风险/支出 */
+  --purple: #A489FA;
+  --amber:  #F6C157;   /* 等待/需人工决策 */
+  --yellow: #E3CB72;
+  --red:    #F05959;   /* 错误/阻塞 */
+  --blue:   #4C86F9;
+
+  /* ---- 涨跌幅双轨（金融场景；红涨绿跌互换即可） ---- */
+  --up:   #35C8A8;   /* 欧美：青涨 */
+  --down: #F0568C;   /*       玫红跌 */
+  --flat: #6B7280;
+
+  /* ---- 强调色派生公式：背景 12% / 描边 35–45% / 文字 100% ---- */
+  /* 推荐动态写法：color-mix(in srgb, var(--green) 12%, transparent) */
+  --green-bg:   rgba(82,216,157,.12);
+  --pink-bg:    rgba(242,94,151,.12);
+  --amber-bg:   rgba(246,193,87,.10);
+  --green-line: rgba(82,216,157,.35);
+  --amber-line: rgba(246,193,87,.45);
+
+  /* ---- 同色辉光：只为"点亮"关键元素，颜色永远等于元素本色 ---- */
+  --glow-green: 0 0 22px -6px rgba(82,216,157,.55);
+  --glow-pink:  0 0 22px -6px rgba(242,94,151,.45);
+  --glow-amber: 0 0 0 1px rgba(246,193,87,.38), 0 16px 44px -12px rgba(246,193,87,.30);
+  --shadow-card: 0 24px 60px -24px rgba(0,0,0,.9), 0 0 0 1px var(--line);
+
+  /* ---- 字体 ---- */
+  --font-ui:   'Inter','Space Grotesk',system-ui,'PingFang SC','Microsoft YaHei',sans-serif;
+  --font-mono: 'JetBrains Mono','IBM Plex Mono','Cascadia Code',Menlo,Consolas,monospace;
+
+  /* 字号阶梯：9.5 微标签 / 10 元信息 / 12 正文（终端主力） / 13 行标题 / 15 模块标题 / 22 价格 / 28-34 KPI */
+  --fs-label: 9.5px;   --fw-label: 600;  --ls-label: .14em;   /* uppercase 区块标签 */
+  --fs-meta:  10px;
+  --fs-body:  12px;
+  --fs-row:   13px;    --fw-row: 500;
+  --fs-title: 15px;
+  --fs-value: 15px;    --fw-value: 700;                       /* mono 行数值 */
+  --fs-price: 22px;    --fw-price: 700;
+  --fs-kpi:   28px;    --fw-kpi: 700;
+  --fs-bignum: 34px;   --fw-bignum: 700;
+
+  /* ---- 间距 4pt 体系 ---- */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px; --sp-5: 20px; --sp-6: 24px;
+  --row-h: 54px;
+
+  /* ---- 圆角：面板小圆角，胶囊全圆角；只有主卡可用大圆角 ---- */
+  --r-card: 18px;  --r-panel: 12px; --r-row: 8px; --r-btn: 8px; --r-chip: 999px;
+
+  /* ---- 动效令牌：只动 transform / opacity / filter ---- */
+  --ease-out:  cubic-bezier(.2,.9,.2,1);        /* 果断，进出场首选 */
+  --ease-soft: cubic-bezier(.4,0,.2,1);
+  --ease-expo: cubic-bezier(.22,1,.36,1);       /* 视图切换 */
+  --dur-micro: 120ms;  --dur-fast: 180ms;  --dur-base: 260ms;  --dur-slow: 500ms;
+  --dur-view: 900ms;   /* 视图形变 */
+  --dur-flash: 600ms;  /* 数据背景闪烁 */
+}
+
+/* ---- 全局工具类 ---- */
+.num, .mono, .tabular { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+
+/* 行间发丝分隔（列表/表格/日志通用） */
+.row + .row { border-top: 1px solid rgba(255,255,255,.05); }
+
+/* 区块标签 */
+.label {
+  font-size: var(--fs-label); font-weight: var(--fw-label);
+  letter-spacing: var(--ls-label); text-transform: uppercase; color: var(--text-3);
+}
+
+/* 涨跌背景闪烁（只闪背景不闪文字） */
+@keyframes flashUp   { from { background: rgba(53,200,168,.28); } to { background: transparent; } }
+@keyframes flashDown { from { background: rgba(240,86,140,.28); } to { background: transparent; } }
+
+/* 状态点呼吸 + 连接点光环 */
+@keyframes breathe { from { opacity: .55; } to { opacity: 1; } }
+.dot-live { animation: breathe 2s ease-in-out infinite alternate; }
+
+/* 动效降级 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 150ms !important; transition-duration: 150ms !important; }
+}

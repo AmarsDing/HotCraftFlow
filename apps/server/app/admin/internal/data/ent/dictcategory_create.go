@@ -9,6 +9,7 @@ import (
 	"framework/app/admin/internal/data/ent/dictcategory"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -18,6 +19,7 @@ type DictCategoryCreate struct {
 	config
 	mutation *DictCategoryMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreateTime sets the "create_time" field.
@@ -290,6 +292,7 @@ func (_c *DictCategoryCreate) createSpec() (*DictCategory, *sqlgraph.CreateSpec)
 		_node = &DictCategory{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(dictcategory.Table, sqlgraph.NewFieldSpec(dictcategory.FieldID, field.TypeUint32))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -341,11 +344,522 @@ func (_c *DictCategoryCreate) createSpec() (*DictCategory, *sqlgraph.CreateSpec)
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DictCategory.Create().
+//		SetCreateTime(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DictCategoryUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *DictCategoryCreate) OnConflict(opts ...sql.ConflictOption) *DictCategoryUpsertOne {
+	_c.conflict = opts
+	return &DictCategoryUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DictCategory.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *DictCategoryCreate) OnConflictColumns(columns ...string) *DictCategoryUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &DictCategoryUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// DictCategoryUpsertOne is the builder for "upsert"-ing
+	//  one DictCategory node.
+	DictCategoryUpsertOne struct {
+		create *DictCategoryCreate
+	}
+
+	// DictCategoryUpsert is the "OnConflict" setter.
+	DictCategoryUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUpdateTime sets the "update_time" field.
+func (u *DictCategoryUpsert) SetUpdateTime(v time.Time) *DictCategoryUpsert {
+	u.Set(dictcategory.FieldUpdateTime, v)
+	return u
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *DictCategoryUpsert) UpdateUpdateTime() *DictCategoryUpsert {
+	u.SetExcluded(dictcategory.FieldUpdateTime)
+	return u
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *DictCategoryUpsert) ClearUpdateTime() *DictCategoryUpsert {
+	u.SetNull(dictcategory.FieldUpdateTime)
+	return u
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *DictCategoryUpsert) SetDeleteTime(v time.Time) *DictCategoryUpsert {
+	u.Set(dictcategory.FieldDeleteTime, v)
+	return u
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *DictCategoryUpsert) UpdateDeleteTime() *DictCategoryUpsert {
+	u.SetExcluded(dictcategory.FieldDeleteTime)
+	return u
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *DictCategoryUpsert) ClearDeleteTime() *DictCategoryUpsert {
+	u.SetNull(dictcategory.FieldDeleteTime)
+	return u
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *DictCategoryUpsert) SetCreateBy(v uint32) *DictCategoryUpsert {
+	u.Set(dictcategory.FieldCreateBy, v)
+	return u
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *DictCategoryUpsert) UpdateCreateBy() *DictCategoryUpsert {
+	u.SetExcluded(dictcategory.FieldCreateBy)
+	return u
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *DictCategoryUpsert) AddCreateBy(v uint32) *DictCategoryUpsert {
+	u.Add(dictcategory.FieldCreateBy, v)
+	return u
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *DictCategoryUpsert) ClearCreateBy() *DictCategoryUpsert {
+	u.SetNull(dictcategory.FieldCreateBy)
+	return u
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *DictCategoryUpsert) SetUpdateBy(v uint32) *DictCategoryUpsert {
+	u.Set(dictcategory.FieldUpdateBy, v)
+	return u
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *DictCategoryUpsert) UpdateUpdateBy() *DictCategoryUpsert {
+	u.SetExcluded(dictcategory.FieldUpdateBy)
+	return u
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *DictCategoryUpsert) AddUpdateBy(v uint32) *DictCategoryUpsert {
+	u.Add(dictcategory.FieldUpdateBy, v)
+	return u
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *DictCategoryUpsert) ClearUpdateBy() *DictCategoryUpsert {
+	u.SetNull(dictcategory.FieldUpdateBy)
+	return u
+}
+
+// SetRemark sets the "remark" field.
+func (u *DictCategoryUpsert) SetRemark(v string) *DictCategoryUpsert {
+	u.Set(dictcategory.FieldRemark, v)
+	return u
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *DictCategoryUpsert) UpdateRemark() *DictCategoryUpsert {
+	u.SetExcluded(dictcategory.FieldRemark)
+	return u
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *DictCategoryUpsert) ClearRemark() *DictCategoryUpsert {
+	u.SetNull(dictcategory.FieldRemark)
+	return u
+}
+
+// SetCode sets the "code" field.
+func (u *DictCategoryUpsert) SetCode(v string) *DictCategoryUpsert {
+	u.Set(dictcategory.FieldCode, v)
+	return u
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *DictCategoryUpsert) UpdateCode() *DictCategoryUpsert {
+	u.SetExcluded(dictcategory.FieldCode)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *DictCategoryUpsert) SetName(v string) *DictCategoryUpsert {
+	u.Set(dictcategory.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *DictCategoryUpsert) UpdateName() *DictCategoryUpsert {
+	u.SetExcluded(dictcategory.FieldName)
+	return u
+}
+
+// SetKind sets the "kind" field.
+func (u *DictCategoryUpsert) SetKind(v string) *DictCategoryUpsert {
+	u.Set(dictcategory.FieldKind, v)
+	return u
+}
+
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *DictCategoryUpsert) UpdateKind() *DictCategoryUpsert {
+	u.SetExcluded(dictcategory.FieldKind)
+	return u
+}
+
+// SetBuiltin sets the "builtin" field.
+func (u *DictCategoryUpsert) SetBuiltin(v bool) *DictCategoryUpsert {
+	u.Set(dictcategory.FieldBuiltin, v)
+	return u
+}
+
+// UpdateBuiltin sets the "builtin" field to the value that was provided on create.
+func (u *DictCategoryUpsert) UpdateBuiltin() *DictCategoryUpsert {
+	u.SetExcluded(dictcategory.FieldBuiltin)
+	return u
+}
+
+// SetSortID sets the "sort_id" field.
+func (u *DictCategoryUpsert) SetSortID(v int32) *DictCategoryUpsert {
+	u.Set(dictcategory.FieldSortID, v)
+	return u
+}
+
+// UpdateSortID sets the "sort_id" field to the value that was provided on create.
+func (u *DictCategoryUpsert) UpdateSortID() *DictCategoryUpsert {
+	u.SetExcluded(dictcategory.FieldSortID)
+	return u
+}
+
+// AddSortID adds v to the "sort_id" field.
+func (u *DictCategoryUpsert) AddSortID(v int32) *DictCategoryUpsert {
+	u.Add(dictcategory.FieldSortID, v)
+	return u
+}
+
+// ClearSortID clears the value of the "sort_id" field.
+func (u *DictCategoryUpsert) ClearSortID() *DictCategoryUpsert {
+	u.SetNull(dictcategory.FieldSortID)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.DictCategory.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(dictcategory.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *DictCategoryUpsertOne) UpdateNewValues() *DictCategoryUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(dictcategory.FieldID)
+		}
+		if _, exists := u.create.mutation.CreateTime(); exists {
+			s.SetIgnore(dictcategory.FieldCreateTime)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.DictCategory.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *DictCategoryUpsertOne) Ignore() *DictCategoryUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DictCategoryUpsertOne) DoNothing() *DictCategoryUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DictCategoryCreate.OnConflict
+// documentation for more info.
+func (u *DictCategoryUpsertOne) Update(set func(*DictCategoryUpsert)) *DictCategoryUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DictCategoryUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *DictCategoryUpsertOne) SetUpdateTime(v time.Time) *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *DictCategoryUpsertOne) UpdateUpdateTime() *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *DictCategoryUpsertOne) ClearUpdateTime() *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *DictCategoryUpsertOne) SetDeleteTime(v time.Time) *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *DictCategoryUpsertOne) UpdateDeleteTime() *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *DictCategoryUpsertOne) ClearDeleteTime() *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *DictCategoryUpsertOne) SetCreateBy(v uint32) *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *DictCategoryUpsertOne) AddCreateBy(v uint32) *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *DictCategoryUpsertOne) UpdateCreateBy() *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *DictCategoryUpsertOne) ClearCreateBy() *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *DictCategoryUpsertOne) SetUpdateBy(v uint32) *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *DictCategoryUpsertOne) AddUpdateBy(v uint32) *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *DictCategoryUpsertOne) UpdateUpdateBy() *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *DictCategoryUpsertOne) ClearUpdateBy() *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetRemark sets the "remark" field.
+func (u *DictCategoryUpsertOne) SetRemark(v string) *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetRemark(v)
+	})
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *DictCategoryUpsertOne) UpdateRemark() *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateRemark()
+	})
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *DictCategoryUpsertOne) ClearRemark() *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.ClearRemark()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *DictCategoryUpsertOne) SetCode(v string) *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *DictCategoryUpsertOne) UpdateCode() *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateCode()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *DictCategoryUpsertOne) SetName(v string) *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *DictCategoryUpsertOne) UpdateName() *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetKind sets the "kind" field.
+func (u *DictCategoryUpsertOne) SetKind(v string) *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetKind(v)
+	})
+}
+
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *DictCategoryUpsertOne) UpdateKind() *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateKind()
+	})
+}
+
+// SetBuiltin sets the "builtin" field.
+func (u *DictCategoryUpsertOne) SetBuiltin(v bool) *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetBuiltin(v)
+	})
+}
+
+// UpdateBuiltin sets the "builtin" field to the value that was provided on create.
+func (u *DictCategoryUpsertOne) UpdateBuiltin() *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateBuiltin()
+	})
+}
+
+// SetSortID sets the "sort_id" field.
+func (u *DictCategoryUpsertOne) SetSortID(v int32) *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetSortID(v)
+	})
+}
+
+// AddSortID adds v to the "sort_id" field.
+func (u *DictCategoryUpsertOne) AddSortID(v int32) *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.AddSortID(v)
+	})
+}
+
+// UpdateSortID sets the "sort_id" field to the value that was provided on create.
+func (u *DictCategoryUpsertOne) UpdateSortID() *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateSortID()
+	})
+}
+
+// ClearSortID clears the value of the "sort_id" field.
+func (u *DictCategoryUpsertOne) ClearSortID() *DictCategoryUpsertOne {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.ClearSortID()
+	})
+}
+
+// Exec executes the query.
+func (u *DictCategoryUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DictCategoryCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DictCategoryUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *DictCategoryUpsertOne) ID(ctx context.Context) (id uint32, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *DictCategoryUpsertOne) IDX(ctx context.Context) uint32 {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // DictCategoryCreateBulk is the builder for creating many DictCategory entities in bulk.
 type DictCategoryCreateBulk struct {
 	config
 	err      error
 	builders []*DictCategoryCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the DictCategory entities in the database.
@@ -375,6 +889,7 @@ func (_c *DictCategoryCreateBulk) Save(ctx context.Context) ([]*DictCategory, er
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -425,6 +940,326 @@ func (_c *DictCategoryCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *DictCategoryCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DictCategory.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DictCategoryUpsert) {
+//			SetCreateTime(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *DictCategoryCreateBulk) OnConflict(opts ...sql.ConflictOption) *DictCategoryUpsertBulk {
+	_c.conflict = opts
+	return &DictCategoryUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DictCategory.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *DictCategoryCreateBulk) OnConflictColumns(columns ...string) *DictCategoryUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &DictCategoryUpsertBulk{
+		create: _c,
+	}
+}
+
+// DictCategoryUpsertBulk is the builder for "upsert"-ing
+// a bulk of DictCategory nodes.
+type DictCategoryUpsertBulk struct {
+	create *DictCategoryCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.DictCategory.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(dictcategory.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *DictCategoryUpsertBulk) UpdateNewValues() *DictCategoryUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(dictcategory.FieldID)
+			}
+			if _, exists := b.mutation.CreateTime(); exists {
+				s.SetIgnore(dictcategory.FieldCreateTime)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.DictCategory.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *DictCategoryUpsertBulk) Ignore() *DictCategoryUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DictCategoryUpsertBulk) DoNothing() *DictCategoryUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DictCategoryCreateBulk.OnConflict
+// documentation for more info.
+func (u *DictCategoryUpsertBulk) Update(set func(*DictCategoryUpsert)) *DictCategoryUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DictCategoryUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (u *DictCategoryUpsertBulk) SetUpdateTime(v time.Time) *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetUpdateTime(v)
+	})
+}
+
+// UpdateUpdateTime sets the "update_time" field to the value that was provided on create.
+func (u *DictCategoryUpsertBulk) UpdateUpdateTime() *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateUpdateTime()
+	})
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (u *DictCategoryUpsertBulk) ClearUpdateTime() *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.ClearUpdateTime()
+	})
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (u *DictCategoryUpsertBulk) SetDeleteTime(v time.Time) *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetDeleteTime(v)
+	})
+}
+
+// UpdateDeleteTime sets the "delete_time" field to the value that was provided on create.
+func (u *DictCategoryUpsertBulk) UpdateDeleteTime() *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateDeleteTime()
+	})
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (u *DictCategoryUpsertBulk) ClearDeleteTime() *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.ClearDeleteTime()
+	})
+}
+
+// SetCreateBy sets the "create_by" field.
+func (u *DictCategoryUpsertBulk) SetCreateBy(v uint32) *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetCreateBy(v)
+	})
+}
+
+// AddCreateBy adds v to the "create_by" field.
+func (u *DictCategoryUpsertBulk) AddCreateBy(v uint32) *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.AddCreateBy(v)
+	})
+}
+
+// UpdateCreateBy sets the "create_by" field to the value that was provided on create.
+func (u *DictCategoryUpsertBulk) UpdateCreateBy() *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateCreateBy()
+	})
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (u *DictCategoryUpsertBulk) ClearCreateBy() *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.ClearCreateBy()
+	})
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (u *DictCategoryUpsertBulk) SetUpdateBy(v uint32) *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetUpdateBy(v)
+	})
+}
+
+// AddUpdateBy adds v to the "update_by" field.
+func (u *DictCategoryUpsertBulk) AddUpdateBy(v uint32) *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.AddUpdateBy(v)
+	})
+}
+
+// UpdateUpdateBy sets the "update_by" field to the value that was provided on create.
+func (u *DictCategoryUpsertBulk) UpdateUpdateBy() *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateUpdateBy()
+	})
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (u *DictCategoryUpsertBulk) ClearUpdateBy() *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.ClearUpdateBy()
+	})
+}
+
+// SetRemark sets the "remark" field.
+func (u *DictCategoryUpsertBulk) SetRemark(v string) *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetRemark(v)
+	})
+}
+
+// UpdateRemark sets the "remark" field to the value that was provided on create.
+func (u *DictCategoryUpsertBulk) UpdateRemark() *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateRemark()
+	})
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (u *DictCategoryUpsertBulk) ClearRemark() *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.ClearRemark()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *DictCategoryUpsertBulk) SetCode(v string) *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *DictCategoryUpsertBulk) UpdateCode() *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateCode()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *DictCategoryUpsertBulk) SetName(v string) *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *DictCategoryUpsertBulk) UpdateName() *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetKind sets the "kind" field.
+func (u *DictCategoryUpsertBulk) SetKind(v string) *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetKind(v)
+	})
+}
+
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *DictCategoryUpsertBulk) UpdateKind() *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateKind()
+	})
+}
+
+// SetBuiltin sets the "builtin" field.
+func (u *DictCategoryUpsertBulk) SetBuiltin(v bool) *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetBuiltin(v)
+	})
+}
+
+// UpdateBuiltin sets the "builtin" field to the value that was provided on create.
+func (u *DictCategoryUpsertBulk) UpdateBuiltin() *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateBuiltin()
+	})
+}
+
+// SetSortID sets the "sort_id" field.
+func (u *DictCategoryUpsertBulk) SetSortID(v int32) *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.SetSortID(v)
+	})
+}
+
+// AddSortID adds v to the "sort_id" field.
+func (u *DictCategoryUpsertBulk) AddSortID(v int32) *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.AddSortID(v)
+	})
+}
+
+// UpdateSortID sets the "sort_id" field to the value that was provided on create.
+func (u *DictCategoryUpsertBulk) UpdateSortID() *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.UpdateSortID()
+	})
+}
+
+// ClearSortID clears the value of the "sort_id" field.
+func (u *DictCategoryUpsertBulk) ClearSortID() *DictCategoryUpsertBulk {
+	return u.Update(func(s *DictCategoryUpsert) {
+		s.ClearSortID()
+	})
+}
+
+// Exec executes the query.
+func (u *DictCategoryUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the DictCategoryCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DictCategoryCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DictCategoryUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
