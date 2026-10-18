@@ -714,6 +714,106 @@ var (
 			},
 		},
 	}
+	// RadarUserConfigsColumns holds the columns for the "radar_user_configs" table.
+	RadarUserConfigsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "user_id", Type: field.TypeUint32, Unique: true, Comment: "用户ID"},
+		{Name: "github_token_enc", Type: field.TypeString, Nullable: true, Comment: "GitHub Token 密文（AES-256-GCM，空=未配置）"},
+		{Name: "llm_enabled", Type: field.TypeBool, Comment: "是否启用 AI 总结", Default: false},
+		{Name: "llm_base_url", Type: field.TypeString, Nullable: true, Comment: "LLM 服务地址"},
+		{Name: "llm_api_key_enc", Type: field.TypeString, Nullable: true, Comment: "LLM API Key 密文（AES-256-GCM）"},
+		{Name: "llm_model", Type: field.TypeString, Nullable: true, Comment: "LLM 模型名"},
+		{Name: "clone_enabled", Type: field.TypeBool, Comment: "是否允许服务端克隆仓库", Default: false},
+		{Name: "clone_dir", Type: field.TypeString, Nullable: true, Comment: "服务端克隆目录"},
+	}
+	// RadarUserConfigsTable holds the schema information for the "radar_user_configs" table.
+	RadarUserConfigsTable = &schema.Table{
+		Name:       "radar_user_configs",
+		Comment:    "GitHub 热门追踪用户配置表（密钥加密存储）",
+		Columns:    RadarUserConfigsColumns,
+		PrimaryKey: []*schema.Column{RadarUserConfigsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "radaruserconfig_user_id",
+				Unique:  true,
+				Columns: []*schema.Column{RadarUserConfigsColumns[4]},
+			},
+		},
+	}
+	// RadarWatchesColumns holds the columns for the "radar_watches" table.
+	RadarWatchesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "user_id", Type: field.TypeUint32, Comment: "用户ID"},
+		{Name: "full_name", Type: field.TypeString, Size: 200, Comment: "仓库 full_name（owner/repo）"},
+		{Name: "baseline_stars", Type: field.TypeInt64, Comment: "盯盘时基线星标数（增量=当前-基线）", Default: 0},
+		{Name: "stars", Type: field.TypeInt64, Nullable: true, Comment: "最近一次已知星标数", Default: 0},
+		{Name: "stars_delta", Type: field.TypeInt64, Nullable: true, Comment: "相对基线的星标增量", Default: 0},
+		{Name: "unread_count", Type: field.TypeUint32, Nullable: true, Comment: "未读变更事件数", Default: 0},
+		{Name: "html_url", Type: field.TypeString, Nullable: true, Comment: "仓库链接"},
+		{Name: "sparkline", Type: field.TypeJSON, Nullable: true, Comment: "星标增量迷你趋势（最近 7 个点）"},
+	}
+	// RadarWatchesTable holds the schema information for the "radar_watches" table.
+	RadarWatchesTable = &schema.Table{
+		Name:       "radar_watches",
+		Comment:    "GitHub 热门追踪盯盘表（按用户隔离）",
+		Columns:    RadarWatchesColumns,
+		PrimaryKey: []*schema.Column{RadarWatchesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "radarwatch_user_id_full_name",
+				Unique:  true,
+				Columns: []*schema.Column{RadarWatchesColumns[4], RadarWatchesColumns[5]},
+			},
+			{
+				Name:    "radarwatch_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{RadarWatchesColumns[4]},
+			},
+		},
+	}
+	// RadarWatchEventsColumns holds the columns for the "radar_watch_events" table.
+	RadarWatchEventsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "user_id", Type: field.TypeUint32, Comment: "用户ID"},
+		{Name: "full_name", Type: field.TypeString, Size: 200, Comment: "仓库 full_name（owner/repo）"},
+		{Name: "kind", Type: field.TypeEnum, Comment: "事件类型", Enums: []string{"UNKNOWN", "STARS", "RELEASE", "DESCRIPTION"}, Default: "STARS"},
+		{Name: "message", Type: field.TypeString, Size: 500, Comment: "事件描述（展示文案）"},
+		{Name: "delta", Type: field.TypeInt64, Nullable: true, Comment: "本次变更增量（星标数）", Default: 0},
+		{Name: "read", Type: field.TypeBool, Comment: "是否已读", Default: false},
+	}
+	// RadarWatchEventsTable holds the schema information for the "radar_watch_events" table.
+	RadarWatchEventsTable = &schema.Table{
+		Name:       "radar_watch_events",
+		Comment:    "GitHub 热门追踪盯盘变更事件表（按用户隔离）",
+		Columns:    RadarWatchEventsColumns,
+		PrimaryKey: []*schema.Column{RadarWatchEventsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "radarwatchevent_user_id_read",
+				Unique:  false,
+				Columns: []*schema.Column{RadarWatchEventsColumns[4], RadarWatchEventsColumns[9]},
+			},
+			{
+				Name:    "radarwatchevent_user_id_full_name",
+				Unique:  false,
+				Columns: []*schema.Column{RadarWatchEventsColumns[4], RadarWatchEventsColumns[5]},
+			},
+			{
+				Name:    "radarwatchevent_create_time",
+				Unique:  false,
+				Columns: []*schema.Column{RadarWatchEventsColumns[1]},
+			},
+		},
+	}
 	// ResourceGroupsColumns holds the columns for the "resource_groups" table.
 	ResourceGroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
@@ -1476,6 +1576,9 @@ var (
 		ApOrgPasswordHistoryTable,
 		ApOrgPostTable,
 		PrivateMessagesTable,
+		RadarUserConfigsTable,
+		RadarWatchesTable,
+		RadarWatchEventsTable,
 		ResourceGroupsTable,
 		ApOrgRoleTable,
 		ApOrgRoleAPITable,
@@ -1597,6 +1700,21 @@ func init() {
 	}
 	PrivateMessagesTable.Annotation = &entsql.Annotation{
 		Table:     "private_messages",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	RadarUserConfigsTable.Annotation = &entsql.Annotation{
+		Table:     "radar_user_configs",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	RadarWatchesTable.Annotation = &entsql.Annotation{
+		Table:     "radar_watches",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	RadarWatchEventsTable.Annotation = &entsql.Annotation{
+		Table:     "radar_watch_events",
 		Charset:   "utf8mb4",
 		Collation: "utf8mb4_bin",
 	}

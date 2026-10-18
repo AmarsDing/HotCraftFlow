@@ -1,0 +1,131 @@
+/* ============================================================
+   Grok Bot 仪表盘 · 设计令牌（取值自视频像素实测）
+   用法：在任何实现中先引入本文件，再写组件样式
+   ============================================================ */
+
+:root{
+  /* ---------- 1. 背景层级（由深到浅） ---------- */
+  --bg-page:    #0A0E10;   /* 页面底：带青灰倾向的近黑，实测 #101A1B（含渐变） */
+  --bg-card:    #0C0C18;   /* 主卡片 */
+  --bg-elev:    #12161F;   /* 行 / 卡片悬浮层 */
+  --bg-inset:   #15181F;   /* 内嵌块（如 profit 行底） */
+  --bg-hover:   rgba(255,255,255,.04);
+  --bg-chip:    rgba(255,255,255,.05);
+
+  /* ---------- 2. 描边 ---------- */
+  --line:       rgba(255,255,255,.08);
+  --line-2:     rgba(255,255,255,.14);
+  --line-3:     rgba(255,255,255,.22);
+
+  /* ---------- 3. 文字 ---------- */
+  --text-1:     #F5F3FF;   /* 主文字（实测头像/主标题近白 #FBF8FF） */
+  --text-2:     #A9AEBC;   /* 次要 */
+  --text-3:     #61667A;   /* 时间戳 / 单位 / 弱化 */
+  --text-4:     #4A5060;   /* 日志时间戳（最暗） */
+
+  /* ---------- 4. 语义强调色（实测） ---------- */
+  --green:      #52D89D;   /* 利润 / 通过 / 在线 / scout */
+  --cyan:       #41D2F3;   /* 侦察 / 均价 / chat 类客户端 */
+  --pink:       #F25E97;   /* 风控 / 路由 / GPU 支出 / 告警 */
+  --purple:     #A489FA;   /* 量化 QUANT */
+  --amber:      #F6C157;   /* 待你审批 / 告警 chip */
+  --yellow:     #E3CB72;   /* YOU 人类决策 / doc.search */
+  --red:        #F05959;   /* 拒绝 / 罚金 / 负值 */
+  --blue:       #4C86F9;   /* GPU 负载条主色 */
+
+  /* ---------- 5. 强调色的"背景态"（用色相统一派生） ---------- */
+  --green-bg:   rgba(82,216,157,.12);
+  --cyan-bg:    rgba(65,210,243,.12);
+  --pink-bg:    rgba(242,94,151,.12);
+  --purple-bg:  rgba(164,137,250,.12);
+  --amber-bg:   rgba(246,193,87,.10);
+  --yellow-bg:  rgba(227,203,114,.12);
+  --red-bg:     rgba(240,89,89,.12);
+
+  --green-line: rgba(82,216,157,.35);
+  --pink-line:  rgba(242,94,151,.35);
+  --amber-line: rgba(246,193,87,.45);
+
+  /* ---------- 6. 字体 ---------- */
+  --font-ui:    'Inter', 'Space Grotesk', system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-display:'Space Grotesk', 'Inter Tight', var(--font-ui);
+  --font-mono:  'JetBrains Mono', 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  /* ---------- 7. 字号 / 字重 / 字距 ---------- */
+  --fs-display: 32px;  --fw-display: 700;  --ls-display: -0.02em;
+  --fs-bignum:  34px;  --fw-bignum:  700;
+  --fs-label:   9.5px; --fw-label:   600;  --ls-label: 0.14em;   /* 区块标签，大写 */
+  --fs-row:     13px;  --fw-row:     500;                          /* 行标题 */
+  --fs-value:   15px;  --fw-value:   700;                          /* 行数值（等宽） */
+  --fs-meta:    10px;                                              /* 元信息 */
+  --fs-log:     10px;                                              /* 日志（等宽） */
+  --fs-chip:    11px;  --fw-chip:    500;
+
+  /* ---------- 8. 圆角 ---------- */
+  --r-card:  18px;
+  --r-panel: 12px;
+  --r-row:   8px;
+  --r-btn:   8px;
+  --r-chip:  999px;
+
+  /* ---------- 9. 间距 / 尺寸 ---------- */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px;
+  --row-h: 54px;
+  /* 工作区三栏比例（实测 ≈ 1 : 1.95 : 1.5，左窄/中最宽/右中） */
+  --col-ratio-left:  0.9fr;
+  --col-ratio-mid:   1.75fr;
+  --col-ratio-right: 1.35fr;
+  --col-money:180px;      /* 结算卡宽 */
+
+  /* ---------- 10. 阴影 / 发光 ---------- */
+  --shadow-card: 0 24px 60px -24px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.07);
+  --glow-amber:  0 0 0 1px rgba(246,193,87,.38), 0 16px 44px -12px rgba(246,193,87,.30);
+  --glow-green:  0 0 22px -6px rgba(82,216,157,.55);
+  --glow-pink:   0 0 22px -6px rgba(242,94,151,.45);
+
+  /* ---------- 11. 动效 ---------- */
+  --ease-out:  cubic-bezier(.2,.9,.2,1);   /* 果断：内容进出场首选 */
+  --ease-soft: cubic-bezier(.4,0,.2,1);    /* 常规过渡 */
+  --dur-micro: 120ms;   /* 按钮反馈 */
+  --dur-fast:  180ms;   /* 弹窗入场 */
+  --dur-base:  260ms;   /* 行/日志增删 */
+  --dur-slow:  500ms;   /* 负载条 */
+
+  /* ---------- 12. 网络图（SVG viewBox 0 0 400 260） ---------- */
+  --net-stroke:      rgba(255,255,255,.10);
+  --net-stroke-live: rgba(82,216,157,.35);
+  --net-particle-r:  2.5px;
+  --net-flow-dur:    1.5s;
+}
+
+/* ---------- 全局基础 ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+html,body{ margin:0; background:var(--bg-page); color:var(--text-1); font-family:var(--font-ui); }
+.num, .mono{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+/* 所有动态数字必须锁宽，否则跳字会抖 */
+.tabular{ font-variant-numeric: tabular-nums; }
+
+/* ---------- 通用动画 ---------- */
+@keyframes breathe{ from{opacity:.55} to{opacity:1} }
+@keyframes spin{ to{ transform: rotate(360deg) } }
+@keyframes pulse-ring{
+  0%   { box-shadow:0 0 0 0 rgba(246,193,87,.45) }
+  70%  { box-shadow:0 0 0 8px rgba(246,193,87,0) }
+  100% { box-shadow:0 0 0 0 rgba(246,193,87,0) }
+}
+@keyframes flow{
+  0%   { offset-distance:0%;   opacity:0 }
+  8%   { opacity:1 }
+  92%  { opacity:1 }
+  100% { offset-distance:100%; opacity:0 }
+}
+@keyframes rowIn{
+  from{ opacity:0; transform: translateY(-6px) }
+  to  { opacity:1; transform: none }
+}
+
+/* ---------- 无障碍：降低动态 ---------- */
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:.001ms !important; animation-iteration-count:1 !important;
+     transition-duration:.001ms !important; }
+}

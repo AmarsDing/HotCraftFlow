@@ -4,9 +4,9 @@ package ent
 
 import (
 	"fmt"
+	"framework/app/admin/internal/data/ent/toollinkcategory"
 	"strings"
 	"time"
-	"framework/app/admin/internal/data/ent/toollinkcategory"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"

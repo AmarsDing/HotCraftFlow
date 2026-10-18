@@ -8,20 +8,59 @@
   >
     <div class="repo-card__top">
       <span class="repo-card__rank">#{{ repo.rank || '—' }}</span>
-      <q-badge v-if="repo.is_new" color="primary" label="新晋" />
+      <q-badge v-if="repo.is_new" color="primary" :label="t('githubRadar.newBadge')" />
+      <span v-if="repo.language" class="repo-card__lang">
+        <span class="repo-card__lang-dot" :style="{ background: langColor(repo.language) }" aria-hidden="true" />
+        {{ repo.language }}
+      </span>
       <q-space />
-      <q-btn
-        flat
-        dense
-        round
-        size="sm"
-        :icon="watched ? 'bookmark' : 'bookmark_border'"
-        :color="watched ? 'primary' : undefined"
-        :aria-label="watched ? '取消盯盘' : '加入盯盘'"
-        @click.stop="$emit('watch', repo)"
-      >
-        <q-tooltip>{{ watched ? '取消盯盘' : '加入盯盘' }}</q-tooltip>
-      </q-btn>
+      <div class="repo-card__actions">
+        <q-btn
+          flat
+          dense
+          round
+          size="sm"
+          icon="auto_awesome"
+          :aria-label="t('githubRadar.aiSummary')"
+          @click.stop="$emit('open', repo, 'insight')"
+        >
+          <q-tooltip>{{ t('githubRadar.aiSummary') }}</q-tooltip>
+        </q-btn>
+        <q-btn
+          flat
+          dense
+          round
+          size="sm"
+          icon="download"
+          :aria-label="t('githubRadar.clone')"
+          @click.stop="$emit('open', repo, 'clone')"
+        >
+          <q-tooltip>{{ t('githubRadar.clone') }}</q-tooltip>
+        </q-btn>
+        <q-btn
+          flat
+          dense
+          round
+          size="sm"
+          icon="code"
+          :aria-label="t('githubRadar.viewSource')"
+          @click.stop="$emit('open', repo, 'source')"
+        >
+          <q-tooltip>{{ t('githubRadar.viewSource') }}</q-tooltip>
+        </q-btn>
+        <q-btn
+          flat
+          dense
+          round
+          size="sm"
+          :icon="watched ? 'bookmark' : 'bookmark_border'"
+          :color="watched ? 'primary' : undefined"
+          :aria-label="watched ? t('githubRadar.unwatch') : t('githubRadar.watch')"
+          @click.stop="$emit('watch', repo)"
+        >
+          <q-tooltip>{{ watched ? t('githubRadar.unwatch') : t('githubRadar.watch') }}</q-tooltip>
+        </q-btn>
+      </div>
     </div>
 
     <div class="repo-card__name-line">
@@ -32,61 +71,74 @@
     <div class="repo-card__desc">{{ descText }}</div>
 
     <div class="repo-card__meta">
-      <span v-if="repo.language">
-        <span class="repo-card__lang-dot" aria-hidden="true" />{{ repo.language }}
+      <span class="repo-card__stars" :title="`${exactCount(repo.stars)} stars`">
+        <q-icon name="star" size="13px" /> {{ abbrevCount(repo.stars) }}
       </span>
-      <span>★ {{ abbrevCount(repo.stars) }}</span>
-      <span>Fork {{ abbrevCount(repo.forks) }}</span>
+      <span
+        v-if="repo.stars_delta !== 0"
+        class="repo-card__delta"
+        :class="{ 'repo-card__delta--down': repo.stars_delta < 0 }"
+      >
+        {{ repo.stars_delta > 0 ? '+' : '' }}{{ abbrevCount(repo.stars_delta) }} {{ sinceLabel }}
+        <q-tooltip>{{ t('githubRadar.deltaTooltip', { n: exactCount(repo.stars_delta) }) }}</q-tooltip>
+      </span>
+      <span :title="`${exactCount(repo.forks)} forks`">
+        <q-icon name="call_split" size="13px" /> {{ abbrevCount(repo.forks) }}
+      </span>
+      <span v-if="repo.open_issues" :title="`${exactCount(repo.open_issues)} open issues`">
+        <q-icon name="error_outline" size="13px" /> {{ abbrevCount(repo.open_issues) }}
+      </span>
+    </div>
+
+    <div class="repo-card__meta repo-card__meta--sub">
+      <q-badge v-if="repo.license_spdx" outline color="grey-7" class="repo-card__license" :label="repo.license_spdx">
+        <q-tooltip>{{ repo.license || repo.license_spdx }}</q-tooltip>
+      </q-badge>
+      <span v-else class="repo-card__license repo-card__license--none" :title="t('githubRadar.noLicenseTooltip')">{{
+        t('githubRadar.noLicense')
+      }}</span>
+      <span v-if="repo.pushed_at" :title="t('githubRadar.pushedAt', { time: repo.pushed_at })">
+        <q-icon name="update" size="13px" /> {{ relTime(repo.pushed_at) }}
+      </span>
     </div>
 
     <div class="repo-card__footer">
-      <span class="repo-card__delta">
-        +{{ repo.stars_delta }} {{ sinceLabel }}
-        <q-tooltip>榜窗口增量</q-tooltip>
-      </span>
-      <Sparkline
-        v-if="repo.sparkline?.length"
-        class="q-ml-xs"
-        :values="repo.sparkline"
-        :width="48"
-        :height="16"
-      />
+      <Sparkline v-if="repo.sparkline?.length" :values="repo.sparkline" :width="56" :height="18" />
       <q-space />
       <div v-if="topicChips.length" class="repo-card__topics">
-        <q-chip
-          v-for="t in topicChips"
-          :key="t"
-          dense
-          outline
-          size="sm"
-          color="primary"
-        >{{ t }}</q-chip>
+        <q-chip v-for="tp in topicChips" :key="tp" dense outline size="sm" color="primary">{{ tp }}</q-chip>
       </div>
     </div>
   </article>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import Sparkline from './Sparkline.vue'
-import { abbrevCount, splitFullName, type RepoItem } from '../types'
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import Sparkline from './Sparkline.vue';
+import { abbrevCount, exactCount, langColor, relTime, splitFullName, type RepoItem } from '../types';
 
-const props = withDefaults(
-  defineProps<{ repo: RepoItem; watched?: boolean; since?: 'today' | 'week' }>(),
-  { watched: false, since: 'today' },
-)
-defineEmits<{ open: [RepoItem]; watch: [RepoItem] }>()
+const { t } = useI18n();
 
-const parts = computed(() => splitFullName(props.repo.full_name))
-const descText = computed(() => props.repo.description?.trim() || '暂无描述')
-const topicChips = computed(() => (props.repo.topics ?? []).slice(0, 3))
-const sinceLabel = computed(() => (props.since === 'week' ? '本周' : '今日'))
+const props = withDefaults(defineProps<{ repo: RepoItem; watched?: boolean; since?: 'today' | 'week' | 'month' }>(), {
+  watched: false,
+  since: 'today',
+});
+defineEmits<{ open: [RepoItem, string?]; watch: [RepoItem] }>();
+
+const parts = computed(() => splitFullName(props.repo.full_name));
+const descText = computed(() => props.repo.description?.trim() || t('githubRadar.noDesc'));
+const topicChips = computed(() => (props.repo.topics ?? []).slice(0, 4));
+const sinceLabel = computed(() => t(`githubRadar.since.${props.since}`));
 </script>
 
 <style scoped lang="sass">
 .repo-card
   padding: var(--space-4)
   cursor: pointer
+  display: flex
+  flex-direction: column
+  gap: var(--space-2)
   transition: border-color .15s ease, box-shadow .15s ease
   &:hover
     border-color: var(--glass-border-hover)
@@ -95,17 +147,38 @@ const sinceLabel = computed(() => (props.since === 'week' ? '本周' : '今日')
   display: flex
   align-items: center
   gap: var(--space-2)
-  margin-bottom: var(--space-2)
 
 .repo-card__rank
   font-size: var(--text-sm)
   font-weight: 700
   color: var(--color-accent)
 
+.repo-card__lang
+  display: inline-flex
+  align-items: center
+  gap: 4px
+  font-size: var(--text-xs)
+  color: var(--color-text-secondary)
+
+.repo-card__lang-dot
+  display: inline-block
+  width: 9px
+  height: 9px
+  border-radius: 50%
+
+.repo-card__actions
+  display: flex
+  align-items: center
+  opacity: 0
+  transition: opacity .15s ease
+  .repo-card:hover &
+    opacity: 1
+  @media (hover: none)
+    opacity: 1
+
 .repo-card__name-line
   font-size: var(--text-md)
   line-height: 1.35
-  margin-bottom: var(--space-2)
   word-break: break-word
 
 .repo-card__owner
@@ -125,35 +198,42 @@ const sinceLabel = computed(() => (props.since === 'week' ? '本周' : '今日')
   -webkit-box-orient: vertical
   overflow: hidden
   min-height: 2.9em
-  margin-bottom: var(--space-3)
 
 .repo-card__meta
   display: flex
   flex-wrap: wrap
+  align-items: center
   gap: var(--space-3)
   font-size: var(--text-xs)
   color: var(--color-text-secondary)
-  margin-bottom: var(--space-2)
+  font-variant-numeric: tabular-nums
 
-.repo-card__lang-dot
-  display: inline-block
-  width: 8px
-  height: 8px
-  border-radius: 50%
-  background: var(--color-accent)
-  margin-right: 4px
-  vertical-align: middle
+.repo-card__meta--sub
+  gap: var(--space-2)
+
+.repo-card__stars
+  font-weight: 600
+  color: var(--color-text-primary)
+
+.repo-card__delta
+  font-weight: 600
+  color: var(--color-success)
+
+.repo-card__delta--down
+  color: var(--color-danger)
+
+.repo-card__license
+  font-size: 11px
+
+.repo-card__license--none
+  color: var(--color-text-tertiary, var(--color-text-secondary))
 
 .repo-card__footer
   display: flex
   align-items: center
   gap: var(--space-1)
   flex-wrap: wrap
-
-.repo-card__delta
-  font-size: var(--text-xs)
-  font-weight: 600
-  color: var(--color-success)
+  margin-top: auto
 
 .repo-card__topics
   display: flex

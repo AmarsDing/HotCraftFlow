@@ -1,0 +1,56 @@
+// OPTIONAL pre-buf-generate smoke handlers.
+// Paste into rest.go AFTER srv is created; DELETE after Register*HTTPServer is wired.
+//
+// import encoding/json, strconv, net/http as needed
+/*
+	srv.HandleFunc("/api/v1/radar/trending", func(w http.ResponseWriter, r *http.Request) {
+		onlyNew := r.URL.Query().Get("only_new") == "true" || r.URL.Query().Get("only_new") == "1"
+		resp, err := radarTrendingSvc.ListTrending(r.Context(), &service.ListTrendingRequest{
+			Since: r.URL.Query().Get("since"), Language: r.URL.Query().Get("language"),
+			Topic: r.URL.Query().Get("topic"), OnlyNew: onlyNew,
+		})
+		if err != nil { http.Error(w, err.Error(), 500); return }
+		w.Header().Set("Content-Type", "application/json"); _ = json.NewEncoder(w).Encode(resp)
+	})
+	srv.HandleFunc("/api/v1/radar/rising", func(w http.ResponseWriter, r *http.Request) {
+		resp, err := radarTrendingSvc.SearchRising(r.Context(), &service.SearchRisingRequest{
+			Query: r.URL.Query().Get("query"), Language: r.URL.Query().Get("language"),
+		})
+		if err != nil { http.Error(w, err.Error(), 500); return }
+		w.Header().Set("Content-Type", "application/json"); _ = json.NewEncoder(w).Encode(resp)
+	})
+	srv.HandleFunc("/api/v1/radar/watches", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			resp, err := radarWatchSvc.ListWatches(r.Context())
+			if err != nil { http.Error(w, err.Error(), 500); return }
+			w.Header().Set("Content-Type", "application/json"); _ = json.NewEncoder(w).Encode(resp)
+		case http.MethodPost:
+			var req service.AddWatchRequest
+			_ = json.NewDecoder(r.Body).Decode(&req)
+			resp, err := radarWatchSvc.AddWatch(r.Context(), &req)
+			if err != nil { http.Error(w, err.Error(), 400); return }
+			w.Header().Set("Content-Type", "application/json"); _ = json.NewEncoder(w).Encode(resp)
+		default:
+			w.WriteHeader(405)
+		}
+	})
+	srv.HandleFunc("/api/v1/radar/notifications", func(w http.ResponseWriter, r *http.Request) {
+		resp, err := radarNotifySvc.ListNotifications(r.Context(), false)
+		if err != nil { http.Error(w, err.Error(), 500); return }
+		w.Header().Set("Content-Type", "application/json"); _ = json.NewEncoder(w).Encode(resp)
+	})
+	srv.HandleFunc("/api/v1/radar/config", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPut {
+			var req service.SetRadarConfigRequest
+			_ = json.NewDecoder(r.Body).Decode(&req)
+			resp, err := radarConfigSvc.SetConfig(r.Context(), &req)
+			if err != nil { http.Error(w, err.Error(), 500); return }
+			w.Header().Set("Content-Type", "application/json"); _ = json.NewEncoder(w).Encode(resp)
+			return
+		}
+		resp, err := radarConfigSvc.GetConfig(r.Context())
+		if err != nil { http.Error(w, err.Error(), 500); return }
+		w.Header().Set("Content-Type", "application/json"); _ = json.NewEncoder(w).Encode(resp)
+	})
+*/

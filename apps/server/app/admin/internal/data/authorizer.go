@@ -59,30 +59,43 @@ func (a *Authorizer) init(cfg *conf.Bootstrap) {
 	}
 }
 
+// newEngine 按配置类型构造授权引擎。
+// 安全约束：未知/未实现的类型（如 opa）不会静默降级为 noop——那样等于全站放行。
+// 这里显式输出 Error 级告警，便于在日志中第一时间发现"授权实际未生效"。
 func (a *Authorizer) newEngine(cfg *conf.Bootstrap) authzEngine.Engine {
 	if cfg.GetAuth() == nil || cfg.GetAuth().GetAuthz() == nil {
+		a.log.Errorf("[SECURITY] auth.authz not configured; authorization engine is unavailable")
 		return nil
 	}
 
 	ctx := context.Background()
+	typ := cfg.GetAuth().GetAuthz().GetType()
 
-	switch cfg.GetAuth().GetAuthz().GetType() {
-	default:
-		fallthrough
+	switch typ {
+	case "":
+		a.log.Errorf("[SECURITY] auth.authz.type is empty; falling back to noop engine (all requests allowed)")
 	case "noop":
-		state, err := noop.NewEngine(ctx)
-		if err != nil {
-			a.log.Errorf("new noop engine error: %v", err)
-			return nil
-		}
-		return state
+		a.log.Warnf("[SECURITY] auth.authz.type=noop; authorization is DISABLED (all requests allowed)")
+	default:
+		a.log.Errorf("[SECURITY] unsupported auth.authz.type=%q (only noop/casbin are implemented); "+
+			"falling back to noop engine - authorization is DISABLED", typ)
+	}
 
+	switch typ {
 	case "casbin":
 		state, err := casbin.NewEngine(ctx,
 			casbin.WithDefaultModel("restfull_with_role"),
 		)
 		if err != nil {
 			a.log.Errorf("init casbin engine error: %v", err)
+			return nil
+		}
+		return state
+
+	default:
+		state, err := noop.NewEngine(ctx)
+		if err != nil {
+			a.log.Errorf("new noop engine error: %v", err)
 			return nil
 		}
 		return state

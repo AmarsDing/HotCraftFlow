@@ -6,6 +6,14 @@ package radar.service.v1;
 
 import "google/api/annotations.proto";
 
+// LanguageStat 仓库语言构成（字节数与占比）。
+message LanguageStat {
+  string name = 1;
+  int64 bytes = 2;
+  double percent = 3;
+}
+
+// RepoItem 榜单 / 详情通用仓库视图（v2：对齐 GitHub 官网卡片密度 + AI/源码/克隆所需字段）。
 message RepoItem {
   string id = 1;
   string full_name = 2;
@@ -19,15 +27,36 @@ message RepoItem {
   bool is_new = 10;
   string html_url = 11;
   repeated int64 sparkline = 12;
+
+  // ── v2 新增 ──
+  string license = 13;                 // 展示名，如 "MIT License"
+  string license_spdx = 14;            // SPDX，如 "MIT"
+  string homepage = 15;
+  int64 open_issues = 16;
+  int64 watchers = 17;
+  repeated string contributors = 18;   // Top 贡献者 login
+  string created_at = 19;
+  string updated_at = 20;
+  string pushed_at = 21;
+  string clone_url = 22;
+  string ssh_url = 23;
+  string zip_url = 24;
+  string default_branch = 25;
+  repeated LanguageStat languages = 26;
+  string readme_excerpt = 27;          // 详情场景可回带（截断）
 }
 
+// ListTrendingRequest 热门榜查询（v2：月窗口 / 排序 / 关键词 / License）。
 message ListTrendingRequest {
-  string since = 1; // today | week
+  string since = 1;    // today | week | month
   string language = 2;
   string topic = 3;
   bool only_new = 4;
   int32 page = 5;
   int32 page_size = 6;
+  string sort = 7;     // hot（窗口增量，默认） | stars | updated | new
+  string query = 8;    // 关键词：name/description/topics
+  string license = 9;  // SPDX 过滤，如 MIT / Apache-2.0
 }
 
 message ListTrendingResponse {
@@ -38,6 +67,9 @@ message ListTrendingResponse {
   map<string, int32> language_top = 5;
   int32 rising_count = 6;
   int32 new_count = 7;
+  map<string, int32> license_top = 8;
+  string window = 9; // 实际窗口回显：today | week | month
+  int32 total = 10; // 当前筛选条件下的总数（分页用）
 }
 
 message SearchRisingRequest {
@@ -52,6 +84,7 @@ message SearchRisingResponse {
   bool stale = 2;
   string stale_reason = 3;
   string refreshed_at = 4;
+  int32 total = 5; // 当前筛选条件下的总数（分页用）
 }
 
 // TrendingService 热门 / 新星榜

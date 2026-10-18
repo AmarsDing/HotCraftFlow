@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package media.map.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// ============================================================================
+// ⑤ MAP 媒体自动化发布矩阵的对外契约（契约 §5 与 §8.3）。
+// ============================================================================
+
+// DispatchUnit 由 VariantSet 派生。三条铁律：无 approve 不得 publish / 禁自批 / 默认私密。
+message DispatchUnit {
+  string api_version = 1 [json_name = "api_version"];
+  string unit_id = 2 [json_name = "unit_id"]; // du_ 前缀
+  string variant_set_id = 3 [json_name = "variant_set_id"];
+  repeated string targets = 4 [json_name = "targets"]; // "平台:账号槽位"，凭据不进契约
+  google.protobuf.Timestamp scheduled_for = 5 [json_name = "scheduled_for"]; // UTC
+  VisibilitySpec visibility = 6 [json_name = "visibility"];
+  Approval approval = 7 [json_name = "approval"];
+  Publish publish = 8 [json_name = "publish"];
+  string feedback_ref = 9 [json_name = "feedback_ref"]; // 可空
+  string submitted_by = 10 [json_name = "submitted_by"]; // 提交者（禁自批判据）
+}
+
+message VisibilitySpec {
+  string deflt = 1 [json_name = "default"]; // private|unlisted|public，恒 private 起步
+  string override_reason = 2 [json_name = "override_reason"]; // 改公开必填（NFR-17）
+}
+
+message Approval {
+  string state = 1 [json_name = "state"]; // draft|approved|rejected|published
+  string approver = 2 [json_name = "approver"]; // 须 ≠ submitted_by
+  google.protobuf.Timestamp at = 3 [json_name = "at"];
+}
+
+message Publish {
+  string post_id = 1 [json_name = "post_id"];
+  string url = 2 [json_name = "url"];
+  google.protobuf.Timestamp at = 3 [json_name = "at"];
+  string operator = 4 [json_name = "operator"]; // 不得与提交者相同（禁自批）
+}
+
+// PerformanceSnapshot 表现回流（契约 §8.3，第八份契约）。
+// 消费者：② TT（选题反馈）、① IC（信源权重）、④ MME（变体效果）。
+message PerformanceSnapshot {
+  string api_version = 1 [json_name = "api_version"];
+  string snapshot_id = 2 [json_name = "snapshot_id"]; // ps_ 前缀
+  string dispatch_unit_id = 3 [json_name = "dispatch_unit_id"];
+  string variant_id = 4 [json_name = "variant_id"];
+  string platform = 5 [json_name = "platform"];
+  string account_slot = 6 [json_name = "account_slot"];
+  string post_url = 7 [json_name = "post_url"];
+  PerformanceMetric metrics = 8 [json_name = "metrics"];
+  google.protobuf.Timestamp captured_at = 9 [json_name = "captured_at"]; // UTC
+  int32 lag_hours = 10 [json_name = "lag_hours"]; // 发布后多久抓的
+}
+
+message PerformanceMetric {
+  int64 views = 1 [json_name = "views"];
+  int64 likes = 2 [json_name = "likes"];
+  int64 comments = 3 [json_name = "comments"];
+  int64 shares = 4 [json_name = "shares"];     // V1.1 补登
+  int64 favorites = 5 [json_name = "favorites"]; // V1.1 补登
+}

@@ -3,8 +3,8 @@
 package systemconfig
 
 import (
-	"time"
 	"framework/app/admin/internal/data/ent/predicate"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 )

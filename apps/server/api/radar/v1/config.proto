@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package radar.service.v1;
 
+// go_package 由 buf managed (go_package_prefix: framework/api/gen/go) 注入，勿手写。
+
 import "google/api/annotations.proto";
 
 message GetRadarConfigRequest {}
@@ -9,15 +11,34 @@ message GetRadarConfigRequest {}
 message GetRadarConfigResponse {
   bool has_github_token = 1;
   string github_token_masked = 2;
+  // ── v2 新增：LLM 与克隆配置（密钥脱敏回显） ──
+  bool llm_enabled = 3;
+  string llm_base_url = 4;
+  string llm_model = 5;
+  string llm_api_key_masked = 6;
+  bool clone_enabled = 7;
+  string clone_dir = 8;
 }
 
 message SetRadarConfigRequest {
   string github_token = 1;
+  bool llm_enabled = 2;
+  string llm_base_url = 3;
+  string llm_api_key = 4;
+  string llm_model = 5;
+  bool clone_enabled = 6;
+  string clone_dir = 7;
 }
 
 message SetRadarConfigResponse {
   bool has_github_token = 1;
   string github_token_masked = 2;
+  bool llm_enabled = 3;
+  string llm_base_url = 4;
+  string llm_model = 5;
+  string llm_api_key_masked = 6;
+  bool clone_enabled = 7;
+  string clone_dir = 8;
 }
 
 // RadarConfigService 雷达用户配置（勿与平台 UserService 重名）

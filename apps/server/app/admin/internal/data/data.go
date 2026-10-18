@@ -80,6 +80,10 @@ var ProviderSet = wire.NewSet(
 	NewDataPermissionRepo,
 	NewRoleDeptRepo,
 
+	NewRadarWatchRepo,
+	NewRadarWatchEventRepo,
+	NewRadarUserConfigRepo,
+
 	wire.Bind(new(biz.MenuRepo), new(*MenuRepo)),
 	wire.Bind(new(biz.ApiResourceRepo), new(*ApiResourceRepo)),
 	wire.Bind(new(biz.NotificationMessageRepo), new(*NotificationMessageRepo)),
@@ -88,6 +92,9 @@ var ProviderSet = wire.NewSet(
 	wire.Bind(new(biz.PrivateMessageRepo), new(*PrivateMessageRepo)),
 	wire.Bind(new(biz.AdminLoginRestrictionRepo), new(*AdminLoginRestrictionRepo)),
 	wire.Bind(new(biz.UserTokenRepo), new(*UserTokenCacheRepo)),
+	wire.Bind(new(biz.RadarWatchRepo), new(*RadarWatchRepo)),
+	wire.Bind(new(biz.RadarWatchEventRepo), new(*RadarWatchEventRepo)),
+	wire.Bind(new(biz.RadarUserConfigRepo), new(*RadarUserConfigRepo)),
 	wire.Bind(new(biz.LoginFailCounterRepo), new(*LoginFailCounterRepo)),
 	wire.Bind(new(biz.PasswordHistoryRepo), new(*PasswordHistoryRepo)),
 	wire.Bind(new(biz.UserRepo), new(*UserRepo)),

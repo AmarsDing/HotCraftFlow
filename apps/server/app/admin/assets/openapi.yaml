@@ -48834,6 +48834,437 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/v1/radar/config:
+        get:
+            tags:
+                - RadarConfigService
+            operationId: RadarConfigService_GetConfig
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetRadarConfigResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        put:
+            tags:
+                - RadarConfigService
+            operationId: RadarConfigService_SetConfig
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SetRadarConfigRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SetRadarConfigResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/radar/insight:
+        post:
+            tags:
+                - RepoService
+            operationId: RepoService_GenerateInsight
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/GenerateInsightRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GenerateInsightResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/radar/notifications:
+        get:
+            tags:
+                - RadarNotifyService
+            operationId: RadarNotifyService_ListNotifications
+            parameters:
+                - name: unreadOnly
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListRadarNotificationsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/radar/notifications/read:
+        post:
+            tags:
+                - RadarNotifyService
+            operationId: RadarNotifyService_MarkNotificationsRead
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/MarkRadarNotificationsReadRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MarkRadarNotificationsReadResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/radar/repo:
+        get:
+            tags:
+                - RepoService
+            operationId: RepoService_GetRepo
+            parameters:
+                - name: fullName
+                  in: query
+                  schema:
+                    type: string
+                - name: includeReadme
+                  in: query
+                  schema:
+                    type: boolean
+                - name: insightLevel
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetRepoResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/radar/repo/clone:
+        post:
+            tags:
+                - RepoService
+            operationId: RepoService_CloneRepo
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CloneRepoRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CloneRepoResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/radar/repo/content:
+        get:
+            tags:
+                - RepoService
+            operationId: RepoService_GetRepoContent
+            parameters:
+                - name: fullName
+                  in: query
+                  schema:
+                    type: string
+                - name: path
+                  in: query
+                  schema:
+                    type: string
+                - name: ref
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetRepoContentResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/radar/repo/tree:
+        get:
+            tags:
+                - RepoService
+            operationId: RepoService_GetRepoTree
+            parameters:
+                - name: fullName
+                  in: query
+                  schema:
+                    type: string
+                - name: branch
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetRepoTreeResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/radar/rising:
+        get:
+            tags:
+                - TrendingService
+            operationId: TrendingService_SearchRising
+            parameters:
+                - name: query
+                  in: query
+                  schema:
+                    type: string
+                - name: language
+                  in: query
+                  schema:
+                    type: string
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SearchRisingResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/radar/trending:
+        get:
+            tags:
+                - TrendingService
+            operationId: TrendingService_ListTrending
+            parameters:
+                - name: since
+                  in: query
+                  schema:
+                    type: string
+                - name: language
+                  in: query
+                  schema:
+                    type: string
+                - name: topic
+                  in: query
+                  schema:
+                    type: string
+                - name: onlyNew
+                  in: query
+                  schema:
+                    type: boolean
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: sort
+                  in: query
+                  schema:
+                    type: string
+                - name: query
+                  in: query
+                  schema:
+                    type: string
+                - name: license
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListTrendingResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/radar/watch-events:
+        get:
+            tags:
+                - WatchService
+            operationId: WatchService_ListWatchEvents
+            parameters:
+                - name: unreadOnly
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListWatchEventsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/radar/watch-events/read:
+        post:
+            tags:
+                - WatchService
+            operationId: WatchService_MarkWatchEventsRead
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/MarkWatchEventsReadRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MarkWatchEventsReadResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/radar/watches:
+        get:
+            tags:
+                - WatchService
+            operationId: WatchService_ListWatches
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListWatchesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - WatchService
+            operationId: WatchService_AddWatch
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AddWatchRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AddWatchResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/radar/watches/{id}:
+        delete:
+            tags:
+                - WatchService
+            operationId: WatchService_RemoveWatch
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RemoveWatchResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
         ABCAnalysisItem:
@@ -82921,6 +83352,407 @@ components:
                     type: string
                     format: date-time
             description: 配线系统监控记录（wiring_monitoring，§1.15，framework_log 库）
+        AIInsight:
+            type: object
+            properties:
+                fullName:
+                    type: string
+                level:
+                    type: string
+                contentMarkdown:
+                    type: string
+                model:
+                    type: string
+                generatedAt:
+                    type: string
+                cached:
+                    type: boolean
+                durationMs:
+                    type: string
+                error:
+                    type: string
+            description: AIInsight AI 总结（三级：brief / summary / deep）。
+        AddWatchRequest:
+            type: object
+            properties:
+                fullName:
+                    type: string
+        AddWatchResponse:
+            type: object
+            properties:
+                item:
+                    $ref: '#/components/schemas/WatchItem'
+        CloneRepoRequest:
+            type: object
+            properties:
+                fullName:
+                    type: string
+                toServer:
+                    type: boolean
+        CloneRepoResponse:
+            type: object
+            properties:
+                cloneUrl:
+                    type: string
+                sshUrl:
+                    type: string
+                zipUrl:
+                    type: string
+                command:
+                    type: string
+                sshCommand:
+                    type: string
+                localPath:
+                    type: string
+                cloned:
+                    type: boolean
+                message:
+                    type: string
+        GenerateInsightRequest:
+            type: object
+            properties:
+                fullName:
+                    type: string
+                level:
+                    type: string
+        GenerateInsightResponse:
+            type: object
+            properties:
+                insight:
+                    $ref: '#/components/schemas/AIInsight'
+        GetRadarConfigResponse:
+            type: object
+            properties:
+                hasGithubToken:
+                    type: boolean
+                githubTokenMasked:
+                    type: string
+                llmEnabled:
+                    type: boolean
+                    description: ── v2 新增：LLM 与克隆配置（密钥脱敏回显） ──
+                llmBaseUrl:
+                    type: string
+                llmModel:
+                    type: string
+                llmApiKeyMasked:
+                    type: string
+                cloneEnabled:
+                    type: boolean
+                cloneDir:
+                    type: string
+        GetRepoContentResponse:
+            type: object
+            properties:
+                path:
+                    type: string
+                name:
+                    type: string
+                content:
+                    type: string
+                encoding:
+                    type: string
+                size:
+                    type: string
+                truncated:
+                    type: boolean
+                htmlUrl:
+                    type: string
+                downloadUrl:
+                    type: string
+                language:
+                    type: string
+        GetRepoResponse:
+            type: object
+            properties:
+                repo:
+                    $ref: '#/components/schemas/RepoItem'
+                readme:
+                    type: string
+                insight:
+                    $ref: '#/components/schemas/AIInsight'
+                stale:
+                    type: boolean
+                staleReason:
+                    type: string
+        GetRepoTreeResponse:
+            type: object
+            properties:
+                nodes:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/TreeNode'
+                defaultBranch:
+                    type: string
+                truncated:
+                    type: boolean
+        LanguageStat:
+            type: object
+            properties:
+                name:
+                    type: string
+                bytes:
+                    type: string
+                percent:
+                    type: number
+                    format: double
+            description: LanguageStat 仓库语言构成（字节数与占比）。
+        ListRadarNotificationsResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/RadarNotification'
+        ListTrendingResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/RepoItem'
+                stale:
+                    type: boolean
+                staleReason:
+                    type: string
+                refreshedAt:
+                    type: string
+                languageTop:
+                    type: object
+                    additionalProperties:
+                        type: integer
+                        format: int32
+                risingCount:
+                    type: integer
+                    format: int32
+                newCount:
+                    type: integer
+                    format: int32
+                licenseTop:
+                    type: object
+                    additionalProperties:
+                        type: integer
+                        format: int32
+                window:
+                    type: string
+                total:
+                    type: integer
+                    format: int32
+        ListWatchEventsResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/WatchEvent'
+        ListWatchesResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/WatchItem'
+        MarkRadarNotificationsReadRequest:
+            type: object
+            properties:
+                ids:
+                    type: array
+                    items:
+                        type: string
+        MarkRadarNotificationsReadResponse:
+            type: object
+            properties: {}
+        MarkWatchEventsReadRequest:
+            type: object
+            properties:
+                ids:
+                    type: array
+                    items:
+                        type: string
+        MarkWatchEventsReadResponse:
+            type: object
+            properties: {}
+        RadarNotification:
+            type: object
+            properties:
+                id:
+                    type: string
+                title:
+                    type: string
+                body:
+                    type: string
+                kind:
+                    type: string
+                createdAt:
+                    type: string
+                read:
+                    type: boolean
+        RemoveWatchResponse:
+            type: object
+            properties: {}
+        RepoItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                fullName:
+                    type: string
+                description:
+                    type: string
+                language:
+                    type: string
+                topics:
+                    type: array
+                    items:
+                        type: string
+                stars:
+                    type: string
+                forks:
+                    type: string
+                rank:
+                    type: integer
+                    format: int32
+                starsDelta:
+                    type: string
+                isNew:
+                    type: boolean
+                htmlUrl:
+                    type: string
+                sparkline:
+                    type: array
+                    items:
+                        type: string
+                license:
+                    type: string
+                    description: ── v2 新增 ──
+                licenseSpdx:
+                    type: string
+                homepage:
+                    type: string
+                openIssues:
+                    type: string
+                watchers:
+                    type: string
+                contributors:
+                    type: array
+                    items:
+                        type: string
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+                pushedAt:
+                    type: string
+                cloneUrl:
+                    type: string
+                sshUrl:
+                    type: string
+                zipUrl:
+                    type: string
+                defaultBranch:
+                    type: string
+                languages:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/LanguageStat'
+                readmeExcerpt:
+                    type: string
+            description: RepoItem 榜单 / 详情通用仓库视图（v2：对齐 GitHub 官网卡片密度 + AI/源码/克隆所需字段）。
+        SearchRisingResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/RepoItem'
+                stale:
+                    type: boolean
+                staleReason:
+                    type: string
+                refreshedAt:
+                    type: string
+                total:
+                    type: integer
+                    format: int32
+        SetRadarConfigRequest:
+            type: object
+            properties:
+                githubToken:
+                    type: string
+                llmEnabled:
+                    type: boolean
+                llmBaseUrl:
+                    type: string
+                llmApiKey:
+                    type: string
+                llmModel:
+                    type: string
+                cloneEnabled:
+                    type: boolean
+                cloneDir:
+                    type: string
+        SetRadarConfigResponse:
+            type: object
+            properties:
+                hasGithubToken:
+                    type: boolean
+                githubTokenMasked:
+                    type: string
+                llmEnabled:
+                    type: boolean
+                llmBaseUrl:
+                    type: string
+                llmModel:
+                    type: string
+                llmApiKeyMasked:
+                    type: string
+                cloneEnabled:
+                    type: boolean
+                cloneDir:
+                    type: string
+        TreeNode:
+            type: object
+            properties:
+                path:
+                    type: string
+                type:
+                    type: string
+                size:
+                    type: string
+        WatchEvent:
+            type: object
+            properties:
+                id:
+                    type: string
+                fullName:
+                    type: string
+                kind:
+                    type: string
+                message:
+                    type: string
+                createdAt:
+                    type: string
+                read:
+                    type: boolean
+        WatchItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                fullName:
+                    type: string
+                stars:
+                    type: string
+                starsDelta:
+                    type: string
+                unreadCount:
+                    type: integer
+                    format: int32
+                sparkline:
+                    type: array
+                    items:
+                        type: string
+                htmlUrl:
+                    type: string
     responses:
         default:
             description: default kratos response
@@ -83768,3 +84600,17 @@ tags:
       description: 配线系统监控服务（详细设计 §2.4.3，framework_log 库，只读）
     - name: WiringService
       description: 配线资料管理服务（HTTP 绑定在 admin 包装层，10 模块业务管理域，详细设计 §2.4.1）
+    - name: RadarConfigService
+      description: RadarConfigService 雷达用户配置（勿与平台 UserService 重名）
+    - name: RadarNotifyService
+      description: RadarNotifyService 雷达通知（勿与平台 NotifyService 重名）
+    - name: RepoService
+      description: RepoService 仓库详情 / 源码 / 克隆 / AI 总结
+    - name: TrendingService
+      description: TrendingService 热门 / 新星榜
+    - name: WatchService
+      description: WatchService 盯盘
+    - name: ItMonitorService
+      description: IT 设备监控服务（HTTP 绑定在 admin 包装层）
+    - name: EnvMonitorService
+      description: 环境监控服务（HTTP 绑定在 admin 包装层）

@@ -23,6 +23,9 @@ import (
 	"framework/app/admin/internal/data/ent/passwordhistory"
 	"framework/app/admin/internal/data/ent/position"
 	"framework/app/admin/internal/data/ent/privatemessage"
+	"framework/app/admin/internal/data/ent/radaruserconfig"
+	"framework/app/admin/internal/data/ent/radarwatch"
+	"framework/app/admin/internal/data/ent/radarwatchevent"
 	"framework/app/admin/internal/data/ent/resourcegroup"
 	"framework/app/admin/internal/data/ent/role"
 	"framework/app/admin/internal/data/ent/roleapi"
@@ -769,6 +772,104 @@ func init() {
 	privatemessageDescID := privatemessageMixinFields0[0].Descriptor()
 	// privatemessage.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	privatemessage.IDValidator = privatemessageDescID.Validators[0].(func(uint32) error)
+	radaruserconfigMixin := schema.RadarUserConfig{}.Mixin()
+	radaruserconfig.Policy = privacy.NewPolicies(schema.RadarUserConfig{})
+	radaruserconfig.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := radaruserconfig.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	radaruserconfigMixinFields0 := radaruserconfigMixin[0].Fields()
+	_ = radaruserconfigMixinFields0
+	radaruserconfigFields := schema.RadarUserConfig{}.Fields()
+	_ = radaruserconfigFields
+	// radaruserconfigDescLlmEnabled is the schema descriptor for llm_enabled field.
+	radaruserconfigDescLlmEnabled := radaruserconfigFields[2].Descriptor()
+	// radaruserconfig.DefaultLlmEnabled holds the default value on creation for the llm_enabled field.
+	radaruserconfig.DefaultLlmEnabled = radaruserconfigDescLlmEnabled.Default.(bool)
+	// radaruserconfigDescCloneEnabled is the schema descriptor for clone_enabled field.
+	radaruserconfigDescCloneEnabled := radaruserconfigFields[6].Descriptor()
+	// radaruserconfig.DefaultCloneEnabled holds the default value on creation for the clone_enabled field.
+	radaruserconfig.DefaultCloneEnabled = radaruserconfigDescCloneEnabled.Default.(bool)
+	// radaruserconfigDescID is the schema descriptor for id field.
+	radaruserconfigDescID := radaruserconfigMixinFields0[0].Descriptor()
+	// radaruserconfig.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	radaruserconfig.IDValidator = radaruserconfigDescID.Validators[0].(func(uint32) error)
+	radarwatchMixin := schema.RadarWatch{}.Mixin()
+	radarwatch.Policy = privacy.NewPolicies(schema.RadarWatch{})
+	radarwatch.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := radarwatch.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	radarwatchMixinFields0 := radarwatchMixin[0].Fields()
+	_ = radarwatchMixinFields0
+	radarwatchFields := schema.RadarWatch{}.Fields()
+	_ = radarwatchFields
+	// radarwatchDescFullName is the schema descriptor for full_name field.
+	radarwatchDescFullName := radarwatchFields[1].Descriptor()
+	// radarwatch.FullNameValidator is a validator for the "full_name" field. It is called by the builders before save.
+	radarwatch.FullNameValidator = radarwatchDescFullName.Validators[0].(func(string) error)
+	// radarwatchDescBaselineStars is the schema descriptor for baseline_stars field.
+	radarwatchDescBaselineStars := radarwatchFields[2].Descriptor()
+	// radarwatch.DefaultBaselineStars holds the default value on creation for the baseline_stars field.
+	radarwatch.DefaultBaselineStars = radarwatchDescBaselineStars.Default.(int64)
+	// radarwatchDescStars is the schema descriptor for stars field.
+	radarwatchDescStars := radarwatchFields[3].Descriptor()
+	// radarwatch.DefaultStars holds the default value on creation for the stars field.
+	radarwatch.DefaultStars = radarwatchDescStars.Default.(int64)
+	// radarwatchDescStarsDelta is the schema descriptor for stars_delta field.
+	radarwatchDescStarsDelta := radarwatchFields[4].Descriptor()
+	// radarwatch.DefaultStarsDelta holds the default value on creation for the stars_delta field.
+	radarwatch.DefaultStarsDelta = radarwatchDescStarsDelta.Default.(int64)
+	// radarwatchDescUnreadCount is the schema descriptor for unread_count field.
+	radarwatchDescUnreadCount := radarwatchFields[5].Descriptor()
+	// radarwatch.DefaultUnreadCount holds the default value on creation for the unread_count field.
+	radarwatch.DefaultUnreadCount = radarwatchDescUnreadCount.Default.(uint32)
+	// radarwatchDescID is the schema descriptor for id field.
+	radarwatchDescID := radarwatchMixinFields0[0].Descriptor()
+	// radarwatch.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	radarwatch.IDValidator = radarwatchDescID.Validators[0].(func(uint32) error)
+	radarwatcheventMixin := schema.RadarWatchEvent{}.Mixin()
+	radarwatchevent.Policy = privacy.NewPolicies(schema.RadarWatchEvent{})
+	radarwatchevent.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := radarwatchevent.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	radarwatcheventMixinFields0 := radarwatcheventMixin[0].Fields()
+	_ = radarwatcheventMixinFields0
+	radarwatcheventFields := schema.RadarWatchEvent{}.Fields()
+	_ = radarwatcheventFields
+	// radarwatcheventDescFullName is the schema descriptor for full_name field.
+	radarwatcheventDescFullName := radarwatcheventFields[1].Descriptor()
+	// radarwatchevent.FullNameValidator is a validator for the "full_name" field. It is called by the builders before save.
+	radarwatchevent.FullNameValidator = radarwatcheventDescFullName.Validators[0].(func(string) error)
+	// radarwatcheventDescMessage is the schema descriptor for message field.
+	radarwatcheventDescMessage := radarwatcheventFields[3].Descriptor()
+	// radarwatchevent.MessageValidator is a validator for the "message" field. It is called by the builders before save.
+	radarwatchevent.MessageValidator = radarwatcheventDescMessage.Validators[0].(func(string) error)
+	// radarwatcheventDescDelta is the schema descriptor for delta field.
+	radarwatcheventDescDelta := radarwatcheventFields[4].Descriptor()
+	// radarwatchevent.DefaultDelta holds the default value on creation for the delta field.
+	radarwatchevent.DefaultDelta = radarwatcheventDescDelta.Default.(int64)
+	// radarwatcheventDescRead is the schema descriptor for read field.
+	radarwatcheventDescRead := radarwatcheventFields[5].Descriptor()
+	// radarwatchevent.DefaultRead holds the default value on creation for the read field.
+	radarwatchevent.DefaultRead = radarwatcheventDescRead.Default.(bool)
+	// radarwatcheventDescID is the schema descriptor for id field.
+	radarwatcheventDescID := radarwatcheventMixinFields0[0].Descriptor()
+	// radarwatchevent.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	radarwatchevent.IDValidator = radarwatcheventDescID.Validators[0].(func(uint32) error)
 	resourcegroupMixin := schema.ResourceGroup{}.Mixin()
 	resourcegroup.Policy = privacy.NewPolicies(schema.ResourceGroup{})
 	resourcegroup.Hooks[0] = func(next ent.Mutator) ent.Mutator {

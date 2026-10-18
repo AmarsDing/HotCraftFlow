@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package radar.service.v1;
+
+// go_package 由 buf managed (go_package_prefix: framework/api/gen/go) 注入，勿手写。
+
+import "google/api/annotations.proto";
+import "radar/v1/trending.proto";
+
+// GetRepoRequest 仓库详情。insight_level: '' 不带出 | brief | summary | deep。
+message GetRepoRequest {
+  string full_name = 1;
+  bool include_readme = 2;
+  string insight_level = 3;
+}
+
+message GetRepoResponse {
+  radar.service.v1.RepoItem repo = 1;
+  string readme = 2;
+  radar.service.v1.AIInsight insight = 3;
+  bool stale = 4;
+  string stale_reason = 5;
+}
+
+message GetRepoTreeRequest {
+  string full_name = 1;
+  string branch = 2; // 空 = 默认分支
+}
+
+message TreeNode {
+  string path = 1;
+  string type = 2; // blob | tree
+  int64 size = 3;
+}
+
+message GetRepoTreeResponse {
+  repeated TreeNode nodes = 1;
+  string default_branch = 2;
+  bool truncated = 3;
+}
+
+message GetRepoContentRequest {
+  string full_name = 1;
+  string path = 2;
+  string ref = 3; // 空 = 默认分支
+}
+
+message GetRepoContentResponse {
+  string path = 1;
+  string name = 2;
+  string content = 3; // base64（与 GitHub 一致）
+  string encoding = 4; // base64 | utf-8
+  int64 size = 5;
+  bool truncated = 6;
+  string html_url = 7;
+  string download_url = 8;
+  string language = 9;
+}
+
+message CloneRepoRequest {
+  string full_name = 1;
+  bool to_server = 2; // true = 服务端克隆到配置目录（默认关）
+}
+
+message CloneRepoResponse {
+  string clone_url = 1;
+  string ssh_url = 2;
+  string zip_url = 3;
+  string command = 4;    // 推荐 HTTPS 克隆命令
+  string ssh_command = 5;
+  string local_path = 6; // 服务端克隆成功后的本地路径
+  bool cloned = 7;       // 服务端是否已执行
+  string message = 8;
+}
+
+// AIInsight AI 总结（三级：brief / summary / deep）。
+message AIInsight {
+  string full_name = 1;
+  string level = 2;
+  string content_markdown = 3;
+  string model = 4;
+  string generated_at = 5;
+  bool cached = 6;
+  int64 duration_ms = 7;
+  string error = 8;
+}
+
+message GenerateInsightRequest {
+  string full_name = 1;
+  string level = 2; // brief | summary | deep
+}
+
+message GenerateInsightResponse {
+  AIInsight insight = 1;
+}
+
+// RepoService 仓库详情 / 源码 / 克隆 / AI 总结
+service RepoService {
+  rpc GetRepo(GetRepoRequest) returns (GetRepoResponse) {
+    option (google.api.http) = { get: "/api/v1/radar/repo" };
+  }
+  rpc GetRepoTree(GetRepoTreeRequest) returns (GetRepoTreeResponse) {
+    option (google.api.http) = { get: "/api/v1/radar/repo/tree" };
+  }
+  rpc GetRepoContent(GetRepoContentRequest) returns (GetRepoContentResponse) {
+    option (google.api.http) = { get: "/api/v1/radar/repo/content" };
+  }
+  rpc CloneRepo(CloneRepoRequest) returns (CloneRepoResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/radar/repo/clone"
+      body: "*"
+    };
+  }
+  rpc GenerateInsight(GenerateInsightRequest) returns (GenerateInsightResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/radar/insight"
+      body: "*"
+    };
+  }
+}

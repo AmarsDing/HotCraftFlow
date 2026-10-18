@@ -1,4 +1,4 @@
-﻿# Dependencies & build
+# Dependencies & build
 node_modules/
 dist/
 .quasar/
@@ -33,3 +33,11 @@ Desktop.ini
 # Go
 *.test
 *.out
+
+# Local UI reference media (too large for GitHub; keep on disk only)
+docs/UI/**/*.mp4
+docs/UI/**/*.mov
+docs/UI/**/*.webm
+docs/UI/*.mp4
+docs/UI/*.mov
+docs/UI/*.webm

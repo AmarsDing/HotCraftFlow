@@ -8,6 +8,8 @@ import (
 	"github.com/tx7do/go-utils/trans"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 
+	pagination "github.com/tx7do/kratos-bootstrap/api/gen/go/pagination/v1"
+
 	"framework/app/admin/internal/biz"
 
 	adminV1 "framework/api/gen/go/admin/v1"
@@ -195,10 +197,22 @@ func (s *SeedService) upsertSeedMenu(ctx context.Context, r seedMenuRecord) erro
 	return nil
 }
 
+// allApiIds 返回全部 API 资源 ID。
+// 必须真实返回：种子超级管理员角色凭此绑定全部接口权限；若返回空，
+// 启用 casbin 授权引擎后 super 也会 403（等于全站不可用）。
 func (s *SeedService) allApiIds(ctx context.Context) []uint32 {
-	_ = ctx
-	_ = s.apiResourceUC
-	return nil
+	resp, err := s.apiResourceUC.List(ctx, &pagination.PagingRequest{NoPaging: trans.Ptr(true)})
+	if err != nil || resp == nil {
+		s.log.Warnf("list api resources for role seeding failed: %v", err)
+		return nil
+	}
+	ids := make([]uint32, 0, len(resp.GetItems()))
+	for _, it := range resp.GetItems() {
+		if it.GetId() != 0 {
+			ids = append(ids, it.GetId())
+		}
+	}
+	return ids
 }
 
 func (s *SeedService) seedRoles(ctx context.Context, apiIds []uint32) error {
@@ -212,7 +226,24 @@ func (s *SeedService) seedRoles(ctx context.Context, apiIds []uint32) error {
 			menuIDs = append(menuIDs, uint32(m.GetId()))
 		}
 	}
-	if _, err := s.roleUC.GetRoleByCode(ctx, "super"); err == nil {
+	if role, err := s.roleUC.GetRoleByCode(ctx, "super"); err == nil && role != nil {
+		// 已存在：补齐新增接口/菜单权限（新增 API 资源后 super 不应 403）。
+		// 只在有增量时更新，避免每次启动都全量重写关联表。
+		if len(apiIds) > 0 && !containsAll(role.GetApis(), apiIds) {
+			merged := mergeUint32(role.GetApis(), apiIds)
+			menus := mergeUint32(role.GetMenus(), menuIDs)
+			if err := s.roleUC.Update(ctx, &userV1.UpdateRoleRequest{Data: &userV1.Role{
+				Id:    trans.Ptr(role.GetId()),
+				Name:  trans.Ptr(role.GetName()),
+				Code:  trans.Ptr(role.GetCode()),
+				Menus: menus,
+				Apis:  merged,
+			}}); err != nil {
+				s.log.Warnf("refresh super role api bindings failed: %v", err)
+			} else {
+				s.log.Infof("super role api bindings refreshed: %d -> %d", len(role.GetApis()), len(merged))
+			}
+		}
 		return nil
 	}
 	if err := s.roleUC.Create(ctx, &userV1.CreateRoleRequest{Data: &userV1.Role{
@@ -226,6 +257,41 @@ func (s *SeedService) seedRoles(ctx context.Context, apiIds []uint32) error {
 		return fmt.Errorf("seed super role: %w", err)
 	}
 	return nil
+}
+
+// containsAll 判断 base 是否覆盖全部 want。
+func containsAll(base, want []uint32) bool {
+	set := make(map[uint32]struct{}, len(base))
+	for _, v := range base {
+		set[v] = struct{}{}
+	}
+	for _, v := range want {
+		if _, ok := set[v]; !ok {
+			return false
+		}
+	}
+	return true
+}
+
+// mergeUint32 合并去重（保持 base 顺序优先）。
+func mergeUint32(base, extra []uint32) []uint32 {
+	seen := make(map[uint32]struct{}, len(base)+len(extra))
+	out := make([]uint32, 0, len(base)+len(extra))
+	for _, v := range base {
+		if _, ok := seen[v]; ok {
+			continue
+		}
+		seen[v] = struct{}{}
+		out = append(out, v)
+	}
+	for _, v := range extra {
+		if _, ok := seen[v]; ok {
+			continue
+		}
+		seen[v] = struct{}{}
+		out = append(out, v)
+	}
+	return out
 }
 
 func (s *SeedService) seedOrganizations(ctx context.Context) error {

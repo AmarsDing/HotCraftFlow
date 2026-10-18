@@ -247,7 +247,8 @@ export default {
       seriesKey: 'Metric key',
       seriesLabel: 'Series name (optional)',
       addSeries: 'Add series',
-      metricSeriesHint: 'Each series is queried per key and merged onto a shared time axis; empty = primary metric only',
+      metricSeriesHint:
+        'Each series is queried per key and merged onto a shared time axis; empty = primary metric only',
       valueMapLabel: 'Value map override',
       valueMapRaw: 'Raw value',
       valueMapText: 'Display text',
@@ -1723,7 +1724,8 @@ export default {
       groupSub: '{n} devices · {a} alarmed',
       timelineSub: 'Alarms in last 24h bucketed by hour and level',
       verdictNoDevice: 'No managed devices in this domain',
-      verdictUnbound: '{n} devices have no collection configured, so data cannot be reported — run the collection check first',
+      verdictUnbound:
+        '{n} devices have no collection configured, so data cannot be reported — run the collection check first',
       verdictOffline: '{n} devices offline, open Device Monitor to locate them',
       verdictAlarm: '{n} devices have active alarms, handle them now',
       verdictOk: 'All domain devices normal, no offline or active alarms',
@@ -1772,7 +1774,8 @@ export default {
       searchPlaceholder: 'Search device / content',
       deviceFilter: 'Device filter',
       levelDist: 'Level Distribution',
-      clientSideNote: 'Report is a client-side snapshot from domain slice + alarm list; formal daily/monthly API pending. CSV export works for handoff.',
+      clientSideNote:
+        'Report is a client-side snapshot from domain slice + alarm list; formal daily/monthly API pending. CSV export works for handoff.',
       snapshot: 'current snapshot',
       levelDistSub: '{n} records in current scope · click a legend to filter',
       listTitle: 'Alarm Events',
@@ -1784,7 +1787,8 @@ export default {
       deltaUp: '↑ {n}',
       deltaDown: '↓ {n}',
       deltaFlat: 'flat',
-      summaryTpl: 'IT domain has {total} devices, online rate {rate}, {offline} offline; {alarms} alarms in range, {emergency} emergency and {critical} critical, recovery rate {recovered}.',
+      summaryTpl:
+        'IT domain has {total} devices, online rate {rate}, {offline} offline; {alarms} alarms in range, {emergency} emergency and {critical} critical, recovery rate {recovered}.',
       agingWarm: 'Over 1h',
       agingHot: 'Over 24h',
       confirmAll: 'Confirm All Filtered',
@@ -1870,7 +1874,8 @@ export default {
       testFail: 'Test failed: {r}',
       batchApplyTpl: 'Apply template ({n})',
       batchApplyTplTitle: 'Apply protocol template in batch',
-      batchApplyTplTip: 'Creates a protocol binding for each of the {n} selected devices (independent transaction per device; failures do not affect others). Templates carry no credentials — fill them in device detail afterwards.',
+      batchApplyTplTip:
+        'Creates a protocol binding for each of the {n} selected devices (independent transaction per device; failures do not affect others). Templates carry no credentials — fill them in device detail afterwards.',
       tplSelect: 'Select protocol template',
       tplEmpty: 'No templates available',
       tplLoadFail: 'Failed to load templates',
@@ -2094,7 +2099,8 @@ export default {
       filtered: '{n} / {total} devices after filtering',
       noData: 'No data',
       rackPduGroup: 'Rack PDUs (derived from 3D room)',
-      rackPduGroupSub: 'Auto-derived by the 3D room editor, not independently collected ENV devices — collapsed by default',
+      rackPduGroupSub:
+        'Auto-derived by the 3D room editor, not independently collected ENV devices — collapsed by default',
     },
     feed: {
       title: 'Live Alarms',
@@ -2167,7 +2173,8 @@ export default {
       emptyHistory: 'No alarms in the last 7 days',
       kpiUnreliable: 'Unreliable (online status unavailable)',
       emptyNoneTitle: 'No alarm records in this domain',
-      emptyNoneHint: 'This does NOT mean power is safe — devices may report nothing because the collection chain is broken. Check tasks and connectivity in Collector first.',
+      emptyNoneHint:
+        'This does NOT mean power is safe — devices may report nothing because the collection chain is broken. Check tasks and connectivity in Collector first.',
       emptyNoneAction: 'Check Collector',
       actionConfirm: 'Confirm',
       actionRecover: 'Recover',
@@ -2177,7 +2184,8 @@ export default {
       categoryDist: 'Category distribution (active)',
       categoryEmpty: 'No active alarms',
       domainNoteTitle: 'Domain filter note',
-      domainNoteBody: 'This page queries domain alarms once via categoryCode=ENV (only that path backfills deviceId). "Today" uses Beijing midnight.',
+      domainNoteBody:
+        'This page queries domain alarms once via categoryCode=ENV (only that path backfills deviceId). "Today" uses Beijing midnight.',
       deviceLock: 'Only: {name}',
       linkCenter: 'Alarm Center',
       linkAsset: 'Asset ledger',
@@ -2278,7 +2286,8 @@ export default {
       export: 'Export current view',
       exportOk: 'Export task created; download it in Data Management - Export Tasks',
       trendEmpty: 'No trend data',
-      trendEmptyHint: 'No collected metric points for these devices in the selected range. If every metric is empty, check collection tasks and device connectivity in Collector.',
+      trendEmptyHint:
+        'No collected metric points for these devices in the selected range. If every metric is empty, check collection tasks and device connectivity in Collector.',
       topTitle: 'Top alarming devices',
       topEmpty: 'No alarms in range',
       envTitle: 'Environment alarm distribution',
@@ -3266,7 +3275,8 @@ export default {
       emptyBoard: 'No site freshness data yet',
       loadFailed: 'Failed to load timeline data',
       noStreamTitle: 'No radar data-arrival stream registered',
-      noStreamDesc: 'There is currently no arrival stream with sourceType=radar, so no time slots can be evaluated. This is NOT a "data outage" — the collection/arrival pipeline has not been wired up yet. Please register a radar data stream in Arrival Monitoring first (or contact operations to complete the integration).',
+      noStreamDesc:
+        'There is currently no arrival stream with sourceType=radar, so no time slots can be evaluated. This is NOT a "data outage" — the collection/arrival pipeline has not been wired up yet. Please register a radar data stream in Arrival Monitoring first (or contact operations to complete the integration).',
       noStreamAction: 'Go to Arrival Monitoring',
       onTimeRateNa: '—',
     },
@@ -4719,7 +4729,8 @@ export default {
     addRegisterRow: 'Add register',
     registerListEmpty: 'No registers yet; you can add them later when onboarding a device',
     applyThPreset: 'TH preset',
-    applyThPresetHint: 'One-click apply temperature/humidity transmitter register table (metric keys aligned to env.th.* dictionary; verify addresses and scale against the device manual after applying)',
+    applyThPresetHint:
+      'One-click apply temperature/humidity transmitter register table (metric keys aligned to env.th.* dictionary; verify addresses and scale against the device manual after applying)',
     regColName: 'Name',
     regColAddress: 'Address',
     regColQuantity: 'Count',
@@ -4731,8 +4742,7 @@ export default {
     sshCommandList: 'Collection commands',
     sshCommandListHint:
       'Required for SSH collection: when empty the collector refuses to run before connecting, so metrics stay empty',
-    sshCommandListShortHint:
-      'Use “Apply Linux/Windows presets” to prefill collection commands',
+    sshCommandListShortHint: 'Use “Apply Linux/Windows presets” to prefill collection commands',
     sshCommandListEmpty: 'No commands yet — click Apply Linux/Windows presets to fill',
     addSshCommandRow: 'Add command',
     sshApplyLinuxPreset: 'Apply Linux presets',
@@ -4960,7 +4970,8 @@ export default {
     noBindings: 'No protocol bindings',
     noBindingsHint: 'Click Add protocol → pick a template → confirm host/credential → save & test',
     bindingChecklistTitle: 'Binding checklist',
-    bindingChecklistHint: 'To enable collection: host + (SSH command_list / SNMP profile) + credential; saving auto-creates the collection task',
+    bindingChecklistHint:
+      'To enable collection: host + (SSH command_list / SNMP profile) + credential; saving auto-creates the collection task',
     readyNeedHost: 'Host is required',
     readyNeedSshCommands:
       'SSH requires a command template under Collection (edit commands on Asset Master → Protocol templates)',
@@ -9248,10 +9259,12 @@ export default {
     hostSelectedCount: '{count} selected',
     hostTotalCount: '{n} hosts',
     // Inventory drafts (31 P2: scheduled scan / daily reconcile → confirm into dc_cables)
-    draftPendingHint: '{count} discovered connection drafts await confirmation; they will be written into the cable ledger once confirmed',
+    draftPendingHint:
+      '{count} discovered connection drafts await confirmation; they will be written into the cable ledger once confirmed',
     draftViewDetail: 'Review & confirm',
     draftDrawerTitle: 'Pending connections (auto-inventory drafts)',
-    draftHint: 'Drafts are produced by scheduled scans / daily reconcile. "Confirm" creates the cable (switch port ↔ endpoint asset) and clears the draft; "Dismiss" stops repeats for the same endpoint.',
+    draftHint:
+      'Drafts are produced by scheduled scans / daily reconcile. "Confirm" creates the cable (switch port ↔ endpoint asset) and clears the draft; "Dismiss" stops repeats for the same endpoint.',
     draftColSwitch: 'Switch',
     draftColPort: 'Port',
     draftColAsset: 'Endpoint asset',
@@ -9576,20 +9589,24 @@ export default {
     routeKpiHint: 'Click to drill down',
     // ── Route monitoring V4: single-screen cockpit ──
     routeCockpitTitle: 'Route monitoring',
-    routeCockpitSub: 'The main table is BGP/OSPF sessions. Established / Full is up; Idle and Down are down. Devices never collected stay on the Coverage view.',
+    routeCockpitSub:
+      'The main table is BGP/OSPF sessions. Established / Full is up; Idle and Down are down. Devices never collected stay on the Coverage view.',
     routeViewSessions: 'Sessions',
     routeViewChanges: 'Changes',
     routeViewCoverage: 'Coverage',
     routeSameDevice: 'Sessions on this device',
     routeQueueClear: 'No sessions need action',
-    routeFsmLifetime: 'In/out UPDATEs and the lifetime count of FSM entries into Established. This is a device counter, not 24h flapping.',
+    routeFsmLifetime:
+      'In/out UPDATEs and the lifetime count of FSM entries into Established. This is a device counter, not 24h flapping.',
     routeHealthRate: 'Neighbor health rate',
     routeSessions: 'Sessions',
     routeFreshOk: 'Snapshot fresh',
     routeFreshStale: 'Snapshot stale',
-    routeFreshStaleTip: 'No successful poll for over {min} minutes; the state below may be outdated and must not be treated as current',
+    routeFreshStaleTip:
+      'No successful poll for over {min} minutes; the state below may be outdated and must not be treated as current',
     routeFreshNoTarget: 'No poll targets configured',
-    routeFreshNoTargetTip: 'Enable an SNMP protocol binding per device and make sure the switch extension has a management IP',
+    routeFreshNoTargetTip:
+      'Enable an SNMP protocol binding per device and make sure the switch extension has a management IP',
     routeFreshNeverPolled: 'Never polled successfully',
     routeStalePeers: '{count} neighbor rows are outdated',
     routeStaleTargets: '{count} devices have had no successful poll for over {min} minutes',
@@ -9626,7 +9643,8 @@ export default {
     routeUpdateIn: 'In',
     routeUpdateOut: 'Out',
     routeOspfNbrCount: 'OSPF adjacencies',
-    routeOspfAreaHint: 'OSPF-MIB exposes adjacency state and peer IP; area info requires OSPF-TRAP-MIB and is unavailable',
+    routeOspfAreaHint:
+      'OSPF-MIB exposes adjacency state and peer IP; area info requires OSPF-TRAP-MIB and is unavailable',
     routeSessionEstablished: 'Session established',
     routeFlapRate: 'Flap rate',
     routeTabPeers: 'Neighbor detail',
@@ -10148,7 +10166,8 @@ export default {
       generateOk: 'Done: +{an} nodes, ~{un} nodes updated, +{al} links, ~{ul} links updated',
       scopeEdit: 'Edit Scope',
       scopeTitle: 'Scope — {name}',
-      scopeHint: 'Use Scoped + CIDRs for floor/site topologies. Only the builtin network-discovery topology should use All.',
+      scopeHint:
+        'Use Scoped + CIDRs for floor/site topologies. Only the builtin network-discovery topology should use All.',
       scopeMode: 'Mode',
       scopeModeScoped: 'Scoped (recommended)',
       scopeModeAll: 'All networks (dangerous)',
@@ -10219,7 +10238,8 @@ export default {
       generateConfirm:
         'Generate base topology within the current scope? Manual elements are kept; out-of-scope auto nodes will be pruned; the canvas will reload.',
       generateOk: 'Done: +{an} nodes, ~{un} nodes updated, +{al} links, ~{ul} links updated',
-      scopeRequired: 'Configure this topology scope (CIDRs etc.) in the project list before generating, or the full inventory will be dumped.',
+      scopeRequired:
+        'Configure this topology scope (CIDRs etc.) in the project list before generating, or the full inventory will be dumped.',
       compare: 'Compare',
       commandPreview: 'Commands',
       semanticCheck: 'Semantic Check',
@@ -10854,7 +10874,8 @@ export default {
       neighborUnmatched: 'Neighbor not registered',
       pickAsset: 'Pick asset',
       replaceOld: 'Replace old',
-      replaceOldTip: 'Mark the old ledger cable as disconnected before writing the new one (avoids port-occupancy conflict)',
+      replaceOldTip:
+        'Mark the old ledger cable as disconnected before writing the new one (avoids port-occupancy conflict)',
       replaceOldFailed: 'Failed to disconnect old cable',
       ignore: 'Ignore this port',
       onlyConfirmable: 'Confirmable only',
@@ -10872,7 +10893,8 @@ export default {
       registerName: 'Asset name',
       registerMac: 'MAC address',
       registerCategory: 'Device category',
-      registerCollectHint: 'After registering, bind a collection template (SNMP/SSH) in Collection Config to bring it under monitoring',
+      registerCollectHint:
+        'After registering, bind a collection template (SNMP/SSH) in Collection Config to bring it under monitoring',
       registerOk: 'Registered {name}, used as cable B end',
       registerFailed: 'Registration failed',
       backfillOk: 'Backfilled MAC address for {n} assets',
@@ -10912,16 +10934,19 @@ export default {
     importPartialHint: 'Row-level tolerance: partial failures do not block successful rows',
     onboardingBadge: 'DC Onboarding',
     onboardingTitle: 'Existing DC quick onboarding',
-    onboardingHint: 'Recommended: master data → structure → asset Excel (physical columns) → relations → cable inventory (P1)',
+    onboardingHint:
+      'Recommended: master data → structure → asset Excel (physical columns) → relations → cable inventory (P1)',
     onboardingStep0: '0. Master data check',
     onboardingStep1: '1. Structure import (rooms/racks/PDUs)',
     onboardingStep2: '2. Asset Excel import (physical columns)',
     onboardingStep3: '3. Relation import & precheck (slots/cables)',
     onboardingStep4: '4. Cable inventory (P1)',
-    onboardingStep1Hint: 'Import rooms/racks first (optional PDUs). By default slots/cables are stripped until assets exist.',
+    onboardingStep1Hint:
+      'Import rooms/racks first (optional PDUs). By default slots/cables are stripped until assets exist.',
     onboardingStep2Hint: 'Use asset Excel with physical columns. Legacy 16-column files still work.',
     onboardingStep3Hint: 'After assets and racks exist, import slots/cables; precheck assetCode first.',
-    onboardingStep4Hint: 'Inventory switches with SNMP/SSH bindings; missing SNMP only shows a hint and does not block skeleton onboarding.',
+    onboardingStep4Hint:
+      'Inventory switches with SNMP/SSH bindings; missing SNMP only shows a hint and does not block skeleton onboarding.',
     onboardingCheckMaster: 'Check master data',
     onboardingMasterOk: 'Master data check passed (no blockers)',
     onboardingMasterSummary: 'Categories {cat} / Manufacturers {mfr} / Models {model}',
@@ -10954,12 +10979,14 @@ export default {
     onboardingInvRefresh: 'Refresh inventory readiness',
     onboardingInvTargets: 'Inventory-ready switches: {n}',
     onboardingInvPending: 'Pending drafts: {n}',
-    onboardingInvNoTargets: 'No inventory-ready switches (need switch assets with enabled SNMP/SSH bindings). Does not block DC skeleton onboarding.',
+    onboardingInvNoTargets:
+      'No inventory-ready switches (need switch assets with enabled SNMP/SSH bindings). Does not block DC skeleton onboarding.',
     onboardingInvGoBind: 'Open asset center',
     onboardingInvReady: 'Switches are ready for cable inventory.',
     onboardingInvGoScan: 'Start cable inventory',
     onboardingInvOpenCableTab: 'Open Cables tab only',
-    onboardingInvNote: 'Inventory runs in the Cables tab dialog (existing scan/confirm). This page does not embed the engine.',
+    onboardingInvNote:
+      'Inventory runs in the Cables tab dialog (existing scan/confirm). This page does not embed the engine.',
     onboardingInvLoadFailed: 'Failed to load inventory readiness (retry later; does not block skeleton onboarding)',
     importSelectFile: 'Select JSON File',
     exportFileName: 'dc-export',
@@ -11279,7 +11306,8 @@ export default {
     dutyDomainOverviewTitle: 'Shift operations overview',
     dutyDomainSensePriority: 'AWOS first',
     dutyDomainFillAll: 'Insert all',
-    dutyDomainHint: 'Select domains to insert (AWOS is included by default). Insert the group or a single domain into equipment status.',
+    dutyDomainHint:
+      'Select domains to insert (AWOS is included by default). Insert the group or a single domain into equipment status.',
     dutyDomainSense: 'AWOS',
     dutyDomainEnv: 'Power & Env',
     dutyDomainMetradar: 'Weather Radar',
@@ -14744,7 +14772,8 @@ Context:
     healthOk: 'Healthy',
     healthOkTip: 'Collected, and the metric verdict is normal',
     healthReachable: 'Reachable',
-    healthReachableTip: 'Probe succeeded, but there is no metric verdict yet (collection off, or no snapshot). This is not healthy',
+    healthReachableTip:
+      'Probe succeeded, but there is no metric verdict yet (collection off, or no snapshot). This is not healthy',
     dbColHealth: 'Health',
     dbTypeAll: 'All types',
     dbStatusAll: 'All statuses',
@@ -15530,12 +15559,14 @@ Context:
       action360: 'Device 360° view',
       actionTicket: 'Create ticket',
       ticketTitle: '[Stats] {name} runtime issue',
-      ticketDesc: 'Window {window}: availability {availability}, health {health}, alarms {alarms}, offline {offline}. Please investigate root cause.',
+      ticketDesc:
+        'Window {window}: availability {availability}, health {health}, alarms {alarms}, offline {offline}. Please investigate root cause.',
     },
     // Category × day status matrix (24-20 plan W2 §3.1; cell color = daily availability band, no-stats day = honest grey)
     matrix: {
       title: 'Category × Day Status Matrix',
-      caption: 'Rows = device categories (click to open its tab), cells = daily availability band; worst category first',
+      caption:
+        'Rows = device categories (click to open its tab), cells = daily availability band; worst category first',
       empty: 'No category daily aggregate rows in this window (aggregation job not run yet or no devices with stats)',
       cellNoData: 'No stats row for this day',
       cellValue: 'Availability {avail}% · Health {health}',
@@ -16319,7 +16350,8 @@ Context:
     save: 'Save',
     sample: 'Algorithm sample',
     sampleHint: '17L threshold calm, far end 16 kt headwind. Not live. A live frame replaces it.',
-    readHint: 'Right is the landing direction. The threshold is 0; the left side is final. Amber is the alerting runway segment.',
+    readHint:
+      'Right is the landing direction. The threshold is 0; the left side is final. Amber is the alerting runway segment.',
     finalBox: 'Final watch area · not alerting',
     threshold: 'Threshold',
     farEnd: 'Far end',
@@ -16407,7 +16439,8 @@ Context:
     },
     // ── Real terrain (globe-level; toggle rebounds with notice when unconfigured/unavailable) ──
     terrain: {
-      unavailable: 'Terrain unavailable (screen.iop.terrain_provider_url not configured or unreachable); fell back to ellipsoid',
+      unavailable:
+        'Terrain unavailable (screen.iop.terrain_provider_url not configured or unreachable); fell back to ellipsoid',
     },
     // ── Layer orchestrator panel (FR-09; left-edge tab + glass accordion groups) ──
     orchestrator: {
@@ -16493,7 +16526,8 @@ Context:
       poly: 'Polyline',
       sideView: 'Side View',
       idleCut: 'Drag still orbits. Tap a strong echo, or draw a straight line with two clicks.',
-      coreHint: 'Drag still orbits. Click the strong echo for a cut from the radar to the edge · Right-click or Esc cancels',
+      coreHint:
+        'Drag still orbits. Click the strong echo for a cut from the radar to the edge · Right-click or Esc cancels',
       straightHint: 'Drag still orbits. Click the start, then the end · Right-click undoes · Esc cancels',
       coreTooClose: 'Too close to the radar to read an azimuth',
       sectionRadial: 'Radial {az}°',
@@ -16512,7 +16546,8 @@ Context:
       hoverDbz: '{d} km · {h} km · {dbz} dBZ',
       hoverEmpty: '{d} km · {h} km · no echo',
       clearSections: 'Clear All',
-      drawHint: 'Drag still orbits. Click to add a point · Double-click to finish · Right-click undoes a point · Esc cancels',
+      drawHint:
+        'Drag still orbits. Click to add a point · Double-click to finish · Right-click undoes a point · Esc cancels',
       heightNote: 'Colors follow the min threshold; ticks are true height above the radar site',
       sectionNoEcho: 'No echo in threshold',
       sectionTooShort: 'Polyline too short, no section generated',
@@ -16961,7 +16996,8 @@ Context:
       sources: 'Wind {wind} · Radar {radar} · Aircraft {aircraft}',
       skew: 'Wind field and aircraft differ by about {hours} h',
       hint: 'Left-drag rotates, right-drag pans, wheel zooms. Free view rides with the aircraft and keeps the angles you set. Captain view is a cockpit look-ahead with 360° yaw and ±60° pitch. Side view and overview fly once.',
-      captainHint: 'Cockpit look-ahead along the flight path. Left-drag turns 360°; pitch stays within ±60°. The camera rides with the aircraft.',
+      captainHint:
+        'Cockpit look-ahead along the flight path. Left-drag turns 360°; pitch stays within ±60°. The camera rides with the aircraft.',
       overviewHint: 'Overview shows the plan position, not altitude. Read height in the side view and the profile.',
       trackShort: 'Not enough track points to draw the altitude lines',
       leg: {
@@ -16981,7 +17017,8 @@ Context:
       undock: 'Track aircraft',
       airway: 'Airway',
       airwaySize: '10 km each side · 150 m above and below',
-      airwayHint: 'Draws the airway width and height on the real track. The ground wall steps aside; the center line stays.',
+      airwayHint:
+        'Draws the airway width and height on the real track. The ground wall steps aside; the center line stays.',
       offscreen: 'Aircraft is off screen',
       level: '{hpa} hPa',
       nose: 'Nose',
@@ -17213,7 +17250,8 @@ Context:
       modelScaleHint: 'Adjust the 3D model display scale of AWOS devices (1×–20×)',
       runwayMiss: 'Runway {ref} not found in scene',
       noModel: 'No 3D model available (shown as a pole in scene)',
-      noModelTip: 'Model library has no model for: {types} — these render as poles; other types use real-device models.',
+      noModelTip:
+        'Model library has no model for: {types} — these render as poles; other types use real-device models.',
     },
     domainStrip: {
       title: 'All Domains',
@@ -18145,7 +18183,8 @@ Context:
     generateStarted: 'Generation task submitted ({id})',
     generateDone: 'Register generation finished: {status}',
     signoffIncompleteTitle: 'Sign-off incomplete',
-    signoffIncomplete: 'This register still awaits "{step}" sign-off; the exported file will lack the full sign-off block. Export anyway?',
+    signoffIncomplete:
+      'This register still awaits "{step}" sign-off; the exported file will lack the full sign-off block. Export anyway?',
     batchTitle: 'Batch generate (same year)',
     batchFrom: 'From',
     batchTo: 'To',
@@ -18161,13 +18200,16 @@ Context:
     rebuilds: 'Rebuild history',
     noRebuilds: 'No rebuilds yet',
     samePersonTitle: 'Same-operator sign-off',
-    samePerson: 'The operator matches the signed step "{step}"; the backend will reject this if distinct_users is enabled. Submit anyway?',
+    samePerson:
+      'The operator matches the signed step "{step}"; the backend will reject this if distinct_users is enabled. Submit anyway?',
     pollTimeout: 'Generation is taking long; auto-polling stopped. Hit "Refresh" later to check the result.',
     ymInvalid: 'Month must be a valid YYYY-MM value',
     noGeometry: 'No layout data for this sheet (storage or template unavailable)',
-    emptySheetHint: 'Data source not integrated for this sheet (BR-31); an empty structure with missing-data marks is produced per spec.',
+    emptySheetHint:
+      'Data source not integrated for this sheet (BR-31); an empty structure with missing-data marks is produced per spec.',
     sheetLoadEmpty: 'No data for this sheet (not generated yet, or sheet missing).',
-    operatorMissing: 'No signed-in user identity available — the operator cannot be recorded (sign-off/notes would be unauditable). Please sign in again.',
+    operatorMissing:
+      'No signed-in user identity available — the operator cannot be recorded (sign-off/notes would be unauditable). Please sign in again.',
     status: {
       none: 'Register not generated for this month yet',
       building: 'Generating…',
@@ -18238,7 +18280,8 @@ Context:
     issue: 'Issue',
     manualOk: 'Manual report issued (Seq {seq})',
     correctTitle: 'Correction Report (original Seq {seq})',
-    correctBodyHint: 'Leave empty to re-encode from the current element snapshot with COR; fill to issue the revised text',
+    correctBodyHint:
+      'Leave empty to re-encode from the current element snapshot with COR; fill to issue the revised text',
     issueCorrect: 'Issue Correction',
     correctOk: 'Correction issued (Seq {seq}, COR marked)',
     snapshotTitle: 'Element Snapshot (Seq {seq})',
@@ -18393,7 +18436,8 @@ Context:
     collectorOnline: 'Collector online',
     collectorOffline: 'Collector offline',
     autoRefresh: 'Auto refresh',
-    configBanner: 'Line group structure (device binding / line list / anti-flap params) is maintained in "41 Message Formats" groups tab; this page covers runtime status and manual switching.',
+    configBanner:
+      'Line group structure (device binding / line list / anti-flap params) is maintained in "41 Message Formats" groups tab; this page covers runtime status and manual switching.',
     goConfig: 'Configure line groups',
     empty: 'No running line groups (collector not started or no groups configured)',
     manualLock: 'Manual lock',
@@ -18409,10 +18453,12 @@ Context:
     current: 'Active',
     switchTo: 'Manually switch to this line and lock',
     resumeAuto: 'Resume auto selection',
-    switchConfirm: 'Manually switch group {group} to {line} and lock? While locked, primary recovery does not trigger failback (FR-LNK-03).',
+    switchConfirm:
+      'Manually switch group {group} to {line} and lock? While locked, primary recovery does not trigger failback (FR-LNK-03).',
     resumeConfirm: 'Release the manual lock on group {group} and resume auto selection?',
     switchDone: 'Switch command issued',
-    historyNote: 'Switch events are broadcast on the awos.link.switch bus (FR-LNK-04); historical audit query awaits the archive consumer.',
+    historyNote:
+      'Switch events are broadcast on the awos.link.switch bus (FR-LNK-04); historical audit query awaits the archive consumer.',
   },
   // 379 Data freshness & quality page (Wave C.2: DC watermarks + quality cross-section + abnormal list drilldown)
   awosOpsQuality: {
@@ -18431,7 +18477,8 @@ Context:
     ingestLate: 'Late count',
     qualityEvents: 'Quality events',
     histDropped: 'Archive dropped',
-    timelineNote: 'Quality event timeline (FR-DC-04): events are broadcast on awos.quality.events; archive query endpoint pending. This page is a realtime cross-section plus per-key history drilldown.',
+    timelineNote:
+      'Quality event timeline (FR-DC-04): events are broadcast on awos.quality.events; archive query endpoint pending. This page is a realtime cross-section plus per-key history drilldown.',
   },
   // 367 Monitoring & ops console (Wave C.3: collector/DC/report-pool duty board + locked-group banner + deep links)
   awosObsOps: {
@@ -18487,7 +18534,8 @@ Context:
     sumLines: 'Channels',
     sumIssues: 'Issues (err/warn)',
     empty: 'No channels yet',
-    editNote: 'Editing: channel (group lines), frame-splitting and parse rules are managed in "41 Message Formats" (hot-reload on save); runtime switching lives in "371 Line Config". This page is a read-only inventory and health check.',
+    editNote:
+      'Editing: channel (group lines), frame-splitting and parse rules are managed in "41 Message Formats" (hot-reload on save); runtime switching lives in "371 Line Config". This page is a read-only inventory and health check.',
   },
   // D11 AWOS Data Monitor Console
   awos: {
@@ -18507,11 +18555,13 @@ Context:
       },
       items: {
         title: 'Data Item Dictionary',
-        scopeHint: 'Saved and hot-reloaded instantly (awos.config.changed broadcast); the storage policy column references the Storage Policies collection, empty = domain default policy.',
+        scopeHint:
+          'Saved and hot-reloaded instantly (awos.config.changed broadcast); the storage policy column references the Storage Policies collection, empty = domain default policy.',
         createTitle: 'Create Data Item',
         editTitle: 'Edit Data Item',
         key: 'Key',
-        keyHint: '{biz_code}.{airport}.{scope} in lowercase; empty runway = site, otherwise r{runway} (e.g. ws.zbbb.r29r)',
+        keyHint:
+          '{biz_code}.{airport}.{scope} in lowercase; empty runway = site, otherwise r{runway} (e.g. ws.zbbb.r29r)',
         keyPattern: 'Key must be biz.airport.scope (3 parts), no . * > or whitespace in any part',
         bizName: 'Biz Name (uppercase element code, e.g. WS2A)',
         nameCn: 'Chinese Name',
@@ -18532,7 +18582,8 @@ Context:
       },
       templates: {
         title: 'Data Item Templates',
-        scopeHint: 'Template changes hot-reload instantly; the Batch Generate wizard expands a template by airport/runway/device scope into data items, existing keys are skipped.',
+        scopeHint:
+          'Template changes hot-reload instantly; the Batch Generate wizard expands a template by airport/runway/device scope into data items, existing keys are skipped.',
         createTitle: 'Create Template',
         editTitle: 'Edit Template',
         code: 'Template Code',
@@ -18544,7 +18595,8 @@ Context:
         items: 'Items',
         itemCount: '{n} items',
         itemsJson: 'Item Definitions (JSON array)',
-        itemsJsonHint: '[{biz_name, name_cn, value_type, unit, precision, domain, quality_tmpl?, storage_code?}]; storage_code references a storage policy code',
+        itemsJsonHint:
+          '[{biz_name, name_cn, value_type, unit, precision, domain, quality_tmpl?, storage_code?}]; storage_code references a storage policy code',
         itemsMustBeArray: 'Item definitions must be a JSON array',
         keywordPh: 'Code / name / device type',
       },
@@ -18561,7 +18613,8 @@ Context:
         runwayHint: 'Empty = airport level (scope=site); e.g. 29R -> scope=r29r',
         groupId: 'Line Group ID (optional)',
         deviceIds: 'Device Asset IDs (optional, multi)',
-        deviceIdsHint: 'Comma/space separated; empty = no device binding. Keys do not include device segment, so only the first of multi-device same-key entries is created',
+        deviceIdsHint:
+          'Comma/space separated; empty = no device binding. Keys do not include device segment, so only the first of multi-device same-key entries is created',
         policyNote: 'Generated items bind the storage policy by template storage_code; empty = domain default.',
         toPreview: 'Preview Keys',
         confirm: 'Generate',
@@ -18580,7 +18633,8 @@ Context:
       },
       policies: {
         title: 'Storage Policies',
-        scopeHint: 'Saved and hot-reloaded instantly; items referencing a policy store by its new semantics (deadband/interval/retention).',
+        scopeHint:
+          'Saved and hot-reloaded instantly; items referencing a policy store by its new semantics (deadband/interval/retention).',
         createTitle: 'Create Storage Policy',
         editTitle: 'Edit Storage Policy',
         code: 'Policy Code',
@@ -18588,7 +18642,8 @@ Context:
         codePattern: 'Policy code must match ^[a-z][a-z0-9_]*$',
         name: 'Policy Name',
         mode: 'Storage Mode',
-        modeHint: 'none=no store; scheduled=snapshot; on_change=store on value change; deadband=deadband; mixed=scheduled fallback + on-change',
+        modeHint:
+          'none=no store; scheduled=snapshot; on_change=store on value change; deadband=deadband; mixed=scheduled fallback + on-change',
         intervalMs: 'Interval (ms)',
         intervalMsHint: 'Only effective for scheduled/mixed modes',
         deadband: 'Deadband',
@@ -18604,7 +18659,8 @@ Context:
       },
       subs: {
         title: 'Subscriptions',
-        scopeHint: 'Saved and hot-reloaded instantly; compute-domain subscriptions reload immediately (key patterns follow NATS wildcard semantics).',
+        scopeHint:
+          'Saved and hot-reloaded instantly; compute-domain subscriptions reload immediately (key patterns follow NATS wildcard semantics).',
         createTitle: 'Create Subscription',
         editTitle: 'Edit Subscription',
         subscriber: 'Subscriber',
@@ -19138,9 +19194,11 @@ Context:
         // v1.3 data-path linkage annotation (P1-③ monitoring ↔ data plane decoupling)
         dataUnlinked: 'No linked site · data path not refreshed',
         dataUnlinkedAction: 'Fix',
-        dataUnlinkedHint: 'This device site code does not exist in the data plane radar_sites, so the data-plane probe cannot write timing metrics back by site code — values in this group will not refresh with radar output. They may be stale from the last collection, or missing entirely. This is a configuration gap (mismatched or unregistered site code), not a radar data fault. Register the site in the onboarding wizard and keep the site code consistent.',
+        dataUnlinkedHint:
+          'This device site code does not exist in the data plane radar_sites, so the data-plane probe cannot write timing metrics back by site code — values in this group will not refresh with radar output. They may be stale from the last collection, or missing entirely. This is a configuration gap (mismatched or unregistered site code), not a radar data fault. Register the site in the onboarding wizard and keep the site code consistent.',
         staleCount: 'stale {n}',
-        staleHint: 'This metric has a last-reported value, but it exceeds the freshness threshold. It is shown for reference only and is excluded from the current-state verdict (so a days-old value cannot be misread as online/offline).',
+        staleHint:
+          'This metric has a last-reported value, but it exceeds the freshness threshold. It is shown for reference only and is excluded from the current-state verdict (so a days-old value cannot be misread as online/offline).',
       },
       wizard: {
         open: 'Onboard',
@@ -19420,7 +19478,8 @@ Context:
       checkInOk: 'On duty',
       checkInDone: 'Signed in: {name}',
       forecaster: 'Duty forecaster',
-      unlicensed: 'Airport license not configured (initial CI99/ZXXX). Configure airport code and CCCC in "Compose Settings" before sending.',
+      unlicensed:
+        'Airport license not configured (initial CI99/ZXXX). Configure airport code and CCCC in "Compose Settings" before sending.',
       typeLabel: 'Type',
       validTimeLabel: 'Slot',
       dateLabel: 'Forecast date',
@@ -19429,7 +19488,8 @@ Context:
       validating: 'Validating',
       validateOk: 'Valid',
       validateFail: 'Errors found',
-      editorPlaceholder: 'Enter TAF body (no fcci/TAF head lines, the server composes the head; write FM/BECMG/TEMPO groups directly)',
+      editorPlaceholder:
+        'Enter TAF body (no fcci/TAF head lines, the server composes the head; write FM/BECMG/TEMPO groups directly)',
       editorHint: 'Auto full validation 0.5s after typing; click an error to locate it in the text.',
       cnlLocked: 'Cancel report body is fixed to CNL= (locked)',
       errorsTitle: 'Validation',
@@ -19501,13 +19561,15 @@ Context:
       kbHint: 'Shortcuts: Ctrl+Enter send · Ctrl+Shift+P preview · Ctrl+↓ locate error',
       readyState: 'Ready',
       lastSend: 'Last sent {time}',
-      cnlWarnBand: 'Cancel report: will cancel the published TAF for {cccc} slot {vt} ({date}); confirmation required before send',
+      cnlWarnBand:
+        'Cancel report: will cancel the published TAF for {cccc} slot {vt} ({date}); confirmation required before send',
       cnlConfirmTitle: 'Confirm cancel report',
       cnlConfirmBody: 'Target — type: {type} / slot: {vt} / forecast date: {date} / base serial: {num}',
       cnlConfirmCheck: 'I have verified the cancellation target',
       cnlConfirmSend: 'Send cancel report',
       dupTitle: 'Report already sent — resend?',
-      dupHint: 'A report with the same type/slot/kind/serial already exists (record #{seq}). Resending creates a new serial frame, a new record and an operation log entry.',
+      dupHint:
+        'A report with the same type/slot/kind/serial already exists (record #{seq}). Resending creates a new serial frame, a new record and an operation log entry.',
       dupConfirm: 'Resend',
       testConfirmTitle: 'Send test message',
       testConfirmBody: 'A test frame will be sent to the following enabled channels: {channels}',
@@ -19755,6 +19817,147 @@ Context:
         NeedSet_SettingsProtectPassword: 'Settings guard password',
         NOM_PCisUTC: 'Workstation on UTC',
       },
+    },
+  },
+  githubRadar: {
+    title: 'GitHub Trending',
+    subtitle:
+      'Daily / weekly / monthly rankings, hot sorting, three-level AI summaries, source browsing and one-click clone — watch alerts share the platform filter-bar skin.',
+    kicker: 'GitHub Radar',
+    mode: { trending: 'Trending', rising: 'Rising' },
+    since: { today: 'Today', week: 'Week', month: 'Month' },
+    sort: { hot: 'Hot ↓', stars: 'Stars ↓', updated: 'Recently updated', new: 'New first' },
+    searchPlaceholderTrending: 'Search repos…',
+    searchPlaceholderRising: 'Keywords to discover rising repos',
+    languagePlaceholder: 'Language',
+    topicPlaceholder: 'Topic',
+    licensePlaceholder: 'License',
+    onlyNew: 'New only',
+    watchList: 'Watching',
+    staleBanner: 'Data may be stale',
+    statTotal: '{label} ranking',
+    statNew: 'New repos',
+    statRising: 'With growth',
+    statLangTop: 'Top language',
+    statLicenseTop: 'Top license',
+    refreshedAt: 'Refreshed at {time}',
+    notRefreshed: 'Not refreshed yet',
+    boardCaptionRising: 'Rising · by growth',
+    boardCaptionSort: '{label} · sorted by {sort}',
+    emptyFilteredTitle: 'No matches — filters too strict',
+    emptyTitle: 'No data',
+    emptyFilteredHint: 'Try clearing language, topic, license or "new only"',
+    emptyRisingHint: 'Try another keyword, or switch to trending for today',
+    emptyTrendingHint: 'Retry later, or check GitHub collection (Token configurable in settings)',
+    clearFilters: 'Clear filters',
+    notifications: 'Notifications',
+    notificationsSubtitle: 'Watch & radar alerts',
+    noNotifications: 'No notifications',
+    markAllRead: 'Mark all read',
+    markedAllRead: 'All marked as read',
+    settings: 'Radar settings',
+    settingsGitHub: 'GitHub',
+    tokenHint: 'Token (server-side only, masked echo)',
+    tokenCurrent: 'Current {masked}',
+    tokenPlaceholder: 'ghp_…',
+    tokenRequired: 'Token is required',
+    llmTitle: 'AI summary (OpenAI-compatible)',
+    llmEnable: 'Enable AI summary',
+    llmBaseUrl: 'Base URL',
+    llmBaseUrlHint: 'Any OpenAI-compatible endpoint',
+    llmApiKey: 'API Key',
+    llmApiKeyCurrent: 'Current {masked} (leave empty to keep)',
+    llmApiKeyEmpty: 'Not configured',
+    llmModel: 'Model',
+    cloneTitle: 'Server-side clone (optional)',
+    cloneEnable: 'Allow cloning to server directory',
+    cloneDir: 'Clone directory (absolute server path)',
+    cloneDirPlaceholder: 'D:/radar-clones',
+    addWatch: 'Add watch',
+    addWatchHint: 'Enter repo full_name, e.g. golang/go',
+    addWatchPlaceholder: 'owner/repo',
+    watched: 'Watching {name}',
+    loadFailed: 'Load failed: {msg}',
+    saved: 'Saved',
+    watchRail: 'Watching',
+    watchRailAdd: 'Add watch',
+    watchChanges: 'Watch changes',
+    watchNoChanges: 'No changes yet',
+    watchNoChangesHint: 'Star or release changes on watched repos appear here',
+    watchEmpty: 'No watches yet',
+    watchEmptyHint: 'Bookmark a repo from the board, or tap + above',
+    watchRemove: 'Remove',
+    watchDeltaTooltip: 'Relative to watch baseline',
+    aiSummary: 'AI summary',
+    clone: 'Clone',
+    viewSource: 'View source',
+    unwatch: 'Unwatch',
+    watch: 'Watch',
+    noDesc: 'No description',
+    newBadge: 'NEW',
+    noLicense: 'No license',
+    noLicenseTooltip: 'No license detected',
+    deltaTooltip: 'Window growth (exact {n})',
+    pushedAt: 'Pushed {time}',
+    deltaFallback: 'today',
+    cloneTitleName: 'Clone {name}',
+    cloneSubtitle: 'Choose a clone method, or download the ZIP',
+    copyHttps: 'Copy HTTPS command',
+    copySsh: 'Copy SSH command',
+    copy: 'Copy',
+    downloadZip: 'Download ZIP',
+    cloneServer: 'Server',
+    cloneToServer: 'Clone to server directory',
+    cloneServerDisabled: 'Server-side clone is disabled (enable and set a directory in radar settings)',
+    cloneInfoFailed: 'Failed to load clone info',
+    copied: 'Copied to clipboard',
+    copyFailed: 'Copy failed — please select and copy manually',
+    cloneDone: 'Clone completed',
+    cloneFailed: 'Clone failed',
+    download: 'Download',
+    regenerate: 'Regenerate',
+    generate: 'Generate',
+    generateSummary: 'Generate summary',
+    llmNotConfigured:
+      'LLM service not configured. AI summary requires an OpenAI-compatible API (Base URL / API Key / Model).',
+    goSettings: 'Open settings',
+    aiAnalyzing: 'AI is analyzing {name} ({level})…',
+    cachedResult: 'Cached result',
+    modelLabel: 'Model {model}',
+    durationSec: 'Took {sec}s',
+    noInsight: 'No AI summary yet',
+    noInsightHint: 'Pick a level and hit "Generate summary" — the AI reads repo metadata and README',
+    insightFailed: 'AI summary failed: {msg}',
+    loadingTree: 'Loading file tree…',
+    refreshTree: 'Refresh file tree',
+    treeTruncated: 'Too many files — showing first 1000',
+    pickFile: 'Pick a file from the tree',
+    treeHint: 'Only the repo root level is shown for quick browsing',
+    openOnGitHub: 'Open on GitHub',
+    binaryFile: 'Binary file ({size}) — online preview not supported',
+    unknownSize: 'unknown size',
+    fileTruncated: 'File too large — showing first 512 KB',
+    treeLoadFailed: 'Failed to load file tree: {msg}',
+    fileLoadFailed: 'Failed to load file',
+    windowGrowth: 'window growth',
+    watchingBadge: 'Watching',
+    repoInfo: 'Repository info',
+    notDetected: 'Not detected',
+    primaryLanguage: 'Primary language',
+    defaultBranch: 'Default branch',
+    createdAt: 'Created',
+    pushedAtLabel: 'Last push',
+    homepage: 'Homepage',
+    languageComposition: 'Language composition',
+    topContributors: 'Top contributors',
+    tabOverview: 'Overview',
+    tabInsight: 'AI insight',
+    readmeTruncated: 'README too long — showing first 12000 characters',
+    noReadme: 'README not available',
+    insightLevel: {
+      brief: { label: 'Brief', desc: 'Ultra-fast summary within 50 words' },
+      summary: { label: 'Summary', desc: 'What / stack / highlights / use cases / heat' },
+      deep: { label: 'Deep', desc: 'Architecture / pros & cons / community health / getting started' },
     },
   },
 };

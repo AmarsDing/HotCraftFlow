@@ -23,6 +23,9 @@ import (
 	"framework/app/admin/internal/data/ent/position"
 	"framework/app/admin/internal/data/ent/predicate"
 	"framework/app/admin/internal/data/ent/privatemessage"
+	"framework/app/admin/internal/data/ent/radaruserconfig"
+	"framework/app/admin/internal/data/ent/radarwatch"
+	"framework/app/admin/internal/data/ent/radarwatchevent"
 	"framework/app/admin/internal/data/ent/resourcegroup"
 	"framework/app/admin/internal/data/ent/role"
 	"framework/app/admin/internal/data/ent/roleapi"
@@ -52,7 +55,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 39)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 42)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   adminloginlog.Table,
@@ -542,6 +545,76 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[19] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   radaruserconfig.Table,
+			Columns: radaruserconfig.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint32,
+				Column: radaruserconfig.FieldID,
+			},
+		},
+		Type: "RadarUserConfig",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			radaruserconfig.FieldCreateTime:     {Type: field.TypeTime, Column: radaruserconfig.FieldCreateTime},
+			radaruserconfig.FieldUpdateTime:     {Type: field.TypeTime, Column: radaruserconfig.FieldUpdateTime},
+			radaruserconfig.FieldDeleteTime:     {Type: field.TypeTime, Column: radaruserconfig.FieldDeleteTime},
+			radaruserconfig.FieldUserID:         {Type: field.TypeUint32, Column: radaruserconfig.FieldUserID},
+			radaruserconfig.FieldGithubTokenEnc: {Type: field.TypeString, Column: radaruserconfig.FieldGithubTokenEnc},
+			radaruserconfig.FieldLlmEnabled:     {Type: field.TypeBool, Column: radaruserconfig.FieldLlmEnabled},
+			radaruserconfig.FieldLlmBaseURL:     {Type: field.TypeString, Column: radaruserconfig.FieldLlmBaseURL},
+			radaruserconfig.FieldLlmAPIKeyEnc:   {Type: field.TypeString, Column: radaruserconfig.FieldLlmAPIKeyEnc},
+			radaruserconfig.FieldLlmModel:       {Type: field.TypeString, Column: radaruserconfig.FieldLlmModel},
+			radaruserconfig.FieldCloneEnabled:   {Type: field.TypeBool, Column: radaruserconfig.FieldCloneEnabled},
+			radaruserconfig.FieldCloneDir:       {Type: field.TypeString, Column: radaruserconfig.FieldCloneDir},
+		},
+	}
+	graph.Nodes[20] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   radarwatch.Table,
+			Columns: radarwatch.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint32,
+				Column: radarwatch.FieldID,
+			},
+		},
+		Type: "RadarWatch",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			radarwatch.FieldCreateTime:    {Type: field.TypeTime, Column: radarwatch.FieldCreateTime},
+			radarwatch.FieldUpdateTime:    {Type: field.TypeTime, Column: radarwatch.FieldUpdateTime},
+			radarwatch.FieldDeleteTime:    {Type: field.TypeTime, Column: radarwatch.FieldDeleteTime},
+			radarwatch.FieldUserID:        {Type: field.TypeUint32, Column: radarwatch.FieldUserID},
+			radarwatch.FieldFullName:      {Type: field.TypeString, Column: radarwatch.FieldFullName},
+			radarwatch.FieldBaselineStars: {Type: field.TypeInt64, Column: radarwatch.FieldBaselineStars},
+			radarwatch.FieldStars:         {Type: field.TypeInt64, Column: radarwatch.FieldStars},
+			radarwatch.FieldStarsDelta:    {Type: field.TypeInt64, Column: radarwatch.FieldStarsDelta},
+			radarwatch.FieldUnreadCount:   {Type: field.TypeUint32, Column: radarwatch.FieldUnreadCount},
+			radarwatch.FieldHTMLURL:       {Type: field.TypeString, Column: radarwatch.FieldHTMLURL},
+			radarwatch.FieldSparkline:     {Type: field.TypeJSON, Column: radarwatch.FieldSparkline},
+		},
+	}
+	graph.Nodes[21] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   radarwatchevent.Table,
+			Columns: radarwatchevent.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint32,
+				Column: radarwatchevent.FieldID,
+			},
+		},
+		Type: "RadarWatchEvent",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			radarwatchevent.FieldCreateTime: {Type: field.TypeTime, Column: radarwatchevent.FieldCreateTime},
+			radarwatchevent.FieldUpdateTime: {Type: field.TypeTime, Column: radarwatchevent.FieldUpdateTime},
+			radarwatchevent.FieldDeleteTime: {Type: field.TypeTime, Column: radarwatchevent.FieldDeleteTime},
+			radarwatchevent.FieldUserID:     {Type: field.TypeUint32, Column: radarwatchevent.FieldUserID},
+			radarwatchevent.FieldFullName:   {Type: field.TypeString, Column: radarwatchevent.FieldFullName},
+			radarwatchevent.FieldKind:       {Type: field.TypeEnum, Column: radarwatchevent.FieldKind},
+			radarwatchevent.FieldMessage:    {Type: field.TypeString, Column: radarwatchevent.FieldMessage},
+			radarwatchevent.FieldDelta:      {Type: field.TypeInt64, Column: radarwatchevent.FieldDelta},
+			radarwatchevent.FieldRead:       {Type: field.TypeBool, Column: radarwatchevent.FieldRead},
+		},
+	}
+	graph.Nodes[22] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   resourcegroup.Table,
 			Columns: resourcegroup.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -559,7 +632,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			resourcegroup.FieldDescription: {Type: field.TypeString, Column: resourcegroup.FieldDescription},
 		},
 	}
-	graph.Nodes[20] = &sqlgraph.Node{
+	graph.Nodes[23] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   role.Table,
 			Columns: role.Columns,
@@ -584,7 +657,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			role.FieldSortID:     {Type: field.TypeInt32, Column: role.FieldSortID},
 		},
 	}
-	graph.Nodes[21] = &sqlgraph.Node{
+	graph.Nodes[24] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   roleapi.Table,
 			Columns: roleapi.Columns,
@@ -601,7 +674,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			roleapi.FieldAPIID:      {Type: field.TypeUint32, Column: roleapi.FieldAPIID},
 		},
 	}
-	graph.Nodes[22] = &sqlgraph.Node{
+	graph.Nodes[25] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   roledept.Table,
 			Columns: roledept.Columns,
@@ -618,7 +691,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			roledept.FieldDeptID:     {Type: field.TypeUint32, Column: roledept.FieldDeptID},
 		},
 	}
-	graph.Nodes[23] = &sqlgraph.Node{
+	graph.Nodes[26] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   rolemenu.Table,
 			Columns: rolemenu.Columns,
@@ -635,7 +708,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			rolemenu.FieldMenuID:     {Type: field.TypeUint32, Column: rolemenu.FieldMenuID},
 		},
 	}
-	graph.Nodes[24] = &sqlgraph.Node{
+	graph.Nodes[27] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   roleresourcegroup.Table,
 			Columns: roleresourcegroup.Columns,
@@ -652,7 +725,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			roleresourcegroup.FieldResourceGroupID: {Type: field.TypeUint32, Column: roleresourcegroup.FieldResourceGroupID},
 		},
 	}
-	graph.Nodes[25] = &sqlgraph.Node{
+	graph.Nodes[28] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   storagelayer.Table,
 			Columns: storagelayer.Columns,
@@ -674,7 +747,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			storagelayer.FieldChecksum:   {Type: field.TypeString, Column: storagelayer.FieldChecksum},
 		},
 	}
-	graph.Nodes[26] = &sqlgraph.Node{
+	graph.Nodes[29] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemconfig.Table,
 			Columns: systemconfig.Columns,
@@ -696,7 +769,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemconfig.FieldDescription: {Type: field.TypeString, Column: systemconfig.FieldDescription},
 		},
 	}
-	graph.Nodes[27] = &sqlgraph.Node{
+	graph.Nodes[30] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   task.Table,
 			Columns: task.Columns,
@@ -723,7 +796,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			task.FieldEnable:      {Type: field.TypeBool, Column: task.FieldEnable},
 		},
 	}
-	graph.Nodes[28] = &sqlgraph.Node{
+	graph.Nodes[31] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   taskexecution.Table,
 			Columns: taskexecution.Columns,
@@ -744,7 +817,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			taskexecution.FieldDurationMs: {Type: field.TypeUint64, Column: taskexecution.FieldDurationMs},
 		},
 	}
-	graph.Nodes[29] = &sqlgraph.Node{
+	graph.Nodes[32] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   tenant.Table,
 			Columns: tenant.Columns,
@@ -769,7 +842,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			tenant.FieldUnsubscribeAt:  {Type: field.TypeTime, Column: tenant.FieldUnsubscribeAt},
 		},
 	}
-	graph.Nodes[30] = &sqlgraph.Node{
+	graph.Nodes[33] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   toollink.Table,
 			Columns: toollink.Columns,
@@ -804,7 +877,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			toollink.FieldDescriptionI18n: {Type: field.TypeJSON, Column: toollink.FieldDescriptionI18n},
 		},
 	}
-	graph.Nodes[31] = &sqlgraph.Node{
+	graph.Nodes[34] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   toollinkcategory.Table,
 			Columns: toollinkcategory.Columns,
@@ -827,7 +900,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			toollinkcategory.FieldSort:        {Type: field.TypeInt32, Column: toollinkcategory.FieldSort},
 		},
 	}
-	graph.Nodes[32] = &sqlgraph.Node{
+	graph.Nodes[35] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   toollinkssoticket.Table,
 			Columns: toollinkssoticket.Columns,
@@ -848,7 +921,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			toollinkssoticket.FieldUsedAt:     {Type: field.TypeTime, Column: toollinkssoticket.FieldUsedAt},
 		},
 	}
-	graph.Nodes[33] = &sqlgraph.Node{
+	graph.Nodes[36] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   toollinkusermark.Table,
 			Columns: toollinkusermark.Columns,
@@ -869,7 +942,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			toollinkusermark.FieldLastClickAt: {Type: field.TypeTime, Column: toollinkusermark.FieldLastClickAt},
 		},
 	}
-	graph.Nodes[34] = &sqlgraph.Node{
+	graph.Nodes[37] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
@@ -916,7 +989,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			user.FieldOperationPassword: {Type: field.TypeString, Column: user.FieldOperationPassword},
 		},
 	}
-	graph.Nodes[35] = &sqlgraph.Node{
+	graph.Nodes[38] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   usercredential.Table,
 			Columns: usercredential.Columns,
@@ -943,7 +1016,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			usercredential.FieldResetToken:     {Type: field.TypeString, Column: usercredential.FieldResetToken},
 		},
 	}
-	graph.Nodes[36] = &sqlgraph.Node{
+	graph.Nodes[39] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   userpost.Table,
 			Columns: userpost.Columns,
@@ -960,7 +1033,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			userpost.FieldPostID:     {Type: field.TypeUint32, Column: userpost.FieldPostID},
 		},
 	}
-	graph.Nodes[37] = &sqlgraph.Node{
+	graph.Nodes[40] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   userrole.Table,
 			Columns: userrole.Columns,
@@ -977,7 +1050,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			userrole.FieldRoleID:     {Type: field.TypeUint32, Column: userrole.FieldRoleID},
 		},
 	}
-	graph.Nodes[38] = &sqlgraph.Node{
+	graph.Nodes[41] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   usertoken.Table,
 			Columns: usertoken.Columns,
@@ -3257,6 +3330,281 @@ func (f *PrivateMessageFilter) WhereReceiverID(p entql.Uint32P) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (_q *RadarUserConfigQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the RadarUserConfigQuery builder.
+func (_q *RadarUserConfigQuery) Filter() *RadarUserConfigFilter {
+	return &RadarUserConfigFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *RadarUserConfigMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the RadarUserConfigMutation builder.
+func (m *RadarUserConfigMutation) Filter() *RadarUserConfigFilter {
+	return &RadarUserConfigFilter{config: m.config, predicateAdder: m}
+}
+
+// RadarUserConfigFilter provides a generic filtering capability at runtime for RadarUserConfigQuery.
+type RadarUserConfigFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *RadarUserConfigFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[19].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint32 predicate on the id field.
+func (f *RadarUserConfigFilter) WhereID(p entql.Uint32P) {
+	f.Where(p.Field(radaruserconfig.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *RadarUserConfigFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(radaruserconfig.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *RadarUserConfigFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(radaruserconfig.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *RadarUserConfigFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(radaruserconfig.FieldDeleteTime))
+}
+
+// WhereUserID applies the entql uint32 predicate on the user_id field.
+func (f *RadarUserConfigFilter) WhereUserID(p entql.Uint32P) {
+	f.Where(p.Field(radaruserconfig.FieldUserID))
+}
+
+// WhereGithubTokenEnc applies the entql string predicate on the github_token_enc field.
+func (f *RadarUserConfigFilter) WhereGithubTokenEnc(p entql.StringP) {
+	f.Where(p.Field(radaruserconfig.FieldGithubTokenEnc))
+}
+
+// WhereLlmEnabled applies the entql bool predicate on the llm_enabled field.
+func (f *RadarUserConfigFilter) WhereLlmEnabled(p entql.BoolP) {
+	f.Where(p.Field(radaruserconfig.FieldLlmEnabled))
+}
+
+// WhereLlmBaseURL applies the entql string predicate on the llm_base_url field.
+func (f *RadarUserConfigFilter) WhereLlmBaseURL(p entql.StringP) {
+	f.Where(p.Field(radaruserconfig.FieldLlmBaseURL))
+}
+
+// WhereLlmAPIKeyEnc applies the entql string predicate on the llm_api_key_enc field.
+func (f *RadarUserConfigFilter) WhereLlmAPIKeyEnc(p entql.StringP) {
+	f.Where(p.Field(radaruserconfig.FieldLlmAPIKeyEnc))
+}
+
+// WhereLlmModel applies the entql string predicate on the llm_model field.
+func (f *RadarUserConfigFilter) WhereLlmModel(p entql.StringP) {
+	f.Where(p.Field(radaruserconfig.FieldLlmModel))
+}
+
+// WhereCloneEnabled applies the entql bool predicate on the clone_enabled field.
+func (f *RadarUserConfigFilter) WhereCloneEnabled(p entql.BoolP) {
+	f.Where(p.Field(radaruserconfig.FieldCloneEnabled))
+}
+
+// WhereCloneDir applies the entql string predicate on the clone_dir field.
+func (f *RadarUserConfigFilter) WhereCloneDir(p entql.StringP) {
+	f.Where(p.Field(radaruserconfig.FieldCloneDir))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *RadarWatchQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the RadarWatchQuery builder.
+func (_q *RadarWatchQuery) Filter() *RadarWatchFilter {
+	return &RadarWatchFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *RadarWatchMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the RadarWatchMutation builder.
+func (m *RadarWatchMutation) Filter() *RadarWatchFilter {
+	return &RadarWatchFilter{config: m.config, predicateAdder: m}
+}
+
+// RadarWatchFilter provides a generic filtering capability at runtime for RadarWatchQuery.
+type RadarWatchFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *RadarWatchFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[20].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint32 predicate on the id field.
+func (f *RadarWatchFilter) WhereID(p entql.Uint32P) {
+	f.Where(p.Field(radarwatch.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *RadarWatchFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(radarwatch.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *RadarWatchFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(radarwatch.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *RadarWatchFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(radarwatch.FieldDeleteTime))
+}
+
+// WhereUserID applies the entql uint32 predicate on the user_id field.
+func (f *RadarWatchFilter) WhereUserID(p entql.Uint32P) {
+	f.Where(p.Field(radarwatch.FieldUserID))
+}
+
+// WhereFullName applies the entql string predicate on the full_name field.
+func (f *RadarWatchFilter) WhereFullName(p entql.StringP) {
+	f.Where(p.Field(radarwatch.FieldFullName))
+}
+
+// WhereBaselineStars applies the entql int64 predicate on the baseline_stars field.
+func (f *RadarWatchFilter) WhereBaselineStars(p entql.Int64P) {
+	f.Where(p.Field(radarwatch.FieldBaselineStars))
+}
+
+// WhereStars applies the entql int64 predicate on the stars field.
+func (f *RadarWatchFilter) WhereStars(p entql.Int64P) {
+	f.Where(p.Field(radarwatch.FieldStars))
+}
+
+// WhereStarsDelta applies the entql int64 predicate on the stars_delta field.
+func (f *RadarWatchFilter) WhereStarsDelta(p entql.Int64P) {
+	f.Where(p.Field(radarwatch.FieldStarsDelta))
+}
+
+// WhereUnreadCount applies the entql uint32 predicate on the unread_count field.
+func (f *RadarWatchFilter) WhereUnreadCount(p entql.Uint32P) {
+	f.Where(p.Field(radarwatch.FieldUnreadCount))
+}
+
+// WhereHTMLURL applies the entql string predicate on the html_url field.
+func (f *RadarWatchFilter) WhereHTMLURL(p entql.StringP) {
+	f.Where(p.Field(radarwatch.FieldHTMLURL))
+}
+
+// WhereSparkline applies the entql json.RawMessage predicate on the sparkline field.
+func (f *RadarWatchFilter) WhereSparkline(p entql.BytesP) {
+	f.Where(p.Field(radarwatch.FieldSparkline))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *RadarWatchEventQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the RadarWatchEventQuery builder.
+func (_q *RadarWatchEventQuery) Filter() *RadarWatchEventFilter {
+	return &RadarWatchEventFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *RadarWatchEventMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the RadarWatchEventMutation builder.
+func (m *RadarWatchEventMutation) Filter() *RadarWatchEventFilter {
+	return &RadarWatchEventFilter{config: m.config, predicateAdder: m}
+}
+
+// RadarWatchEventFilter provides a generic filtering capability at runtime for RadarWatchEventQuery.
+type RadarWatchEventFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *RadarWatchEventFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[21].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint32 predicate on the id field.
+func (f *RadarWatchEventFilter) WhereID(p entql.Uint32P) {
+	f.Where(p.Field(radarwatchevent.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *RadarWatchEventFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(radarwatchevent.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *RadarWatchEventFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(radarwatchevent.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *RadarWatchEventFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(radarwatchevent.FieldDeleteTime))
+}
+
+// WhereUserID applies the entql uint32 predicate on the user_id field.
+func (f *RadarWatchEventFilter) WhereUserID(p entql.Uint32P) {
+	f.Where(p.Field(radarwatchevent.FieldUserID))
+}
+
+// WhereFullName applies the entql string predicate on the full_name field.
+func (f *RadarWatchEventFilter) WhereFullName(p entql.StringP) {
+	f.Where(p.Field(radarwatchevent.FieldFullName))
+}
+
+// WhereKind applies the entql string predicate on the kind field.
+func (f *RadarWatchEventFilter) WhereKind(p entql.StringP) {
+	f.Where(p.Field(radarwatchevent.FieldKind))
+}
+
+// WhereMessage applies the entql string predicate on the message field.
+func (f *RadarWatchEventFilter) WhereMessage(p entql.StringP) {
+	f.Where(p.Field(radarwatchevent.FieldMessage))
+}
+
+// WhereDelta applies the entql int64 predicate on the delta field.
+func (f *RadarWatchEventFilter) WhereDelta(p entql.Int64P) {
+	f.Where(p.Field(radarwatchevent.FieldDelta))
+}
+
+// WhereRead applies the entql bool predicate on the read field.
+func (f *RadarWatchEventFilter) WhereRead(p entql.BoolP) {
+	f.Where(p.Field(radarwatchevent.FieldRead))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (_q *ResourceGroupQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
@@ -3285,7 +3633,7 @@ type ResourceGroupFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ResourceGroupFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[19].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[22].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3355,7 +3703,7 @@ type RoleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RoleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[20].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[23].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3483,7 +3831,7 @@ type RoleApiFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RoleApiFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[21].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[24].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3543,7 +3891,7 @@ type RoleDeptFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RoleDeptFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[22].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[25].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3603,7 +3951,7 @@ type RoleMenuFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RoleMenuFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[23].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[26].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3663,7 +4011,7 @@ type RoleResourceGroupFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RoleResourceGroupFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[24].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[27].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3723,7 +4071,7 @@ type StorageLayerFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *StorageLayerFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[25].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[28].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3808,7 +4156,7 @@ type SystemConfigFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemConfigFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[26].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[29].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3893,7 +4241,7 @@ type TaskFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TaskFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[27].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[30].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4003,7 +4351,7 @@ type TaskExecutionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TaskExecutionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[28].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[31].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4083,7 +4431,7 @@ type TenantFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TenantFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[29].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[32].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4183,7 +4531,7 @@ type ToolLinkFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ToolLinkFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[30].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[33].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4333,7 +4681,7 @@ type ToolLinkCategoryFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ToolLinkCategoryFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[31].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[34].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4423,7 +4771,7 @@ type ToolLinkSsoTicketFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ToolLinkSsoTicketFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[32].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[35].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4503,7 +4851,7 @@ type ToolLinkUserMarkFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ToolLinkUserMarkFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[33].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[36].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4583,7 +4931,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[34].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[37].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4793,7 +5141,7 @@ type UserCredentialFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserCredentialFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[35].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[38].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4903,7 +5251,7 @@ type UserPostFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserPostFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[36].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[39].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4963,7 +5311,7 @@ type UserRoleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserRoleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[37].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[40].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -5023,7 +5371,7 @@ type UserTokenFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserTokenFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[38].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[41].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

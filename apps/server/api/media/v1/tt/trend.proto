@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+package media.tt.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// ============================================================================
+// ② TT 热点追踪的对外契约（契约 §2 / §6 / §7）。
+// 约定同 IC：枚举用 string（服务层校验），字段显式 json_name = snake_case。
+// ============================================================================
+
+// TrendSeries 是 TT 的核心契约（评审 B-2：此前完全缺失，本文件补全）。
+message TrendSeries {
+  string api_version = 1 [json_name = "api_version"];
+  string topic_id    = 2 [json_name = "topic_id"]; // tp_ 前缀
+  string label       = 3 [json_name = "label"];
+  string category    = 4 [json_name = "category"]; // A_hot|B_material|C_market|D_compliance
+  // stage ∈ {latent, rising, peak, decaying, long_tail, dormant}（服务层校验）
+  string stage = 5 [json_name = "stage"];
+  StageEvidence stage_evidence = 6 [json_name = "stage_evidence"];
+  Heat heat = 7 [json_name = "heat"];
+  repeated SeriesPoint series = 8 [json_name = "series"]; // ≤200 点（契约 §2 截取规则）
+  Burst burst = 9 [json_name = "burst"];
+  Origin origin = 10 [json_name = "origin"];
+  Diagnostics diagnostics = 11 [json_name = "diagnostics"]; // 补丁级演进：数据不足标记
+}
+
+message StageEvidence {
+  double velocity = 1 [json_name = "velocity"];
+  double accel = 2 [json_name = "accel"];
+  int32 duration_points = 3 [json_name = "duration_points"]; // 点数，非时长（评审 B-7）
+}
+
+message Heat {
+  double score = 1 [json_name = "score"];       // 0–100，相对可比
+  double rank_pct = 2 [json_name = "rank_pct"];
+  double eng_pct = 3 [json_name = "eng_pct"];   // 评审 C-5 补登
+  double eng_rate = 4 [json_name = "eng_rate"]; // 仅展示，不进公式
+  double freshness = 5 [json_name = "freshness"]; // 评审 C-5 补登
+  double velocity = 6 [json_name = "velocity"]; // v_ewma
+  double accel = 7 [json_name = "accel"];
+  Breadth breadth = 8 [json_name = "breadth"];
+  HeatFactors factors = 9 [json_name = "factors"]; // 权重快照（可解释性强制）
+}
+
+message Breadth {
+  int32 platform_count = 1 [json_name = "platform_count"];
+  repeated string platforms = 2 [json_name = "platforms"]; // 滑动 24h 窗口 distinct 平台
+}
+
+// 同时保留原始配置权重与生效权重（评审 A-6，审计需要）。
+message HeatFactors {
+  double w_rank = 1 [json_name = "w_rank"];
+  double w_eng = 2 [json_name = "w_eng"];
+  double w_fresh = 3 [json_name = "w_fresh"];
+  double w_breadth = 4 [json_name = "w_breadth"];
+  double w_rank_eff = 5 [json_name = "w_rank_eff"];
+  double w_eng_eff = 6 [json_name = "w_eng_eff"];
+  double w_fresh_eff = 7 [json_name = "w_fresh_eff"];
+  double w_breadth_eff = 8 [json_name = "w_breadth_eff"];
+  repeated string missing = 9 [json_name = "missing"]; // 本次缺失因子
+}
+
+message SeriesPoint {
+  string t = 1 [json_name = "t"]; // RFC3339 UTC（时间桶对齐后）
+  string platform = 2 [json_name = "platform"];
+  int32 rank = 3 [json_name = "rank"];
+  double heat = 4 [json_name = "heat"];
+}
+
+message Burst {
+  bool is_burst = 1 [json_name = "is_burst"];
+  // methods_hit ∈ {zscore, velocity, rank_jump, eng_spike, first_cross_platform}（服务层校验）
+  // 至少 2 个且来自 ≥2 数据通道才置 is_burst=true（评审 A-12 通道化投票）
+  repeated string methods_hit = 2 [json_name = "methods_hit"];
+  map<string, double> evidence = 3 [json_name = "evidence"]; // 每个命中方法的具体数值
+}
+
+message Origin {
+  string first_seen_at = 1 [json_name = "first_seen_at"]; // RFC3339 UTC
+  string first_platform = 2 [json_name = "first_platform"];
+  string first_url = 3 [json_name = "first_url"];
+}
+
+message Diagnostics {
+  bool insufficient_points = 1 [json_name = "insufficient_points"];
+  int32 n_points = 2 [json_name = "n_points"];
+}
+
+// TopicCandidate 是 TT → MME/MIA 的交接（契约 §6）。
+message TopicCandidate {
+  string api_version = 1 [json_name = "api_version"];
+  string candidate_id = 2 [json_name = "candidate_id"]; // tc_ 前缀
+  string topic_id = 3 [json_name = "topic_id"];
+  string route = 4 [json_name = "route"]; // mme | mia | both
+  CandidateScore score = 5 [json_name = "score"];
+  repeated string suggested_angles = 6 [json_name = "suggested_angles"];
+  repeated string material_refs = 7 [json_name = "material_refs"];
+  string state = 8 [json_name = "state"]; // pending|adopted|rejected|snoozed
+  google.protobuf.Timestamp reject_at = 9 [json_name = "reject_at"];
+  string reject_reason = 10 [json_name = "reject_reason"]; // 可空
+}
+
+message CandidateScore {
+  double hot = 1 [json_name = "hot"];
+  double freshness = 2 [json_name = "freshness"];
+  double workability = 3 [json_name = "workability"];
+  double compliance = 4 [json_name = "compliance"];
+  double total = 5 [json_name = "total"]; // 仅排序，不作自动采纳依据
+}
+
+// Alert 是突发告警（契约 §7）。
+message Alert {
+  string api_version = 1 [json_name = "api_version"];
+  string alert_id = 2 [json_name = "alert_id"]; // al_ 前缀
+  string topic_id = 3 [json_name = "topic_id"];
+  google.protobuf.Timestamp triggered_at = 4 [json_name = "triggered_at"]; // UTC
+  repeated string methods_hit = 5 [json_name = "methods_hit"]; // ≥2 才产生
+  map<string, double> evidence = 6 [json_name = "evidence"];   // 无数值不允许发出
+  repeated string channels = 7 [json_name = "channels"];
+  string state = 8 [json_name = "state"]; // new | ack | muted
+}

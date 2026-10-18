@@ -3,8 +3,8 @@
 package userrole
 
 import (
-	"time"
 	"framework/app/admin/internal/data/ent/predicate"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 )

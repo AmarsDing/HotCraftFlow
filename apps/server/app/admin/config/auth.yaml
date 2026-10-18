@@ -18,4 +18,7 @@
         - "key2"
 
   authz:
-    type: "opa" # casbin, opa, zanzibar, noop
+    # 仅支持 noop / casbin（见 authorizer.go）；opa/zanzibar 未实现，
+    # 配置未实现类型会按 noop 放行并输出 [SECURITY] 错误日志（等于全站放行，勿用）。
+    # casbin 走"角色直绑 API 资源"策略：seed 时 super 角色自动绑定全部 API 资源。
+    type: "casbin" # noop | casbin

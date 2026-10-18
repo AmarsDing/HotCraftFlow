@@ -52,9 +52,10 @@ func newApp(
 	taskWorker *server.TaskWorker,
 	siteMsgSub *worker.SiteMsgSubscriber,
 	logRetentionWorker *worker.LogRetentionWorker,
+	radarEventRetentionWorker *worker.RadarEventRetentionWorker,
 ) *kratos.App {
 	// asynq 未启用时 NewAsynqServer 返回 nil，勿注册以免 nil 接口调用 Start panic。
-	servers := []transport.Server{hs, coreSrv, taskWorker, siteMsgSub, logRetentionWorker}
+	servers := []transport.Server{hs, coreSrv, taskWorker, siteMsgSub, logRetentionWorker, radarEventRetentionWorker}
 	if asynqSrv != nil {
 		servers = append(servers, asynqSrv)
 	}

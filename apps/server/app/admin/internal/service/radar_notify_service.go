@@ -2,62 +2,81 @@ package service
 
 import (
 	"context"
-	"sync"
+	"strconv"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
 
+	adminV1 "framework/api/gen/go/admin/v1"
 	radarV1 "framework/api/gen/go/radar/v1"
+	"framework/app/admin/internal/biz"
 )
 
-// RadarNotifyService demo notifications for the radar module.
-// Distinct from platform NotificationMessageService.
-// TODO(ent): persist + join platform user; optional daily digest worker.
+// RadarNotifyService 雷达通知服务：通知=当前用户的盯盘事件视图。
+// 与平台 NotificationMessageService 的分工：平台通知走站内信/推送体系；
+// 雷达通知只表达"我盯的仓库有变化"，统一由盯盘事件驱动，不再独立存储（消除重复造轮子）。
 type RadarNotifyService struct {
-	log   *log.Helper
-	mu    sync.RWMutex
-	items []*radarV1.RadarNotification
+	uc  *biz.RadarNotifyUsecase
+	log *log.Helper
 }
 
-func NewRadarNotifyService(logger log.Logger) *RadarNotifyService {
+func NewRadarNotifyService(uc *biz.RadarNotifyUsecase, logger log.Logger) *RadarNotifyService {
 	return &RadarNotifyService{
+		uc:  uc,
 		log: log.NewHelper(log.With(logger, "module", "radar/notify/service")),
-		items: []*radarV1.RadarNotification{{
-			Id: "n1", Title: "\u6bcf\u65e5\u70ed\u95e8\u6458\u8981", Body: "\u4eca\u65e5\u699c\u5df2\u66f4\u65b0\uff1b3 \u4e2a\u65b0\u8fdb\u4ed3\u5e93\u503c\u5f97\u5173\u6ce8",
-			Kind: "daily_digest", CreatedAt: time.Now().UTC().Format(time.RFC3339), Read: false,
-		}},
 	}
 }
 
-func (s *RadarNotifyService) ListNotifications(_ context.Context, req *radarV1.ListRadarNotificationsRequest) (*radarV1.ListRadarNotificationsResponse, error) {
+func (s *RadarNotifyService) ListNotifications(ctx context.Context, req *radarV1.ListRadarNotificationsRequest) (*radarV1.ListRadarNotificationsResponse, error) {
+	userID, err := currentUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	unreadOnly := req != nil && req.UnreadOnly
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	out := make([]*radarV1.RadarNotification, 0, len(s.items))
-	for _, n := range s.items {
-		if unreadOnly && n.Read {
-			continue
-		}
-		out = append(out, n)
+	events, err := s.uc.ListNotifications(ctx, userID, unreadOnly)
+	if err != nil {
+		return nil, err
 	}
-	return &radarV1.ListRadarNotificationsResponse{Items: out}, nil
+	return &radarV1.ListRadarNotificationsResponse{Items: toRadarNotifications(events)}, nil
 }
 
-func (s *RadarNotifyService) MarkNotificationsRead(_ context.Context, req *radarV1.MarkRadarNotificationsReadRequest) (*radarV1.MarkRadarNotificationsReadResponse, error) {
-	ids := []string{}
+func (s *RadarNotifyService) MarkNotificationsRead(ctx context.Context, req *radarV1.MarkRadarNotificationsReadRequest) (*radarV1.MarkRadarNotificationsReadResponse, error) {
+	userID, err := currentUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ids := make([]uint32, 0, 4)
 	if req != nil {
-		ids = req.Ids
-	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	set := map[string]struct{}{}
-	for _, id := range ids {
-		set[id] = struct{}{}
-	}
-	for i := range s.items {
-		if _, ok := set[s.items[i].Id]; ok || len(ids) == 0 {
-			s.items[i].Read = true
+		for _, raw := range req.Ids {
+			id, err := strconv.ParseUint(raw, 10, 32)
+			if err != nil {
+				return nil, adminV1.ErrorBadRequest("invalid parameter: ids must be numeric")
+			}
+			ids = append(ids, uint32(id))
 		}
+	}
+	if _, err := s.uc.MarkNotificationsRead(ctx, userID, ids); err != nil {
+		return nil, err
 	}
 	return &radarV1.MarkRadarNotificationsReadResponse{}, nil
+}
+
+// toRadarNotifications 盯盘事件 → 通知视图（title=仓库，body=事件文案）。
+func toRadarNotifications(in []*biz.RadarWatchEvent) []*radarV1.RadarNotification {
+	out := make([]*radarV1.RadarNotification, 0, len(in))
+	for _, e := range in {
+		kind := e.Kind
+		if kind == "" {
+			kind = "stars"
+		}
+		out = append(out, &radarV1.RadarNotification{
+			Id:        strconv.FormatUint(uint64(e.ID), 10),
+			Title:     e.FullName,
+			Body:      e.Message,
+			Kind:      kind,
+			CreatedAt: e.CreateTime.UTC().Format(time.RFC3339),
+			Read:      e.Read,
+		})
+	}
+	return out
 }

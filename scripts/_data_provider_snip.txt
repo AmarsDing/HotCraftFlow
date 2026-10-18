@@ -1,0 +1,230 @@
+﻿var ProviderSet = wire.NewSet(
+	NewData,
+
+	NewEntClient,
+	NewLogEntClient,
+
+	NewAuthenticator,
+	NewAuthorizer,
+
+	NewPasswordCrypto,
+
+	NewLocalStorage,
+
+	NewMenuRepo,
+	NewDictRepo,
+	NewTaskRepo,
+	NewTaskExecutionRepo,
+	NewAdminLoginRestrictionRepo,
+	NewToolLinkRepo,
+	NewToolLinkCategoryRepo,
+	NewToolLinkUserMarkRepo,
+	NewToolLinkSsoTicketRepo,
+	NewApiResourceRepo,
+	NewTopoRepo,
+
+	NewOrganizationRepo,
+	NewDepartmentRepo,
+	NewPositionRepo,
+	NewRoleRepo,
+	NewUserRepo,
+	NewTenantRepo,
+	NewUserCredentialRepo,
+
+	NewAdminLoginLogRepo,
+	NewAdminOperationLogRepo,
+
+	NewFileRepo,
+
+	NewNotificationMessageRepo,
+	NewNotificationMessageCategoryRepo,
+	NewNotificationMessageRecipientRepo,
+	NewPrivateMessageRepo,
+
+	NewUserTokenRepo,
+
+	NewAirportRepo,
+	NewAirportPostRepo,
+	NewAirportRunwayRepo,
+	NewAirportRunwayEndRepo,
+	NewRunwayEndDeviceBindingRepo,
+	NewAwosSensorDeviceRepo,
+
+	NewMonitorAssetRepo,
+	NewMonitorDeviceRepo,
+	NewAssetExtendRepo,
+	NewAssetDepreciationRepo,
+	NewAssetNatsRetryRepo,
+	NewDeviceCategoryRepo,
+	NewDeviceManufacturerRepo,
+	NewDeviceModelRepo,
+
+	NewSnmpConfigRepo,
+	NewIcmpConfigRepo,
+	NewDeviceProtocolBindingRepo,
+	NewProtocolTemplateRepo,
+	NewProtocolRepo,
+	NewCredentialRepo,
+
+	NewSshConfigRepo,
+	NewModbusConfigRepo,
+	NewIcdConfigRepo,
+	NewOpcConfigRepo,
+	NewBacnetConfigRepo,
+
+	NewDeviceExtComputerRepo,
+	NewDeviceExtSwitchRepo,
+	NewDeviceExtUpsRepo,
+	NewDeviceExtHumitureRepo,
+	NewDeviceExtCameraRepo,
+
+	NewDevice3dModelRepo,
+	NewAssetStatusHistoryRepo,
+	NewAssetHistoryRepo,
+	NewAssetDependencyRelationRepo,
+	NewDeviceQrCodeRepo,
+	NewDeviceRfidTagRepo,
+
+	NewCasbinRuleRepo,
+	NewRoleResourceGroupRepo,
+
+	// 库存管理仓储（09 part/inventory 子服务）
+	NewInventoryPartRepo,
+	NewInventoryPartCategoryRepo,
+	NewInventorySupplierRepo,
+	NewInventoryWarehouseRepo,
+	NewInventoryStockRepo,
+	NewInventoryAlertRuleRepo,
+	NewInventoryAlertLogRepo,
+
+	// 库存统计与盘点仓储（09 批次 B）
+	NewInventoryStatisticsRepo,
+	NewInventoryCheckRepo,
+
+	// 智能库房仓储（09 批次 C：库房设备 + 环境监控分区表）
+	NewWarehouseDeviceRepo,
+	NewWarehouseEnvironmentRepo,
+
+	// 资产全生命周期仓储（09 批次 A：分类树/生命周期/资产出入库）
+	NewAssetCategoryRepo,
+	NewAssetLifecycleRepo,
+	NewAssetStockRepo,
+
+	// Redis 客户端（排班分布式锁、工单编号计数器、知识库 use_count 异步累计）
+	NewRedisClient,
+
+	// 设备分组与标签仓储（3.2）
+	NewAssetGroupRepo,
+	NewAssetTagRepo,
+
+	// 资源组仓储（只读：数据权限/分析任务 target_type=resource_group 候选）
+	NewResourceGroupRepo,
+
+	// 资产语音别名仓储（19.6 P0）
+	NewAssetAliasRepo,
+
+	// 排班管理仓储（3.4，10-schedule 子服务）
+	NewScheduleClassRepo,
+	NewScheduleRuleRepo,
+	NewScheduleRepo,
+	NewScheduleLeaveRepo,
+	NewScheduleAttendanceRepo,
+	NewScheduleAbsenteeismRepo,
+	NewShiftHandoverRepo,
+
+	// 工单+知识库仓储（3.5，10-business 子服务）
+	NewTicketRepo,
+	// 04 告警存在性校验客户端（alarm_derived 工单建单前跨模块校验，B6）
+	NewMonitoralarmClient,
+	NewKnowledgeBaseRepo,
+	NewKnowledgeTagRepo,
+
+	// 许可证管理仓储（10-license 子服务）
+	NewLicenseRepo,
+	NewLicenseUsageRecordRepo,
+	NewLicenseVerificationLogRepo,
+	NewLicenseSecurityProvider,
+
+	// 配线资料管理仓储（10-wiring 子服务）
+	NewWiringRepo,
+	NewWiringDiagramRepo,
+	NewWiringMonitoringRepo,
+
+	// 机场域仓储（10-business 机场子域，详细设计 §1.9-§1.12）
+	NewAirportBusinessInfoRepo,
+	NewAirportDeviceRelationRepo,
+	NewAirportOperationConfigRepo,
+	NewAirportOperationLogRepo,
+
+	// 变更/事件管理仓储（10-business 运维服务，详细设计 §1.29/§1.30）
+	NewChangeRecordRepo,
+	NewIncidentRecordRepo,
+
+	// 文档资料库仓储（10-document 子服务；构造函数直接返回 biz 接口，wire 自动绑定）
+	NewDocumentCategoryRepo,
+	NewDocumentTagRepo,
+	NewDocumentGroupRepo,
+
+	NewLoginFailCounterRepo,
+	NewPasswordHistoryRepo,
+	NewSystemConfigRepo,
+	NewDataPermissionRepo,
+	NewRoleDeptRepo,
+
+	// 数据中心物理资产仓储（02 模块 v2.0，详细设计 §1.29-§1.36）
+	NewDcRoomRepo,
+	NewDcRackRepo,
+	NewDcRackSlotRepo,
+	NewDcRoomItemRepo,
+	NewDcPduDeviceRepo,
+	NewDcPowerCabinetRepo,
+	NewDcPowerLineRepo,
+	NewDcCableRepo,
+	NewDcLifecycleLogRepo,
+	NewCommnavChainRepo,
+
+	// 菜单路由域端口（分层合规重构）
+	wire.Bind(new(biz.MenuRepo), new(*MenuRepo)),
+	wire.Bind(new(biz.ApiResourceRepo), new(*ApiResourceRepo)),
+	// 机场/岗位端口（weather 子域 CRUD）
+	wire.Bind(new(biz.AirportRepo), new(*AirportRepo)),
+	wire.Bind(new(biz.AirportPostRepo), new(*AirportPostRepo)),
+	// 机场跑道/跑道端端口（weather 子域 CRUD）
+	wire.Bind(new(biz.AirportRunwayRepo), new(*AirportRunwayRepo)),
+	wire.Bind(new(biz.AirportRunwayEndRepo), new(*AirportRunwayEndRepo)),
+	// 跑道端设备绑定端口（L3 绑定层 CRUD）
+	wire.Bind(new(biz.RunwayEndDeviceBindingRepo), new(*RunwayEndDeviceBindingRepo)),
+	// 自观设备传感器端口（L4 过渡表 CRUD）
+	wire.Bind(new(biz.AwosSensorDeviceRepo), new(*AwosSensorDeviceRepo)),
+	// 消息域端口（站内通知/私信 CRUD）
+	wire.Bind(new(biz.NotificationMessageRepo), new(*NotificationMessageRepo)),
+	wire.Bind(new(biz.NotificationMessageCategoryRepo), new(*NotificationMessageCategoryRepo)),
+	wire.Bind(new(biz.NotificationMessageRecipientRepo), new(*NotificationMessageRecipientRepo)),
+	wire.Bind(new(biz.PrivateMessageRepo), new(*PrivateMessageRepo)),
+	// 日志会话域端口（登录限制/用户令牌）
+	wire.Bind(new(biz.AdminLoginRestrictionRepo), new(*AdminLoginRestrictionRepo)),
+	wire.Bind(new(biz.UserTokenRepo), new(*UserTokenCacheRepo)),
+	// 认证域端口（登录失败计数/密码历史）
+	wire.Bind(new(biz.LoginFailCounterRepo), new(*LoginFailCounterRepo)),
+	wire.Bind(new(biz.PasswordHistoryRepo), new(*PasswordHistoryRepo)),
+	// 用户域/审计日志仓储绑定 biz 窄接口端口（biz 层禁止 import data，避免 import cycle）
+	wire.Bind(new(biz.UserRepo), new(*UserRepo)),
+	wire.Bind(new(biz.UserCredentialRepo), new(*UserCredentialRepo)),
+	wire.Bind(new(biz.RoleRepo), new(*RoleRepo)),
+	wire.Bind(new(biz.DepartmentRepo), new(*DepartmentRepo)),
+	wire.Bind(new(biz.PositionRepo), new(*PositionRepo)),
+	wire.Bind(new(biz.OrganizationRepo), new(*OrganizationRepo)),
+	wire.Bind(new(biz.TenantRepo), new(*TenantRepo)),
+	wire.Bind(new(biz.AdminLoginLogRepo), new(*AdminLoginLogRepo)),
+	wire.Bind(new(biz.AdminOperationLogRepo), new(*AdminOperationLogRepo)),
+	wire.Bind(new(biz.RoleResourceGroupReader), new(*RoleResourceGroupRepo)),
+	// 授权策略端口：角色/资源变更后的策略同步编排（引擎本体由 server 装配层持有）
+	wire.Bind(new(biz.AuthorizerPort), new(*Authorizer)),
+	// 站内信系统消息端口：库存预警等子系统按规则 notify_users 直达用户
+	wire.Bind(new(biz.InternalMessageNotifier), new(*NotificationMessageRepo)),
+	// Redis 能力端口：排班锁/工单计数器/知识库 use_count
+	wire.Bind(new(biz.RedisStore), new(*RedisClient)),
+	// 许可证域端口：仓储 + 验签/机器指纹安全提供者（10-license）
+	wire.Bind(new(biz.LicenseRepo), new(*LicenseRepo)),
+	wire.Bind(new(biz.LicenseUsageRecordRepo), new(*LicenseUsageRecordRepo)),
+	wire.Bind(new(biz.LicenseVerificationLogRepo), new(*LicenseVerificationLogRepo)),

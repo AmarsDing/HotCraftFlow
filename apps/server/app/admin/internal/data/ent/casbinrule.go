@@ -4,8 +4,8 @@ package ent
 
 import (
 	"fmt"
-	"strings"
 	"framework/app/admin/internal/data/ent/casbinrule"
+	"strings"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"

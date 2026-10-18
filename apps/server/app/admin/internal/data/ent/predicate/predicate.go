@@ -63,6 +63,15 @@ type Position func(*sql.Selector)
 // PrivateMessage is the predicate function for privatemessage builders.
 type PrivateMessage func(*sql.Selector)
 
+// RadarUserConfig is the predicate function for radaruserconfig builders.
+type RadarUserConfig func(*sql.Selector)
+
+// RadarWatch is the predicate function for radarwatch builders.
+type RadarWatch func(*sql.Selector)
+
+// RadarWatchEvent is the predicate function for radarwatchevent builders.
+type RadarWatchEvent func(*sql.Selector)
+
 // ResourceGroup is the predicate function for resourcegroup builders.
 type ResourceGroup func(*sql.Selector)
 

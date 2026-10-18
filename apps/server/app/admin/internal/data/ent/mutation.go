@@ -6,8 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
-	"time"
 	servicev1 "framework/api/gen/go/admin/v1"
 	"framework/app/admin/internal/data/ent/adminloginlog"
 	"framework/app/admin/internal/data/ent/adminloginrestriction"
@@ -29,6 +27,9 @@ import (
 	"framework/app/admin/internal/data/ent/position"
 	"framework/app/admin/internal/data/ent/predicate"
 	"framework/app/admin/internal/data/ent/privatemessage"
+	"framework/app/admin/internal/data/ent/radaruserconfig"
+	"framework/app/admin/internal/data/ent/radarwatch"
+	"framework/app/admin/internal/data/ent/radarwatchevent"
 	"framework/app/admin/internal/data/ent/resourcegroup"
 	"framework/app/admin/internal/data/ent/role"
 	"framework/app/admin/internal/data/ent/roleapi"
@@ -49,6 +50,8 @@ import (
 	"framework/app/admin/internal/data/ent/userpost"
 	"framework/app/admin/internal/data/ent/userrole"
 	"framework/app/admin/internal/data/ent/usertoken"
+	"sync"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -82,6 +85,9 @@ const (
 	TypePasswordHistory              = "PasswordHistory"
 	TypePosition                     = "Position"
 	TypePrivateMessage               = "PrivateMessage"
+	TypeRadarUserConfig              = "RadarUserConfig"
+	TypeRadarWatch                   = "RadarWatch"
+	TypeRadarWatchEvent              = "RadarWatchEvent"
 	TypeResourceGroup                = "ResourceGroup"
 	TypeRole                         = "Role"
 	TypeRoleApi                      = "RoleApi"
@@ -25045,6 +25051,3197 @@ func (m *PrivateMessageMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *PrivateMessageMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown PrivateMessage edge %s", name)
+}
+
+// RadarUserConfigMutation represents an operation that mutates the RadarUserConfig nodes in the graph.
+type RadarUserConfigMutation struct {
+	config
+	op               Op
+	typ              string
+	id               *uint32
+	create_time      *time.Time
+	update_time      *time.Time
+	delete_time      *time.Time
+	user_id          *uint32
+	adduser_id       *int32
+	github_token_enc *string
+	llm_enabled      *bool
+	llm_base_url     *string
+	llm_api_key_enc  *string
+	llm_model        *string
+	clone_enabled    *bool
+	clone_dir        *string
+	clearedFields    map[string]struct{}
+	done             bool
+	oldValue         func(context.Context) (*RadarUserConfig, error)
+	predicates       []predicate.RadarUserConfig
+}
+
+var _ ent.Mutation = (*RadarUserConfigMutation)(nil)
+
+// radaruserconfigOption allows management of the mutation configuration using functional options.
+type radaruserconfigOption func(*RadarUserConfigMutation)
+
+// newRadarUserConfigMutation creates new mutation for the RadarUserConfig entity.
+func newRadarUserConfigMutation(c config, op Op, opts ...radaruserconfigOption) *RadarUserConfigMutation {
+	m := &RadarUserConfigMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeRadarUserConfig,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withRadarUserConfigID sets the ID field of the mutation.
+func withRadarUserConfigID(id uint32) radaruserconfigOption {
+	return func(m *RadarUserConfigMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *RadarUserConfig
+		)
+		m.oldValue = func(ctx context.Context) (*RadarUserConfig, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().RadarUserConfig.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withRadarUserConfig sets the old RadarUserConfig of the mutation.
+func withRadarUserConfig(node *RadarUserConfig) radaruserconfigOption {
+	return func(m *RadarUserConfigMutation) {
+		m.oldValue = func(context.Context) (*RadarUserConfig, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m RadarUserConfigMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m RadarUserConfigMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of RadarUserConfig entities.
+func (m *RadarUserConfigMutation) SetID(id uint32) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *RadarUserConfigMutation) ID() (id uint32, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *RadarUserConfigMutation) IDs(ctx context.Context) ([]uint32, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint32{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().RadarUserConfig.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *RadarUserConfigMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *RadarUserConfigMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the RadarUserConfig entity.
+// If the RadarUserConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarUserConfigMutation) OldCreateTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ClearCreateTime clears the value of the "create_time" field.
+func (m *RadarUserConfigMutation) ClearCreateTime() {
+	m.create_time = nil
+	m.clearedFields[radaruserconfig.FieldCreateTime] = struct{}{}
+}
+
+// CreateTimeCleared returns if the "create_time" field was cleared in this mutation.
+func (m *RadarUserConfigMutation) CreateTimeCleared() bool {
+	_, ok := m.clearedFields[radaruserconfig.FieldCreateTime]
+	return ok
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *RadarUserConfigMutation) ResetCreateTime() {
+	m.create_time = nil
+	delete(m.clearedFields, radaruserconfig.FieldCreateTime)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *RadarUserConfigMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *RadarUserConfigMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the RadarUserConfig entity.
+// If the RadarUserConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarUserConfigMutation) OldUpdateTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (m *RadarUserConfigMutation) ClearUpdateTime() {
+	m.update_time = nil
+	m.clearedFields[radaruserconfig.FieldUpdateTime] = struct{}{}
+}
+
+// UpdateTimeCleared returns if the "update_time" field was cleared in this mutation.
+func (m *RadarUserConfigMutation) UpdateTimeCleared() bool {
+	_, ok := m.clearedFields[radaruserconfig.FieldUpdateTime]
+	return ok
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *RadarUserConfigMutation) ResetUpdateTime() {
+	m.update_time = nil
+	delete(m.clearedFields, radaruserconfig.FieldUpdateTime)
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *RadarUserConfigMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *RadarUserConfigMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the RadarUserConfig entity.
+// If the RadarUserConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarUserConfigMutation) OldDeleteTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *RadarUserConfigMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[radaruserconfig.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *RadarUserConfigMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[radaruserconfig.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *RadarUserConfigMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, radaruserconfig.FieldDeleteTime)
+}
+
+// SetUserID sets the "user_id" field.
+func (m *RadarUserConfigMutation) SetUserID(u uint32) {
+	m.user_id = &u
+	m.adduser_id = nil
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *RadarUserConfigMutation) UserID() (r uint32, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the RadarUserConfig entity.
+// If the RadarUserConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarUserConfigMutation) OldUserID(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// AddUserID adds u to the "user_id" field.
+func (m *RadarUserConfigMutation) AddUserID(u int32) {
+	if m.adduser_id != nil {
+		*m.adduser_id += u
+	} else {
+		m.adduser_id = &u
+	}
+}
+
+// AddedUserID returns the value that was added to the "user_id" field in this mutation.
+func (m *RadarUserConfigMutation) AddedUserID() (r int32, exists bool) {
+	v := m.adduser_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *RadarUserConfigMutation) ResetUserID() {
+	m.user_id = nil
+	m.adduser_id = nil
+}
+
+// SetGithubTokenEnc sets the "github_token_enc" field.
+func (m *RadarUserConfigMutation) SetGithubTokenEnc(s string) {
+	m.github_token_enc = &s
+}
+
+// GithubTokenEnc returns the value of the "github_token_enc" field in the mutation.
+func (m *RadarUserConfigMutation) GithubTokenEnc() (r string, exists bool) {
+	v := m.github_token_enc
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGithubTokenEnc returns the old "github_token_enc" field's value of the RadarUserConfig entity.
+// If the RadarUserConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarUserConfigMutation) OldGithubTokenEnc(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGithubTokenEnc is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGithubTokenEnc requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGithubTokenEnc: %w", err)
+	}
+	return oldValue.GithubTokenEnc, nil
+}
+
+// ClearGithubTokenEnc clears the value of the "github_token_enc" field.
+func (m *RadarUserConfigMutation) ClearGithubTokenEnc() {
+	m.github_token_enc = nil
+	m.clearedFields[radaruserconfig.FieldGithubTokenEnc] = struct{}{}
+}
+
+// GithubTokenEncCleared returns if the "github_token_enc" field was cleared in this mutation.
+func (m *RadarUserConfigMutation) GithubTokenEncCleared() bool {
+	_, ok := m.clearedFields[radaruserconfig.FieldGithubTokenEnc]
+	return ok
+}
+
+// ResetGithubTokenEnc resets all changes to the "github_token_enc" field.
+func (m *RadarUserConfigMutation) ResetGithubTokenEnc() {
+	m.github_token_enc = nil
+	delete(m.clearedFields, radaruserconfig.FieldGithubTokenEnc)
+}
+
+// SetLlmEnabled sets the "llm_enabled" field.
+func (m *RadarUserConfigMutation) SetLlmEnabled(b bool) {
+	m.llm_enabled = &b
+}
+
+// LlmEnabled returns the value of the "llm_enabled" field in the mutation.
+func (m *RadarUserConfigMutation) LlmEnabled() (r bool, exists bool) {
+	v := m.llm_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLlmEnabled returns the old "llm_enabled" field's value of the RadarUserConfig entity.
+// If the RadarUserConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarUserConfigMutation) OldLlmEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLlmEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLlmEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLlmEnabled: %w", err)
+	}
+	return oldValue.LlmEnabled, nil
+}
+
+// ResetLlmEnabled resets all changes to the "llm_enabled" field.
+func (m *RadarUserConfigMutation) ResetLlmEnabled() {
+	m.llm_enabled = nil
+}
+
+// SetLlmBaseURL sets the "llm_base_url" field.
+func (m *RadarUserConfigMutation) SetLlmBaseURL(s string) {
+	m.llm_base_url = &s
+}
+
+// LlmBaseURL returns the value of the "llm_base_url" field in the mutation.
+func (m *RadarUserConfigMutation) LlmBaseURL() (r string, exists bool) {
+	v := m.llm_base_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLlmBaseURL returns the old "llm_base_url" field's value of the RadarUserConfig entity.
+// If the RadarUserConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarUserConfigMutation) OldLlmBaseURL(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLlmBaseURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLlmBaseURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLlmBaseURL: %w", err)
+	}
+	return oldValue.LlmBaseURL, nil
+}
+
+// ClearLlmBaseURL clears the value of the "llm_base_url" field.
+func (m *RadarUserConfigMutation) ClearLlmBaseURL() {
+	m.llm_base_url = nil
+	m.clearedFields[radaruserconfig.FieldLlmBaseURL] = struct{}{}
+}
+
+// LlmBaseURLCleared returns if the "llm_base_url" field was cleared in this mutation.
+func (m *RadarUserConfigMutation) LlmBaseURLCleared() bool {
+	_, ok := m.clearedFields[radaruserconfig.FieldLlmBaseURL]
+	return ok
+}
+
+// ResetLlmBaseURL resets all changes to the "llm_base_url" field.
+func (m *RadarUserConfigMutation) ResetLlmBaseURL() {
+	m.llm_base_url = nil
+	delete(m.clearedFields, radaruserconfig.FieldLlmBaseURL)
+}
+
+// SetLlmAPIKeyEnc sets the "llm_api_key_enc" field.
+func (m *RadarUserConfigMutation) SetLlmAPIKeyEnc(s string) {
+	m.llm_api_key_enc = &s
+}
+
+// LlmAPIKeyEnc returns the value of the "llm_api_key_enc" field in the mutation.
+func (m *RadarUserConfigMutation) LlmAPIKeyEnc() (r string, exists bool) {
+	v := m.llm_api_key_enc
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLlmAPIKeyEnc returns the old "llm_api_key_enc" field's value of the RadarUserConfig entity.
+// If the RadarUserConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarUserConfigMutation) OldLlmAPIKeyEnc(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLlmAPIKeyEnc is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLlmAPIKeyEnc requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLlmAPIKeyEnc: %w", err)
+	}
+	return oldValue.LlmAPIKeyEnc, nil
+}
+
+// ClearLlmAPIKeyEnc clears the value of the "llm_api_key_enc" field.
+func (m *RadarUserConfigMutation) ClearLlmAPIKeyEnc() {
+	m.llm_api_key_enc = nil
+	m.clearedFields[radaruserconfig.FieldLlmAPIKeyEnc] = struct{}{}
+}
+
+// LlmAPIKeyEncCleared returns if the "llm_api_key_enc" field was cleared in this mutation.
+func (m *RadarUserConfigMutation) LlmAPIKeyEncCleared() bool {
+	_, ok := m.clearedFields[radaruserconfig.FieldLlmAPIKeyEnc]
+	return ok
+}
+
+// ResetLlmAPIKeyEnc resets all changes to the "llm_api_key_enc" field.
+func (m *RadarUserConfigMutation) ResetLlmAPIKeyEnc() {
+	m.llm_api_key_enc = nil
+	delete(m.clearedFields, radaruserconfig.FieldLlmAPIKeyEnc)
+}
+
+// SetLlmModel sets the "llm_model" field.
+func (m *RadarUserConfigMutation) SetLlmModel(s string) {
+	m.llm_model = &s
+}
+
+// LlmModel returns the value of the "llm_model" field in the mutation.
+func (m *RadarUserConfigMutation) LlmModel() (r string, exists bool) {
+	v := m.llm_model
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLlmModel returns the old "llm_model" field's value of the RadarUserConfig entity.
+// If the RadarUserConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarUserConfigMutation) OldLlmModel(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLlmModel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLlmModel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLlmModel: %w", err)
+	}
+	return oldValue.LlmModel, nil
+}
+
+// ClearLlmModel clears the value of the "llm_model" field.
+func (m *RadarUserConfigMutation) ClearLlmModel() {
+	m.llm_model = nil
+	m.clearedFields[radaruserconfig.FieldLlmModel] = struct{}{}
+}
+
+// LlmModelCleared returns if the "llm_model" field was cleared in this mutation.
+func (m *RadarUserConfigMutation) LlmModelCleared() bool {
+	_, ok := m.clearedFields[radaruserconfig.FieldLlmModel]
+	return ok
+}
+
+// ResetLlmModel resets all changes to the "llm_model" field.
+func (m *RadarUserConfigMutation) ResetLlmModel() {
+	m.llm_model = nil
+	delete(m.clearedFields, radaruserconfig.FieldLlmModel)
+}
+
+// SetCloneEnabled sets the "clone_enabled" field.
+func (m *RadarUserConfigMutation) SetCloneEnabled(b bool) {
+	m.clone_enabled = &b
+}
+
+// CloneEnabled returns the value of the "clone_enabled" field in the mutation.
+func (m *RadarUserConfigMutation) CloneEnabled() (r bool, exists bool) {
+	v := m.clone_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCloneEnabled returns the old "clone_enabled" field's value of the RadarUserConfig entity.
+// If the RadarUserConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarUserConfigMutation) OldCloneEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCloneEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCloneEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCloneEnabled: %w", err)
+	}
+	return oldValue.CloneEnabled, nil
+}
+
+// ResetCloneEnabled resets all changes to the "clone_enabled" field.
+func (m *RadarUserConfigMutation) ResetCloneEnabled() {
+	m.clone_enabled = nil
+}
+
+// SetCloneDir sets the "clone_dir" field.
+func (m *RadarUserConfigMutation) SetCloneDir(s string) {
+	m.clone_dir = &s
+}
+
+// CloneDir returns the value of the "clone_dir" field in the mutation.
+func (m *RadarUserConfigMutation) CloneDir() (r string, exists bool) {
+	v := m.clone_dir
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCloneDir returns the old "clone_dir" field's value of the RadarUserConfig entity.
+// If the RadarUserConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarUserConfigMutation) OldCloneDir(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCloneDir is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCloneDir requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCloneDir: %w", err)
+	}
+	return oldValue.CloneDir, nil
+}
+
+// ClearCloneDir clears the value of the "clone_dir" field.
+func (m *RadarUserConfigMutation) ClearCloneDir() {
+	m.clone_dir = nil
+	m.clearedFields[radaruserconfig.FieldCloneDir] = struct{}{}
+}
+
+// CloneDirCleared returns if the "clone_dir" field was cleared in this mutation.
+func (m *RadarUserConfigMutation) CloneDirCleared() bool {
+	_, ok := m.clearedFields[radaruserconfig.FieldCloneDir]
+	return ok
+}
+
+// ResetCloneDir resets all changes to the "clone_dir" field.
+func (m *RadarUserConfigMutation) ResetCloneDir() {
+	m.clone_dir = nil
+	delete(m.clearedFields, radaruserconfig.FieldCloneDir)
+}
+
+// Where appends a list predicates to the RadarUserConfigMutation builder.
+func (m *RadarUserConfigMutation) Where(ps ...predicate.RadarUserConfig) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the RadarUserConfigMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *RadarUserConfigMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.RadarUserConfig, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *RadarUserConfigMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *RadarUserConfigMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (RadarUserConfig).
+func (m *RadarUserConfigMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *RadarUserConfigMutation) Fields() []string {
+	fields := make([]string, 0, 11)
+	if m.create_time != nil {
+		fields = append(fields, radaruserconfig.FieldCreateTime)
+	}
+	if m.update_time != nil {
+		fields = append(fields, radaruserconfig.FieldUpdateTime)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, radaruserconfig.FieldDeleteTime)
+	}
+	if m.user_id != nil {
+		fields = append(fields, radaruserconfig.FieldUserID)
+	}
+	if m.github_token_enc != nil {
+		fields = append(fields, radaruserconfig.FieldGithubTokenEnc)
+	}
+	if m.llm_enabled != nil {
+		fields = append(fields, radaruserconfig.FieldLlmEnabled)
+	}
+	if m.llm_base_url != nil {
+		fields = append(fields, radaruserconfig.FieldLlmBaseURL)
+	}
+	if m.llm_api_key_enc != nil {
+		fields = append(fields, radaruserconfig.FieldLlmAPIKeyEnc)
+	}
+	if m.llm_model != nil {
+		fields = append(fields, radaruserconfig.FieldLlmModel)
+	}
+	if m.clone_enabled != nil {
+		fields = append(fields, radaruserconfig.FieldCloneEnabled)
+	}
+	if m.clone_dir != nil {
+		fields = append(fields, radaruserconfig.FieldCloneDir)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *RadarUserConfigMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case radaruserconfig.FieldCreateTime:
+		return m.CreateTime()
+	case radaruserconfig.FieldUpdateTime:
+		return m.UpdateTime()
+	case radaruserconfig.FieldDeleteTime:
+		return m.DeleteTime()
+	case radaruserconfig.FieldUserID:
+		return m.UserID()
+	case radaruserconfig.FieldGithubTokenEnc:
+		return m.GithubTokenEnc()
+	case radaruserconfig.FieldLlmEnabled:
+		return m.LlmEnabled()
+	case radaruserconfig.FieldLlmBaseURL:
+		return m.LlmBaseURL()
+	case radaruserconfig.FieldLlmAPIKeyEnc:
+		return m.LlmAPIKeyEnc()
+	case radaruserconfig.FieldLlmModel:
+		return m.LlmModel()
+	case radaruserconfig.FieldCloneEnabled:
+		return m.CloneEnabled()
+	case radaruserconfig.FieldCloneDir:
+		return m.CloneDir()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *RadarUserConfigMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case radaruserconfig.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case radaruserconfig.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case radaruserconfig.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
+	case radaruserconfig.FieldUserID:
+		return m.OldUserID(ctx)
+	case radaruserconfig.FieldGithubTokenEnc:
+		return m.OldGithubTokenEnc(ctx)
+	case radaruserconfig.FieldLlmEnabled:
+		return m.OldLlmEnabled(ctx)
+	case radaruserconfig.FieldLlmBaseURL:
+		return m.OldLlmBaseURL(ctx)
+	case radaruserconfig.FieldLlmAPIKeyEnc:
+		return m.OldLlmAPIKeyEnc(ctx)
+	case radaruserconfig.FieldLlmModel:
+		return m.OldLlmModel(ctx)
+	case radaruserconfig.FieldCloneEnabled:
+		return m.OldCloneEnabled(ctx)
+	case radaruserconfig.FieldCloneDir:
+		return m.OldCloneDir(ctx)
+	}
+	return nil, fmt.Errorf("unknown RadarUserConfig field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RadarUserConfigMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case radaruserconfig.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case radaruserconfig.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case radaruserconfig.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
+	case radaruserconfig.FieldUserID:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case radaruserconfig.FieldGithubTokenEnc:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGithubTokenEnc(v)
+		return nil
+	case radaruserconfig.FieldLlmEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLlmEnabled(v)
+		return nil
+	case radaruserconfig.FieldLlmBaseURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLlmBaseURL(v)
+		return nil
+	case radaruserconfig.FieldLlmAPIKeyEnc:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLlmAPIKeyEnc(v)
+		return nil
+	case radaruserconfig.FieldLlmModel:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLlmModel(v)
+		return nil
+	case radaruserconfig.FieldCloneEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCloneEnabled(v)
+		return nil
+	case radaruserconfig.FieldCloneDir:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCloneDir(v)
+		return nil
+	}
+	return fmt.Errorf("unknown RadarUserConfig field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *RadarUserConfigMutation) AddedFields() []string {
+	var fields []string
+	if m.adduser_id != nil {
+		fields = append(fields, radaruserconfig.FieldUserID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *RadarUserConfigMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case radaruserconfig.FieldUserID:
+		return m.AddedUserID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RadarUserConfigMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case radaruserconfig.FieldUserID:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUserID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown RadarUserConfig numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *RadarUserConfigMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(radaruserconfig.FieldCreateTime) {
+		fields = append(fields, radaruserconfig.FieldCreateTime)
+	}
+	if m.FieldCleared(radaruserconfig.FieldUpdateTime) {
+		fields = append(fields, radaruserconfig.FieldUpdateTime)
+	}
+	if m.FieldCleared(radaruserconfig.FieldDeleteTime) {
+		fields = append(fields, radaruserconfig.FieldDeleteTime)
+	}
+	if m.FieldCleared(radaruserconfig.FieldGithubTokenEnc) {
+		fields = append(fields, radaruserconfig.FieldGithubTokenEnc)
+	}
+	if m.FieldCleared(radaruserconfig.FieldLlmBaseURL) {
+		fields = append(fields, radaruserconfig.FieldLlmBaseURL)
+	}
+	if m.FieldCleared(radaruserconfig.FieldLlmAPIKeyEnc) {
+		fields = append(fields, radaruserconfig.FieldLlmAPIKeyEnc)
+	}
+	if m.FieldCleared(radaruserconfig.FieldLlmModel) {
+		fields = append(fields, radaruserconfig.FieldLlmModel)
+	}
+	if m.FieldCleared(radaruserconfig.FieldCloneDir) {
+		fields = append(fields, radaruserconfig.FieldCloneDir)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *RadarUserConfigMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *RadarUserConfigMutation) ClearField(name string) error {
+	switch name {
+	case radaruserconfig.FieldCreateTime:
+		m.ClearCreateTime()
+		return nil
+	case radaruserconfig.FieldUpdateTime:
+		m.ClearUpdateTime()
+		return nil
+	case radaruserconfig.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	case radaruserconfig.FieldGithubTokenEnc:
+		m.ClearGithubTokenEnc()
+		return nil
+	case radaruserconfig.FieldLlmBaseURL:
+		m.ClearLlmBaseURL()
+		return nil
+	case radaruserconfig.FieldLlmAPIKeyEnc:
+		m.ClearLlmAPIKeyEnc()
+		return nil
+	case radaruserconfig.FieldLlmModel:
+		m.ClearLlmModel()
+		return nil
+	case radaruserconfig.FieldCloneDir:
+		m.ClearCloneDir()
+		return nil
+	}
+	return fmt.Errorf("unknown RadarUserConfig nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *RadarUserConfigMutation) ResetField(name string) error {
+	switch name {
+	case radaruserconfig.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case radaruserconfig.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case radaruserconfig.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
+	case radaruserconfig.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case radaruserconfig.FieldGithubTokenEnc:
+		m.ResetGithubTokenEnc()
+		return nil
+	case radaruserconfig.FieldLlmEnabled:
+		m.ResetLlmEnabled()
+		return nil
+	case radaruserconfig.FieldLlmBaseURL:
+		m.ResetLlmBaseURL()
+		return nil
+	case radaruserconfig.FieldLlmAPIKeyEnc:
+		m.ResetLlmAPIKeyEnc()
+		return nil
+	case radaruserconfig.FieldLlmModel:
+		m.ResetLlmModel()
+		return nil
+	case radaruserconfig.FieldCloneEnabled:
+		m.ResetCloneEnabled()
+		return nil
+	case radaruserconfig.FieldCloneDir:
+		m.ResetCloneDir()
+		return nil
+	}
+	return fmt.Errorf("unknown RadarUserConfig field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *RadarUserConfigMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *RadarUserConfigMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *RadarUserConfigMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *RadarUserConfigMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *RadarUserConfigMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *RadarUserConfigMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *RadarUserConfigMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown RadarUserConfig unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *RadarUserConfigMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown RadarUserConfig edge %s", name)
+}
+
+// RadarWatchMutation represents an operation that mutates the RadarWatch nodes in the graph.
+type RadarWatchMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *uint32
+	create_time       *time.Time
+	update_time       *time.Time
+	delete_time       *time.Time
+	user_id           *uint32
+	adduser_id        *int32
+	full_name         *string
+	baseline_stars    *int64
+	addbaseline_stars *int64
+	stars             *int64
+	addstars          *int64
+	stars_delta       *int64
+	addstars_delta    *int64
+	unread_count      *uint32
+	addunread_count   *int32
+	html_url          *string
+	sparkline         *[]int64
+	appendsparkline   []int64
+	clearedFields     map[string]struct{}
+	done              bool
+	oldValue          func(context.Context) (*RadarWatch, error)
+	predicates        []predicate.RadarWatch
+}
+
+var _ ent.Mutation = (*RadarWatchMutation)(nil)
+
+// radarwatchOption allows management of the mutation configuration using functional options.
+type radarwatchOption func(*RadarWatchMutation)
+
+// newRadarWatchMutation creates new mutation for the RadarWatch entity.
+func newRadarWatchMutation(c config, op Op, opts ...radarwatchOption) *RadarWatchMutation {
+	m := &RadarWatchMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeRadarWatch,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withRadarWatchID sets the ID field of the mutation.
+func withRadarWatchID(id uint32) radarwatchOption {
+	return func(m *RadarWatchMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *RadarWatch
+		)
+		m.oldValue = func(ctx context.Context) (*RadarWatch, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().RadarWatch.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withRadarWatch sets the old RadarWatch of the mutation.
+func withRadarWatch(node *RadarWatch) radarwatchOption {
+	return func(m *RadarWatchMutation) {
+		m.oldValue = func(context.Context) (*RadarWatch, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m RadarWatchMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m RadarWatchMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of RadarWatch entities.
+func (m *RadarWatchMutation) SetID(id uint32) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *RadarWatchMutation) ID() (id uint32, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *RadarWatchMutation) IDs(ctx context.Context) ([]uint32, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint32{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().RadarWatch.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *RadarWatchMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *RadarWatchMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the RadarWatch entity.
+// If the RadarWatch object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchMutation) OldCreateTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ClearCreateTime clears the value of the "create_time" field.
+func (m *RadarWatchMutation) ClearCreateTime() {
+	m.create_time = nil
+	m.clearedFields[radarwatch.FieldCreateTime] = struct{}{}
+}
+
+// CreateTimeCleared returns if the "create_time" field was cleared in this mutation.
+func (m *RadarWatchMutation) CreateTimeCleared() bool {
+	_, ok := m.clearedFields[radarwatch.FieldCreateTime]
+	return ok
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *RadarWatchMutation) ResetCreateTime() {
+	m.create_time = nil
+	delete(m.clearedFields, radarwatch.FieldCreateTime)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *RadarWatchMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *RadarWatchMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the RadarWatch entity.
+// If the RadarWatch object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchMutation) OldUpdateTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (m *RadarWatchMutation) ClearUpdateTime() {
+	m.update_time = nil
+	m.clearedFields[radarwatch.FieldUpdateTime] = struct{}{}
+}
+
+// UpdateTimeCleared returns if the "update_time" field was cleared in this mutation.
+func (m *RadarWatchMutation) UpdateTimeCleared() bool {
+	_, ok := m.clearedFields[radarwatch.FieldUpdateTime]
+	return ok
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *RadarWatchMutation) ResetUpdateTime() {
+	m.update_time = nil
+	delete(m.clearedFields, radarwatch.FieldUpdateTime)
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *RadarWatchMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *RadarWatchMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the RadarWatch entity.
+// If the RadarWatch object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchMutation) OldDeleteTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *RadarWatchMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[radarwatch.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *RadarWatchMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[radarwatch.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *RadarWatchMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, radarwatch.FieldDeleteTime)
+}
+
+// SetUserID sets the "user_id" field.
+func (m *RadarWatchMutation) SetUserID(u uint32) {
+	m.user_id = &u
+	m.adduser_id = nil
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *RadarWatchMutation) UserID() (r uint32, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the RadarWatch entity.
+// If the RadarWatch object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchMutation) OldUserID(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// AddUserID adds u to the "user_id" field.
+func (m *RadarWatchMutation) AddUserID(u int32) {
+	if m.adduser_id != nil {
+		*m.adduser_id += u
+	} else {
+		m.adduser_id = &u
+	}
+}
+
+// AddedUserID returns the value that was added to the "user_id" field in this mutation.
+func (m *RadarWatchMutation) AddedUserID() (r int32, exists bool) {
+	v := m.adduser_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *RadarWatchMutation) ResetUserID() {
+	m.user_id = nil
+	m.adduser_id = nil
+}
+
+// SetFullName sets the "full_name" field.
+func (m *RadarWatchMutation) SetFullName(s string) {
+	m.full_name = &s
+}
+
+// FullName returns the value of the "full_name" field in the mutation.
+func (m *RadarWatchMutation) FullName() (r string, exists bool) {
+	v := m.full_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFullName returns the old "full_name" field's value of the RadarWatch entity.
+// If the RadarWatch object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchMutation) OldFullName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFullName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFullName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFullName: %w", err)
+	}
+	return oldValue.FullName, nil
+}
+
+// ResetFullName resets all changes to the "full_name" field.
+func (m *RadarWatchMutation) ResetFullName() {
+	m.full_name = nil
+}
+
+// SetBaselineStars sets the "baseline_stars" field.
+func (m *RadarWatchMutation) SetBaselineStars(i int64) {
+	m.baseline_stars = &i
+	m.addbaseline_stars = nil
+}
+
+// BaselineStars returns the value of the "baseline_stars" field in the mutation.
+func (m *RadarWatchMutation) BaselineStars() (r int64, exists bool) {
+	v := m.baseline_stars
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBaselineStars returns the old "baseline_stars" field's value of the RadarWatch entity.
+// If the RadarWatch object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchMutation) OldBaselineStars(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBaselineStars is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBaselineStars requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBaselineStars: %w", err)
+	}
+	return oldValue.BaselineStars, nil
+}
+
+// AddBaselineStars adds i to the "baseline_stars" field.
+func (m *RadarWatchMutation) AddBaselineStars(i int64) {
+	if m.addbaseline_stars != nil {
+		*m.addbaseline_stars += i
+	} else {
+		m.addbaseline_stars = &i
+	}
+}
+
+// AddedBaselineStars returns the value that was added to the "baseline_stars" field in this mutation.
+func (m *RadarWatchMutation) AddedBaselineStars() (r int64, exists bool) {
+	v := m.addbaseline_stars
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetBaselineStars resets all changes to the "baseline_stars" field.
+func (m *RadarWatchMutation) ResetBaselineStars() {
+	m.baseline_stars = nil
+	m.addbaseline_stars = nil
+}
+
+// SetStars sets the "stars" field.
+func (m *RadarWatchMutation) SetStars(i int64) {
+	m.stars = &i
+	m.addstars = nil
+}
+
+// Stars returns the value of the "stars" field in the mutation.
+func (m *RadarWatchMutation) Stars() (r int64, exists bool) {
+	v := m.stars
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStars returns the old "stars" field's value of the RadarWatch entity.
+// If the RadarWatch object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchMutation) OldStars(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStars is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStars requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStars: %w", err)
+	}
+	return oldValue.Stars, nil
+}
+
+// AddStars adds i to the "stars" field.
+func (m *RadarWatchMutation) AddStars(i int64) {
+	if m.addstars != nil {
+		*m.addstars += i
+	} else {
+		m.addstars = &i
+	}
+}
+
+// AddedStars returns the value that was added to the "stars" field in this mutation.
+func (m *RadarWatchMutation) AddedStars() (r int64, exists bool) {
+	v := m.addstars
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearStars clears the value of the "stars" field.
+func (m *RadarWatchMutation) ClearStars() {
+	m.stars = nil
+	m.addstars = nil
+	m.clearedFields[radarwatch.FieldStars] = struct{}{}
+}
+
+// StarsCleared returns if the "stars" field was cleared in this mutation.
+func (m *RadarWatchMutation) StarsCleared() bool {
+	_, ok := m.clearedFields[radarwatch.FieldStars]
+	return ok
+}
+
+// ResetStars resets all changes to the "stars" field.
+func (m *RadarWatchMutation) ResetStars() {
+	m.stars = nil
+	m.addstars = nil
+	delete(m.clearedFields, radarwatch.FieldStars)
+}
+
+// SetStarsDelta sets the "stars_delta" field.
+func (m *RadarWatchMutation) SetStarsDelta(i int64) {
+	m.stars_delta = &i
+	m.addstars_delta = nil
+}
+
+// StarsDelta returns the value of the "stars_delta" field in the mutation.
+func (m *RadarWatchMutation) StarsDelta() (r int64, exists bool) {
+	v := m.stars_delta
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStarsDelta returns the old "stars_delta" field's value of the RadarWatch entity.
+// If the RadarWatch object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchMutation) OldStarsDelta(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStarsDelta is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStarsDelta requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStarsDelta: %w", err)
+	}
+	return oldValue.StarsDelta, nil
+}
+
+// AddStarsDelta adds i to the "stars_delta" field.
+func (m *RadarWatchMutation) AddStarsDelta(i int64) {
+	if m.addstars_delta != nil {
+		*m.addstars_delta += i
+	} else {
+		m.addstars_delta = &i
+	}
+}
+
+// AddedStarsDelta returns the value that was added to the "stars_delta" field in this mutation.
+func (m *RadarWatchMutation) AddedStarsDelta() (r int64, exists bool) {
+	v := m.addstars_delta
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearStarsDelta clears the value of the "stars_delta" field.
+func (m *RadarWatchMutation) ClearStarsDelta() {
+	m.stars_delta = nil
+	m.addstars_delta = nil
+	m.clearedFields[radarwatch.FieldStarsDelta] = struct{}{}
+}
+
+// StarsDeltaCleared returns if the "stars_delta" field was cleared in this mutation.
+func (m *RadarWatchMutation) StarsDeltaCleared() bool {
+	_, ok := m.clearedFields[radarwatch.FieldStarsDelta]
+	return ok
+}
+
+// ResetStarsDelta resets all changes to the "stars_delta" field.
+func (m *RadarWatchMutation) ResetStarsDelta() {
+	m.stars_delta = nil
+	m.addstars_delta = nil
+	delete(m.clearedFields, radarwatch.FieldStarsDelta)
+}
+
+// SetUnreadCount sets the "unread_count" field.
+func (m *RadarWatchMutation) SetUnreadCount(u uint32) {
+	m.unread_count = &u
+	m.addunread_count = nil
+}
+
+// UnreadCount returns the value of the "unread_count" field in the mutation.
+func (m *RadarWatchMutation) UnreadCount() (r uint32, exists bool) {
+	v := m.unread_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUnreadCount returns the old "unread_count" field's value of the RadarWatch entity.
+// If the RadarWatch object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchMutation) OldUnreadCount(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUnreadCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUnreadCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUnreadCount: %w", err)
+	}
+	return oldValue.UnreadCount, nil
+}
+
+// AddUnreadCount adds u to the "unread_count" field.
+func (m *RadarWatchMutation) AddUnreadCount(u int32) {
+	if m.addunread_count != nil {
+		*m.addunread_count += u
+	} else {
+		m.addunread_count = &u
+	}
+}
+
+// AddedUnreadCount returns the value that was added to the "unread_count" field in this mutation.
+func (m *RadarWatchMutation) AddedUnreadCount() (r int32, exists bool) {
+	v := m.addunread_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUnreadCount clears the value of the "unread_count" field.
+func (m *RadarWatchMutation) ClearUnreadCount() {
+	m.unread_count = nil
+	m.addunread_count = nil
+	m.clearedFields[radarwatch.FieldUnreadCount] = struct{}{}
+}
+
+// UnreadCountCleared returns if the "unread_count" field was cleared in this mutation.
+func (m *RadarWatchMutation) UnreadCountCleared() bool {
+	_, ok := m.clearedFields[radarwatch.FieldUnreadCount]
+	return ok
+}
+
+// ResetUnreadCount resets all changes to the "unread_count" field.
+func (m *RadarWatchMutation) ResetUnreadCount() {
+	m.unread_count = nil
+	m.addunread_count = nil
+	delete(m.clearedFields, radarwatch.FieldUnreadCount)
+}
+
+// SetHTMLURL sets the "html_url" field.
+func (m *RadarWatchMutation) SetHTMLURL(s string) {
+	m.html_url = &s
+}
+
+// HTMLURL returns the value of the "html_url" field in the mutation.
+func (m *RadarWatchMutation) HTMLURL() (r string, exists bool) {
+	v := m.html_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHTMLURL returns the old "html_url" field's value of the RadarWatch entity.
+// If the RadarWatch object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchMutation) OldHTMLURL(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHTMLURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHTMLURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHTMLURL: %w", err)
+	}
+	return oldValue.HTMLURL, nil
+}
+
+// ClearHTMLURL clears the value of the "html_url" field.
+func (m *RadarWatchMutation) ClearHTMLURL() {
+	m.html_url = nil
+	m.clearedFields[radarwatch.FieldHTMLURL] = struct{}{}
+}
+
+// HTMLURLCleared returns if the "html_url" field was cleared in this mutation.
+func (m *RadarWatchMutation) HTMLURLCleared() bool {
+	_, ok := m.clearedFields[radarwatch.FieldHTMLURL]
+	return ok
+}
+
+// ResetHTMLURL resets all changes to the "html_url" field.
+func (m *RadarWatchMutation) ResetHTMLURL() {
+	m.html_url = nil
+	delete(m.clearedFields, radarwatch.FieldHTMLURL)
+}
+
+// SetSparkline sets the "sparkline" field.
+func (m *RadarWatchMutation) SetSparkline(i []int64) {
+	m.sparkline = &i
+	m.appendsparkline = nil
+}
+
+// Sparkline returns the value of the "sparkline" field in the mutation.
+func (m *RadarWatchMutation) Sparkline() (r []int64, exists bool) {
+	v := m.sparkline
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSparkline returns the old "sparkline" field's value of the RadarWatch entity.
+// If the RadarWatch object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchMutation) OldSparkline(ctx context.Context) (v []int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSparkline is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSparkline requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSparkline: %w", err)
+	}
+	return oldValue.Sparkline, nil
+}
+
+// AppendSparkline adds i to the "sparkline" field.
+func (m *RadarWatchMutation) AppendSparkline(i []int64) {
+	m.appendsparkline = append(m.appendsparkline, i...)
+}
+
+// AppendedSparkline returns the list of values that were appended to the "sparkline" field in this mutation.
+func (m *RadarWatchMutation) AppendedSparkline() ([]int64, bool) {
+	if len(m.appendsparkline) == 0 {
+		return nil, false
+	}
+	return m.appendsparkline, true
+}
+
+// ClearSparkline clears the value of the "sparkline" field.
+func (m *RadarWatchMutation) ClearSparkline() {
+	m.sparkline = nil
+	m.appendsparkline = nil
+	m.clearedFields[radarwatch.FieldSparkline] = struct{}{}
+}
+
+// SparklineCleared returns if the "sparkline" field was cleared in this mutation.
+func (m *RadarWatchMutation) SparklineCleared() bool {
+	_, ok := m.clearedFields[radarwatch.FieldSparkline]
+	return ok
+}
+
+// ResetSparkline resets all changes to the "sparkline" field.
+func (m *RadarWatchMutation) ResetSparkline() {
+	m.sparkline = nil
+	m.appendsparkline = nil
+	delete(m.clearedFields, radarwatch.FieldSparkline)
+}
+
+// Where appends a list predicates to the RadarWatchMutation builder.
+func (m *RadarWatchMutation) Where(ps ...predicate.RadarWatch) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the RadarWatchMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *RadarWatchMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.RadarWatch, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *RadarWatchMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *RadarWatchMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (RadarWatch).
+func (m *RadarWatchMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *RadarWatchMutation) Fields() []string {
+	fields := make([]string, 0, 11)
+	if m.create_time != nil {
+		fields = append(fields, radarwatch.FieldCreateTime)
+	}
+	if m.update_time != nil {
+		fields = append(fields, radarwatch.FieldUpdateTime)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, radarwatch.FieldDeleteTime)
+	}
+	if m.user_id != nil {
+		fields = append(fields, radarwatch.FieldUserID)
+	}
+	if m.full_name != nil {
+		fields = append(fields, radarwatch.FieldFullName)
+	}
+	if m.baseline_stars != nil {
+		fields = append(fields, radarwatch.FieldBaselineStars)
+	}
+	if m.stars != nil {
+		fields = append(fields, radarwatch.FieldStars)
+	}
+	if m.stars_delta != nil {
+		fields = append(fields, radarwatch.FieldStarsDelta)
+	}
+	if m.unread_count != nil {
+		fields = append(fields, radarwatch.FieldUnreadCount)
+	}
+	if m.html_url != nil {
+		fields = append(fields, radarwatch.FieldHTMLURL)
+	}
+	if m.sparkline != nil {
+		fields = append(fields, radarwatch.FieldSparkline)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *RadarWatchMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case radarwatch.FieldCreateTime:
+		return m.CreateTime()
+	case radarwatch.FieldUpdateTime:
+		return m.UpdateTime()
+	case radarwatch.FieldDeleteTime:
+		return m.DeleteTime()
+	case radarwatch.FieldUserID:
+		return m.UserID()
+	case radarwatch.FieldFullName:
+		return m.FullName()
+	case radarwatch.FieldBaselineStars:
+		return m.BaselineStars()
+	case radarwatch.FieldStars:
+		return m.Stars()
+	case radarwatch.FieldStarsDelta:
+		return m.StarsDelta()
+	case radarwatch.FieldUnreadCount:
+		return m.UnreadCount()
+	case radarwatch.FieldHTMLURL:
+		return m.HTMLURL()
+	case radarwatch.FieldSparkline:
+		return m.Sparkline()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *RadarWatchMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case radarwatch.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case radarwatch.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case radarwatch.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
+	case radarwatch.FieldUserID:
+		return m.OldUserID(ctx)
+	case radarwatch.FieldFullName:
+		return m.OldFullName(ctx)
+	case radarwatch.FieldBaselineStars:
+		return m.OldBaselineStars(ctx)
+	case radarwatch.FieldStars:
+		return m.OldStars(ctx)
+	case radarwatch.FieldStarsDelta:
+		return m.OldStarsDelta(ctx)
+	case radarwatch.FieldUnreadCount:
+		return m.OldUnreadCount(ctx)
+	case radarwatch.FieldHTMLURL:
+		return m.OldHTMLURL(ctx)
+	case radarwatch.FieldSparkline:
+		return m.OldSparkline(ctx)
+	}
+	return nil, fmt.Errorf("unknown RadarWatch field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RadarWatchMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case radarwatch.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case radarwatch.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case radarwatch.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
+	case radarwatch.FieldUserID:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case radarwatch.FieldFullName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFullName(v)
+		return nil
+	case radarwatch.FieldBaselineStars:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBaselineStars(v)
+		return nil
+	case radarwatch.FieldStars:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStars(v)
+		return nil
+	case radarwatch.FieldStarsDelta:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStarsDelta(v)
+		return nil
+	case radarwatch.FieldUnreadCount:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUnreadCount(v)
+		return nil
+	case radarwatch.FieldHTMLURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHTMLURL(v)
+		return nil
+	case radarwatch.FieldSparkline:
+		v, ok := value.([]int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSparkline(v)
+		return nil
+	}
+	return fmt.Errorf("unknown RadarWatch field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *RadarWatchMutation) AddedFields() []string {
+	var fields []string
+	if m.adduser_id != nil {
+		fields = append(fields, radarwatch.FieldUserID)
+	}
+	if m.addbaseline_stars != nil {
+		fields = append(fields, radarwatch.FieldBaselineStars)
+	}
+	if m.addstars != nil {
+		fields = append(fields, radarwatch.FieldStars)
+	}
+	if m.addstars_delta != nil {
+		fields = append(fields, radarwatch.FieldStarsDelta)
+	}
+	if m.addunread_count != nil {
+		fields = append(fields, radarwatch.FieldUnreadCount)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *RadarWatchMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case radarwatch.FieldUserID:
+		return m.AddedUserID()
+	case radarwatch.FieldBaselineStars:
+		return m.AddedBaselineStars()
+	case radarwatch.FieldStars:
+		return m.AddedStars()
+	case radarwatch.FieldStarsDelta:
+		return m.AddedStarsDelta()
+	case radarwatch.FieldUnreadCount:
+		return m.AddedUnreadCount()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RadarWatchMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case radarwatch.FieldUserID:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUserID(v)
+		return nil
+	case radarwatch.FieldBaselineStars:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBaselineStars(v)
+		return nil
+	case radarwatch.FieldStars:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddStars(v)
+		return nil
+	case radarwatch.FieldStarsDelta:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddStarsDelta(v)
+		return nil
+	case radarwatch.FieldUnreadCount:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUnreadCount(v)
+		return nil
+	}
+	return fmt.Errorf("unknown RadarWatch numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *RadarWatchMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(radarwatch.FieldCreateTime) {
+		fields = append(fields, radarwatch.FieldCreateTime)
+	}
+	if m.FieldCleared(radarwatch.FieldUpdateTime) {
+		fields = append(fields, radarwatch.FieldUpdateTime)
+	}
+	if m.FieldCleared(radarwatch.FieldDeleteTime) {
+		fields = append(fields, radarwatch.FieldDeleteTime)
+	}
+	if m.FieldCleared(radarwatch.FieldStars) {
+		fields = append(fields, radarwatch.FieldStars)
+	}
+	if m.FieldCleared(radarwatch.FieldStarsDelta) {
+		fields = append(fields, radarwatch.FieldStarsDelta)
+	}
+	if m.FieldCleared(radarwatch.FieldUnreadCount) {
+		fields = append(fields, radarwatch.FieldUnreadCount)
+	}
+	if m.FieldCleared(radarwatch.FieldHTMLURL) {
+		fields = append(fields, radarwatch.FieldHTMLURL)
+	}
+	if m.FieldCleared(radarwatch.FieldSparkline) {
+		fields = append(fields, radarwatch.FieldSparkline)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *RadarWatchMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *RadarWatchMutation) ClearField(name string) error {
+	switch name {
+	case radarwatch.FieldCreateTime:
+		m.ClearCreateTime()
+		return nil
+	case radarwatch.FieldUpdateTime:
+		m.ClearUpdateTime()
+		return nil
+	case radarwatch.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	case radarwatch.FieldStars:
+		m.ClearStars()
+		return nil
+	case radarwatch.FieldStarsDelta:
+		m.ClearStarsDelta()
+		return nil
+	case radarwatch.FieldUnreadCount:
+		m.ClearUnreadCount()
+		return nil
+	case radarwatch.FieldHTMLURL:
+		m.ClearHTMLURL()
+		return nil
+	case radarwatch.FieldSparkline:
+		m.ClearSparkline()
+		return nil
+	}
+	return fmt.Errorf("unknown RadarWatch nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *RadarWatchMutation) ResetField(name string) error {
+	switch name {
+	case radarwatch.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case radarwatch.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case radarwatch.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
+	case radarwatch.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case radarwatch.FieldFullName:
+		m.ResetFullName()
+		return nil
+	case radarwatch.FieldBaselineStars:
+		m.ResetBaselineStars()
+		return nil
+	case radarwatch.FieldStars:
+		m.ResetStars()
+		return nil
+	case radarwatch.FieldStarsDelta:
+		m.ResetStarsDelta()
+		return nil
+	case radarwatch.FieldUnreadCount:
+		m.ResetUnreadCount()
+		return nil
+	case radarwatch.FieldHTMLURL:
+		m.ResetHTMLURL()
+		return nil
+	case radarwatch.FieldSparkline:
+		m.ResetSparkline()
+		return nil
+	}
+	return fmt.Errorf("unknown RadarWatch field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *RadarWatchMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *RadarWatchMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *RadarWatchMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *RadarWatchMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *RadarWatchMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *RadarWatchMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *RadarWatchMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown RadarWatch unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *RadarWatchMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown RadarWatch edge %s", name)
+}
+
+// RadarWatchEventMutation represents an operation that mutates the RadarWatchEvent nodes in the graph.
+type RadarWatchEventMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uint32
+	create_time   *time.Time
+	update_time   *time.Time
+	delete_time   *time.Time
+	user_id       *uint32
+	adduser_id    *int32
+	full_name     *string
+	kind          *radarwatchevent.Kind
+	message       *string
+	delta         *int64
+	adddelta      *int64
+	read          *bool
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*RadarWatchEvent, error)
+	predicates    []predicate.RadarWatchEvent
+}
+
+var _ ent.Mutation = (*RadarWatchEventMutation)(nil)
+
+// radarwatcheventOption allows management of the mutation configuration using functional options.
+type radarwatcheventOption func(*RadarWatchEventMutation)
+
+// newRadarWatchEventMutation creates new mutation for the RadarWatchEvent entity.
+func newRadarWatchEventMutation(c config, op Op, opts ...radarwatcheventOption) *RadarWatchEventMutation {
+	m := &RadarWatchEventMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeRadarWatchEvent,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withRadarWatchEventID sets the ID field of the mutation.
+func withRadarWatchEventID(id uint32) radarwatcheventOption {
+	return func(m *RadarWatchEventMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *RadarWatchEvent
+		)
+		m.oldValue = func(ctx context.Context) (*RadarWatchEvent, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().RadarWatchEvent.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withRadarWatchEvent sets the old RadarWatchEvent of the mutation.
+func withRadarWatchEvent(node *RadarWatchEvent) radarwatcheventOption {
+	return func(m *RadarWatchEventMutation) {
+		m.oldValue = func(context.Context) (*RadarWatchEvent, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m RadarWatchEventMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m RadarWatchEventMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of RadarWatchEvent entities.
+func (m *RadarWatchEventMutation) SetID(id uint32) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *RadarWatchEventMutation) ID() (id uint32, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *RadarWatchEventMutation) IDs(ctx context.Context) ([]uint32, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint32{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().RadarWatchEvent.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *RadarWatchEventMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *RadarWatchEventMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the RadarWatchEvent entity.
+// If the RadarWatchEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchEventMutation) OldCreateTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ClearCreateTime clears the value of the "create_time" field.
+func (m *RadarWatchEventMutation) ClearCreateTime() {
+	m.create_time = nil
+	m.clearedFields[radarwatchevent.FieldCreateTime] = struct{}{}
+}
+
+// CreateTimeCleared returns if the "create_time" field was cleared in this mutation.
+func (m *RadarWatchEventMutation) CreateTimeCleared() bool {
+	_, ok := m.clearedFields[radarwatchevent.FieldCreateTime]
+	return ok
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *RadarWatchEventMutation) ResetCreateTime() {
+	m.create_time = nil
+	delete(m.clearedFields, radarwatchevent.FieldCreateTime)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *RadarWatchEventMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *RadarWatchEventMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the RadarWatchEvent entity.
+// If the RadarWatchEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchEventMutation) OldUpdateTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (m *RadarWatchEventMutation) ClearUpdateTime() {
+	m.update_time = nil
+	m.clearedFields[radarwatchevent.FieldUpdateTime] = struct{}{}
+}
+
+// UpdateTimeCleared returns if the "update_time" field was cleared in this mutation.
+func (m *RadarWatchEventMutation) UpdateTimeCleared() bool {
+	_, ok := m.clearedFields[radarwatchevent.FieldUpdateTime]
+	return ok
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *RadarWatchEventMutation) ResetUpdateTime() {
+	m.update_time = nil
+	delete(m.clearedFields, radarwatchevent.FieldUpdateTime)
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *RadarWatchEventMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *RadarWatchEventMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the RadarWatchEvent entity.
+// If the RadarWatchEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchEventMutation) OldDeleteTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *RadarWatchEventMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[radarwatchevent.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *RadarWatchEventMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[radarwatchevent.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *RadarWatchEventMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, radarwatchevent.FieldDeleteTime)
+}
+
+// SetUserID sets the "user_id" field.
+func (m *RadarWatchEventMutation) SetUserID(u uint32) {
+	m.user_id = &u
+	m.adduser_id = nil
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *RadarWatchEventMutation) UserID() (r uint32, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the RadarWatchEvent entity.
+// If the RadarWatchEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchEventMutation) OldUserID(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// AddUserID adds u to the "user_id" field.
+func (m *RadarWatchEventMutation) AddUserID(u int32) {
+	if m.adduser_id != nil {
+		*m.adduser_id += u
+	} else {
+		m.adduser_id = &u
+	}
+}
+
+// AddedUserID returns the value that was added to the "user_id" field in this mutation.
+func (m *RadarWatchEventMutation) AddedUserID() (r int32, exists bool) {
+	v := m.adduser_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *RadarWatchEventMutation) ResetUserID() {
+	m.user_id = nil
+	m.adduser_id = nil
+}
+
+// SetFullName sets the "full_name" field.
+func (m *RadarWatchEventMutation) SetFullName(s string) {
+	m.full_name = &s
+}
+
+// FullName returns the value of the "full_name" field in the mutation.
+func (m *RadarWatchEventMutation) FullName() (r string, exists bool) {
+	v := m.full_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFullName returns the old "full_name" field's value of the RadarWatchEvent entity.
+// If the RadarWatchEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchEventMutation) OldFullName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFullName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFullName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFullName: %w", err)
+	}
+	return oldValue.FullName, nil
+}
+
+// ResetFullName resets all changes to the "full_name" field.
+func (m *RadarWatchEventMutation) ResetFullName() {
+	m.full_name = nil
+}
+
+// SetKind sets the "kind" field.
+func (m *RadarWatchEventMutation) SetKind(r radarwatchevent.Kind) {
+	m.kind = &r
+}
+
+// Kind returns the value of the "kind" field in the mutation.
+func (m *RadarWatchEventMutation) Kind() (r radarwatchevent.Kind, exists bool) {
+	v := m.kind
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKind returns the old "kind" field's value of the RadarWatchEvent entity.
+// If the RadarWatchEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchEventMutation) OldKind(ctx context.Context) (v radarwatchevent.Kind, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKind is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKind requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKind: %w", err)
+	}
+	return oldValue.Kind, nil
+}
+
+// ResetKind resets all changes to the "kind" field.
+func (m *RadarWatchEventMutation) ResetKind() {
+	m.kind = nil
+}
+
+// SetMessage sets the "message" field.
+func (m *RadarWatchEventMutation) SetMessage(s string) {
+	m.message = &s
+}
+
+// Message returns the value of the "message" field in the mutation.
+func (m *RadarWatchEventMutation) Message() (r string, exists bool) {
+	v := m.message
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMessage returns the old "message" field's value of the RadarWatchEvent entity.
+// If the RadarWatchEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchEventMutation) OldMessage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMessage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMessage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMessage: %w", err)
+	}
+	return oldValue.Message, nil
+}
+
+// ResetMessage resets all changes to the "message" field.
+func (m *RadarWatchEventMutation) ResetMessage() {
+	m.message = nil
+}
+
+// SetDelta sets the "delta" field.
+func (m *RadarWatchEventMutation) SetDelta(i int64) {
+	m.delta = &i
+	m.adddelta = nil
+}
+
+// Delta returns the value of the "delta" field in the mutation.
+func (m *RadarWatchEventMutation) Delta() (r int64, exists bool) {
+	v := m.delta
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDelta returns the old "delta" field's value of the RadarWatchEvent entity.
+// If the RadarWatchEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchEventMutation) OldDelta(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDelta is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDelta requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDelta: %w", err)
+	}
+	return oldValue.Delta, nil
+}
+
+// AddDelta adds i to the "delta" field.
+func (m *RadarWatchEventMutation) AddDelta(i int64) {
+	if m.adddelta != nil {
+		*m.adddelta += i
+	} else {
+		m.adddelta = &i
+	}
+}
+
+// AddedDelta returns the value that was added to the "delta" field in this mutation.
+func (m *RadarWatchEventMutation) AddedDelta() (r int64, exists bool) {
+	v := m.adddelta
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDelta clears the value of the "delta" field.
+func (m *RadarWatchEventMutation) ClearDelta() {
+	m.delta = nil
+	m.adddelta = nil
+	m.clearedFields[radarwatchevent.FieldDelta] = struct{}{}
+}
+
+// DeltaCleared returns if the "delta" field was cleared in this mutation.
+func (m *RadarWatchEventMutation) DeltaCleared() bool {
+	_, ok := m.clearedFields[radarwatchevent.FieldDelta]
+	return ok
+}
+
+// ResetDelta resets all changes to the "delta" field.
+func (m *RadarWatchEventMutation) ResetDelta() {
+	m.delta = nil
+	m.adddelta = nil
+	delete(m.clearedFields, radarwatchevent.FieldDelta)
+}
+
+// SetRead sets the "read" field.
+func (m *RadarWatchEventMutation) SetRead(b bool) {
+	m.read = &b
+}
+
+// Read returns the value of the "read" field in the mutation.
+func (m *RadarWatchEventMutation) Read() (r bool, exists bool) {
+	v := m.read
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRead returns the old "read" field's value of the RadarWatchEvent entity.
+// If the RadarWatchEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RadarWatchEventMutation) OldRead(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRead is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRead requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRead: %w", err)
+	}
+	return oldValue.Read, nil
+}
+
+// ResetRead resets all changes to the "read" field.
+func (m *RadarWatchEventMutation) ResetRead() {
+	m.read = nil
+}
+
+// Where appends a list predicates to the RadarWatchEventMutation builder.
+func (m *RadarWatchEventMutation) Where(ps ...predicate.RadarWatchEvent) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the RadarWatchEventMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *RadarWatchEventMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.RadarWatchEvent, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *RadarWatchEventMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *RadarWatchEventMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (RadarWatchEvent).
+func (m *RadarWatchEventMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *RadarWatchEventMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m.create_time != nil {
+		fields = append(fields, radarwatchevent.FieldCreateTime)
+	}
+	if m.update_time != nil {
+		fields = append(fields, radarwatchevent.FieldUpdateTime)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, radarwatchevent.FieldDeleteTime)
+	}
+	if m.user_id != nil {
+		fields = append(fields, radarwatchevent.FieldUserID)
+	}
+	if m.full_name != nil {
+		fields = append(fields, radarwatchevent.FieldFullName)
+	}
+	if m.kind != nil {
+		fields = append(fields, radarwatchevent.FieldKind)
+	}
+	if m.message != nil {
+		fields = append(fields, radarwatchevent.FieldMessage)
+	}
+	if m.delta != nil {
+		fields = append(fields, radarwatchevent.FieldDelta)
+	}
+	if m.read != nil {
+		fields = append(fields, radarwatchevent.FieldRead)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *RadarWatchEventMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case radarwatchevent.FieldCreateTime:
+		return m.CreateTime()
+	case radarwatchevent.FieldUpdateTime:
+		return m.UpdateTime()
+	case radarwatchevent.FieldDeleteTime:
+		return m.DeleteTime()
+	case radarwatchevent.FieldUserID:
+		return m.UserID()
+	case radarwatchevent.FieldFullName:
+		return m.FullName()
+	case radarwatchevent.FieldKind:
+		return m.Kind()
+	case radarwatchevent.FieldMessage:
+		return m.Message()
+	case radarwatchevent.FieldDelta:
+		return m.Delta()
+	case radarwatchevent.FieldRead:
+		return m.Read()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *RadarWatchEventMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case radarwatchevent.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case radarwatchevent.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case radarwatchevent.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
+	case radarwatchevent.FieldUserID:
+		return m.OldUserID(ctx)
+	case radarwatchevent.FieldFullName:
+		return m.OldFullName(ctx)
+	case radarwatchevent.FieldKind:
+		return m.OldKind(ctx)
+	case radarwatchevent.FieldMessage:
+		return m.OldMessage(ctx)
+	case radarwatchevent.FieldDelta:
+		return m.OldDelta(ctx)
+	case radarwatchevent.FieldRead:
+		return m.OldRead(ctx)
+	}
+	return nil, fmt.Errorf("unknown RadarWatchEvent field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RadarWatchEventMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case radarwatchevent.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case radarwatchevent.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case radarwatchevent.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
+	case radarwatchevent.FieldUserID:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case radarwatchevent.FieldFullName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFullName(v)
+		return nil
+	case radarwatchevent.FieldKind:
+		v, ok := value.(radarwatchevent.Kind)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKind(v)
+		return nil
+	case radarwatchevent.FieldMessage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMessage(v)
+		return nil
+	case radarwatchevent.FieldDelta:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDelta(v)
+		return nil
+	case radarwatchevent.FieldRead:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRead(v)
+		return nil
+	}
+	return fmt.Errorf("unknown RadarWatchEvent field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *RadarWatchEventMutation) AddedFields() []string {
+	var fields []string
+	if m.adduser_id != nil {
+		fields = append(fields, radarwatchevent.FieldUserID)
+	}
+	if m.adddelta != nil {
+		fields = append(fields, radarwatchevent.FieldDelta)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *RadarWatchEventMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case radarwatchevent.FieldUserID:
+		return m.AddedUserID()
+	case radarwatchevent.FieldDelta:
+		return m.AddedDelta()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RadarWatchEventMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case radarwatchevent.FieldUserID:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUserID(v)
+		return nil
+	case radarwatchevent.FieldDelta:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDelta(v)
+		return nil
+	}
+	return fmt.Errorf("unknown RadarWatchEvent numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *RadarWatchEventMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(radarwatchevent.FieldCreateTime) {
+		fields = append(fields, radarwatchevent.FieldCreateTime)
+	}
+	if m.FieldCleared(radarwatchevent.FieldUpdateTime) {
+		fields = append(fields, radarwatchevent.FieldUpdateTime)
+	}
+	if m.FieldCleared(radarwatchevent.FieldDeleteTime) {
+		fields = append(fields, radarwatchevent.FieldDeleteTime)
+	}
+	if m.FieldCleared(radarwatchevent.FieldDelta) {
+		fields = append(fields, radarwatchevent.FieldDelta)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *RadarWatchEventMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *RadarWatchEventMutation) ClearField(name string) error {
+	switch name {
+	case radarwatchevent.FieldCreateTime:
+		m.ClearCreateTime()
+		return nil
+	case radarwatchevent.FieldUpdateTime:
+		m.ClearUpdateTime()
+		return nil
+	case radarwatchevent.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	case radarwatchevent.FieldDelta:
+		m.ClearDelta()
+		return nil
+	}
+	return fmt.Errorf("unknown RadarWatchEvent nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *RadarWatchEventMutation) ResetField(name string) error {
+	switch name {
+	case radarwatchevent.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case radarwatchevent.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case radarwatchevent.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
+	case radarwatchevent.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case radarwatchevent.FieldFullName:
+		m.ResetFullName()
+		return nil
+	case radarwatchevent.FieldKind:
+		m.ResetKind()
+		return nil
+	case radarwatchevent.FieldMessage:
+		m.ResetMessage()
+		return nil
+	case radarwatchevent.FieldDelta:
+		m.ResetDelta()
+		return nil
+	case radarwatchevent.FieldRead:
+		m.ResetRead()
+		return nil
+	}
+	return fmt.Errorf("unknown RadarWatchEvent field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *RadarWatchEventMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *RadarWatchEventMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *RadarWatchEventMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *RadarWatchEventMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *RadarWatchEventMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *RadarWatchEventMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *RadarWatchEventMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown RadarWatchEvent unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *RadarWatchEventMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown RadarWatchEvent edge %s", name)
 }
 
 // ResourceGroupMutation represents an operation that mutates the ResourceGroup nodes in the graph.

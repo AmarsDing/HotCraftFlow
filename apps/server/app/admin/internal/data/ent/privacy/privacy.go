@@ -567,6 +567,78 @@ func (f PrivateMessageMutationRuleFunc) EvalMutation(ctx context.Context, m ent.
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.PrivateMessageMutation", m)
 }
 
+// The RadarUserConfigQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type RadarUserConfigQueryRuleFunc func(context.Context, *ent.RadarUserConfigQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f RadarUserConfigQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.RadarUserConfigQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.RadarUserConfigQuery", q)
+}
+
+// The RadarUserConfigMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type RadarUserConfigMutationRuleFunc func(context.Context, *ent.RadarUserConfigMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f RadarUserConfigMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.RadarUserConfigMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.RadarUserConfigMutation", m)
+}
+
+// The RadarWatchQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type RadarWatchQueryRuleFunc func(context.Context, *ent.RadarWatchQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f RadarWatchQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.RadarWatchQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.RadarWatchQuery", q)
+}
+
+// The RadarWatchMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type RadarWatchMutationRuleFunc func(context.Context, *ent.RadarWatchMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f RadarWatchMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.RadarWatchMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.RadarWatchMutation", m)
+}
+
+// The RadarWatchEventQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type RadarWatchEventQueryRuleFunc func(context.Context, *ent.RadarWatchEventQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f RadarWatchEventQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.RadarWatchEventQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.RadarWatchEventQuery", q)
+}
+
+// The RadarWatchEventMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type RadarWatchEventMutationRuleFunc func(context.Context, *ent.RadarWatchEventMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f RadarWatchEventMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.RadarWatchEventMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.RadarWatchEventMutation", m)
+}
+
 // The ResourceGroupQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type ResourceGroupQueryRuleFunc func(context.Context, *ent.ResourceGroupQuery) error
@@ -1120,6 +1192,12 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.PrivateMessageQuery:
 		return q.Filter(), nil
+	case *ent.RadarUserConfigQuery:
+		return q.Filter(), nil
+	case *ent.RadarWatchQuery:
+		return q.Filter(), nil
+	case *ent.RadarWatchEventQuery:
+		return q.Filter(), nil
 	case *ent.ResourceGroupQuery:
 		return q.Filter(), nil
 	case *ent.RoleQuery:
@@ -1204,6 +1282,12 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.PositionMutation:
 		return m.Filter(), nil
 	case *ent.PrivateMessageMutation:
+		return m.Filter(), nil
+	case *ent.RadarUserConfigMutation:
+		return m.Filter(), nil
+	case *ent.RadarWatchMutation:
+		return m.Filter(), nil
+	case *ent.RadarWatchEventMutation:
 		return m.Filter(), nil
 	case *ent.ResourceGroupMutation:
 		return m.Filter(), nil

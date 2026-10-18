@@ -1,11 +1,5 @@
 <template>
-  <svg
-    class="radar-spark"
-    :width="width"
-    :height="height"
-    :viewBox="`0 0 ${width} ${height}`"
-    aria-hidden="true"
-  >
+  <svg class="radar-spark" :width="width" :height="height" :viewBox="`0 0 ${width} ${height}`" aria-hidden="true">
     <polyline
       fill="none"
       :stroke="stroke"
@@ -18,33 +12,31 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
 
-const props = withDefaults(
-  defineProps<{ values: number[]; width?: number; height?: number; stroke?: string }>(),
-  {
-    width: 48,
-    height: 16,
-    stroke: 'var(--color-accent)',
-  },
-)
+const props = withDefaults(defineProps<{ values: number[]; width?: number; height?: number; stroke?: string }>(), {
+  width: 48,
+  height: 16,
+  // 图表序列色 token（UI 规范：图表一律走 --chart-series-*，accent 仅作兜底）
+  stroke: 'var(--chart-series-1, var(--color-accent))',
+});
 
 const points = computed(() => {
-  const vals = props.values?.length ? props.values : [0]
-  const min = Math.min(...vals)
-  const max = Math.max(...vals)
-  const span = max - min || 1
-  const w = props.width
-  const h = props.height
-  const step = vals.length > 1 ? w / (vals.length - 1) : w
+  const vals = props.values?.length ? props.values : [0];
+  const min = Math.min(...vals);
+  const max = Math.max(...vals);
+  const span = max - min || 1;
+  const w = props.width;
+  const h = props.height;
+  const step = vals.length > 1 ? w / (vals.length - 1) : w;
   return vals
     .map((v, i) => {
-      const x = i * step
-      const y = h - ((v - min) / span) * (h - 2) - 1
-      return `${x},${y}`
+      const x = i * step;
+      const y = h - ((v - min) / span) * (h - 2) - 1;
+      return `${x},${y}`;
     })
-    .join(' ')
-})
+    .join(' ');
+});
 </script>
 
 <style scoped>

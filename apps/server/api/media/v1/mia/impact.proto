@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package media.mia.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// ============================================================================
+// ③ MIA 市场影响分析的对外契约（契约 §3）。默认不对外发布（PRD §12 Q2）。
+// 枚举用 string（服务层校验），字段显式 json_name = snake_case。
+// ============================================================================
+
+// ImpactCard 是 MIA 的输出契约。disclaimer 强制非空（空卡不允许落库）。
+message ImpactCard {
+  string api_version = 1 [json_name = "api_version"];
+  string impact_id = 2 [json_name = "impact_id"]; // im_ 前缀
+  string topic_id = 3 [json_name = "topic_id"];
+  ImpactEvent event = 4 [json_name = "event"];
+  Sentiment sentiment = 5 [json_name = "sentiment"];
+  Impact impact = 6 [json_name = "impact"];
+  repeated AffectedItem affected = 7 [json_name = "affected"];
+  string disclaimer = 8 [json_name = "disclaimer"]; // 强制非空
+  Verified verified = 9 [json_name = "verified"];
+}
+
+message ImpactEvent {
+  string title = 1 [json_name = "title"];
+  string summary = 2 [json_name = "summary"];
+  repeated string sources = 3 [json_name = "sources"]; // IntelItem id 列表
+  google.protobuf.Timestamp occurred_at = 4 [json_name = "occurred_at"]; // UTC
+}
+
+message Sentiment {
+  string label = 1 [json_name = "label"];   // positive|neutral|negative|unknown
+  double score = 2 [json_name = "score"];   // -1 ~ 1；unknown 时为 0（不猜）
+  string engine = 3 [json_name = "engine"]; // finbert | llm | none（不同引擎分数不可混比）
+  string lang = 4 [json_name = "lang"];
+}
+
+message Impact {
+  double score = 1 [json_name = "score"];    // 0–100
+  int32 ttl_hours = 2 [json_name = "ttl_hours"]; // 6–24；过期卡不得占据排行榜
+  ImpactFactors factors = 3 [json_name = "factors"];
+}
+
+message ImpactFactors {
+  double sentiment = 1 [json_name = "sentiment"];
+  double source_weight = 2 [json_name = "source_weight"];
+  double relevance = 3 [json_name = "relevance"];
+  double decay = 4 [json_name = "decay"];
+}
+
+// AffectedItem：每条结论必须有 path（无 path 视为违约）；传导项 confidence ≤0.6。
+message AffectedItem {
+  string symbol = 1 [json_name = "symbol"];       // SPY / ^GSPC / EURUSD / BTC/USDT
+  string asset_class = 2 [json_name = "asset_class"]; // equity|index|fx|commodity|crypto
+  string direction = 3 [json_name = "direction"];     // bullish|bearish|neutral
+  double confidence = 4 [json_name = "confidence"];
+  repeated string path = 5 [json_name = "path"]; // 影响路径文本链
+  string rule_id = 6 [json_name = "rule_id"];
+  bool is_transmission = 7 [json_name = "is_transmission"];
+}
+
+message Verified {
+  google.protobuf.Timestamp checked_at = 1 [json_name = "checked_at"];
+  double actual_move = 2 [json_name = "actual_move"];
+  bool hit = 3 [json_name = "hit"];
+}
+
+// TransmissionRule 跨资产传导规则（confidence 强制 ≤0.6，假设不是因果）。
+message TransmissionRule {
+  string rule_id = 1 [json_name = "rule_id"]; // rule_ 前缀
+  TriggerSpec trigger = 2 [json_name = "trigger"];
+  string to_asset = 3 [json_name = "to_asset"];
+  string to_direction = 4 [json_name = "to_direction"];
+  double confidence = 5 [json_name = "confidence"]; // (0, 0.6]
+  string note = 6 [json_name = "note"]; // 必填
+}
+
+message TriggerSpec {
+  string asset = 1 [json_name = "asset"];
+  string direction = 2 [json_name = "direction"];
+  double min_move_pct = 3 [json_name = "min_move_pct"];
+}

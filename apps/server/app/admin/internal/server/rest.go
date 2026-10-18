@@ -157,6 +157,7 @@ func NewRESTServer(
 	userPermissionSvc *service.UserPermissionService,
 	userIOSvc *service.UserIOService,
 	radarTrendingSvc *service.RadarTrendingService,
+	radarRepoSvc *service.RadarRepoService,
 	radarWatchSvc *service.RadarWatchService,
 	radarNotifySvc *service.RadarNotifyService,
 	radarConfigSvc *service.RadarConfigService,
@@ -202,6 +203,7 @@ func NewRESTServer(
 	adminV1.RegisterPrivateMessageServiceHTTPServer(srv, privateMessageService)
 
 	radarV1.RegisterTrendingServiceHTTPServer(srv, radarTrendingSvc)
+	radarV1.RegisterRepoServiceHTTPServer(srv, radarRepoSvc)
 	radarV1.RegisterWatchServiceHTTPServer(srv, radarWatchSvc)
 	radarV1.RegisterRadarNotifyServiceHTTPServer(srv, radarNotifySvc)
 	radarV1.RegisterRadarConfigServiceHTTPServer(srv, radarConfigSvc)

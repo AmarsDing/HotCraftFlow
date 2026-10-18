@@ -30,6 +30,9 @@ import (
 	"framework/app/admin/internal/data/ent/passwordhistory"
 	"framework/app/admin/internal/data/ent/position"
 	"framework/app/admin/internal/data/ent/privatemessage"
+	"framework/app/admin/internal/data/ent/radaruserconfig"
+	"framework/app/admin/internal/data/ent/radarwatch"
+	"framework/app/admin/internal/data/ent/radarwatchevent"
 	"framework/app/admin/internal/data/ent/resourcegroup"
 	"framework/app/admin/internal/data/ent/role"
 	"framework/app/admin/internal/data/ent/roleapi"
@@ -100,6 +103,12 @@ type Client struct {
 	Position *PositionClient
 	// PrivateMessage is the client for interacting with the PrivateMessage builders.
 	PrivateMessage *PrivateMessageClient
+	// RadarUserConfig is the client for interacting with the RadarUserConfig builders.
+	RadarUserConfig *RadarUserConfigClient
+	// RadarWatch is the client for interacting with the RadarWatch builders.
+	RadarWatch *RadarWatchClient
+	// RadarWatchEvent is the client for interacting with the RadarWatchEvent builders.
+	RadarWatchEvent *RadarWatchEventClient
 	// ResourceGroup is the client for interacting with the ResourceGroup builders.
 	ResourceGroup *ResourceGroupClient
 	// Role is the client for interacting with the Role builders.
@@ -170,6 +179,9 @@ func (c *Client) init() {
 	c.PasswordHistory = NewPasswordHistoryClient(c.config)
 	c.Position = NewPositionClient(c.config)
 	c.PrivateMessage = NewPrivateMessageClient(c.config)
+	c.RadarUserConfig = NewRadarUserConfigClient(c.config)
+	c.RadarWatch = NewRadarWatchClient(c.config)
+	c.RadarWatchEvent = NewRadarWatchEventClient(c.config)
 	c.ResourceGroup = NewResourceGroupClient(c.config)
 	c.Role = NewRoleClient(c.config)
 	c.RoleApi = NewRoleApiClient(c.config)
@@ -301,6 +313,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		PasswordHistory:              NewPasswordHistoryClient(cfg),
 		Position:                     NewPositionClient(cfg),
 		PrivateMessage:               NewPrivateMessageClient(cfg),
+		RadarUserConfig:              NewRadarUserConfigClient(cfg),
+		RadarWatch:                   NewRadarWatchClient(cfg),
+		RadarWatchEvent:              NewRadarWatchEventClient(cfg),
 		ResourceGroup:                NewResourceGroupClient(cfg),
 		Role:                         NewRoleClient(cfg),
 		RoleApi:                      NewRoleApiClient(cfg),
@@ -359,6 +374,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		PasswordHistory:              NewPasswordHistoryClient(cfg),
 		Position:                     NewPositionClient(cfg),
 		PrivateMessage:               NewPrivateMessageClient(cfg),
+		RadarUserConfig:              NewRadarUserConfigClient(cfg),
+		RadarWatch:                   NewRadarWatchClient(cfg),
+		RadarWatchEvent:              NewRadarWatchEventClient(cfg),
 		ResourceGroup:                NewResourceGroupClient(cfg),
 		Role:                         NewRoleClient(cfg),
 		RoleApi:                      NewRoleApiClient(cfg),
@@ -412,11 +430,12 @@ func (c *Client) Use(hooks ...Hook) {
 		c.CasbinRule, c.DataPermission, c.Department, c.Dict, c.DictCategory, c.File,
 		c.LoginFailCounter, c.Menu, c.NotificationMessage,
 		c.NotificationMessageCategory, c.NotificationMessageRecipient, c.Organization,
-		c.PasswordHistory, c.Position, c.PrivateMessage, c.ResourceGroup, c.Role,
-		c.RoleApi, c.RoleDept, c.RoleMenu, c.RoleResourceGroup, c.StorageLayer,
-		c.SystemConfig, c.Task, c.TaskExecution, c.Tenant, c.ToolLink,
-		c.ToolLinkCategory, c.ToolLinkSsoTicket, c.ToolLinkUserMark, c.User,
-		c.UserCredential, c.UserPost, c.UserRole, c.UserToken,
+		c.PasswordHistory, c.Position, c.PrivateMessage, c.RadarUserConfig,
+		c.RadarWatch, c.RadarWatchEvent, c.ResourceGroup, c.Role, c.RoleApi,
+		c.RoleDept, c.RoleMenu, c.RoleResourceGroup, c.StorageLayer, c.SystemConfig,
+		c.Task, c.TaskExecution, c.Tenant, c.ToolLink, c.ToolLinkCategory,
+		c.ToolLinkSsoTicket, c.ToolLinkUserMark, c.User, c.UserCredential, c.UserPost,
+		c.UserRole, c.UserToken,
 	} {
 		n.Use(hooks...)
 	}
@@ -430,11 +449,12 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.CasbinRule, c.DataPermission, c.Department, c.Dict, c.DictCategory, c.File,
 		c.LoginFailCounter, c.Menu, c.NotificationMessage,
 		c.NotificationMessageCategory, c.NotificationMessageRecipient, c.Organization,
-		c.PasswordHistory, c.Position, c.PrivateMessage, c.ResourceGroup, c.Role,
-		c.RoleApi, c.RoleDept, c.RoleMenu, c.RoleResourceGroup, c.StorageLayer,
-		c.SystemConfig, c.Task, c.TaskExecution, c.Tenant, c.ToolLink,
-		c.ToolLinkCategory, c.ToolLinkSsoTicket, c.ToolLinkUserMark, c.User,
-		c.UserCredential, c.UserPost, c.UserRole, c.UserToken,
+		c.PasswordHistory, c.Position, c.PrivateMessage, c.RadarUserConfig,
+		c.RadarWatch, c.RadarWatchEvent, c.ResourceGroup, c.Role, c.RoleApi,
+		c.RoleDept, c.RoleMenu, c.RoleResourceGroup, c.StorageLayer, c.SystemConfig,
+		c.Task, c.TaskExecution, c.Tenant, c.ToolLink, c.ToolLinkCategory,
+		c.ToolLinkSsoTicket, c.ToolLinkUserMark, c.User, c.UserCredential, c.UserPost,
+		c.UserRole, c.UserToken,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -481,6 +501,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Position.mutate(ctx, m)
 	case *PrivateMessageMutation:
 		return c.PrivateMessage.mutate(ctx, m)
+	case *RadarUserConfigMutation:
+		return c.RadarUserConfig.mutate(ctx, m)
+	case *RadarWatchMutation:
+		return c.RadarWatch.mutate(ctx, m)
+	case *RadarWatchEventMutation:
+		return c.RadarWatchEvent.mutate(ctx, m)
 	case *ResourceGroupMutation:
 		return c.ResourceGroup.mutate(ctx, m)
 	case *RoleMutation:
@@ -3232,6 +3258,408 @@ func (c *PrivateMessageClient) mutate(ctx context.Context, m *PrivateMessageMuta
 	}
 }
 
+// RadarUserConfigClient is a client for the RadarUserConfig schema.
+type RadarUserConfigClient struct {
+	config
+}
+
+// NewRadarUserConfigClient returns a client for the RadarUserConfig from the given config.
+func NewRadarUserConfigClient(c config) *RadarUserConfigClient {
+	return &RadarUserConfigClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `radaruserconfig.Hooks(f(g(h())))`.
+func (c *RadarUserConfigClient) Use(hooks ...Hook) {
+	c.hooks.RadarUserConfig = append(c.hooks.RadarUserConfig, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `radaruserconfig.Intercept(f(g(h())))`.
+func (c *RadarUserConfigClient) Intercept(interceptors ...Interceptor) {
+	c.inters.RadarUserConfig = append(c.inters.RadarUserConfig, interceptors...)
+}
+
+// Create returns a builder for creating a RadarUserConfig entity.
+func (c *RadarUserConfigClient) Create() *RadarUserConfigCreate {
+	mutation := newRadarUserConfigMutation(c.config, OpCreate)
+	return &RadarUserConfigCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of RadarUserConfig entities.
+func (c *RadarUserConfigClient) CreateBulk(builders ...*RadarUserConfigCreate) *RadarUserConfigCreateBulk {
+	return &RadarUserConfigCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *RadarUserConfigClient) MapCreateBulk(slice any, setFunc func(*RadarUserConfigCreate, int)) *RadarUserConfigCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &RadarUserConfigCreateBulk{err: fmt.Errorf("calling to RadarUserConfigClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*RadarUserConfigCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &RadarUserConfigCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for RadarUserConfig.
+func (c *RadarUserConfigClient) Update() *RadarUserConfigUpdate {
+	mutation := newRadarUserConfigMutation(c.config, OpUpdate)
+	return &RadarUserConfigUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *RadarUserConfigClient) UpdateOne(_m *RadarUserConfig) *RadarUserConfigUpdateOne {
+	mutation := newRadarUserConfigMutation(c.config, OpUpdateOne, withRadarUserConfig(_m))
+	return &RadarUserConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *RadarUserConfigClient) UpdateOneID(id uint32) *RadarUserConfigUpdateOne {
+	mutation := newRadarUserConfigMutation(c.config, OpUpdateOne, withRadarUserConfigID(id))
+	return &RadarUserConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for RadarUserConfig.
+func (c *RadarUserConfigClient) Delete() *RadarUserConfigDelete {
+	mutation := newRadarUserConfigMutation(c.config, OpDelete)
+	return &RadarUserConfigDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *RadarUserConfigClient) DeleteOne(_m *RadarUserConfig) *RadarUserConfigDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *RadarUserConfigClient) DeleteOneID(id uint32) *RadarUserConfigDeleteOne {
+	builder := c.Delete().Where(radaruserconfig.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &RadarUserConfigDeleteOne{builder}
+}
+
+// Query returns a query builder for RadarUserConfig.
+func (c *RadarUserConfigClient) Query() *RadarUserConfigQuery {
+	return &RadarUserConfigQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeRadarUserConfig},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a RadarUserConfig entity by its id.
+func (c *RadarUserConfigClient) Get(ctx context.Context, id uint32) (*RadarUserConfig, error) {
+	return c.Query().Where(radaruserconfig.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *RadarUserConfigClient) GetX(ctx context.Context, id uint32) *RadarUserConfig {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *RadarUserConfigClient) Hooks() []Hook {
+	hooks := c.hooks.RadarUserConfig
+	return append(hooks[:len(hooks):len(hooks)], radaruserconfig.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *RadarUserConfigClient) Interceptors() []Interceptor {
+	return c.inters.RadarUserConfig
+}
+
+func (c *RadarUserConfigClient) mutate(ctx context.Context, m *RadarUserConfigMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&RadarUserConfigCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&RadarUserConfigUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&RadarUserConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&RadarUserConfigDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown RadarUserConfig mutation op: %q", m.Op())
+	}
+}
+
+// RadarWatchClient is a client for the RadarWatch schema.
+type RadarWatchClient struct {
+	config
+}
+
+// NewRadarWatchClient returns a client for the RadarWatch from the given config.
+func NewRadarWatchClient(c config) *RadarWatchClient {
+	return &RadarWatchClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `radarwatch.Hooks(f(g(h())))`.
+func (c *RadarWatchClient) Use(hooks ...Hook) {
+	c.hooks.RadarWatch = append(c.hooks.RadarWatch, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `radarwatch.Intercept(f(g(h())))`.
+func (c *RadarWatchClient) Intercept(interceptors ...Interceptor) {
+	c.inters.RadarWatch = append(c.inters.RadarWatch, interceptors...)
+}
+
+// Create returns a builder for creating a RadarWatch entity.
+func (c *RadarWatchClient) Create() *RadarWatchCreate {
+	mutation := newRadarWatchMutation(c.config, OpCreate)
+	return &RadarWatchCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of RadarWatch entities.
+func (c *RadarWatchClient) CreateBulk(builders ...*RadarWatchCreate) *RadarWatchCreateBulk {
+	return &RadarWatchCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *RadarWatchClient) MapCreateBulk(slice any, setFunc func(*RadarWatchCreate, int)) *RadarWatchCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &RadarWatchCreateBulk{err: fmt.Errorf("calling to RadarWatchClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*RadarWatchCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &RadarWatchCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for RadarWatch.
+func (c *RadarWatchClient) Update() *RadarWatchUpdate {
+	mutation := newRadarWatchMutation(c.config, OpUpdate)
+	return &RadarWatchUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *RadarWatchClient) UpdateOne(_m *RadarWatch) *RadarWatchUpdateOne {
+	mutation := newRadarWatchMutation(c.config, OpUpdateOne, withRadarWatch(_m))
+	return &RadarWatchUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *RadarWatchClient) UpdateOneID(id uint32) *RadarWatchUpdateOne {
+	mutation := newRadarWatchMutation(c.config, OpUpdateOne, withRadarWatchID(id))
+	return &RadarWatchUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for RadarWatch.
+func (c *RadarWatchClient) Delete() *RadarWatchDelete {
+	mutation := newRadarWatchMutation(c.config, OpDelete)
+	return &RadarWatchDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *RadarWatchClient) DeleteOne(_m *RadarWatch) *RadarWatchDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *RadarWatchClient) DeleteOneID(id uint32) *RadarWatchDeleteOne {
+	builder := c.Delete().Where(radarwatch.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &RadarWatchDeleteOne{builder}
+}
+
+// Query returns a query builder for RadarWatch.
+func (c *RadarWatchClient) Query() *RadarWatchQuery {
+	return &RadarWatchQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeRadarWatch},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a RadarWatch entity by its id.
+func (c *RadarWatchClient) Get(ctx context.Context, id uint32) (*RadarWatch, error) {
+	return c.Query().Where(radarwatch.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *RadarWatchClient) GetX(ctx context.Context, id uint32) *RadarWatch {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *RadarWatchClient) Hooks() []Hook {
+	hooks := c.hooks.RadarWatch
+	return append(hooks[:len(hooks):len(hooks)], radarwatch.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *RadarWatchClient) Interceptors() []Interceptor {
+	return c.inters.RadarWatch
+}
+
+func (c *RadarWatchClient) mutate(ctx context.Context, m *RadarWatchMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&RadarWatchCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&RadarWatchUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&RadarWatchUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&RadarWatchDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown RadarWatch mutation op: %q", m.Op())
+	}
+}
+
+// RadarWatchEventClient is a client for the RadarWatchEvent schema.
+type RadarWatchEventClient struct {
+	config
+}
+
+// NewRadarWatchEventClient returns a client for the RadarWatchEvent from the given config.
+func NewRadarWatchEventClient(c config) *RadarWatchEventClient {
+	return &RadarWatchEventClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `radarwatchevent.Hooks(f(g(h())))`.
+func (c *RadarWatchEventClient) Use(hooks ...Hook) {
+	c.hooks.RadarWatchEvent = append(c.hooks.RadarWatchEvent, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `radarwatchevent.Intercept(f(g(h())))`.
+func (c *RadarWatchEventClient) Intercept(interceptors ...Interceptor) {
+	c.inters.RadarWatchEvent = append(c.inters.RadarWatchEvent, interceptors...)
+}
+
+// Create returns a builder for creating a RadarWatchEvent entity.
+func (c *RadarWatchEventClient) Create() *RadarWatchEventCreate {
+	mutation := newRadarWatchEventMutation(c.config, OpCreate)
+	return &RadarWatchEventCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of RadarWatchEvent entities.
+func (c *RadarWatchEventClient) CreateBulk(builders ...*RadarWatchEventCreate) *RadarWatchEventCreateBulk {
+	return &RadarWatchEventCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *RadarWatchEventClient) MapCreateBulk(slice any, setFunc func(*RadarWatchEventCreate, int)) *RadarWatchEventCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &RadarWatchEventCreateBulk{err: fmt.Errorf("calling to RadarWatchEventClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*RadarWatchEventCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &RadarWatchEventCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for RadarWatchEvent.
+func (c *RadarWatchEventClient) Update() *RadarWatchEventUpdate {
+	mutation := newRadarWatchEventMutation(c.config, OpUpdate)
+	return &RadarWatchEventUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *RadarWatchEventClient) UpdateOne(_m *RadarWatchEvent) *RadarWatchEventUpdateOne {
+	mutation := newRadarWatchEventMutation(c.config, OpUpdateOne, withRadarWatchEvent(_m))
+	return &RadarWatchEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *RadarWatchEventClient) UpdateOneID(id uint32) *RadarWatchEventUpdateOne {
+	mutation := newRadarWatchEventMutation(c.config, OpUpdateOne, withRadarWatchEventID(id))
+	return &RadarWatchEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for RadarWatchEvent.
+func (c *RadarWatchEventClient) Delete() *RadarWatchEventDelete {
+	mutation := newRadarWatchEventMutation(c.config, OpDelete)
+	return &RadarWatchEventDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *RadarWatchEventClient) DeleteOne(_m *RadarWatchEvent) *RadarWatchEventDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *RadarWatchEventClient) DeleteOneID(id uint32) *RadarWatchEventDeleteOne {
+	builder := c.Delete().Where(radarwatchevent.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &RadarWatchEventDeleteOne{builder}
+}
+
+// Query returns a query builder for RadarWatchEvent.
+func (c *RadarWatchEventClient) Query() *RadarWatchEventQuery {
+	return &RadarWatchEventQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeRadarWatchEvent},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a RadarWatchEvent entity by its id.
+func (c *RadarWatchEventClient) Get(ctx context.Context, id uint32) (*RadarWatchEvent, error) {
+	return c.Query().Where(radarwatchevent.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *RadarWatchEventClient) GetX(ctx context.Context, id uint32) *RadarWatchEvent {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *RadarWatchEventClient) Hooks() []Hook {
+	hooks := c.hooks.RadarWatchEvent
+	return append(hooks[:len(hooks):len(hooks)], radarwatchevent.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *RadarWatchEventClient) Interceptors() []Interceptor {
+	return c.inters.RadarWatchEvent
+}
+
+func (c *RadarWatchEventClient) mutate(ctx context.Context, m *RadarWatchEventMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&RadarWatchEventCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&RadarWatchEventUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&RadarWatchEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&RadarWatchEventDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown RadarWatchEvent mutation op: %q", m.Op())
+	}
+}
+
 // ResourceGroupClient is a client for the ResourceGroup schema.
 type ResourceGroupClient struct {
 	config
@@ -5951,19 +6379,21 @@ type (
 		CasbinRule, DataPermission, Department, Dict, DictCategory, File,
 		LoginFailCounter, Menu, NotificationMessage, NotificationMessageCategory,
 		NotificationMessageRecipient, Organization, PasswordHistory, Position,
-		PrivateMessage, ResourceGroup, Role, RoleApi, RoleDept, RoleMenu,
-		RoleResourceGroup, StorageLayer, SystemConfig, Task, TaskExecution, Tenant,
-		ToolLink, ToolLinkCategory, ToolLinkSsoTicket, ToolLinkUserMark, User,
-		UserCredential, UserPost, UserRole, UserToken []ent.Hook
+		PrivateMessage, RadarUserConfig, RadarWatch, RadarWatchEvent, ResourceGroup,
+		Role, RoleApi, RoleDept, RoleMenu, RoleResourceGroup, StorageLayer,
+		SystemConfig, Task, TaskExecution, Tenant, ToolLink, ToolLinkCategory,
+		ToolLinkSsoTicket, ToolLinkUserMark, User, UserCredential, UserPost, UserRole,
+		UserToken []ent.Hook
 	}
 	inters struct {
 		AdminLoginLog, AdminLoginRestriction, AdminOperationLog, ApiResource,
 		CasbinRule, DataPermission, Department, Dict, DictCategory, File,
 		LoginFailCounter, Menu, NotificationMessage, NotificationMessageCategory,
 		NotificationMessageRecipient, Organization, PasswordHistory, Position,
-		PrivateMessage, ResourceGroup, Role, RoleApi, RoleDept, RoleMenu,
-		RoleResourceGroup, StorageLayer, SystemConfig, Task, TaskExecution, Tenant,
-		ToolLink, ToolLinkCategory, ToolLinkSsoTicket, ToolLinkUserMark, User,
-		UserCredential, UserPost, UserRole, UserToken []ent.Interceptor
+		PrivateMessage, RadarUserConfig, RadarWatch, RadarWatchEvent, ResourceGroup,
+		Role, RoleApi, RoleDept, RoleMenu, RoleResourceGroup, StorageLayer,
+		SystemConfig, Task, TaskExecution, Tenant, ToolLink, ToolLinkCategory,
+		ToolLinkSsoTicket, ToolLinkUserMark, User, UserCredential, UserPost, UserRole,
+		UserToken []ent.Interceptor
 	}
 )

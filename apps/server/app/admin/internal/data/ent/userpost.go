@@ -4,9 +4,9 @@ package ent
 
 import (
 	"fmt"
+	"framework/app/admin/internal/data/ent/userpost"
 	"strings"
 	"time"
-	"framework/app/admin/internal/data/ent/userpost"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"

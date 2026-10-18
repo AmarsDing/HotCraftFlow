@@ -236,6 +236,42 @@ func (f PrivateMessageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PrivateMessageMutation", m)
 }
 
+// The RadarUserConfigFunc type is an adapter to allow the use of ordinary
+// function as RadarUserConfig mutator.
+type RadarUserConfigFunc func(context.Context, *ent.RadarUserConfigMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f RadarUserConfigFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.RadarUserConfigMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RadarUserConfigMutation", m)
+}
+
+// The RadarWatchFunc type is an adapter to allow the use of ordinary
+// function as RadarWatch mutator.
+type RadarWatchFunc func(context.Context, *ent.RadarWatchMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f RadarWatchFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.RadarWatchMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RadarWatchMutation", m)
+}
+
+// The RadarWatchEventFunc type is an adapter to allow the use of ordinary
+// function as RadarWatchEvent mutator.
+type RadarWatchEventFunc func(context.Context, *ent.RadarWatchEventMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f RadarWatchEventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.RadarWatchEventMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RadarWatchEventMutation", m)
+}
+
 // The ResourceGroupFunc type is an adapter to allow the use of ordinary
 // function as ResourceGroup mutator.
 type ResourceGroupFunc func(context.Context, *ent.ResourceGroupMutation) (ent.Value, error)

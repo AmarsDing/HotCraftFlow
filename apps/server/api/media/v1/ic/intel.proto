@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package media.ic.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// ============================================================================
+// IntelItem —— ① IC 情报收集的输出契约（契约 §1）。
+// 消费者：② TT（全量）、③ MIA（仅 C_market）、④ MME（仅 B_material）。
+//
+// 约定（评审 B-3/B-4 修复）：
+//  - 枚举字段一律用 string（禁用 proto enum，否则 protojson 序列化为
+//    COLLECT_METHOD_HOTLIST 而非契约要求的小写 hotlist）。合法值由服务层校验。
+//  - 所有字段显式 json_name = snake_case，保证 protojson 与 encoding/json
+//    两条路径输出一致（契约强制 snake_case）。
+//  - 时间一律 google.protobuf.Timestamp，存储与序列化均为 UTC 带 Z。
+// ============================================================================
+
+message IntelItem {
+  string api_version = 1 [json_name = "api_version"]; // 恒 "1.0"
+  string intel_id    = 2 [json_name = "intel_id"];    // it_ 前缀
+  IntelItemSource source   = 3 [json_name = "source"];
+  IntelPayload    payload  = 4 [json_name = "payload"];
+  repeated IntelEntity entities = 5 [json_name = "entities"];
+  // category ∈ {A_hot, B_material, C_market, D_compliance}（服务层校验）
+  string category = 6 [json_name = "category"];
+  IntelMetrics     metrics     = 7 [json_name = "metrics"];
+  IntelDedup       dedup       = 8 [json_name = "dedup"];
+  IntelCompliance  compliance  = 9 [json_name = "compliance"];
+  IntelWorkability workability = 10 [json_name = "workability"];
+}
+
+message IntelItemSource {
+  string platform = 1 [json_name = "platform"]; // 见契约 §1 平台枚举表
+  string region   = 2 [json_name = "region"];   // cn | intl | global
+  // collect_method ∈ {hotlist, api, rss, crawl, sidecar}（服务层校验）
+  string collect_method = 3 [json_name = "collect_method"];
+  string url    = 4 [json_name = "url"];
+  string author = 5 [json_name = "author"]; // 仅存公开昵称（PIPL）
+  google.protobuf.Timestamp collected_at = 6 [json_name = "collected_at"]; // 本地接收时间 UTC，必填
+  google.protobuf.Timestamp published_at = 7 [json_name = "published_at"]; // 上游发布时间 UTC，可空（评审 C-9 补登）
+  IntelEvidence evidence = 8 [json_name = "evidence"];
+}
+
+message IntelEvidence {
+  string snapshot_path = 1 [json_name = "snapshot_path"];
+  string raw_ref       = 2 [json_name = "raw_ref"];
+  map<string, string> http_headers = 3 [json_name = "http_headers"]; // 脱敏后的受限集合
+}
+
+message IntelPayload {
+  string title = 1 [json_name = "title"];
+  string text  = 2 [json_name = "text"];
+  repeated string media_refs = 3 [json_name = "media_refs"]; // asset:// 可加工；https:// 须先下载
+  string lang = 4 [json_name = "lang"]; // BCP-47，und 兜底
+}
+
+message IntelEntity {
+  // type ∈ {person, org, policy, tech, place, topic}（服务层校验）
+  string type       = 1 [json_name = "type"];
+  string value      = 2 [json_name = "value"];
+  double confidence = 3 [json_name = "confidence"]; // [0,1]；<0.6 不进 MIA
+}
+
+message IntelMetrics {
+  int32 rank       = 1 [json_name = "rank"];       // 无榜 = 0
+  int32 rank_total = 2 [json_name = "rank_total"]; // 无榜 = 0（0 与 null 语义不同）
+  int64 views      = 3 [json_name = "views"];
+  int64 likes      = 4 [json_name = "likes"];
+  int64 comments   = 5 [json_name = "comments"];
+  // 契约字段名为 _as_of（指标快照时间）。
+  google.protobuf.Timestamp as_of = 6 [json_name = "_as_of"];
+}
+
+message IntelDedup {
+  string url_key     = 1 [json_name = "url_key"];
+  string fingerprint = 2 [json_name = "fingerprint"]; // SimHash 16 位小写 hex（string，非 uint64）
+  string cluster_id  = 3 [json_name = "cluster_id"];  // cl_ 前缀（评审修正：初版误写 tp_）
+}
+
+message IntelCompliance {
+  string gate = 1 [json_name = "gate"]; // pass | review | block（服务层校验）
+  repeated string reasons = 2 [json_name = "reasons"];
+}
+
+message IntelWorkability {
+  double score  = 1 [json_name = "score"];
+  string reason = 2 [json_name = "reason"];
+}

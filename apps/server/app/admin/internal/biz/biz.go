@@ -8,7 +8,11 @@ import "github.com/google/wire"
 // ProviderSet is biz providers (platform-only skeleton).
 var ProviderSet = wire.NewSet(
 	NewRadarTrendingUsecase,
+	NewGitHubRadarTrendingReader,
 	ProvideDemoRadarTrendingReader,
+	NewRadarWatchUsecase,
+	NewRadarNotifyUsecase,
+	NewRadarConfigUsecase,
 	NewDictUsecase,
 	NewTaskUsecase,
 	NewFileUsecase,

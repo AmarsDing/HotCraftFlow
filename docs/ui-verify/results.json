@@ -1,0 +1,147 @@
+{
+  "results": [
+    {
+      "name": "login-api",
+      "path": "/api/v1/monitor/auth/login",
+      "status": "pass",
+      "notes": "http=200 token=true"
+    },
+    {
+      "name": "login-page",
+      "path": "/login",
+      "status": "pass",
+      "notes": "form visible",
+      "shot": "01-login.png"
+    },
+    {
+      "name": "login-submit",
+      "path": "http://127.0.0.1:9001/dashboard",
+      "status": "pass",
+      "notes": "entered app",
+      "shot": "02-after-login.png"
+    },
+    {
+      "name": "dashboard",
+      "path": "/dashboard",
+      "status": "pass",
+      "notes": "content-ok",
+      "shot": "03-dashboard.png"
+    },
+    {
+      "name": "organizations",
+      "path": "/opm/organizations",
+      "status": "pass",
+      "notes": "content-ok | CRUD:create-dialog-ok",
+      "shot": "04-opm_organizations.png"
+    },
+    {
+      "name": "departments",
+      "path": "/opm/departments",
+      "status": "fail",
+      "notes": "content-ok | CRUD:create-dialog-ok | negative-notify | console:console:Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "shot": "05-opm_departments.png"
+    },
+    {
+      "name": "positions",
+      "path": "/opm/positions",
+      "status": "pass",
+      "notes": "content-ok | CRUD:create-dialog-ok",
+      "shot": "06-opm_positions.png"
+    },
+    {
+      "name": "users",
+      "path": "/opm/users",
+      "status": "pass",
+      "notes": "content-ok | CRUD:create-dialog-ok",
+      "shot": "07-opm_users.png"
+    },
+    {
+      "name": "roles",
+      "path": "/permission/roles",
+      "status": "pass",
+      "notes": "content-ok | CRUD:create-dialog-ok",
+      "shot": "08-permission_roles.png"
+    },
+    {
+      "name": "menus",
+      "path": "/permission/menus",
+      "status": "pass",
+      "notes": "content-ok | CRUD:create-dialog-ok",
+      "shot": "09-permission_menus.png"
+    },
+    {
+      "name": "dicts",
+      "path": "/system/dicts",
+      "status": "pass",
+      "notes": "content-ok | CRUD:create-dialog-ok",
+      "shot": "10-system_dicts.png"
+    },
+    {
+      "name": "files",
+      "path": "/system/files",
+      "status": "pass",
+      "notes": "content-ok | CRUD:no-create-btn",
+      "shot": "11-system_files.png"
+    },
+    {
+      "name": "tasks",
+      "path": "/system/tasks",
+      "status": "pass",
+      "notes": "content-ok | CRUD:create-dialog-ok",
+      "shot": "12-system_tasks.png"
+    },
+    {
+      "name": "api-resources",
+      "path": "/system/api-resources",
+      "status": "pass",
+      "notes": "content-ok | CRUD:create-dialog-ok",
+      "shot": "13-system_api-resources.png"
+    },
+    {
+      "name": "configs",
+      "path": "/system/configs",
+      "status": "pass",
+      "notes": "content-ok | CRUD:create-dialog-ok",
+      "shot": "14-system_configs.png"
+    },
+    {
+      "name": "login-restrictions",
+      "path": "/system/login-restrictions",
+      "status": "pass",
+      "notes": "content-ok | CRUD:create-dialog-ok",
+      "shot": "15-system_login-restrictions.png"
+    },
+    {
+      "name": "online-users",
+      "path": "/system/online-users",
+      "status": "pass",
+      "notes": "content-ok",
+      "shot": "16-system_online-users.png"
+    },
+    {
+      "name": "tenant",
+      "path": "/tenant",
+      "status": "pass",
+      "notes": "content-ok | CRUD:create-dialog-ok",
+      "shot": "17-tenant.png"
+    },
+    {
+      "name": "login-log",
+      "path": "/log/login",
+      "status": "pass",
+      "notes": "content-ok",
+      "shot": "18-log_login.png"
+    },
+    {
+      "name": "operation-log",
+      "path": "/log/operation",
+      "status": "pass",
+      "notes": "content-ok",
+      "shot": "19-log_operation.png"
+    }
+  ],
+  "runtimeErrors": [
+    "console:QPage needs to be a deep child of QLayout",
+    "console:Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+  ]
+}

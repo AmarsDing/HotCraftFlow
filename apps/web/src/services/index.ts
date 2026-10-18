@@ -44,6 +44,7 @@ import {
   createWatchServiceClient,
   createRadarNotifyServiceClient,
   createRadarConfigServiceClient,
+  createRepoServiceClient,
   type RepoItem as RadarRepoItem,
   type WatchItem as RadarWatchItem,
   type WatchEvent as RadarWatchEvent,
@@ -51,6 +52,12 @@ import {
   type ListTrendingResponse,
   type SearchRisingResponse,
   type GetRadarConfigResponse,
+  type GetRepoResponse,
+  type GetRepoTreeResponse,
+  type GetRepoContentResponse,
+  type CloneRepoResponse,
+  type GenerateInsightResponse,
+  type AIInsight as RadarAIInsight,
 } from './kratos/radar/service/v1';
 
 
@@ -217,6 +224,7 @@ const radarTrendingClient = createTrendingServiceClient(requestHandler);
 const radarWatchClient = createWatchServiceClient(requestHandler);
 const radarNotifyClient = createRadarNotifyServiceClient(requestHandler);
 const radarConfigClient = createRadarConfigServiceClient(requestHandler);
+const radarRepoClient = createRepoServiceClient(requestHandler);
 
 
 // ===================== Auth =====================
@@ -1018,6 +1026,7 @@ export const myNoticeService = {
 
 // ===================== GitHub Radar =====================
 export type { RadarRepoItem, RadarWatchItem, RadarWatchEvent, RadarNotification, ListTrendingResponse, SearchRisingResponse, GetRadarConfigResponse };
+export type { GetRepoResponse, GetRepoTreeResponse, GetRepoContentResponse, CloneRepoResponse, GenerateInsightResponse, RadarAIInsight };
 
 export const radarTrendingService = {
   listTrending(query: {
@@ -1027,6 +1036,9 @@ export const radarTrendingService = {
     onlyNew?: boolean;
     page?: number;
     pageSize?: number;
+    sort?: string;
+    query?: string;
+    license?: string;
   } = {}) {
     return radarTrendingClient.ListTrending({
       since: query.since,
@@ -1035,6 +1047,9 @@ export const radarTrendingService = {
       onlyNew: query.onlyNew,
       page: query.page,
       pageSize: query.pageSize,
+      sort: query.sort,
+      query: query.query,
+      license: query.license,
     }) as Promise<ListTrendingResponse>;
   },
   searchRising(query: { query?: string; language?: string; page?: number; pageSize?: number } = {}) {
@@ -1044,6 +1059,28 @@ export const radarTrendingService = {
       page: query.page,
       pageSize: query.pageSize,
     }) as Promise<SearchRisingResponse>;
+  },
+};
+
+export const radarRepoService = {
+  getRepo(fullName: string, opts: { includeReadme?: boolean; insightLevel?: string } = {}) {
+    return radarRepoClient.GetRepo({
+      fullName,
+      includeReadme: opts.includeReadme ?? false,
+      insightLevel: opts.insightLevel || undefined,
+    }) as Promise<GetRepoResponse>;
+  },
+  getTree(fullName: string, branch?: string) {
+    return radarRepoClient.GetRepoTree({ fullName, branch: branch || undefined }) as Promise<GetRepoTreeResponse>;
+  },
+  getContent(fullName: string, path: string, ref?: string) {
+    return radarRepoClient.GetRepoContent({ fullName, path, ref: ref || undefined }) as Promise<GetRepoContentResponse>;
+  },
+  clone(fullName: string, toServer = false) {
+    return radarRepoClient.CloneRepo({ fullName, toServer }) as Promise<CloneRepoResponse>;
+  },
+  generateInsight(fullName: string, level: string) {
+    return radarRepoClient.GenerateInsight({ fullName, level }) as Promise<GenerateInsightResponse>;
   },
 };
 
@@ -1078,8 +1115,24 @@ export const radarConfigService = {
   get() {
     return radarConfigClient.GetConfig({}) as Promise<GetRadarConfigResponse>;
   },
-  set(githubToken: string) {
-    return radarConfigClient.SetConfig({ githubToken }) as Promise<GetRadarConfigResponse>;
+  set(cfg: {
+    githubToken?: string;
+    llmEnabled?: boolean;
+    llmBaseUrl?: string;
+    llmApiKey?: string;
+    llmModel?: string;
+    cloneEnabled?: boolean;
+    cloneDir?: string;
+  }) {
+    return radarConfigClient.SetConfig({
+      githubToken: cfg.githubToken,
+      llmEnabled: cfg.llmEnabled,
+      llmBaseUrl: cfg.llmBaseUrl,
+      llmApiKey: cfg.llmApiKey,
+      llmModel: cfg.llmModel,
+      cloneEnabled: cfg.cloneEnabled,
+      cloneDir: cfg.cloneDir,
+    }) as Promise<GetRadarConfigResponse>;
   },
 };
 

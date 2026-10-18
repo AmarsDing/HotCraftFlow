@@ -4,9 +4,9 @@ package ent
 
 import (
 	"fmt"
+	"framework/app/admin/internal/data/ent/datapermission"
 	"strings"
 	"time"
-	"framework/app/admin/internal/data/ent/datapermission"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"

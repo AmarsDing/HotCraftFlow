@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package media.mme.v1;
+
+// ============================================================================
+// ④ MME 短视频矩阵混剪的对外契约（契约 §4）。消费者：⑤ MAP。
+// ============================================================================
+
+message VariantSet {
+  string api_version = 1 [json_name = "api_version"];
+  string variant_set_id = 2 [json_name = "variant_set_id"]; // vs_ 前缀
+  VariantOrigin origin = 3 [json_name = "origin"];
+  repeated Variant variants = 4 [json_name = "variants"];
+  DiffCheck diff_check = 5 [json_name = "diff_check"];
+}
+
+message VariantOrigin {
+  string candidate_id = 1 [json_name = "candidate_id"]; // 回指 ② TT 选题，可空
+  string asset_id = 2 [json_name = "asset_id"];         // as_ 前缀
+  string transcript_ref = 3 [json_name = "transcript_ref"];
+}
+
+message Variant {
+  string variant_id = 1 [json_name = "variant_id"]; // v_ 前缀
+  string aspect = 2 [json_name = "aspect"];         // 9:16 / 1:1 / 16:9
+  string content_version = 3 [json_name = "content_version"]; // B 维度（补丁级演进）
+  string hook_id = 4 [json_name = "hook_id"];                 // C 维度（补丁级演进）
+  double duration_sec = 5 [json_name = "duration_sec"];
+  string video_path = 6 [json_name = "video_path"]; // 对象存储路径，非 HTTP URL
+  string cover_path = 7 [json_name = "cover_path"];
+  string edl_ref = 8 [json_name = "edl_ref"];
+  Captions captions = 9 [json_name = "captions"];
+  // copy 的平台键须与 MAP 适配器注册表的 platform_key 一致（map 支持 12 平台，评审修复）。
+  map<string, PlatformCopy> copy = 10 [json_name = "copy"];
+  string manifest_path = 11 [json_name = "manifest_path"];
+  QC qc = 12 [json_name = "qc"];
+}
+
+message Captions {
+  string style = 1 [json_name = "style"]; // simple | dynamic
+  string srt_path = 2 [json_name = "srt_path"];
+}
+
+message PlatformCopy {
+  string title = 1 [json_name = "title"];
+  string desc = 2 [json_name = "desc"];
+  repeated string tags = 3 [json_name = "tags"];
+}
+
+// QC 渲染自检：boundary_ok / subtitle_ok 任一为 false 不得进入审批门。
+message QC {
+  bool boundary_ok = 1 [json_name = "boundary_ok"];
+  bool subtitle_ok = 2 [json_name = "subtitle_ok"];
+  double score = 3 [json_name = "score"];
+}
+
+// DiffCheck 差异化检查：min_pair_similarity 过高说明变体不够差异化（平台查重风险）。
+message DiffCheck {
+  double min_pair_similarity = 1 [json_name = "min_pair_similarity"];
+  bool warn = 2 [json_name = "warn"];
+}

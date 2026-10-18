@@ -6,8 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
-	"sync"
 	"framework/app/admin/internal/data/ent/adminloginlog"
 	"framework/app/admin/internal/data/ent/adminloginrestriction"
 	"framework/app/admin/internal/data/ent/adminoperationlog"
@@ -27,6 +25,9 @@ import (
 	"framework/app/admin/internal/data/ent/passwordhistory"
 	"framework/app/admin/internal/data/ent/position"
 	"framework/app/admin/internal/data/ent/privatemessage"
+	"framework/app/admin/internal/data/ent/radaruserconfig"
+	"framework/app/admin/internal/data/ent/radarwatch"
+	"framework/app/admin/internal/data/ent/radarwatchevent"
 	"framework/app/admin/internal/data/ent/resourcegroup"
 	"framework/app/admin/internal/data/ent/role"
 	"framework/app/admin/internal/data/ent/roleapi"
@@ -47,6 +48,8 @@ import (
 	"framework/app/admin/internal/data/ent/userpost"
 	"framework/app/admin/internal/data/ent/userrole"
 	"framework/app/admin/internal/data/ent/usertoken"
+	"reflect"
+	"sync"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -130,6 +133,9 @@ func checkColumn(t, c string) error {
 			passwordhistory.Table:              passwordhistory.ValidColumn,
 			position.Table:                     position.ValidColumn,
 			privatemessage.Table:               privatemessage.ValidColumn,
+			radaruserconfig.Table:              radaruserconfig.ValidColumn,
+			radarwatch.Table:                   radarwatch.ValidColumn,
+			radarwatchevent.Table:              radarwatchevent.ValidColumn,
 			resourcegroup.Table:                resourcegroup.ValidColumn,
 			role.Table:                         role.ValidColumn,
 			roleapi.Table:                      roleapi.ValidColumn,

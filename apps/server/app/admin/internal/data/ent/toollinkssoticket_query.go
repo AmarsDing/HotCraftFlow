@@ -6,9 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math"
 	"framework/app/admin/internal/data/ent/predicate"
 	"framework/app/admin/internal/data/ent/toollinkssoticket"
+	"math"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"

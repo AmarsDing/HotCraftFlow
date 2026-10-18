@@ -4,9 +4,9 @@ package ent
 
 import (
 	"fmt"
+	"framework/app/admin/internal/data/ent/notificationmessage"
 	"strings"
 	"time"
-	"framework/app/admin/internal/data/ent/notificationmessage"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"

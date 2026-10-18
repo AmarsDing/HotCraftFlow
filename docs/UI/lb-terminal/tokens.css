@@ -1,0 +1,297 @@
+/* ==========================================================================
+   Longbridge Terminal — Design Tokens
+   全部取值来自 docs/UI/金融行情Web终端UI拆解与前端实现指南.md §2
+   主题切换 = 换 [data-theme]，令牌不变
+   ========================================================================== */
+
+:root {
+  /* ---- 字体 ---- */
+  --font-sans: "Inter", "HarmonyOS Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Cascadia Code", Consolas, monospace;
+
+  /* ---- 字号阶（录屏实测） ---- */
+  --fs-micro: 10px;
+  --fs-caption: 11px;
+  --fs-body: 12px;
+  --fs-body-lg: 13px;
+  --fs-title: 15px;
+  --fs-price: 22px;
+  --fs-index: 20px;
+  --fs-kpi: 28px;
+
+  /* ---- 行高 ---- */
+  --lh-tight: 1.2;
+  --lh-normal: 1.45;
+  --lh-table: 1.6;
+
+  /* ---- 圆角 ---- */
+  --r-pill: 999px;
+  --r-chip: 6px;
+  --r-card: 10px;
+  --r-input: 6px;
+  --r-toast: 10px;
+  --r-tile: 2px;
+
+  /* ---- 间距 ---- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+
+  /* ---- 动效 ---- */
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-view: 900ms;
+  --dur-panel: 800ms;
+  --dur-pop: 200ms;
+  --dur-toast: 300ms;
+  --dur-flash: 600ms;
+  --dur-hover: 120ms;
+
+  /* ---- 骨架尺寸 ---- */
+  --h-winrow: 30px;   /* 窗口控制行 */
+  --h-brand: 26px;    /* 品牌 + 区域 Tab 行 */
+  --h-tabs: 26px;     /* 视图 Tab 行 */
+  --h-status: 30px;   /* 底部状态栏 */
+  --w-rail: 40px;     /* 左图标栏 */
+  --w-watch: 310px;   /* 左自选列（个股页） */
+  --w-quote: 290px;   /* 右报价栏 */
+  --h-trade: 220px;   /* 底部交易面板 */
+
+  /* ---- 阴影 ---- */
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, .3), 0 8px 28px rgba(0, 0, 0, .35);
+  --shadow-pop: 0 6px 20px rgba(0, 0, 0, .45), 0 16px 48px rgba(0, 0, 0, .5);
+}
+
+/* ==========================================================================
+   主题：Default Dark（录屏实测配色）
+   ========================================================================== */
+[data-theme="default-dark"] {
+  --bg-app: #18191D;
+  --bg-panel: #1E2026;
+  --bg-panel-2: #22242A;
+  --bg-input: #141517;
+  --bg-hover: rgba(255, 255, 255, .04);
+  --bg-active: rgba(255, 255, 255, .07);
+  --bg-rail: #18191D;
+
+  --border: #26282E;
+  --border-soft: rgba(255, 255, 255, .06);
+  --border-strong: #34363D;
+
+  --text-primary: #E6E8EB;
+  --text-secondary: #9AA0A6;
+  --text-tertiary: #62666E;
+  --text-disabled: #4A4D54;
+  --text-inverse: #0D0E10;
+
+  /* 语义色：涨（青绿）/ 跌（玫红） */
+  --up-text: #35C8A8;
+  --up-btn: #0CA890;
+  --up-deep: #0C6C60;
+  --up-mid: #0C846C;
+  --up-bright: #0DB397;
+  --up-glow: #2BC4A8;
+
+  --down-text: #F0568C;
+  --down-btn: #C42B6B;
+  --down-deep: #78183C;
+  --down-mid: #901848;
+  --down-bright: #B11955;
+  --down-glow: #D7165E;
+
+  --flat: #6B7280;
+
+  /* 最新价线（独立于涨跌语义） */
+  --price-line: #3E7BFA;
+
+  /* 功能色 */
+  --c-sankey-income: #5060F0;
+  --c-sankey-profit: #38C850;
+  --c-sankey-expense: #F09818;
+  --c-chart-bar: #3B82F6;
+  --c-chart-line: #F59E0B;
+  --c-ai-a: #EC4899;
+  --c-ai-b: #F59E0B;
+  --c-ai-c: #2DD4BF;
+  --c-success: #22C55E;
+  --c-accent: #0CA890;
+}
+
+/* ---- 主题：Catppuccin Mocha ---- */
+[data-theme="catppuccin-mocha"] {
+  --bg-app: #1E1E2E;
+  --bg-panel: #24273A;
+  --bg-panel-2: #2A2C3F;
+  --bg-input: #181825;
+  --bg-hover: rgba(255, 255, 255, .05);
+  --bg-active: rgba(255, 255, 255, .09);
+  --bg-rail: #1E1E2E;
+  --border: #313244;
+  --border-soft: rgba(255, 255, 255, .07);
+  --border-strong: #45475A;
+  --text-primary: #D9E0EE;
+  --text-secondary: #A6ADC8;
+  --text-tertiary: #6E738D;
+  --text-disabled: #585B70;
+  --text-inverse: #11111B;
+
+  --up-text: #A6E3A1; --up-btn: #40A02B; --up-deep: #2A5E20;
+  --up-mid: #33742A; --up-bright: #49B03A; --up-glow: #7DDC6A;
+  --down-text: #F38BA8; --down-btn: #D20F39; --down-deep: #7A0B25;
+  --down-mid: #930F2E; --down-bright: #B3123A; --down-glow: #E0144C;
+  --flat: #7F849C;
+  --price-line: #89B4FA;
+
+  --c-sankey-income: #89B4FA;
+  --c-sankey-profit: #A6E3A1;
+  --c-sankey-expense: #FAB387;
+  --c-chart-bar: #89B4FA;
+  --c-chart-line: #F9E2AF;
+  --c-ai-a: #F5C2E7; --c-ai-b: #FAB387; --c-ai-c: #94E2D5;
+  --c-success: #A6E3A1;
+  --c-accent: #40A02B;
+}
+
+/* ---- 主题：Everforest Dark ---- */
+[data-theme="everforest-dark"] {
+  --bg-app: #2D353B;
+  --bg-panel: #343F44;
+  --bg-panel-2: #3A454A;
+  --bg-input: #232A2E;
+  --bg-hover: rgba(255, 255, 255, .04);
+  --bg-active: rgba(255, 255, 255, .08);
+  --bg-rail: #2D353B;
+  --border: #3F4A50;
+  --border-soft: rgba(255, 255, 255, .06);
+  --border-strong: #525C63;
+  --text-primary: #D3C6AA;
+  --text-secondary: #A7B09F;
+  --text-tertiary: #7A8473;
+  --text-disabled: #606860;
+  --text-inverse: #232A2E;
+
+  --up-text: #A7C080; --up-btn: #8DA101; --up-deep: #4E5A32;
+  --up-mid: #626D3F; --up-bright: #7D8A16; --up-glow: #B5CC86;
+  --down-text: #E67E80; --down-btn: #C14A4A; --down-deep: #7A2C2C;
+  --down-mid: #8E3636; --down-bright: #A84040; --down-glow: #DE5F5F;
+  --flat: #7A8473;
+  --price-line: #7FBBB3;
+
+  --c-sankey-income: #7FBBB3;
+  --c-sankey-profit: #A7C080;
+  --c-sankey-expense: #DBBC7F;
+  --c-chart-bar: #7FBBB3;
+  --c-chart-line: #DBBC7F;
+  --c-ai-a: #D699B6; --c-ai-b: #DBBC7F; --c-ai-c: #83C092;
+  --c-success: #A7C080;
+  --c-accent: #8DA101;
+}
+
+/* ---- 主题：Ayu Dark ---- */
+[data-theme="ayu-dark"] {
+  --bg-app: #0F1419;
+  --bg-panel: #14191F;
+  --bg-panel-2: #1A2027;
+  --bg-input: #0B0F13;
+  --bg-hover: rgba(255, 255, 255, .04);
+  --bg-active: rgba(255, 255, 255, .07);
+  --bg-rail: #0F1419;
+  --border: #1F262E;
+  --border-soft: rgba(255, 255, 255, .06);
+  --border-strong: #2E3742;
+  --text-primary: #E6E1CF;
+  --text-secondary: #A8A395;
+  --text-tertiary: #6D6A5F;
+  --text-disabled: #54524A;
+  --text-inverse: #0B0F13;
+
+  --up-text: #C2D94C; --up-btn: #A7C030; --up-deep: #5A6A18;
+  --up-mid: #748A20; --up-bright: #94AC2A; --up-glow: #D4E86A;
+  --down-text: #F07178; --down-btn: #D94F5C; --down-deep: #8A2A33;
+  --down-mid: #A23440; --down-bright: #BC3E4C; --down-glow: #FF8A93;
+  --flat: #6D6A5F;
+  --price-line: #59C2FF;
+
+  --c-sankey-income: #59C2FF;
+  --c-sankey-profit: #C2D94C;
+  --c-sankey-expense: #FFB454;
+  --c-chart-bar: #59C2FF;
+  --c-chart-line: #FFB454;
+  --c-ai-a: #FF94AC; --c-ai-b: #FFB454; --c-ai-c: #95E6CB;
+  --c-success: #C2D94C;
+  --c-accent: #A7C030;
+}
+
+/* ---- 主题：Adventure（紫调） ---- */
+[data-theme="adventure"] {
+  --bg-app: #1A1625;
+  --bg-panel: #221D30;
+  --bg-panel-2: #282236;
+  --bg-input: #150F1F;
+  --bg-hover: rgba(255, 255, 255, .05);
+  --bg-active: rgba(255, 255, 255, .09);
+  --bg-rail: #1A1625;
+  --border: #2E2740;
+  --border-soft: rgba(255, 255, 255, .07);
+  --border-strong: #3E3555;
+  --text-primary: #EDE9F5;
+  --text-secondary: #A79FC0;
+  --text-tertiary: #6E6685;
+  --text-disabled: #544E68;
+  --text-inverse: #150F1F;
+
+  --up-text: #6EE7B7; --up-btn: #10B981; --up-deep: #0B5C42;
+  --up-mid: #0E7253; --up-bright: #12A374; --up-glow: #34D399;
+  --down-text: #FDA4AF; --down-btn: #E11D48; --down-deep: #8A0E2C;
+  --down-mid: #A31238; --down-bright: #C01645; --down-glow: #FB7185;
+  --flat: #7C7490;
+  --price-line: #A78BFA;
+
+  --c-sankey-income: #A78BFA;
+  --c-sankey-profit: #34D399;
+  --c-sankey-expense: #FBBF24;
+  --c-chart-bar: #A78BFA;
+  --c-chart-line: #FBBF24;
+  --c-ai-a: #F472B6; --c-ai-b: #FBBF24; --c-ai-c: #2DD4BF;
+  --c-success: #34D399;
+  --c-accent: #10B981;
+}
+
+/* ---- 主题：A股（红涨绿跌）——验证「语义色可一键互换」 ---- */
+[data-theme="cn-red-up"] {
+  --bg-app: #18191D;
+  --bg-panel: #1E2026;
+  --bg-panel-2: #22242A;
+  --bg-input: #141517;
+  --bg-hover: rgba(255, 255, 255, .04);
+  --bg-active: rgba(255, 255, 255, .07);
+  --bg-rail: #18191D;
+  --border: #26282E;
+  --border-soft: rgba(255, 255, 255, .06);
+  --border-strong: #34363D;
+  --text-primary: #E6E8EB;
+  --text-secondary: #9AA0A6;
+  --text-tertiary: #62666E;
+  --text-disabled: #4A4D54;
+  --text-inverse: #0D0E10;
+
+  /* 涨=红，跌=绿（中国市场惯例） */
+  --up-text: #FF6B7A; --up-btn: #D9342B; --up-deep: #7A1A19;
+  --up-mid: #93201F; --up-bright: #B52726; --up-glow: #F04A4A;
+  --down-text: #4ADE80; --down-btn: #16A34A; --down-deep: #0C5C2E;
+  --down-mid: #0E7240; --down-bright: #12925A; --down-glow: #22C55E;
+  --flat: #6B7280;
+  --price-line: #3E7BFA;
+
+  --c-sankey-income: #5060F0;
+  --c-sankey-profit: #38C850;
+  --c-sankey-expense: #F09818;
+  --c-chart-bar: #3B82F6;
+  --c-chart-line: #F59E0B;
+  --c-ai-a: #EC4899; --c-ai-b: #F59E0B; --c-ai-c: #2DD4BF;
+  --c-success: #22C55E;
+  --c-accent: #D9342B;
+}

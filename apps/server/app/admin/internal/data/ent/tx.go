@@ -50,6 +50,12 @@ type Tx struct {
 	Position *PositionClient
 	// PrivateMessage is the client for interacting with the PrivateMessage builders.
 	PrivateMessage *PrivateMessageClient
+	// RadarUserConfig is the client for interacting with the RadarUserConfig builders.
+	RadarUserConfig *RadarUserConfigClient
+	// RadarWatch is the client for interacting with the RadarWatch builders.
+	RadarWatch *RadarWatchClient
+	// RadarWatchEvent is the client for interacting with the RadarWatchEvent builders.
+	RadarWatchEvent *RadarWatchEventClient
 	// ResourceGroup is the client for interacting with the ResourceGroup builders.
 	ResourceGroup *ResourceGroupClient
 	// Role is the client for interacting with the Role builders.
@@ -240,6 +246,9 @@ func (tx *Tx) init() {
 	tx.PasswordHistory = NewPasswordHistoryClient(tx.config)
 	tx.Position = NewPositionClient(tx.config)
 	tx.PrivateMessage = NewPrivateMessageClient(tx.config)
+	tx.RadarUserConfig = NewRadarUserConfigClient(tx.config)
+	tx.RadarWatch = NewRadarWatchClient(tx.config)
+	tx.RadarWatchEvent = NewRadarWatchEventClient(tx.config)
 	tx.ResourceGroup = NewResourceGroupClient(tx.config)
 	tx.Role = NewRoleClient(tx.config)
 	tx.RoleApi = NewRoleApiClient(tx.config)
