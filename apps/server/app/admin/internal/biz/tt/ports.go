@@ -66,6 +66,12 @@ type TopicRepo interface {
 	AttachSource(ctx context.Context, topicID string, in AttachSourceInput) error
 	// TouchSeen 推进 last_seen_at（早到不后退）；收录首日置 first_seen_at。
 	TouchSeen(ctx context.Context, topicID string, seenAt time.Time) error
+	// GetTopicHeatMeta normalize 取数（M2）：首现时间/分类/近 24h 平台统计。
+	// at 为样本时间：pc(t) 窗口 (at-24h, at] 按样本口径计算（B-4 历史可重现：
+	// TopicSource 只追加，迟到点重算仍得当时窗口——move/拆分除外，记为已知局限）。
+	GetTopicHeatMeta(ctx context.Context, topicID string, at time.Time) (TopicHeatMeta, error)
+	// UpdateTopicHeatState 回写热度/动态/因子明细（B-3 落库，NFR-TT-05 门禁）。
+	UpdateTopicHeatState(ctx context.Context, topicID string, in TopicHeatUpdate) error
 }
 
 // CreateTopicInput 新建话题入参。
@@ -84,8 +90,30 @@ type CreateTopicInput struct {
 type AttachSourceInput struct {
 	IntelID       string
 	ClusterKey    string
+	Platform      string // A-5 breadth 统计维度（来源平台，冗余落 TopicSource.platform）
 	ContributedAt time.Time
 	Similarity    float64
+}
+
+// TopicHeatMeta 话题热度元数据（normalize 取数一次性回包）。
+type TopicHeatMeta struct {
+	FirstSeenAt time.Time
+	Category    string
+	// PlatformCount24h 近 24h 有贡献的 distinct 平台数（A-5 pc(t)，含本条来源）。
+	PlatformCount24h int
+	// Platforms24h 近 24h 平台列表（C-6 契约 breadth.platforms）。
+	Platforms24h []string
+}
+
+// TopicHeatUpdate 话题热度状态回写（B-3 因子取值/生效权重落库，NFR-TT-05 门禁）。
+type TopicHeatUpdate struct {
+	HeatScore, Velocity, Accel            float64
+	RankPct, EngPct, Freshness, Breadth   float64
+	WeightsEff                            HeatWeights
+	Missing                               []string
+	WeightEpoch                           string
+	PlatformCount24h                      int
+	Platforms24h                          []string
 }
 
 // SnapshotPublisher 快照事件发布端口（C-9：mm.trend.snapshot.v1 由 ingest 产出、
@@ -112,4 +140,48 @@ type GuardStore interface {
 	// TryAcceptSample 原子判定：仅当 epoch 严格大于已存值时接受并更新。
 	// 首次（无 key）总是接受。ttl 到期后 key 消失，后续样本重新竞争。
 	TryAcceptSample(ctx context.Context, key string, epoch int64, ttl time.Duration) (accepted bool, err error)
+}
+
+// ============================================================================
+// M2 端口：eng 分位直方图 / 动态链状态 / 权重配置仓。
+// ============================================================================
+
+// EngHistogram 互动分位直方图端口（A-3：分桶直方图替代 ZSET 方案——
+// 评审已推翻 03 §2.1 的「Redis 有序集合滚动 7 日」：ZRANK 无法跨 7 个日键求秩）。
+//
+// 语义：ObserveAndPercentile 先 HINCRBY 当日键（0.1 对数粒度 600 桶，TTL 8d），
+// 再合并 (t-7d, t] 覆盖的 7 个日键求 ECDF 分位；返回窗口样本总数 n 供调用方
+// 做冷启动判定（n < EngMinWindowN → 退化静态基线）。
+type EngHistogram interface {
+	ObserveAndPercentile(ctx context.Context, platform, category string, t time.Time, engagement float64) (pct float64, n int64, err error)
+}
+
+// DynamicsStateStore 动态链状态端口（每 (topic, platform) 一条）。
+// SaveIfNotAdvanced 为乐观条件写：仅当已存状态的 LastT 未越过 expectedLastT
+// （即本次 Load 后无并发推进）才落盘；返回 false 表示并发抢先，调用方放弃本次
+// 状态写入（热度仍写入时序，动态下个样本点自愈）。
+type DynamicsStateStore interface {
+	Load(ctx context.Context, topicID, platform string) (st *DynamicsState, err error)
+	SaveIfNotAdvanced(ctx context.Context, topicID, platform string, st DynamicsState, expectedLastT time.Time) (saved bool, err error)
+}
+
+// WeightConfigRow 权重配置行（A-15：只追加不改写）。
+type WeightConfigRow struct {
+	ConfigID      string      // wc_ 前缀 ULID
+	Scope         string      // heat / candidate
+	Weights       HeatWeights // scope=heat 时有效
+	EffectiveFrom time.Time
+	ActivatedBy   string
+	Note          string
+}
+
+// WeightConfigRepo 权重配置端口。
+type WeightConfigRepo interface {
+	// ActiveHeatWeights 取 at 时刻生效的 heat 配置（effective_from ≤ at 最新一行）。
+	// found=false 表示表内无行（调用方用 DefaultHeatWeights 兜底）。
+	ActiveHeatWeights(ctx context.Context, at time.Time) (row WeightConfigRow, found bool, err error)
+	// ListHeatWeights 查看用历史列表（effective_from 倒序，limit≤0 默认 20）。
+	ListHeatWeights(ctx context.Context, limit int) ([]WeightConfigRow, error)
+	// AppendHeatWeights 插入新行（effective_from 由调用方取变更时刻，不得回溯）。
+	AppendHeatWeights(ctx context.Context, row WeightConfigRow) error
 }

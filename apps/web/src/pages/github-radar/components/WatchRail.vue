@@ -34,7 +34,7 @@
         />
       </div>
       <template v-if="events?.length">
-        <div v-for="e in events" :key="e.id" class="watch-rail__event row items-center no-wrap q-py-xs">
+        <div v-for="e in visibleEvents" :key="e.id" class="watch-rail__event row items-center no-wrap q-py-xs">
           <q-icon :name="kindIcon(e.kind)" size="14px" class="watch-rail__event-icon" aria-hidden="true" />
           <div class="col" style="min-width: 0">
             <div class="text-body2" :class="{ 'watch-rail__event--read': e.read }">{{ e.message }}</div>
@@ -52,6 +52,14 @@
           >
             <q-tooltip>{{ t('githubRadar.watchEventRead') }}</q-tooltip>
           </q-btn>
+        </div>
+        <!-- 事件长尾折叠：上限 200 条全铺会占满侧栏首屏，截最新 8 条 -->
+        <div
+          v-if="hiddenEventCount > 0"
+          class="text-caption q-px-sm q-pb-xs"
+          style="color: var(--color-text-tertiary, var(--color-text-secondary))"
+        >
+          {{ t('githubRadar.watchMoreEvents', { n: hiddenEventCount }) }}
         </div>
       </template>
       <div v-else class="text-caption q-py-xs" style="color: var(--color-text-secondary)">
@@ -146,6 +154,11 @@ defineEmits<{
 }>();
 
 const unreadEvents = computed(() => (props.events ?? []).filter((e) => !e.read).length);
+
+// 事件区只铺最新 8 条，更早的折叠成计数提示（后端自带上限 200，前端再压首屏密度）
+const EVENTS_CAP = 8;
+const visibleEvents = computed(() => (props.events ?? []).slice(0, EVENTS_CAP));
+const hiddenEventCount = computed(() => Math.max((props.events?.length ?? 0) - EVENTS_CAP, 0));
 
 /** 增量格式：+N / -N（修复原 Δ-5 双重负号读法）。 */
 function formatDelta(delta: number): string {

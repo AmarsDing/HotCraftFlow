@@ -19890,6 +19890,7 @@ Context:
     watchChanges: 'Watch changes',
     watchNoChanges: 'No changes yet',
     watchNoChangesHint: 'Star or release changes on watched repos appear here',
+    watchMoreEvents: '+{n} older events',
     watchEmpty: 'No watches yet',
     watchEmptyHint: 'Bookmark a repo from the board, or tap + above',
     watchRemove: 'Remove',

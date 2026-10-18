@@ -56,8 +56,8 @@ type newsnowItem struct {
 }
 
 type newsnowResponse struct {
-	Status string         `json:"status"`
-	Items  []newsnowItem  `json:"items"`
+	Status string        `json:"status"`
+	Items  []newsnowItem `json:"items"`
 }
 
 func (c *HotlistCollector) Collect(ctx context.Context, src *biz.IntelSourceRow) ([]*biz.RawCollectItem, error) {

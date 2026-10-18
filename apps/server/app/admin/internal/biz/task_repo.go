@@ -26,12 +26,24 @@ const TaskTypeNameUserTokenCleanup = "user_token_cleanup"
 // TaskTypeNameScheduleAutoGenerate 内置任务：每日滚动补足未来 N 天排班空缺（处理器在 server 层注册）。
 const TaskTypeNameScheduleAutoGenerate = "schedule_auto_generate"
 
+// IC 任务类型名（处理器在 worker/ic 调度器注册；全局任务的周期登记由调度器自管，
+// 不走任务中心 seed，避免双通道重复调度。
+const TaskTypeNameIcCollect = "ic.collect"
+const TaskTypeNameIcRepublish = "ic.republish"
+const TaskTypeNameIcClusterIdleClose = "ic.cluster_idle_close"
+const TaskTypeNameIcRetentionSweep = "ic.retention_sweep"
+
 // validTaskTypeNames 已注册处理器的任务类型名白名单。
 // 仅白名单内的 typeName 允许创建/启用：asynq 按 typeName 路由到处理器，
 // 未注册的 typeName 入队后只会反复重试直至归档（永远无法执行）。
 var validTaskTypeNames = map[string]struct{}{
 	TaskTypeNameUserTokenCleanup:     {},
 	TaskTypeNameScheduleAutoGenerate: {},
+
+	TaskTypeNameIcCollect:          {},
+	TaskTypeNameIcRepublish:        {},
+	TaskTypeNameIcClusterIdleClose: {},
+	TaskTypeNameIcRetentionSweep:   {},
 }
 
 // IsValidTaskTypeName 校验任务类型名是否已注册处理器。
@@ -64,6 +76,28 @@ days - 滚动窗口天数（默认 14，1-365）；
 mode - 生效模式（默认 skip_published，可选 draft_only/regenerate_untouched/regenerate_all）；
 includeHoliday - 是否包含节假日班次（默认 true）`,
 		PayloadExample: `{"days":14,"mode":"skip_published","includeHoliday":true}`,
+	},
+
+	// ---------- ① IC 情报收集 ----------
+	TaskTypeNameIcCollect: {
+		Description:        "触发一路信源的一轮采集（周期任务由 IC 调度器按信源 interval_minutes 自动维护，此处可手动重跑）",
+		PayloadDescription: "JSON 对象：source_id - 信源 ID（必填）",
+		PayloadExample:     `{"source_id":"src_01J..."}`,
+	},
+	TaskTypeNameIcRepublish: {
+		Description:        "重发 publish_state=pending 的情报（B-25 投递失败兜底；周期 30s，由 IC 调度器自动登记）",
+		PayloadDescription: "无需参数，留空即可",
+		PayloadExample:     "{}",
+	},
+	TaskTypeNameIcClusterIdleClose: {
+		Description:        "关闭 last_seen_at 超过阈值（默认 48h，S-2）的 open 簇；闭簇不再吸纳新成员",
+		PayloadDescription: "无需参数，留空即可",
+		PayloadExample:     "{}",
+	},
+	TaskTypeNameIcRetentionSweep: {
+		Description:        "保留期清扫：evidence（默认 90d）先删文件再删行，intel（默认 365d）删行；删除打审计日志",
+		PayloadDescription: "无需参数，留空即可",
+		PayloadExample:     "{}",
 	},
 }
 

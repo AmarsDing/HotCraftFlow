@@ -53,12 +53,12 @@ func NewIcNormalizeUsecase(
 
 // NormalizeResult 处理产物（观测与重放审计）。
 type NormalizeResult struct {
-	IntelID   string
-	Gate      string
-	Category  string
-	ClusterID string
+	IntelID    string
+	Gate       string
+	Category   string
+	ClusterID  string
 	DedupLevel string
-	Published bool
+	Published  bool
 }
 
 // Process 处理一条 raw notice。traceID 取自生产信封（契约：trace_id 透传不重建）。
@@ -123,17 +123,17 @@ func (u *IcNormalizeUsecase) Process(ctx context.Context, notice *contract.RawIn
 
 	// ---- 落库回写（一次 patch 写完归一化字段，闸门单列写）----
 	patch := &IntelNormalizePatch{
-		IntelID:            row.IntelID,
-		FingerprintHex:     &sim.Hex,
-		FingerprintValid:   sim.Valid,
-		FpSegments:         sim.Segments,
-		Entities:           row.Entities,
-		Category:           string(row.Category),
-		WorkabilityScore:   row.Workability.Score,
-		WorkabilityReason:  row.Workability.Reason,
-		Title:              row.Payload.Title,
-		Text:               row.Payload.Text,
-		Lang:               lang,
+		IntelID:           row.IntelID,
+		FingerprintHex:    &sim.Hex,
+		FingerprintValid:  sim.Valid,
+		FpSegments:        sim.Segments,
+		Entities:          row.Entities,
+		Category:          string(row.Category),
+		WorkabilityScore:  row.Workability.Score,
+		WorkabilityReason: row.Workability.Reason,
+		Title:             row.Payload.Title,
+		Text:              row.Payload.Text,
+		Lang:              lang,
 	}
 	if rekeyedURLKey != "" { // 短链展开改过 key
 		patch.URLKey = &rekeyedURLKey
@@ -202,7 +202,7 @@ func (u *IcNormalizeUsecase) expandShortlink(ctx context.Context, row *IntelItem
 	}
 	if err := u.intel.UpdateDedupKey(ctx, row.IntelID, urlKey, newDedupKey); err != nil {
 		// 另一行已占该键：L1 语义合并（本行就是对同 URL 的迟到重复采样）。
-		peer, qerr := u.intel.FindRecentByURLKey(ctx, urlKey, icDedupMergeWindow)
+		peer, qerr := u.intel.FindRecentByURLKey(ctx, urlKey, u.cfg.DedupMergeWindow)
 		if qerr != nil {
 			return "", qerr
 		}

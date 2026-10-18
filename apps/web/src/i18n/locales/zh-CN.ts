@@ -19641,6 +19641,7 @@ export default {
     watchChanges: '盯盘变更',
     watchNoChanges: '暂无变更',
     watchNoChangesHint: '盯盘仓库有星标或 Release 变化时会出现在这里',
+    watchMoreEvents: '另有 {n} 条更早事件',
     watchEmpty: '尚未盯盘',
     watchEmptyHint: '从榜上点书签开始盯盘，或点右上角 +',
     watchRemove: '移除',

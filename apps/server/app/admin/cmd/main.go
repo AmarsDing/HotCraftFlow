@@ -12,7 +12,9 @@ import (
 	"framework/app/admin/internal/publishadapters"
 	"framework/app/admin/internal/server"
 	"framework/app/admin/internal/worker"
+	icworker "framework/app/admin/internal/worker/ic"
 	miaworker "framework/app/admin/internal/worker/mia"
+	mmeworker "framework/app/admin/internal/worker/mme"
 	ttworker "framework/app/admin/internal/worker/tt"
 	pkglog "framework/pkg/log"
 	"framework/pkg/observability"
@@ -64,11 +66,19 @@ func newApp(
 	miaIntelSub *miaworker.IntelSubscriber,
 	miaEquitySched *miaworker.MiaEquityScheduler,
 	miaCryptoSched *miaworker.MiaCryptoScheduler,
+	mmeQueue *mmeworker.RenderQueue,
+	mmeWorker *mmeworker.MmeRenderWorker,
+	icScheduler *icworker.Scheduler,
+	icNormalizer *icworker.NormalizerConsumer,
 ) *kratos.App {
 	// asynq 未启用时 NewAsynqServer 返回 nil，勿注册以免 nil 接口调用 Start panic。
 	// TT/MIA 各件套内部均以 conf.Enabled 自己把关，此处无条件注册。
+	// MME 队列/worker 未配置 asynq 时 Start no-op（入队以 MME_QUEUE_UNAVAILABLE 如实报错），可无条件注册。
+	// IC 调度器/归一化消费者同样内部降级（ic.enabled=false 或 asynq/nats 缺失时 Start no-op）。
 	servers := []transport.Server{hs, coreSrv, taskWorker, siteMsgSub, logRetentionWorker, radarEventRetentionWorker,
-		ttIngestSub, ttSnapshotWriter, ttBufferReplay, miaIntelSub, miaEquitySched, miaCryptoSched}
+		ttIngestSub, ttSnapshotWriter, ttBufferReplay, miaIntelSub, miaEquitySched, miaCryptoSched,
+		mmeQueue, mmeWorker,
+		icScheduler, icNormalizer}
 	if asynqSrv != nil {
 		servers = append(servers, asynqSrv)
 	}

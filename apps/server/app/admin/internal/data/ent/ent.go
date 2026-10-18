@@ -80,6 +80,7 @@ import (
 	"framework/app/admin/internal/data/ent/userpost"
 	"framework/app/admin/internal/data/ent/userrole"
 	"framework/app/admin/internal/data/ent/usertoken"
+	"framework/app/admin/internal/data/ent/weightconfig"
 	"reflect"
 	"sync"
 
@@ -220,6 +221,7 @@ func checkColumn(t, c string) error {
 			userpost.Table:                     userpost.ValidColumn,
 			userrole.Table:                     userrole.ValidColumn,
 			usertoken.Table:                    usertoken.ValidColumn,
+			weightconfig.Table:                 weightconfig.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

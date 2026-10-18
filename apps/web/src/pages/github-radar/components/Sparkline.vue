@@ -31,8 +31,12 @@ const geometry = computed(() => {
   const span = max - min || 1;
   const w = props.width;
   const h = props.height;
+  // 单值圆点居中（贴左边框会像被裁掉）；多值等距分布
   const step = vals.length > 1 ? w / (vals.length - 1) : w;
-  return vals.map((v, i) => ({ x: i * step, y: h - ((v - min) / span) * (h - 2) - 1 }));
+  return vals.map((v, i) => ({
+    x: vals.length === 1 ? w / 2 : i * step,
+    y: h - ((v - min) / span) * (h - 2) - 1,
+  }));
 });
 
 const singleDot = computed(() => (geometry.value.length === 1 ? geometry.value[0] : null));

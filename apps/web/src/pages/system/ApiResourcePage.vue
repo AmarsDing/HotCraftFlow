@@ -577,7 +577,7 @@ onMounted(() => {
 }
 
 .api-sync-banner {
-  background: rgba(25, 118, 210, 0.08);
+  background: rgb(25 118 210 / 8%);
   color: #1565c0;
   font-size: 12px;
 }
@@ -603,7 +603,7 @@ onMounted(() => {
     text-align: center;
     padding: 8px 4px;
     border-radius: 8px;
-    background: rgba(0, 0, 0, 0.04);
+    background: rgb(0 0 0 / 4%);
   }
 
   &__stat-value {
@@ -614,7 +614,7 @@ onMounted(() => {
 
   &__stat-label {
     font-size: 11px;
-    opacity: 0.75;
+    opacity: 75%;
     margin-top: 2px;
   }
 
@@ -643,18 +643,18 @@ onMounted(() => {
 
   &__change-module {
     margin-left: auto;
-    opacity: 0.6;
+    opacity: 60%;
   }
 
   &__truncated {
     margin-top: 8px;
     font-size: 12px;
-    opacity: 0.7;
+    opacity: 70%;
   }
 
   &__empty {
     text-align: center;
-    opacity: 0.7;
+    opacity: 70%;
   }
 
   &__guide {
@@ -666,10 +666,10 @@ onMounted(() => {
 
 // OFF 行整体灰显；delisted 行进一步淡化（树形模式行 class 由 rowClassFn 注入）
 :deep(tr.api-row--off) td {
-  opacity: 0.55;
+  opacity: 55%;
 }
 
 :deep(tr.api-row--delisted) td {
-  opacity: 0.45;
+  opacity: 45%;
 }
 </style>

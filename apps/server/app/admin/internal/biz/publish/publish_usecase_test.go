@@ -107,6 +107,10 @@ func TestPublish_HappyPath_SerialTargets(t *testing.T) {
 		if r.Visibility != "private" {
 			t.Fatalf("回执可见性应 private，实际 %q", r.Visibility)
 		}
+		// 🔴 审计存证：request_payload_hash 必填（防篡改；哈希输入绝不含凭据）。
+		if r.RequestPayloadHash == nil || len(*r.RequestPayloadHash) != 64 {
+			t.Fatalf("回执缺 request_payload_hash: %+v", r)
+		}
 	}
 	if fx.records.countByResult("allow") != 1 {
 		t.Fatalf("应有 1 条 publish allow 审计，实际 %d", fx.records.countByResult("allow"))
@@ -215,7 +219,73 @@ func TestPublish_Idempotent_ReceiptConflictAsSuccess(t *testing.T) {
 	}
 }
 
-// 适配器未注册 → MAP_ADAPTER_NOT_FOUND 明确报错（不静默降级）+ unit 置 failed。
+// 🔴 适配器边界幂等：A 成功 B 失败 → 修复后重试，A 平台不得重发（外部发帖不可逆，
+// DB 唯一索引只是兜底，业务判定必须用既有回执跳过）。
+func TestPublish_RetrySkipsSentPlatform(t *testing.T) {
+	unit := approvedUnit("du_p12", "youtube:main", "bilibili:main")
+	fx := newPublishFixture(t, unit)
+	var mu sync.Mutex
+	order := []string{}
+	yt := newSuccessPublisher("youtube", &order, &mu)
+	bili := newSuccessPublisher("bilibili", &order, &mu)
+	bili.errOnPublish = errors.New("upstream boom")
+	fx.ads.pubs["youtube"] = yt
+	fx.ads.pubs["bilibili"] = bili
+
+	// 首跑：youtube 成功落回执 → bilibili 失败（unit failed，可人工重发）。
+	_, err := fx.usecase().Publish(context.Background(), unit.UnitID, NewHumanActor("carol"), false, AuditMeta{})
+	if !errors.Is(err, ErrUpstream) {
+		t.Fatalf("首跑应 ErrUpstream，实际 %v", err)
+	}
+	if fx.receipts.createCalls != 1 {
+		t.Fatalf("首跑应仅 1 条回执（youtube），实际 %d", fx.receipts.createCalls)
+	}
+
+	// 修复后重试：youtube 已有回执必须跳过，只补 bilibili。
+	bili.errOnPublish = nil
+	out, err := fx.usecase().Publish(context.Background(), unit.UnitID, NewHumanActor("carol"), false, AuditMeta{})
+	if err != nil {
+		t.Fatalf("重试应成功: %v", err)
+	}
+	if len(order) != 3 || order[2] != "bilibili" {
+		t.Fatalf("重试不得重发已成平台（发帖不可逆）: %v", order)
+	}
+	if len(out.Receipts) != 2 {
+		t.Fatalf("回执应补满 2 条，实际 %d", len(out.Receipts))
+	}
+	if out.Unit.PublishState != "published" {
+		t.Fatalf("补发后应 published，实际 %s", out.Unit.PublishState)
+	}
+}
+
+// 🔴 锁内复核审批态：等锁期间审批被并发撤回（approved→draft）→ 锁后重门检拒发。
+func TestPublish_LockRecheck_DeniesRevokedApproval(t *testing.T) {
+	unit := approvedUnit("du_p13", "youtube:main")
+	fx := newPublishFixture(t, unit)
+	fx.ads.pubs["youtube"] = newSuccessPublisher("youtube", nil, nil)
+	// onLock 钩子在每次 GetUnit 前触发（GetUnit 持锁中调用，钩子内不得再走
+	// UpdateStates——sync.Mutex 非重入会死锁，直改存储行即可；第 1 次 GetUnit 是
+	// 门检前取单元（正常 approved），第 2 次是锁后重读——此处模拟并发撤回）。
+	getCalls := 0
+	fx.dispatch.onLock = func() {
+		getCalls++
+		if getCalls == 2 {
+			fx.dispatch.units[unit.UnitID].ApprovalState = string(mediacontract.ApprovalDraft)
+		}
+	}
+
+	_, err := fx.usecase().Publish(context.Background(), unit.UnitID, NewHumanActor("carol"), false, AuditMeta{})
+	if !errors.Is(err, algopublisher.ErrNotApproved) {
+		t.Fatalf("撤回后锁内复核应拒发（MAP_NOT_APPROVED），实际 %v", err)
+	}
+	if fx.receipts.createCalls != 0 {
+		t.Fatalf("拒发不得产生回执: %d", fx.receipts.createCalls)
+	}
+	if fx.locker.unlocks != 1 {
+		t.Fatalf("defer 应释放锁: unlocks=%d", fx.locker.unlocks)
+	}
+}
+
 func TestPublish_AdapterMissing(t *testing.T) {
 	unit := approvedUnit("du_p7", "youtube:main")
 	fx := newPublishFixture(t, unit) // youtube 无适配器注册

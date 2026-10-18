@@ -220,6 +220,15 @@ func (f *fakeTopicRepo) TouchSeen(_ context.Context, id string, _ time.Time) err
 	return nil
 }
 
+// M2 新增端口方法（M1 测试场景不走归一化，heat=nil 时不会触达）。
+func (f *fakeTopicRepo) GetTopicHeatMeta(context.Context, string, time.Time) (TopicHeatMeta, error) {
+	return TopicHeatMeta{}, nil
+}
+
+func (f *fakeTopicRepo) UpdateTopicHeatState(context.Context, string, TopicHeatUpdate) error {
+	return nil
+}
+
 type fakeGuard struct {
 	accepted bool
 	err      error
@@ -286,7 +295,7 @@ func TestIngestHandle(t *testing.T) {
 		repo := &fakeTopicRepo{byCluster: map[string]string{}}
 		guard := &fakeGuard{accepted: true}
 		pub := &fakePublisher{}
-		uc := NewIngestUsecase(&conf, repo, guard, pub, nil, log.DefaultLogger)
+		uc := NewIngestUsecase(&conf, repo, guard, pub, nil, nil, log.DefaultLogger)
 		uc.clock = func() time.Time { return now } // 固定时钟（同包测试）
 		return uc, repo, guard, pub
 	}

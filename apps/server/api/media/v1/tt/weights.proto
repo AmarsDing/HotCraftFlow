@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package media.tt.v1;
+
+// go_package 由 buf managed 注入，勿手写。
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+// ============================================================================
+// ② TT 权重配置管理（04-开发进度 M2「权重配置页 API」+ 详设 §1.2 WeightConfig
+// + 评审 A-15：只追加不改写，effective_from 恒为变更时刻，epoch 口径断点）。
+// 枚举用 string（服务层校验），字段显式 json_name = snake_case。
+// ============================================================================
+
+// WeightView 一行 heat 权重配置（当前生效行 + 历史行同构）。
+message WeightView {
+  string config_id = 1 [json_name = "config_id"];       // wc_ 前缀 ULID
+  double w_rank = 2 [json_name = "w_rank"];             // 榜内位置权重
+  double w_eng = 3 [json_name = "w_eng"];               // 互动分位权重
+  double w_fresh = 4 [json_name = "w_fresh"];           // 新鲜度权重
+  double w_breadth = 5 [json_name = "w_breadth"];       // 跨平台扩散权重
+  google.protobuf.Timestamp effective_from = 6 [json_name = "effective_from"]; // UTC
+  // epoch = sha256(config_id)[:8]（A-15 ②）：口径断点标记，看板分段依据。
+  // 表内无行时为 "default"（详设默认权重 {0.35, 0.25, 0.20, 0.20}）。
+  string epoch = 7 [json_name = "epoch"];
+  string activated_by = 8 [json_name = "activated_by"];
+  string note = 9 [json_name = "note"];
+  bool effective = 10 [json_name = "effective"]; // 是否为当前生效行
+}
+
+message GetHeatWeightsRequest {
+  int32 history_limit = 1 [json_name = "history_limit"]; // ≤0 默认 20
+}
+
+message GetHeatWeightsResponse {
+  WeightView current = 1 [json_name = "current"];
+  repeated WeightView history = 2 [json_name = "history"]; // effective_from 倒序
+}
+
+message UpdateHeatWeightsRequest {
+  double w_rank = 1 [json_name = "w_rank"];
+  double w_eng = 2 [json_name = "w_eng"];
+  double w_fresh = 3 [json_name = "w_fresh"];
+  double w_breadth = 4 [json_name = "w_breadth"];
+  string note = 5 [json_name = "note"]; // 变更备注（审计建议填写）
+  // activated_by 由服务端从登录态取，不接受客户端传入（防伪造审计）。
+}
+
+// TrendWeightService heat 权重查看与变更。
+// ⚠ 变更即时生效：写入侧后续快照点携带新 weight_epoch，话题动态链首个点
+// 强制 α=1 重置（A-15 ④）；变更窗口内突发告警应抑制一个采样周期（M4 落地）。
+service TrendWeightService {
+  rpc GetHeatWeights(GetHeatWeightsRequest) returns (GetHeatWeightsResponse) {
+    option (google.api.http) = { get: "/api/v1/media/tt/weights/heat" };
+  }
+  rpc UpdateHeatWeights(UpdateHeatWeightsRequest) returns (WeightView) {
+    option (google.api.http) = { put: "/api/v1/media/tt/weights/heat" body: "*" };
+  }
+}

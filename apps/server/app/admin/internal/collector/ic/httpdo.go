@@ -29,7 +29,7 @@ func newHTTPFetcher(timeout time.Duration, userAgent string, readLimit int64) *h
 		readLimit = 4 << 20
 	}
 	return &httpFetcher{
-		client: &http.Client{Timeout: timeout},
+		client:    &http.Client{Timeout: timeout},
 		userAgent: userAgent,
 		readLimit: readLimit,
 	}

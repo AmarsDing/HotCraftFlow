@@ -203,16 +203,17 @@ func ToContractUnit(u *UnitRow) *mediacontract.DispatchUnit {
 
 // ReceiptRow 发布回执（map_publish_receipts 业务视图）。
 type ReceiptRow struct {
-	ID             uint32
-	ReceiptID      string
-	DispatchUnitID string
-	AccountID      *string
-	PlatformKey    string
-	PostID         *string
-	PostURL        *string
-	Visibility     string
-	PublishedAt    time.Time
-	Operator       string
+	ID                 uint32
+	ReceiptID          string
+	DispatchUnitID     string
+	AccountID          *string
+	PlatformKey        string
+	PostID             *string
+	PostURL            *string
+	Visibility         string
+	PublishedAt        time.Time
+	Operator           string
+	RequestPayloadHash *string // 发布请求体 SHA-256（防篡改存证，🔴 哈希输入不含凭据）
 }
 
 // RecordEntry 审批/发布审计流水条目（map_approval_records 业务视图）。

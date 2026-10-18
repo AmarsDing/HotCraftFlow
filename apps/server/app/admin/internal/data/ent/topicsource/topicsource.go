@@ -29,6 +29,8 @@ const (
 	FieldIntelID = "intel_id"
 	// FieldClusterKey holds the string denoting the cluster_key field in the database.
 	FieldClusterKey = "cluster_key"
+	// FieldPlatform holds the string denoting the platform field in the database.
+	FieldPlatform = "platform"
 	// FieldContributedAt holds the string denoting the contributed_at field in the database.
 	FieldContributedAt = "contributed_at"
 	// FieldSimilarity holds the string denoting the similarity field in the database.
@@ -53,6 +55,7 @@ var Columns = []string{
 	FieldTopicID,
 	FieldIntelID,
 	FieldClusterKey,
+	FieldPlatform,
 	FieldContributedAt,
 	FieldSimilarity,
 	FieldMovedBy,
@@ -76,6 +79,8 @@ var (
 	TopicIDValidator func(string) error
 	// IntelIDValidator is a validator for the "intel_id" field. It is called by the builders before save.
 	IntelIDValidator func(string) error
+	// PlatformValidator is a validator for the "platform" field. It is called by the builders before save.
+	PlatformValidator func(string) error
 	// DefaultSimilarity holds the default value on creation for the "similarity" field.
 	DefaultSimilarity float64
 )
@@ -131,6 +136,11 @@ func ByIntelID(opts ...sql.OrderTermOption) OrderOption {
 // ByClusterKey orders the results by the cluster_key field.
 func ByClusterKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldClusterKey, opts...).ToFunc()
+}
+
+// ByPlatform orders the results by the platform field.
+func ByPlatform(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPlatform, opts...).ToFunc()
 }
 
 // ByContributedAt orders the results by the contributed_at field.

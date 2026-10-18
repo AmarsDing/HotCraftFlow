@@ -77,6 +77,33 @@ func TestIntake_TargetValidation(t *testing.T) {
 	}
 }
 
+// 排期过去时间 → BadRequest（过去时刻的排期是无效意图，当场拒绝）；
+// 未来时间正常建单（1min 时钟漂移宽容内不拒）。
+func TestIntake_ScheduledForPastRejected(t *testing.T) {
+	fx := newIntakeFixture()
+	intake := fx.intake(DefaultConfPtr())
+	ctx := context.Background()
+
+	past := time.Now().Add(-10 * time.Minute)
+	_, err := intake.Create(ctx, CreateUnitInput{
+		Targets: []string{"youtube:main"}, ScheduledFor: &past, SubmittedBy: "alice",
+	})
+	if !errors.Is(err, ErrBadRequest) {
+		t.Fatalf("过去排期应 BadRequest，实际 %v", err)
+	}
+
+	future := time.Now().Add(time.Hour)
+	unit, err := intake.Create(ctx, CreateUnitInput{
+		Targets: []string{"youtube:main"}, ScheduledFor: &future, SubmittedBy: "alice",
+	})
+	if err != nil {
+		t.Fatalf("未来排期应正常建单: %v", err)
+	}
+	if unit.ScheduleMode != "native" {
+		t.Fatalf("全原生排期目标应 native，实际 %q", unit.ScheduleMode)
+	}
+}
+
 // 可见性规则：非法值 → BadRequest；非 private 无 reason → ErrVisibilityNoReason；
 // public + reason + allow_public → 通过；allow_public=false 时 public 拒绝。
 func TestIntake_VisibilityRules(t *testing.T) {

@@ -2891,6 +2891,7 @@ var (
 		{Name: "topic_id", Type: field.TypeString, Comment: "话题 ID（tt_topics.topic_id）"},
 		{Name: "intel_id", Type: field.TypeString, Comment: "情报 ID（ic_intel_items.intel_id，it_ 前缀）"},
 		{Name: "cluster_key", Type: field.TypeString, Nullable: true, Comment: "IC 去重簇 ID（cl_ 前缀；B-1 Step1 硬键，命中直接归入本话题）"},
+		{Name: "platform", Type: field.TypeString, Comment: "贡献平台（weibo/bilibili/youtube ……；A-5 breadth 滑动窗口统计维度）"},
 		{Name: "contributed_at", Type: field.TypeTime, Comment: "该条目归入话题的样本时间（UTC；S-17 滑动窗口统计基础）"},
 		{Name: "similarity", Type: field.TypeFloat64, Comment: "归入时的相似度（Step1 硬键命中记 1.0）", Default: 1},
 		{Name: "moved_by", Type: field.TypeString, Nullable: true, Comment: "人工合并/拆分操作者，可空（空=自动聚类归入）"},
@@ -2921,7 +2922,7 @@ var (
 			{
 				Name:    "topicsource_topic_id_contributed_at",
 				Unique:  false,
-				Columns: []*schema.Column{TtTopicSourcesColumns[7], TtTopicSourcesColumns[10]},
+				Columns: []*schema.Column{TtTopicSourcesColumns[7], TtTopicSourcesColumns[11]},
 			},
 		},
 	}
@@ -3154,6 +3155,47 @@ var (
 			},
 		},
 	}
+	// TtWeightConfigsColumns holds the columns for the "tt_weight_configs" table.
+	TtWeightConfigsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "create_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID"},
+		{Name: "config_id", Type: field.TypeString, Unique: true, Comment: "配置 ID，wc_ 前缀 ULID；weight_epoch = sha256(config_id)[:8]（A-15 ②）"},
+		{Name: "scope", Type: field.TypeEnum, Comment: "用途：heat=热度四权重 | candidate=选题四权重", Enums: []string{"heat", "candidate"}},
+		{Name: "w_rank", Type: field.TypeFloat64, Comment: "榜内位置权重", Default: 0.35},
+		{Name: "w_eng", Type: field.TypeFloat64, Comment: "互动分位权重", Default: 0.25},
+		{Name: "w_fresh", Type: field.TypeFloat64, Comment: "新鲜度权重", Default: 0.2},
+		{Name: "w_breadth", Type: field.TypeFloat64, Comment: "跨平台扩散权重", Default: 0.2},
+		{Name: "w_hot", Type: field.TypeFloat64, Comment: "热度分权重（选题）", Default: 0.4},
+		{Name: "w_freshness", Type: field.TypeFloat64, Comment: "新鲜度分权重（选题）", Default: 0.25},
+		{Name: "w_workability", Type: field.TypeFloat64, Comment: "可操作性分权重（选题）", Default: 0.2},
+		{Name: "w_compliance", Type: field.TypeFloat64, Comment: "合规分权重（选题）", Default: 0.15},
+		{Name: "effective_from", Type: field.TypeTime, Comment: "权重生效时间（A-15 ①：恒为变更时刻，不得回溯）"},
+		{Name: "activated_by", Type: field.TypeString, Nullable: true, Comment: "变更操作者（登录账号；审计）"},
+		{Name: "note", Type: field.TypeString, Nullable: true, Comment: "变更备注（可选）"},
+	}
+	// TtWeightConfigsTable holds the schema information for the "tt_weight_configs" table.
+	TtWeightConfigsTable = &schema.Table{
+		Name:       "tt_weight_configs",
+		Comment:    "TT 权重配置（A-15：只追加，effective_from 生效，epoch 断点标记）",
+		Columns:    TtWeightConfigsColumns,
+		PrimaryKey: []*schema.Column{TtWeightConfigsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "weightconfig_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{TtWeightConfigsColumns[5]},
+			},
+			{
+				Name:    "weightconfig_scope_effective_from",
+				Unique:  false,
+				Columns: []*schema.Column{TtWeightConfigsColumns[7], TtWeightConfigsColumns[16]},
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AdminLoginLogTable,
@@ -3230,6 +3272,7 @@ var (
 		ApOrgUserPostTable,
 		ApOrgUserRoleTable,
 		UserTokensTable,
+		TtWeightConfigsTable,
 	}
 )
 
@@ -3610,6 +3653,11 @@ func init() {
 	}
 	UserTokensTable.Annotation = &entsql.Annotation{
 		Table:     "user_tokens",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	TtWeightConfigsTable.Annotation = &entsql.Annotation{
+		Table:     "tt_weight_configs",
 		Charset:   "utf8mb4",
 		Collation: "utf8mb4_bin",
 	}

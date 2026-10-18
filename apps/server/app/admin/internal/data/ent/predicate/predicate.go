@@ -227,3 +227,6 @@ type UserRole func(*sql.Selector)
 
 // UserToken is the predicate function for usertoken builders.
 type UserToken func(*sql.Selector)
+
+// WeightConfig is the predicate function for weightconfig builders.
+type WeightConfig func(*sql.Selector)

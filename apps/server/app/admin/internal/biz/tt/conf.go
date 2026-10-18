@@ -1,8 +1,10 @@
 package tt
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -17,6 +19,76 @@ type Conf struct {
 	Influx   InfluxConf    `json:"influx"`
 	Buffer   BufferConf    `json:"buffer"`
 	Timezone TimezoneConf  `json:"timezone"`
+	Heat     HeatConf      `json:"heat"`
+}
+
+// durationJSONPaths 登记 Conf 中所有 time.Duration 字段的 JSON 路径。
+// 时长在 yaml 按 Go 字面量书写（"5s"/"24h"），而 kratos Scan 走 encoding/json，
+// json 向 time.Duration 只收纳秒整数——此钩子先把字符串解析成纳秒数再让标准
+// 解码接手。⚠️ 新增 Duration 字段必须在此登记，否则 Scan 直接报错（fail-fast）。
+var durationJSONPaths = [][]string{
+	{"ingest", "flush_interval"},
+	{"ingest", "dedup_ttl"},
+	{"ingest", "last_wins_guard_ttl"},
+	{"influx", "timeout"},
+	{"buffer", "replay_interval"},
+}
+
+// UnmarshalJSON 时长字面量 "24h" → 纳秒数的预归一（动机见 durationJSONPaths 注释）。
+func (c *Conf) UnmarshalJSON(b []byte) error {
+	var m map[string]any
+	if err := json.Unmarshal(b, &m); err != nil {
+		return err
+	}
+	for _, path := range durationJSONPaths {
+		if err := rewriteDurationJSON(m, path); err != nil {
+			return err
+		}
+	}
+	rb, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	// 去方法别名防 UnmarshalJSON 递归；其余字段走标准解码。
+	type confAlias Conf
+	return json.Unmarshal(rb, (*confAlias)(c))
+}
+
+// rewriteDurationJSON 沿 path 找到字符串值并就地改写为纳秒数；路径缺块或
+// 已为数字（纳秒直传）时不介入——缺省值由 Normalize 兜底。
+func rewriteDurationJSON(m map[string]any, path []string) error {
+	cur := m
+	for _, k := range path[:len(path)-1] {
+		sub, ok := cur[k].(map[string]any)
+		if !ok {
+			return nil
+		}
+		cur = sub
+	}
+	s, ok := cur[path[len(path)-1]].(string)
+	if !ok {
+		return nil
+	}
+	d, err := time.ParseDuration(s)
+	if err != nil {
+		return fmt.Errorf("tt 配置时长 %s=%q 非法: %w", strings.Join(path, "."), s, err)
+	}
+	cur[path[len(path)-1]] = float64(d)
+	return nil
+}
+
+// HeatConf 归一化与动态参数（03 §2.1 + A-3/A-4/A-5/S-7 可配项）。
+type HeatConf struct {
+	// FreshnessTauHours 新鲜度时间常数 τ（A-4；半衰期 = τ·ln2 ≈ 8.32h）。
+	FreshnessTauHours float64 `json:"freshness_tau_hours"`
+	// FreshnessFloor 新鲜度地板（A-4：0.05，保二次爆发可达 peak）。
+	FreshnessFloor float64 `json:"freshness_floor"`
+	// SupportedPlatforms IC 实际已接入平台数（A-5：ref=min(8,P)；0=按 8 兼容）。
+	SupportedPlatforms int `json:"supported_platforms"`
+	// EngMinWindowN eng 分位冷启动阈值（A-3：N<200 退化静态基线）。
+	EngMinWindowN int64 `json:"eng_min_window_n"`
+	// Dynamics EWMA 时间常数等（S-7：T=0.75h，α 时间感知）。
+	Dynamics DynamicsConf `json:"dynamics"`
 }
 
 // IngestConf 消费 mm.intel.normalized.v1 的行为参数。
@@ -139,6 +211,13 @@ func DefaultConf() Conf {
 			Storage: "UTC",
 			Display: "Asia/Shanghai",
 		},
+		Heat: HeatConf{
+			FreshnessTauHours:  12,
+			FreshnessFloor:     0.05,
+			SupportedPlatforms: 0, // 0 = 按 A-5 ref=8 兼容口径
+			EngMinWindowN:      200,
+			Dynamics:           DefaultDynamicsConf(),
+		},
 	}
 }
 
@@ -228,6 +307,18 @@ func (c *Conf) Normalize() {
 	}
 	if c.Timezone.Display == "" {
 		c.Timezone.Display = d.Timezone.Display
+	}
+	if c.Heat.FreshnessTauHours <= 0 {
+		c.Heat.FreshnessTauHours = d.Heat.FreshnessTauHours
+	}
+	if c.Heat.FreshnessFloor <= 0 {
+		c.Heat.FreshnessFloor = d.Heat.FreshnessFloor
+	}
+	if c.Heat.EngMinWindowN <= 0 {
+		c.Heat.EngMinWindowN = d.Heat.EngMinWindowN
+	}
+	if c.Heat.Dynamics.EWMATauHours <= 0 {
+		c.Heat.Dynamics.EWMATauHours = d.Heat.Dynamics.EWMATauHours
 	}
 }
 

@@ -182,6 +182,11 @@ func (s *SeedService) seedMenus(ctx context.Context) error {
 			return err
 		}
 	}
+	for _, r := range mmeMenuSeedRecords() {
+		if err := s.upsertSeedMenu(ctx, r); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -217,6 +222,20 @@ func mapMenuSeedRecords() []seedMenuRecord {
 			name: "MediaMapCalendar", component: "media/map/MapCalendarPage", title: "矩阵日历", icon: "calendar_month", order: 3},
 		{id: 84, parentID: 80, mType: adminV1.MenuType_MENU, path: "/media/map/receipts",
 			name: "MediaMapReceipts", component: "media/map/MapReceiptsPage", title: "发布回执", icon: "receipt_long", order: 4},
+	}
+}
+
+// mmeMenuSeedRecords ④ MME 短视频矩阵混剪菜单（详细设计 §8 导航底座）。
+// id 90-92（70-74=MIA、80-84=MAP）；按 id 幂等 upsert。
+// 详情页 /media/mme/tasks/:id、/media/mme/variant-sets/:id(/review) 只在路由表，不进菜单。
+func mmeMenuSeedRecords() []seedMenuRecord {
+	return []seedMenuRecord{
+		{id: 90, mType: adminV1.MenuType_FOLDER, path: "/media/mme", redirect: "/media/mme/tasks",
+			name: "MediaMme", title: "矩阵混剪MME", icon: "movie", order: 25},
+		{id: 91, parentID: 90, mType: adminV1.MenuType_MENU, path: "/media/mme/tasks",
+			name: "MediaMmeTasks", component: "media/mme/TaskListPage", title: "混剪任务", icon: "smart_display", order: 1},
+		{id: 92, parentID: 90, mType: adminV1.MenuType_MENU, path: "/media/mme/render",
+			name: "MediaMmeRender", component: "media/mme/RenderQueuePage", title: "渲染队列", icon: "precision_manufacturing", order: 2},
 	}
 }
 

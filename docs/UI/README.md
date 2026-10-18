@@ -5,6 +5,7 @@
 > 想**学设计思想** → 先读 `design-thinking/`（为什么这样设计）
 > 想**动手复刻** → 读各目录下的复刻指南（全部实测参数），配合 demo.html 打开对照
 > 想**直接开工做新页面** → 用 `.claude/skills/dark-tech-ui/`（已蒸馏成 skill，含十条铁律 + token 模板）
+> 想**验证文档论断** → 打开 `design-thinking/demo/index.html`（原创第五套界面，内嵌 13 项"论断→落点"锚点面板，加 `?check=open` 直接展开），结论见 [design-thinking/demo-verify.md](design-thinking/demo-verify.md)
 
 ## 学习路径（推荐阅读顺序）
 
@@ -35,7 +36,11 @@ docs/UI/
 │   ├── 01-grokbot.md
 │   ├── 02-dots.md
 │   ├── 03-longbridge.md
-│   └── 04-spiderorb.md
+│   ├── 04-spiderorb.md
+│   ├── demo-verify.md               ★ 检验报告：13/13 论断 PASS + 3 处措辞精修建议
+│   └── demo/                        ★ 哲学检验台（原创第五套界面，单页零依赖）
+│       ├── index.html / style.css / app.js
+│       └── _shot6.png / _check-open.png  验收截图（网络渲染 / 检验面板展开）
 │
 ├── 01-grokbot-dashboard/            GrokBot · AI Agent 通宵值班仪表盘
 │   ├── UI复刻分析报告.md            参数手册（token/布局/动效全量实测）

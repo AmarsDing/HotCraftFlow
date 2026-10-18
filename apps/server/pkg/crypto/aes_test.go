@@ -1,6 +1,7 @@
 package crypto
 
 import (
+	"encoding/base64"
 	"strings"
 	"testing"
 )
@@ -104,8 +105,14 @@ func TestEmptyAndInvalidInput(t *testing.T) {
 		t.Fatal("short ciphertext must fail")
 	}
 	enc, _ := c.Encrypt("tamper-target")
-	// 篡改末尾字符（同长度，保证 base64 可解）
-	tampered := enc[:len(enc)-2] + string(rune(enc[len(enc)-2]^1)) + enc[len(enc)-1:]
+	// 篡改密文字节（确定性）：base64 段翻转可能只落在填充位导致偶发假阳性，
+	// 故解码后翻转末字节——nonce||ciphertext 布局下末 16 字节是 GCM tag，翻转必验签失败。
+	raw, derr := base64.StdEncoding.DecodeString(enc)
+	if derr != nil {
+		t.Fatalf("ciphertext must be valid base64: %v", derr)
+	}
+	raw[len(raw)-1] ^= 0x01
+	tampered := base64.StdEncoding.EncodeToString(raw)
 	if _, err := c.Decrypt(tampered); err == nil {
 		t.Fatal("tampered ciphertext must fail GCM auth")
 	}

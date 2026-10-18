@@ -46,3 +46,13 @@ tt:
   timezone:
     storage: "UTC"                  # 🔴 不可改
     display: "Asia/Shanghai"
+
+  # M2 归一化参数（03 §2.1 + 评审 A-3/A-4/A-5/S-7 终稿口径；
+  # 权重本身不在此——权重走 tt_weight_configs 表 + 权重配置页 API，A-15）。
+  heat:
+    freshness_tau_hours: 12         # A-4 τ；半衰期 = τ·ln2 ≈ 8.32h（文档表述用半衰期）
+    freshness_floor: 0.05           # A-4 地板（保二次爆发可达 peak，S-3）
+    supported_platforms: 0          # A-5 ref=min(8,P)；0=按 8 兼容口径，IC 接入清单确定后改实数
+    eng_min_window_n: 200           # A-3 冷启动阈值：7 日窗口样本 <200 时退化静态基线
+    dynamics:
+      ewma_tau_hours: 0.75          # S-7 时间感知 EWMA：α=1-exp(-Δt/T)，T=0.75h

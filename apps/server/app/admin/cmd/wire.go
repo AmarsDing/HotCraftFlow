@@ -6,6 +6,8 @@ package main
 import (
 	"framework/app/admin/internal/biz"
 	bizmia "framework/app/admin/internal/biz/mia"
+	iccollector "framework/app/admin/internal/collector/ic"
+	bizmme "framework/app/admin/internal/biz/mme"
 	bizpublish "framework/app/admin/internal/biz/publish"
 	biztt "framework/app/admin/internal/biz/tt"
 	"framework/app/admin/internal/conf"
@@ -17,7 +19,9 @@ import (
 	"framework/app/admin/internal/server"
 	"framework/app/admin/internal/service"
 	"framework/app/admin/internal/worker"
+	icworker "framework/app/admin/internal/worker/ic"
 	miaworker "framework/app/admin/internal/worker/mia"
+	mmeworker "framework/app/admin/internal/worker/mme"
 	ttworker "framework/app/admin/internal/worker/tt"
 
 	"github.com/go-kratos/kratos/v2"
@@ -48,6 +52,13 @@ func wireApp(bc *conf.Bootstrap, ttb *biztt.Conf, mc *bizpublish.Conf, mpconfs p
 		bizpublish.ProviderSet,
 		pubdata.ProviderSet,
 		publishadapters.ProviderSet,
+		// ④ MME 短视频矩阵混剪（任务/素材/展开/渲染规划/QC/差异化/分发）
+		bizmme.ProviderSet,
+		//   worker 侧：mme_render 专用 asynq 队列 + 契约事件发布（TaskEnqueuer/EventPublisher 真实 adapter）
+		mmeworker.ProviderSet,
+		// ① IC 情报收集（五路采集器 + 端口适配器 / 调度器 + mm.intel.raw 消费 + JetStream 发布）
+		iccollector.ProviderSet,
+		icworker.ProviderSet,
 		newApp,
 	))
 }

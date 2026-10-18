@@ -54,17 +54,17 @@ func NewCrawlCollector(bc *conf.Bootstrap, ic *biz.IcConfig, logger log.Logger) 
 func (c *CrawlCollector) Method() string { return string(contract.CollectCrawl) }
 
 type crawlRequest struct {
-	URLs           []string `json:"urls"`
-	IncludeMarkdown bool   `json:"include_markdown"`
-	CSSSelector    string   `json:"css_selector,omitempty"`
+	URLs            []string `json:"urls"`
+	IncludeMarkdown bool     `json:"include_markdown"`
+	CSSSelector     string   `json:"css_selector,omitempty"`
 }
 
 type crawlResult struct {
-	URL      string `json:"url"`
-	Markdown string `json:"markdown"`
-	HTML     string `json:"html"`
-	StatusCode int  `json:"status_code"`
-	Metadata *struct {
+	URL        string `json:"url"`
+	Markdown   string `json:"markdown"`
+	HTML       string `json:"html"`
+	StatusCode int    `json:"status_code"`
+	Metadata   *struct {
 		Title       string `json:"title"`
 		Description string `json:"description"`
 		PublishedAt any    `json:"published_at"`

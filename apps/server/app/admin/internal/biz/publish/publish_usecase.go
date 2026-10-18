@@ -151,6 +151,12 @@ func (uc *PublishUsecase) Publish(ctx context.Context, unitID string, operator A
 			}
 			return &PublishOutcome{Unit: unit, Receipts: receipts}, nil
 		}
+		// 🔴 锁内复核审批态：等锁期间审批可能被并发撤回（Cancel approved→draft）
+		// 或抢占修改——锁只防并发发布，不防状态倒退，必须再完整过一次门。
+		if cerr := CheckPublish(unit, operator, accountPaused, quotaErr != nil); cerr != nil {
+			uc.auditDeny(ctx, unit, operator, cerr, meta)
+			return nil, cerr
+		}
 	} else {
 		uc.log.Warn("[map-publish] PublishLocker 未配置，幂等仅靠 DB 唯一索引兜底（dev 退化模式）")
 	}
@@ -162,9 +168,23 @@ func (uc *PublishUsecase) Publish(ctx context.Context, unitID string, operator A
 	}
 
 	// 6) 逐 target 串行发布。
+	// 🔴 适配器边界幂等：外部发帖不可逆，DB 唯一索引只能挡回执行、挡不住
+	// 平台侧重复发帖。此前 A 成功/B 失败后重试会重发 A——先读既有回执，已发的
+	// 平台直接跳过（失败重试 = 只补未成的平台）。
+	existing, err := uc.receipts.ListReceiptsByUnit(ctx, unitID)
+	if err != nil {
+		return nil, err
+	}
+	sent := make(map[string]struct{}, len(existing)+len(resolved))
+	for _, r := range existing {
+		sent[r.PlatformKey] = struct{}{}
+	}
+
 	var warnings []string
-	var firstPostID, firstPostURL *string
 	for _, rt := range resolved {
+		if _, done := sent[rt.Target.Platform]; done {
+			continue
+		}
 		if perr := uc.publishOne(ctx, unit, rt, operator, &warnings); perr != nil {
 			// 失败：unit 置 failed，错误直传（重试/死信由 M4 asynq worker 承担，V1 人工重发）。
 			failed := "failed"
@@ -174,23 +194,24 @@ func (uc *PublishUsecase) Publish(ctx context.Context, unitID string, operator A
 			uc.auditDeny(ctx, unit, operator, perr, meta)
 			return nil, perr
 		}
-		if rt.Account != nil {
-			// 成功后回执里的 post 信息由 publishOne 内联返回太绕：重查一次该平台回执（串行规模小，成本可忽略）。
-			receipts, rerr := uc.receipts.ListReceiptsByUnit(ctx, unitID)
-			if rerr == nil {
-				for _, r := range receipts {
-					if r.PlatformKey == rt.Target.Platform {
-						if firstPostID == nil && r.PostID != nil {
-							firstPostID = r.PostID
-							firstPostURL = r.PostURL
-						}
-					}
-				}
-			}
+		sent[rt.Target.Platform] = struct{}{}
+	}
+
+	// 7) 回读全量回执（既有 + 本轮补发），取首个平台帖回写 unit 便捷展示字段。
+	receipts, err := uc.receipts.ListReceiptsByUnit(ctx, unitID)
+	if err != nil {
+		return nil, err
+	}
+	var firstPostID, firstPostURL *string
+	for _, r := range receipts {
+		if r.PostID != nil {
+			firstPostID = r.PostID
+			firstPostURL = r.PostURL
+			break
 		}
 	}
 
-	// 7) 置 published + 操作者/时间（approval_state 保持 approved，契约审计字段不回写）。
+	// 8) 置 published + 操作者/时间（approval_state 保持 approved，契约审计字段不回写）。
 	now = uc.clock()
 	pubState := "published"
 	patch := UnitPatch{
@@ -205,7 +226,7 @@ func (uc *PublishUsecase) Publish(ctx context.Context, unitID string, operator A
 		return nil, err
 	}
 
-	// 8) 审计（allow）。
+	// 9) 审计（allow）。
 	recordAudit(ctx, uc.records, &RecordEntry{
 		DispatchUnitID:     unit.UnitID,
 		Action:             AuditActionPublish,
@@ -218,11 +239,6 @@ func (uc *PublishUsecase) Publish(ctx context.Context, unitID string, operator A
 		UserAgent:          strPtrOrNil(meta.UserAgent),
 		Result:             "allow",
 	}, uc.log)
-
-	receipts, err := uc.receipts.ListReceiptsByUnit(ctx, unitID)
-	if err != nil {
-		return nil, err
-	}
 
 	// TODO(M4/事件接线): 发布 mm.map.feedback.v1 事件回流表现抓取（Phase 3）。
 	return &PublishOutcome{Unit: unit, Receipts: receipts, Warnings: warnings}, nil
@@ -309,7 +325,7 @@ func (uc *PublishUsecase) publishOne(ctx context.Context, unit *UnitRow, rt *Res
 	spec := CheckMediaSpec(cap, 0, 0, "") // V1 媒体元数据未接入 → 传未知跳过（TODO MME 联调）
 	*warnings = append(*warnings, withPlatform(rt.Target.Platform, spec.Warnings)...)
 
-	res, err := pub.Publish(ctx, PublishRequest{
+	pubReq := PublishRequest{
 		Account:      rt.Account,
 		Credential:   cred,
 		Title:        rw.Title,
@@ -318,7 +334,8 @@ func (uc *PublishUsecase) publishOne(ctx context.Context, unit *UnitRow, rt *Res
 		Visibility:   unit.VisibilityDefault,
 		ScheduledFor: unit.ScheduledFor,
 		// VideoPath/CoverPath: V1 媒体工件路径未接入（MME 联调 TODO）。
-	})
+	}
+	res, err := pub.Publish(ctx, pubReq)
 	if err != nil {
 		sanitized := SanitizeUpstreamError(err)
 		if errors.Is(err, ErrCredentialInvalid) {
@@ -338,14 +355,16 @@ func (uc *PublishUsecase) publishOne(ctx context.Context, unit *UnitRow, rt *Res
 		return fmt.Errorf("%w: 平台 %s 发布失败: %s", ErrUpstream, rt.Target.Platform, sanitized)
 	}
 
-	// 成功 → 回执（payload 哈希为审计线索；唯一索引冲突=幂等重放，按成功处理）。
+	// 成功 → 回执（request_payload_hash 为审计线索——防篡改存证，🔴 哈希输入绝不含凭据；
+	// 唯一索引冲突=幂等重放，按成功处理）。
 	receipt := &ReceiptRow{
-		ReceiptID:      mediacontract.NewPublishReceiptID(),
-		DispatchUnitID: unit.UnitID,
-		AccountID:      strPtr(rt.Account.AccountID),
-		PlatformKey:    rt.Target.Platform,
-		Visibility:     res.Visibility,
-		Operator:       operator.ID,
+		ReceiptID:          mediacontract.NewPublishReceiptID(),
+		DispatchUnitID:     unit.UnitID,
+		AccountID:          strPtr(rt.Account.AccountID),
+		PlatformKey:        rt.Target.Platform,
+		Visibility:         res.Visibility,
+		Operator:           operator.ID,
+		RequestPayloadHash: strPtr(PayloadHash(pubReq)),
 	}
 	if receipt.Visibility == "" {
 		receipt.Visibility = unit.VisibilityDefault

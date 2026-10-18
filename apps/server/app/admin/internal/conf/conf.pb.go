@@ -2335,6 +2335,7 @@ type Ic_Dedup struct {
 	EmbeddingThreshold   float64                `protobuf:"fixed64,2,opt,name=embedding_threshold,json=embeddingThreshold,proto3" json:"embedding_threshold,omitempty"`        // 余弦相似度阈值（默认 0.86）
 	EmbeddingWindowHours int32                  `protobuf:"varint,3,opt,name=embedding_window_hours,json=embeddingWindowHours,proto3" json:"embedding_window_hours,omitempty"` // L3 比对窗口（默认 24h 原始向量；centroid 比对 72h，S-5）
 	Embedding            *Ic_Dedup_Embedding    `protobuf:"bytes,4,opt,name=embedding,proto3" json:"embedding,omitempty"`
+	MergeWindowHours     int32                  `protobuf:"varint,5,opt,name=merge_window_hours,json=mergeWindowHours,proto3" json:"merge_window_hours,omitempty"` // L1/L2 合并窗口（默认 72 = 48h 闲时闭簇 + 一个周期余量；03 §4.4）
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -2395,6 +2396,13 @@ func (x *Ic_Dedup) GetEmbedding() *Ic_Dedup_Embedding {
 		return x.Embedding
 	}
 	return nil
+}
+
+func (x *Ic_Dedup) GetMergeWindowHours() int32 {
+	if x != nil {
+		return x.MergeWindowHours
+	}
+	return 0
 }
 
 type Ic_Evidence struct {
@@ -3999,7 +4007,7 @@ const file_app_admin_internal_conf_conf_proto_rawDesc = "" +
 	"\x06Notify\x12\x1f\n" +
 	"\vwebhook_url\x18\x01 \x01(\tR\n" +
 	"webhookUrl\x123\n" +
-	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"\xbf\x17\n" +
+	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"\xed\x17\n" +
 	"\x02Ic\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12 \n" +
 	"\vconcurrency\x18\x02 \x01(\x05R\vconcurrency\x122\n" +
@@ -4031,12 +4039,13 @@ const file_app_admin_internal_conf_conf_proto_rawDesc = "" +
 	"\bCrawl4ai\x12\x19\n" +
 	"\bbase_url\x18\x01 \x01(\tR\abaseUrl\x123\n" +
 	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12%\n" +
-	"\x0eretry_attempts\x18\x03 \x01(\x05R\rretryAttempts\x1a\xb2\x03\n" +
+	"\x0eretry_attempts\x18\x03 \x01(\x05R\rretryAttempts\x1a\xe0\x03\n" +
 	"\x05Dedup\x12+\n" +
 	"\x11simhash_threshold\x18\x01 \x01(\x05R\x10simhashThreshold\x12/\n" +
 	"\x13embedding_threshold\x18\x02 \x01(\x01R\x12embeddingThreshold\x124\n" +
 	"\x16embedding_window_hours\x18\x03 \x01(\x05R\x14embeddingWindowHours\x12?\n" +
-	"\tembedding\x18\x04 \x01(\v2!.admin.conf.v1.Ic.Dedup.EmbeddingR\tembedding\x1a\xd3\x01\n" +
+	"\tembedding\x18\x04 \x01(\v2!.admin.conf.v1.Ic.Dedup.EmbeddingR\tembedding\x12,\n" +
+	"\x12merge_window_hours\x18\x05 \x01(\x05R\x10mergeWindowHours\x1a\xd3\x01\n" +
 	"\tEmbedding\x12\x1a\n" +
 	"\bprovider\x18\x01 \x01(\tR\bprovider\x12\x14\n" +
 	"\x05model\x18\x02 \x01(\tR\x05model\x12\x10\n" +

@@ -60,6 +60,51 @@ import {
   type AIInsight as RadarAIInsight,
 } from './kratos/radar/service/v1';
 
+// ⑤ MAP 媒体自动化发布矩阵（api/media/v1/map/map_service.proto 生成客户端）
+import {
+  createMapServiceClient,
+  type MapChannel,
+  type MapAccount,
+  type MapDispatchUnitItem,
+  type MapDispatchUnitDetail,
+  type MapApprovalRecordItem,
+  type MapReceipt,
+  type MapCalendarItem,
+  type MapAnalyticsView,
+  type ListChannelsResponse as MapListChannelsResponse,
+  type ListAccountsResponse as MapListAccountsResponse,
+  type ListDispatchUnitsResponse as MapListDispatchUnitsResponse,
+  type ListApprovalQueueResponse as MapListApprovalQueueResponse,
+  type ListReceiptsResponse as MapListReceiptsResponse,
+  type PublishDispatchUnitResponse as MapPublishResponse,
+  type GetCalendarResponse as MapGetCalendarResponse,
+} from './kratos/media/map/v1';
+
+// ④ MME 短视频矩阵混剪（api/media/v1/mme/{task,variant,render}.proto 生成客户端）
+import {
+  createMmeTaskServiceClient,
+  createMmeVariantServiceClient,
+  createMmeRenderServiceClient,
+  type MontageTask,
+  type AssetInfo,
+  type HighlightCandidate,
+  type DoctorReport,
+  type DoctorItem,
+  type VariantSetView,
+  type VariantItem,
+  type DiffResult,
+  type PairSimilarity,
+  type HookSpec,
+  type RenderResponse,
+  type RenderJob,
+  type SetRenderProgress,
+  type ListRenderJobsResponse,
+  type MontageTemplate,
+  type PlatformCopy,
+  type QC,
+  type VariantSet as MmeContractVariantSet,
+} from './kratos/media/mme/v1';
+
 
 // ===================== 类型定义（与后端 proto json_name 对齐） =====================
 // 保留手写类型以保证 stores/pages 的兼容性；生成的客户端返回值会被 cast 到这些类型。
@@ -225,6 +270,8 @@ const radarWatchClient = createWatchServiceClient(requestHandler);
 const radarNotifyClient = createRadarNotifyServiceClient(requestHandler);
 const radarConfigClient = createRadarConfigServiceClient(requestHandler);
 const radarRepoClient = createRepoServiceClient(requestHandler);
+
+const mapClient = createMapServiceClient(requestHandler);
 
 
 // ===================== Auth =====================
@@ -1169,4 +1216,263 @@ export const airportPostService = {
     return { id, ...data };
   },
   async delete(_id: string | number): Promise<void> {},
+};
+
+// ==================== ⑤ MAP 媒体自动化发布矩阵 ====================
+// 🔴 页面纪律（与后端三铁律同源）：
+//   - 审批(approve)与发布(publish)是**两个独立操作**，UI 不得合并成一步。
+//   - 自批必败（MAP_SELF_APPROVAL）：审批人 != 提交人，前端按 reason 精确提示。
+//   - 非 private 发布必须 confirm_public=true（二次确认弹窗）。
+//   - 凭据永不回显；账号仅按 has_credential 展示。
+export type {
+  MapChannel,
+  MapAccount,
+  MapDispatchUnitItem,
+  MapDispatchUnitDetail,
+  MapApprovalRecordItem,
+  MapReceipt,
+  MapCalendarItem,
+  MapAnalyticsView,
+};
+
+export const mapService = {
+  // ---- 渠道 ----
+  listChannels(page = 1, pageSize = 50) {
+    // 生成客户端的 PagingRequest 把 sorting 声明为必填键（值可为 undefined）
+    return mapClient.ListChannels({ page, pageSize, sorting: undefined }) as Promise<MapListChannelsResponse>;
+  },
+  createChannel(data: {
+    platform_key: string;
+    slot: string;
+    region?: string;
+    enabled?: boolean;
+    priority?: number;
+    adapter_version?: string;
+  }) {
+    // 生成客户端请求类型为「全键必填 + 值可 undefined」，故显式补全
+    return mapClient.CreateChannel({
+      platform_key: data.platform_key,
+      slot: data.slot,
+      region: data.region,
+      enabled: data.enabled,
+      priority: data.priority,
+      adapter_version: data.adapter_version,
+    }) as Promise<MapChannel>;
+  },
+
+  // ---- 账号 ----
+  listAccounts(page = 1, pageSize = 50) {
+    return mapClient.ListAccounts({ page, pageSize, sorting: undefined }) as Promise<MapListAccountsResponse>;
+  },
+  createAccount(data: {
+    channel_id: string;
+    display_name: string;
+    credential_type?: string;
+    credential?: string;
+    enabled?: boolean;
+  }) {
+    return mapClient.CreateAccount({
+      channel_id: data.channel_id,
+      display_name: data.display_name,
+      credential_type: data.credential_type,
+      credential: data.credential,
+      enabled: data.enabled,
+    }) as Promise<MapAccount>;
+  },
+  toggleAccount(id: string, enabled: boolean) {
+    return mapClient.ToggleAccount({ id, enabled }) as Promise<MapAccount>;
+  },
+  reauthAccount(id: string, credentialType: string, credential: string) {
+    return mapClient.ReauthAccount({ id, credential_type: credentialType, credential }) as Promise<unknown>;
+  },
+
+  // ---- 分发单元 ----
+  listDispatchUnits(page = 1, pageSize = 50) {
+    return mapClient.ListDispatchUnits({ page, pageSize, sorting: undefined }) as Promise<MapListDispatchUnitsResponse>;
+  },
+  createDispatchUnit(data: {
+    variant_set_id?: string;
+    variant_id?: string;
+    targets: string[];
+    scheduled_for?: string;
+    visibility_default?: string;
+    visibility_override_reason?: string;
+  }) {
+    return mapClient.CreateDispatchUnit({
+      variant_set_id: data.variant_set_id,
+      variant_id: data.variant_id,
+      targets: data.targets,
+      scheduled_for: data.scheduled_for,
+      visibility_default: data.visibility_default,
+      visibility_override_reason: data.visibility_override_reason,
+    }) as Promise<MapDispatchUnitItem>;
+  },
+  getDispatchUnit(id: string) {
+    return mapClient.GetDispatchUnit({ id }) as Promise<MapDispatchUnitDetail>;
+  },
+  submitDispatchUnit(id: string) {
+    return mapClient.SubmitDispatchUnit({ id }) as Promise<MapDispatchUnitItem>;
+  },
+  /** 🔴 审批（与发布分离；审批人 = 当前登录用户，自批必败） */
+  approveDispatchUnit(id: string) {
+    return mapClient.ApproveDispatchUnit({ id }) as Promise<MapDispatchUnitItem>;
+  },
+  /** 驳回（reason 必填） */
+  rejectDispatchUnit(id: string, reason: string) {
+    return mapClient.RejectDispatchUnit({ id, reason }) as Promise<MapDispatchUnitItem>;
+  },
+  /** 🔴 发布（独立操作；非 private 必须 confirmPublic=true 二次确认） */
+  publishDispatchUnit(id: string, confirmPublic: boolean) {
+    return mapClient.PublishDispatchUnit({ id, confirm_public: confirmPublic }) as Promise<MapPublishResponse>;
+  },
+  cancelDispatchUnit(id: string, reason?: string) {
+    return mapClient.CancelDispatchUnit({ id, reason }) as Promise<MapDispatchUnitItem>;
+  },
+
+  // ---- 审批队列 ----
+  listApprovalQueue(page = 1, pageSize = 20) {
+    return mapClient.ListApprovalQueue({ page, pageSize, sorting: undefined }) as Promise<MapListApprovalQueueResponse>;
+  },
+
+  // ---- 回执 ----
+  listReceipts(page = 1, pageSize = 50) {
+    return mapClient.ListReceipts({ page, pageSize, sorting: undefined }) as Promise<MapListReceiptsResponse>;
+  },
+  getAnalytics(receiptId: string) {
+    return mapClient.GetAnalytics({ id: receiptId }) as Promise<MapAnalyticsView>;
+  },
+
+  // ---- 日历 ----
+  getCalendar(fromIso: string, toIso: string) {
+    return mapClient.GetCalendar({ from: fromIso, to: toIso }) as Promise<MapGetCalendarResponse>;
+  },
+};
+
+// ==================== ④ MME 短视频矩阵混剪 ====================
+// 纪律（与后端红线同源）：
+//   - QC 硬门禁：boundary_ok / subtitle_ok 任一为 false 的变体 UI 禁止勾选批准。
+//   - 驳回必须填写原因（后端强制；前端空 reason 禁提交）。
+//   - 缺少 ffmpeg / Ollama / whisper 时对应操作如实报错，不伪造成功。
+//   - Dispatch（送 MAP）与 Review（审核）是两个独立操作，不得合并。
+export type {
+  MontageTask,
+  AssetInfo,
+  HighlightCandidate,
+  DoctorReport,
+  DoctorItem,
+  VariantSetView,
+  VariantItem,
+  DiffResult,
+  PairSimilarity,
+  HookSpec,
+  RenderResponse,
+  RenderJob,
+  SetRenderProgress,
+  MontageTemplate,
+  PlatformCopy,
+  QC,
+  MmeContractVariantSet,
+};
+
+const mmeTaskClient = createMmeTaskServiceClient(requestHandler);
+const mmeVariantClient = createMmeVariantServiceClient(requestHandler);
+const mmeRenderClient = createMmeRenderServiceClient(requestHandler);
+
+export const mmeTaskService = {
+  list(opts: { page?: number; pageSize?: number; formValues?: Record<string, unknown> } = {}) {
+    const params = buildQueryParams(opts.formValues, opts);
+    return mmeTaskClient.List({
+      page: opts.page ?? 1,
+      pageSize: opts.pageSize ?? 20,
+      query: params.query,
+      // 生成类型 sorting 为「必填键、可选值」，缺键报 TS2345
+      sorting: undefined,
+    }) as Promise<{ items?: MontageTask[]; total?: number }>;
+  },
+  get(id: string) {
+    return mmeTaskClient.Get({ id }) as Promise<MontageTask>;
+  },
+  create(data: { title: string; sourceType: string; sourceRef: string; userIntent?: string }) {
+    return mmeTaskClient.Create({
+      title: data.title,
+      sourceType: data.sourceType,
+      sourceRef: data.sourceRef,
+      userIntent: data.userIntent,
+    }) as Promise<MontageTask>;
+  },
+  remove(id: string) {
+    return mmeTaskClient.Delete({ id }) as Promise<unknown>;
+  },
+  listHighlights(id: string) {
+    return mmeTaskClient.ListHighlights({ id }) as Promise<{ items?: HighlightCandidate[] }>;
+  },
+  upsertHighlights(id: string, items: HighlightCandidate[]) {
+    return mmeTaskClient.UpsertHighlights({ id, items }) as Promise<{ items?: HighlightCandidate[] }>;
+  },
+  analyze(id: string) {
+    return mmeTaskClient.Analyze({ id }) as Promise<MontageTask>;
+  },
+  doctor() {
+    return mmeTaskClient.Doctor({}) as Promise<DoctorReport>;
+  },
+};
+
+export const mmeVariantService = {
+  expand(data: { taskId: string; contentVersionIds?: string[]; aspects: string[]; hooks: HookSpec[]; templateId?: string }) {
+    return mmeVariantClient.Expand({
+      taskId: data.taskId,
+      contentVersionIds: data.contentVersionIds,
+      aspects: data.aspects,
+      hooks: data.hooks,
+      templateId: data.templateId,
+    }) as Promise<VariantSetView>;
+  },
+  getSet(id: string) {
+    return mmeVariantClient.GetVariantSet({ id }) as Promise<VariantSetView>;
+  },
+  updateSelection(id: string, selectedVariantIds: string[]) {
+    return mmeVariantClient.UpdateSelection({ id, selectedVariantIds }) as Promise<VariantSetView>;
+  },
+  render(id: string) {
+    return mmeVariantClient.Render({ id }) as Promise<RenderResponse>;
+  },
+  review(id: string, approvedIds: string[], rejections: { variantId: string; reason: string }[]) {
+    return mmeVariantClient.Review({ id, approvedIds, rejections }) as Promise<VariantSetView>;
+  },
+  getDiffCheck(id: string) {
+    return mmeVariantClient.GetDiffCheck({ id }) as Promise<DiffResult>;
+  },
+  recalcDiffCheck(id: string) {
+    return mmeVariantClient.RecalcDiffCheck({ id }) as Promise<DiffResult>;
+  },
+  dispatch(id: string) {
+    return mmeVariantClient.Dispatch({ id }) as Promise<MmeContractVariantSet>;
+  },
+  listTemplates() {
+    return mmeVariantClient.ListTemplates({}) as Promise<{ items?: MontageTemplate[] }>;
+  },
+  rerenderVariant(variantId: string) {
+    return mmeVariantClient.RerenderVariant({ id: variantId }) as Promise<unknown>;
+  },
+};
+
+export const mmeRenderService = {
+  listJobs(opts: { page?: number; pageSize?: number; formValues?: Record<string, unknown> } = {}) {
+    const params = buildQueryParams(opts.formValues, opts);
+    return mmeRenderClient.ListJobs({
+      page: opts.page ?? 1,
+      pageSize: opts.pageSize ?? 20,
+      query: params.query,
+      sorting: undefined,
+    }) as Promise<ListRenderJobsResponse>;
+  },
+  getSetProgress(setId: string) {
+    return mmeRenderClient.GetSetProgress({ id: setId }) as Promise<SetRenderProgress>;
+  },
+  retryJob(id: string) {
+    return mmeRenderClient.RetryJob({ id }) as Promise<unknown>;
+  },
+  cancelJob(id: string) {
+    return mmeRenderClient.CancelJob({ id }) as Promise<unknown>;
+  },
 };

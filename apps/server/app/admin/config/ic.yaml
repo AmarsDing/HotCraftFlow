@@ -24,6 +24,7 @@ ic:
     simhash_threshold: 3            # 汉明距离
     embedding_threshold: 0.86       # 余弦相似度
     embedding_window_hours: 24
+    merge_window_hours: 72          # L1/L2 合并窗口（= 48h 闲时闭簇 S-2 + 余量；03 §4.4）
     embedding:
       provider: "local"
       model: "bge-small-zh-v1.5"    # 固定；更换须重算全量向量
@@ -41,7 +42,7 @@ ic:
 
   rate_limit:
     default_per_min: 20
-    backoff_max: 15m
+    backoff_max: 900s           # =15m（proto Duration 仅收秒格式，禁 Go 时长字面量）
 
   llm:
     enabled: false                  # V1 默认规则版；M5 开 LLM 增强
@@ -54,7 +55,7 @@ ic:
   robots:
     user_agent: "FrameWorkBot/1.0 (+https://internal/robot)"
     timeout: 5s
-    cache_ttl: 24h
+    cache_ttl: 86400s           # =24h（proto Duration 仅收秒格式）
     respect_crawl_delay: true
 
   shortlink:
@@ -65,7 +66,7 @@ ic:
 
   breaker:
     fail_threshold: 5               # S-12：fail_streak ≥5 → paused
-    cooldown: 30m
+    cooldown: 1800s             # =30m 自动暂停时长（proto Duration 仅收秒格式，S-12）
 
   retention:
     evidence_days: 90

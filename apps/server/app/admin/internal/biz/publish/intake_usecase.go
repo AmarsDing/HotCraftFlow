@@ -12,7 +12,7 @@ import (
 	"framework/pkg/mediacontract"
 )
 
-// CreateUnitInput 建单输入（来自 API；SubmittedBy 由服务端从 JWT 提取，绝不信任请求体）。
+// CreateUnitInput 建单输入（来自 API；SubmittedBy/ActorType 由服务端从 JWT 提取，绝不信任请求体）。
 type CreateUnitInput struct {
 	VariantSetID string
 	VariantID    string
@@ -21,6 +21,7 @@ type CreateUnitInput struct {
 	Visibility   string // 缺省强制 private（NFR-MAP-01）
 	VisibilityOverrideReason string
 	SubmittedBy  string
+	ActorType    string // human/automation；缺省按 human（V1 API 单一路径）
 	Meta         AuditMeta
 }
 
@@ -115,6 +116,10 @@ func (uc *IntakeUsecase) Create(ctx context.Context, in CreateUnitInput) (*UnitR
 	// 3) 排期模式（V1 诚实降级：全目标支持平台原生排期 → native；
 	// 否则 local_worker 启用时 → local_worker（M4 asynq worker 后置，先记账）；
 	// 否则 none——scheduled_for 仅作展示意图，发布时间以人工点击为准）。
+	// 过去时刻的排期是无效意图，当场拒绝（1min 宽容时钟漂移）。
+	if in.ScheduledFor != nil && in.ScheduledFor.Before(uc.clock().Add(-time.Minute)) {
+		return nil, fmt.Errorf("%w: 排期时间 %s 已过去", ErrBadRequest, in.ScheduledFor.Format(time.RFC3339))
+	}
 	scheduleMode := "none"
 	if in.ScheduledFor != nil {
 		switch {
@@ -151,12 +156,16 @@ func (uc *IntakeUsecase) Create(ctx context.Context, in CreateUnitInput) (*UnitR
 		return nil, err
 	}
 
-	// 4) 创建即审计（submit）。
+	// 4) 创建即审计（submit；actor_type 由调用方注入，asynq 自动化建单路径不谎报 human）。
+	actorType := strings.TrimSpace(in.ActorType)
+	if actorType == "" {
+		actorType = string(mediacontract.ActorHuman)
+	}
 	recordAudit(ctx, uc.records, &RecordEntry{
 		DispatchUnitID:     unit.UnitID,
 		Action:             AuditActionSubmit,
 		Actor:              in.SubmittedBy,
-		ActorType:          string(mediacontract.ActorHuman),
+		ActorType:          actorType,
 		ToState:            strPtr(unit.ApprovalState),
 		Reason:             strPtrOrNil(reason),
 		VisibilityAtAction: strPtr(visibility),

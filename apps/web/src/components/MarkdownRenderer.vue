@@ -111,7 +111,7 @@ function render(source: string): string {
   const tableHtml = (header: string[], rows: string[][]): string => {
     const th = header.map((c) => `<th>${renderInline(c)}</th>`).join('');
     const trs = rows.map((r) => `<tr>${r.map((c) => `<td>${renderInline(c)}</td>`).join('')}</tr>`).join('');
-    return `<table class="md-table"><thead><tr>${th}</tr></thead><tbody>${trs}</tbody></table>`;
+    return `<div class="md-table-wrap"><table class="md-table"><thead><tr>${th}</tr></thead><tbody>${trs}</tbody></table></div>`;
   };
 
   for (let i = 0; i < lines.length; i++) {
@@ -273,9 +273,13 @@ const html = computed(() => render(props.source || ''));
     border-radius: 8px
     border: 1px solid var(--glass-border)
 
+  // 表格包横向滚动容器：窄栏（详情 260px 左栏/面板 420 高）宽表不撑爆布局
+  .md-table-wrap
+    overflow-x: auto
+    margin: 6px 0
+
   .md-table
     border-collapse: collapse
-    margin: 6px 0
     font-size: 12px
     th, td
       border: 1px solid var(--glass-border)

@@ -18,17 +18,15 @@ import (
 // （去重层不做类别判断，D_compliance 归治理层）。
 // =============================================================================
 
-// icDedupMergeWindow L1/L2 合并窗口（评审未拍板具体值）。
-// 推导：S-2 簇 48h 无更新即关闭、闭簇不吸纳新成员，窗口须覆盖「活簇」全生命周期，
-// 取 48h 闲时 + 一个采集周期的余量 = 72h；03 补值后以文档为准（TODO(doc-03 §4.4)）。
-const icDedupMergeWindow = 72 * time.Hour
+// 合并窗口从 cfg.DedupMergeWindow 取（conf: ic.dedup.merge_window_hours，默认 72h，
+// 推导 = 48h 闲时闭簇 S-2 + 一个采集周期余量；03 §4.4）。
 
 // DedupOutcome 去重结论（归一化 usecase 负责把 ClusterID/EmbeddingID 落库）。
 type DedupOutcome struct {
-	Action    string  // new_cluster | merged
-	ClusterID string
-	Level     string  // L1 | L2 | L3 | ""（new_cluster 时为空）
-	SimScore  float64 // L2: 1-hamming/64；L3: 余弦相似度
+	Action         string // new_cluster | merged
+	ClusterID      string
+	Level          string  // L1 | L2 | L3 | ""（new_cluster 时为空）
+	SimScore       float64 // L2: 1-hamming/64；L3: 余弦相似度
 	MatchedIntelID string
 
 	EmbeddingID string // L3 成功取向量时返回（调用方 UpdateEmbedding 落库）
@@ -68,7 +66,7 @@ func (u *IcDedupUsecase) Resolve(ctx context.Context, row *IntelItemRow, sim *Si
 	self := row.IntelID
 
 	// ---- L1：url_key 窗口命中（03 §4.1；短链已在此前展开重算 key）----
-	if hit, err := u.intel.FindRecentByURLKey(ctx, row.Dedup.URLKey, icDedupMergeWindow); err != nil {
+	if hit, err := u.intel.FindRecentByURLKey(ctx, row.Dedup.URLKey, u.cfg.DedupMergeWindow); err != nil {
 		return nil, err
 	} else if hit != nil && hit.IntelID != self {
 		out, merr := u.mergeIntoCluster(ctx, row, hit.Dedup.ClusterID, hit.IntelID, "L1", 1.0)
@@ -150,7 +148,7 @@ func (u *IcDedupUsecase) l3Eligible(ctx context.Context, sim *SimHashResult) boo
 
 // resolveL2 L2 判定：召回候选去自引用，逐条算汉明；命中不同开簇时按成员最多为主并簇（03 §4.4）。
 func (u *IcDedupUsecase) resolveL2(ctx context.Context, row *IntelItemRow, sim *SimHashResult) (*DedupOutcome, error) {
-	cands, err := u.intel.FindSimHashCandidates(ctx, sim.Segments, icDedupMergeWindow, 200)
+	cands, err := u.intel.FindSimHashCandidates(ctx, sim.Segments, u.cfg.DedupMergeWindow, 200)
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +250,7 @@ var errSkipL3NoMatch = icErrorSentinel("l3 no match")
 
 type icSentinel string
 
-func (s icSentinel) Error() string { return string(s) }
+func (s icSentinel) Error() string   { return string(s) }
 func icErrorSentinel(s string) error { return icSentinel(s) }
 
 // openClusterOf 取候选条目的开簇；空指针候选（尚未分配簇）按「开簇待建」返回空串 + true。

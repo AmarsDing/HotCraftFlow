@@ -132,6 +132,12 @@ func (_c *TopicSourceCreate) SetNillableClusterKey(v *string) *TopicSourceCreate
 	return _c
 }
 
+// SetPlatform sets the "platform" field.
+func (_c *TopicSourceCreate) SetPlatform(v string) *TopicSourceCreate {
+	_c.mutation.SetPlatform(v)
+	return _c
+}
+
 // SetContributedAt sets the "contributed_at" field.
 func (_c *TopicSourceCreate) SetContributedAt(v time.Time) *TopicSourceCreate {
 	_c.mutation.SetContributedAt(v)
@@ -244,6 +250,14 @@ func (_c *TopicSourceCreate) check() error {
 			return &ValidationError{Name: "intel_id", err: fmt.Errorf(`ent: validator failed for field "TopicSource.intel_id": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.Platform(); !ok {
+		return &ValidationError{Name: "platform", err: errors.New(`ent: missing required field "TopicSource.platform"`)}
+	}
+	if v, ok := _c.mutation.Platform(); ok {
+		if err := topicsource.PlatformValidator(v); err != nil {
+			return &ValidationError{Name: "platform", err: fmt.Errorf(`ent: validator failed for field "TopicSource.platform": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.ContributedAt(); !ok {
 		return &ValidationError{Name: "contributed_at", err: errors.New(`ent: missing required field "TopicSource.contributed_at"`)}
 	}
@@ -312,6 +326,10 @@ func (_c *TopicSourceCreate) createSpec() (*TopicSource, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ClusterKey(); ok {
 		_spec.SetField(topicsource.FieldClusterKey, field.TypeString, value)
 		_node.ClusterKey = &value
+	}
+	if value, ok := _c.mutation.Platform(); ok {
+		_spec.SetField(topicsource.FieldPlatform, field.TypeString, value)
+		_node.Platform = value
 	}
 	if value, ok := _c.mutation.ContributedAt(); ok {
 		_spec.SetField(topicsource.FieldContributedAt, field.TypeTime, value)
@@ -504,6 +522,18 @@ func (u *TopicSourceUpsert) UpdateClusterKey() *TopicSourceUpsert {
 // ClearClusterKey clears the value of the "cluster_key" field.
 func (u *TopicSourceUpsert) ClearClusterKey() *TopicSourceUpsert {
 	u.SetNull(topicsource.FieldClusterKey)
+	return u
+}
+
+// SetPlatform sets the "platform" field.
+func (u *TopicSourceUpsert) SetPlatform(v string) *TopicSourceUpsert {
+	u.Set(topicsource.FieldPlatform, v)
+	return u
+}
+
+// UpdatePlatform sets the "platform" field to the value that was provided on create.
+func (u *TopicSourceUpsert) UpdatePlatform() *TopicSourceUpsert {
+	u.SetExcluded(topicsource.FieldPlatform)
 	return u
 }
 
@@ -765,6 +795,20 @@ func (u *TopicSourceUpsertOne) UpdateClusterKey() *TopicSourceUpsertOne {
 func (u *TopicSourceUpsertOne) ClearClusterKey() *TopicSourceUpsertOne {
 	return u.Update(func(s *TopicSourceUpsert) {
 		s.ClearClusterKey()
+	})
+}
+
+// SetPlatform sets the "platform" field.
+func (u *TopicSourceUpsertOne) SetPlatform(v string) *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.SetPlatform(v)
+	})
+}
+
+// UpdatePlatform sets the "platform" field to the value that was provided on create.
+func (u *TopicSourceUpsertOne) UpdatePlatform() *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.UpdatePlatform()
 	})
 }
 
@@ -1203,6 +1247,20 @@ func (u *TopicSourceUpsertBulk) UpdateClusterKey() *TopicSourceUpsertBulk {
 func (u *TopicSourceUpsertBulk) ClearClusterKey() *TopicSourceUpsertBulk {
 	return u.Update(func(s *TopicSourceUpsert) {
 		s.ClearClusterKey()
+	})
+}
+
+// SetPlatform sets the "platform" field.
+func (u *TopicSourceUpsertBulk) SetPlatform(v string) *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.SetPlatform(v)
+	})
+}
+
+// UpdatePlatform sets the "platform" field to the value that was provided on create.
+func (u *TopicSourceUpsertBulk) UpdatePlatform() *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.UpdatePlatform()
 	})
 }
 

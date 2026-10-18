@@ -32,9 +32,13 @@ import (
 
 	adminV1 "framework/api/gen/go/admin/v1"
 
+	bizmme "framework/app/admin/internal/biz/mme"
+
 	radarV1 "framework/api/gen/go/radar/v1"
 	miaV1 "framework/api/gen/go/media/v1/mia"
 	mapV1 "framework/api/gen/go/media/v1/map"
+	mmeV1 "framework/api/gen/go/media/v1/mme"
+	ttV1 "framework/api/gen/go/media/v1/tt"
 
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 
@@ -166,7 +170,12 @@ func NewRESTServer(
 	miaMappingSvc *service.MiaMappingService,
 	miaEventSvc *service.MiaEventService,
 	miaImpactSvc *service.MiaImpactService,
+	ttWeightSvc *service.TtWeightService,
 	mapSvc *service.MapService,
+	mmeTaskSvc *service.MmeTaskService,
+	mmeVariantSvc *service.MmeVariantService,
+	mmeRenderSvc *service.MmeRenderService,
+	mmeCfg bizmme.Config,
 	store *storage.LocalStorage,
 ) *http.Server {
 	if cfg == nil || cfg.Server == nil || cfg.Server.Rest == nil {
@@ -218,8 +227,18 @@ func NewRESTServer(
 	miaV1.RegisterEventServiceHTTPServer(srv, miaEventSvc)
 	miaV1.RegisterImpactServiceHTTPServer(srv, miaImpactSvc)
 
+	// ② TT 热点追踪（M2 权重配置页）
+	ttV1.RegisterTrendWeightServiceHTTPServer(srv, ttWeightSvc)
+
 	// ⑤ MAP 媒体发布矩阵（路由：/api/v1/media/map/**；详细设计 map_service.proto）
 	mapV1.RegisterMapServiceHTTPServer(srv, mapSvc)
+
+	// ④ MME 短视频矩阵混剪（路由：/api/v1/media/mme/**；task/variant/render 三服务）
+	mmeV1.RegisterMmeTaskServiceHTTPServer(srv, mmeTaskSvc)
+	mmeV1.RegisterMmeVariantServiceHTTPServer(srv, mmeVariantSvc)
+	mmeV1.RegisterMmeRenderServiceHTTPServer(srv, mmeRenderSvc)
+	// 变体媒体流（审核台预览 / 封面 / 字幕；路径强制收敛在 media_dir 内）
+	registerMmeMediaHandler(srv, mmeCfg.MediaDir)
 
 	_ = seedSvc
 

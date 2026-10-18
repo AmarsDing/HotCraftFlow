@@ -63,4 +63,28 @@ var (
 		Name: "tt_topic_created_total",
 		Help: "话题新建计数",
 	}, []string{"source"})
+
+	// HeatNoFactorTotal 四因子全缺失计数（A-6：heat=null 不写 InfluxDB）。
+	HeatNoFactorTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "tt_heat_no_factor_total",
+		Help: "热度四因子全缺失计数（A-6：TT_HEAT_NO_FACTOR，该点不写 InfluxDB）",
+	})
+
+	// EngBaselineFallbackTotal eng 退化静态基线计数（reason: cold_start/store_error/no_store）。
+	EngBaselineFallbackTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "tt_eng_baseline_fallback_total",
+		Help: "eng_pct 退化静态基线计数（A-3：cold_start=N<200, store_error=Redis 故障；均不标 missing）",
+	}, []string{"reason"})
+
+	// DynamicsResetTotal 动态链 α=1 重置计数（reason: first/epoch_change）。
+	DynamicsResetTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "tt_dynamics_reset_total",
+		Help: "动态链重置计数（S-7/A-15：first=首点, epoch_change=权重口径断点）",
+	}, []string{"reason"})
+
+	// WeightChangedTotal heat 权重变更计数（A-15）。
+	WeightChangedTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "tt_weight_changed_total",
+		Help: "heat 权重变更次数（每次插入一行 WeightConfig，生效后首点强制 α=1）",
+	})
 )

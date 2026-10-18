@@ -55,6 +55,12 @@ var StreamDefs = []StreamDef{
 	// MM_TREND：② TT 快照/突发/选题（mm.trend.>），保留 30d。
 	// 生产者 TT；消费者 TT 时序写入、推送服务、MME/MIA。
 	{Name: "MM_TREND", Subjects: []string{"mm.trend.>"}, MaxAge: 30 * 24 * time.Hour},
+	// MM_IMPACT：③ MIA 影响卡事件（mm.impact.>，信封 v1），保留 90d。
+	// 生产者 MIA；消费者 规划中的联动侧（此前 worker/mia EnsureImpactStream 已引用但词表缺失——补齐）。
+	{Name: "MM_IMPACT", Subjects: []string{"mm.impact.>"}, MaxAge: 90 * 24 * time.Hour},
+	// MM_MEDIA：④ MME 变体分发事件（mm.mme.>，dispatch 契约 VariantSet 就绪），保留 30d。
+	// 生产者 MME；消费者 MAP（⑤ 媒体发布矩阵，mm.mme.variant.ready.v1 是唯一入列主题）。
+	{Name: "MM_MEDIA", Subjects: []string{"mm.mme.>"}, MaxAge: 30 * 24 * time.Hour},
 }
 
 // ToNatsConfig 转为 nats.go StreamConfig（FileStorage + LimitsPolicy 全站统一）。

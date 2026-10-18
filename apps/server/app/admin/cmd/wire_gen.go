@@ -9,8 +9,10 @@ package main
 import (
 	"framework/app/admin/internal/biz"
 	"framework/app/admin/internal/biz/mia"
+	"framework/app/admin/internal/biz/mme"
 	"framework/app/admin/internal/biz/publish"
 	"framework/app/admin/internal/biz/tt"
+	"framework/app/admin/internal/collector/ic"
 	"framework/app/admin/internal/conf"
 	"framework/app/admin/internal/core"
 	"framework/app/admin/internal/data"
@@ -20,7 +22,9 @@ import (
 	"framework/app/admin/internal/server"
 	"framework/app/admin/internal/service"
 	"framework/app/admin/internal/worker"
+	"framework/app/admin/internal/worker/ic"
 	"framework/app/admin/internal/worker/mia"
+	"framework/app/admin/internal/worker/mme"
 	"framework/app/admin/internal/worker/tt"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
@@ -184,14 +188,17 @@ func wireApp(bc *conf.Bootstrap, ttb *tt.Conf, mc *publish.Conf, mpconfs publish
 	transmissionRuleRepo := data.NewMiaTransmissionRuleRepo(dataData, logger)
 	ruleUsecase := mia.NewRuleUsecase(transmissionRuleRepo, logger)
 	miaImpactService := service.NewMiaImpactService(impactUsecase, eventUsecase, ruleUsecase, logger)
-	// ⑤ MAP 媒体发布矩阵（手工同步 wire.go 声明；make wire 再生成后此段即废）。
-	// data 子包（纯增量，不扰共享 data 链）：
-	mapChannelRepo := pubdata.NewEntChannelRepo(entClient, logger)
-	mapAccountRepo := pubdata.NewEntAccountRepo(entClient, logger)
-	mapDispatchRepo := pubdata.NewEntDispatchRepo(entClient, logger)
-	mapApprovalRepo := pubdata.NewEntApprovalRepo(entClient, logger)
-	mapReceiptRepo := pubdata.NewEntReceiptRepo(entClient, logger)
-	mapPerformanceRepo := pubdata.NewEntPerformanceRepo(entClient, logger)
+	entWeightConfigRepo := ttdata.NewEntWeightConfigRepo(entClient, logger)
+	weightUsecase := tt.NewWeightUsecase(entWeightConfigRepo, logger)
+	ttWeightService := service.NewTtWeightService(weightUsecase, logger)
+	entDispatchRepo := pubdata.NewEntDispatchRepo(entClient, logger)
+	entApprovalRepo := pubdata.NewEntApprovalRepo(entClient, logger)
+	approvalGateUsecase := publish.NewApprovalGateUsecase(mc, entDispatchRepo, entApprovalRepo, logger)
+	entChannelRepo := pubdata.NewEntChannelRepo(entClient, logger)
+	registry := publishadapters.ProvideRegistry(logger)
+	intakeUsecase := publish.NewIntakeUsecase(mc, entChannelRepo, entDispatchRepo, entApprovalRepo, registry, logger)
+	entAccountRepo := pubdata.NewEntAccountRepo(entClient, logger)
+	entReceiptRepo := pubdata.NewEntReceiptRepo(entClient, logger)
 	mapCredentialVault, err := pubdata.NewMapCredentialVault(mc, logger)
 	if err != nil {
 		cleanup3()
@@ -199,21 +206,45 @@ func wireApp(bc *conf.Bootstrap, ttb *tt.Conf, mc *publish.Conf, mpconfs publish
 		cleanup()
 		return nil, nil, err
 	}
-	mapPublishLocker := pubdata.NewRedisPublishLocker(redisClient, logger)
-	// 适配器注册表 + 能力目录（registry 为全局单例，ProvideRegistry 仅注入 logger）：
-	mapRegistry := publishadapters.ProvideRegistry(logger)
-	mapPlatformCatalog := publishadapters.NewPlatformCatalog(mapRegistry, mpconfs, logger)
-	// biz usecases：
-	mapBreakerUsecase := publish.NewBreakerUsecase(mc, mapAccountRepo, logger)
-	mapQuotaUsecase := publish.NewQuotaUsecase(mc, mapReceiptRepo, logger)
-	approvalGateUsecase := publish.NewApprovalGateUsecase(mc, mapDispatchRepo, mapApprovalRepo, logger)
-	intakeUsecase := publish.NewIntakeUsecase(mc, mapChannelRepo, mapDispatchRepo, mapApprovalRepo, mapRegistry, logger)
-	publishUsecase := publish.NewPublishUsecase(mc, mapDispatchRepo, mapAccountRepo, mapChannelRepo, mapReceiptRepo, mapApprovalRepo, mapCredentialVault, mapPublishLocker, mapRegistry, mapBreakerUsecase, mapQuotaUsecase, logger)
-	dispatchUsecase := publish.NewDispatchUsecase(mapDispatchRepo, mapApprovalRepo, mapReceiptRepo, mapPerformanceRepo, logger)
-	channelUsecase := publish.NewChannelUsecase(mc, mapChannelRepo, mapPlatformCatalog, logger)
-	accountUsecase := publish.NewAccountUsecase(mc, mapAccountRepo, mapChannelRepo, mapCredentialVault, logger)
-	mapService := service.NewMapService(logger, approvalGateUsecase, intakeUsecase, publishUsecase, dispatchUsecase, channelUsecase, accountUsecase, mapPlatformCatalog)
-	httpServer := server.NewRESTServer(bc, logger, tp, authenticator, authorizer, dataData, adminOperationLogRepo, adminLoginLogRepo, userTokenCacheRepo, dataPermissionUsecase, authenticationService, userService, menuService, routerService, organizationService, roleService, positionService, dictService, departmentService, adminLoginLogService, adminOperationLogService, ossService, uEditorService, fileService, tenantService, taskService, notificationMessageService, notificationMessageCategoryService, notificationMessageRecipientService, privateMessageService, adminLoginRestrictionService, toolLinkService, toolLinkCategoryService, userProfileService, apiResourceService, seedService, sessionService, systemConfigService, dataPermissionService, roleDeptService, userPermissionService, userIOService, radarTrendingService, radarRepoService, radarWatchService, radarNotifyService, radarConfigService, miaMappingService, miaEventService, miaImpactService, mapService, localStorage)
+	redisPublishLocker := pubdata.NewRedisPublishLocker(redisClient, logger)
+	breakerUsecase := publish.NewBreakerUsecase(mc, entAccountRepo, logger)
+	quotaUsecase := publish.NewQuotaUsecase(mc, entReceiptRepo, logger)
+	publishUsecase := publish.NewPublishUsecase(mc, entDispatchRepo, entAccountRepo, entChannelRepo, entReceiptRepo, entApprovalRepo, mapCredentialVault, redisPublishLocker, registry, breakerUsecase, quotaUsecase, logger)
+	entPerformanceRepo := pubdata.NewEntPerformanceRepo(entClient, logger)
+	dispatchUsecase := publish.NewDispatchUsecase(entDispatchRepo, entApprovalRepo, entReceiptRepo, entPerformanceRepo, logger)
+	platformCatalog := publishadapters.NewPlatformCatalog(registry, mpconfs, logger)
+	channelUsecase := publish.NewChannelUsecase(mc, entChannelRepo, platformCatalog, logger)
+	accountUsecase := publish.NewAccountUsecase(mc, entAccountRepo, entChannelRepo, mapCredentialVault, logger)
+	mapService := service.NewMapService(logger, approvalGateUsecase, intakeUsecase, publishUsecase, dispatchUsecase, channelUsecase, accountUsecase, platformCatalog)
+	mmeConfig := mme.NewConfig(bc)
+	mmeTaskRepo := data.NewMmeTaskRepo(dataData, logger)
+	assetRepo := data.NewMmeAssetRepo(dataData, logger)
+	mediaStorage := data.NewMmeMediaStorage(mmeConfig, logger)
+	assetDeduper := mme.NewAssetDeduper(mmeConfig, assetRepo, mediaStorage, logger)
+	cacheRepo := data.NewMmeAnalysisCacheRepo(dataData, logger)
+	analysisCache := mme.NewAnalysisCache(mmeConfig, cacheRepo)
+	renderQueue := mmeworker.NewRenderQueue(bc, mmeConfig, logger)
+	mmeTaskEnqueuer := mmeworker.NewMmeTaskEnqueuer(renderQueue)
+	downloader := data.NewYtdlpDownloader(mmeConfig, logger)
+	prober := data.NewFfprobeProber(mmeConfig, logger)
+	asrClient := data.NewWhisperASR(mmeConfig, logger)
+	renderer := data.NewFFmpegRenderer(mmeConfig, logger)
+	mmeTaskUsecase := mme.NewTaskUsecase(mmeConfig, mmeTaskRepo, assetRepo, assetDeduper, analysisCache, mediaStorage, mmeTaskEnqueuer, downloader, prober, asrClient, renderer, logger)
+	mmeTaskService := service.NewMmeTaskService(mmeTaskUsecase, logger)
+	variantSetRepo := data.NewMmeVariantSetRepo(dataData, logger)
+	variantRepo := data.NewMmeVariantRepo(dataData, logger)
+	renderJobRepo := data.NewMmeRenderJobRepo(dataData, logger)
+	renderPlanner := mme.NewRenderPlanner(mmeConfig, variantRepo, renderJobRepo, variantSetRepo, mmeTaskEnqueuer, logger)
+	llmClient := data.NewOllamaLLM(mmeConfig, logger)
+	copyGenerator := mme.NewCopyGenerator(mmeConfig, llmClient, logger)
+	diffChecker := mme.NewDiffChecker(mmeConfig, logger)
+	natsVariantPublisher := mmeworker.NewNatsVariantPublisher(coreServer, logger)
+	templateRepo := data.NewMmeTemplateRepo(dataData, logger)
+	variantSetUsecase := mme.NewVariantSetUsecase(mmeConfig, mmeTaskRepo, variantSetRepo, variantRepo, renderJobRepo, assetRepo, renderPlanner, copyGenerator, diffChecker, natsVariantPublisher, templateRepo, logger)
+	templateUsecase := mme.NewTemplateUsecase(mmeConfig, templateRepo, logger)
+	mmeVariantService := service.NewMmeVariantService(variantSetUsecase, templateUsecase, logger)
+	mmeRenderService := service.NewMmeRenderService(renderPlanner, logger)
+	httpServer := server.NewRESTServer(bc, logger, tp, authenticator, authorizer, dataData, adminOperationLogRepo, adminLoginLogRepo, userTokenCacheRepo, dataPermissionUsecase, authenticationService, userService, menuService, routerService, organizationService, roleService, positionService, dictService, departmentService, adminLoginLogService, adminOperationLogService, ossService, uEditorService, fileService, tenantService, taskService, notificationMessageService, notificationMessageCategoryService, notificationMessageRecipientService, privateMessageService, adminLoginRestrictionService, toolLinkService, toolLinkCategoryService, userProfileService, apiResourceService, seedService, sessionService, systemConfigService, dataPermissionService, roleDeptService, userPermissionService, userIOService, radarTrendingService, radarRepoService, radarWatchService, radarNotifyService, radarConfigService, miaMappingService, miaEventService, miaImpactService, ttWeightService, mapService, mmeTaskService, mmeVariantService, mmeRenderService, mmeConfig, localStorage)
 	taskWorker := server.NewTaskWorker(asynqServer, taskUsecase, sessionUsecase, logger)
 	siteMsgSubscriber := worker.NewSiteMsgSubscriber(coreServer, notificationMessageRepo, redisClient, logger)
 	logRetentionWorker := worker.NewLogRetentionWorker(adminOperationLogRepo, adminLoginLogRepo, logger)
@@ -222,7 +253,10 @@ func wireApp(bc *conf.Bootstrap, ttb *tt.Conf, mc *publish.Conf, mpconfs publish
 	client := ttdata.ProvideRawRedis(redisClient)
 	redisGuardStore := ttdata.NewRedisGuardStore(client, logger)
 	natsSnapshotPublisher := ttworker.NewNatsSnapshotPublisher(coreServer, logger)
-	ingestUsecase := tt.NewIngestUsecase(ttb, entTopicRepo, redisGuardStore, natsSnapshotPublisher, redisClient, logger)
+	redisEngHistogram := ttdata.NewRedisEngHistogram(client, logger)
+	redisDynamicsStore := ttdata.NewRedisDynamicsStore(client, logger)
+	heatEnricher := tt.NewHeatEnricher(ttb, entTopicRepo, redisEngHistogram, redisDynamicsStore, entWeightConfigRepo, logger)
+	ingestUsecase := tt.NewIngestUsecase(ttb, entTopicRepo, redisGuardStore, natsSnapshotPublisher, redisClient, heatEnricher, logger)
 	ingestSubscriber := ttworker.NewIngestSubscriber(ttb, coreServer, ingestUsecase, logger)
 	influxTS, cleanup4 := ttdata.NewInfluxTS(ttb, logger)
 	redisSnapshotBuffer, err := ttdata.NewRedisSnapshotBuffer(ttb, client, logger)
@@ -245,7 +279,46 @@ func wireApp(bc *conf.Bootstrap, ttb *tt.Conf, mc *publish.Conf, mpconfs publish
 	intelSubscriber := miaworker.NewIntelSubscriber(config, coreServer, miaIngestUsecase, redisClient, logger)
 	miaEquityScheduler := miaworker.NewMiaEquityScheduler(config, entityMappingRepo, quoteService, impactUsecase, webhookSender, logger)
 	miaCryptoScheduler := miaworker.NewMiaCryptoScheduler(config, entityMappingRepo, narrativeMappingRepo, quoteService, logger)
-	app := newApp(logger, registrar, httpServer, coreServer, asynqServer, taskWorker, siteMsgSubscriber, logRetentionWorker, radarEventRetentionWorker, ingestSubscriber, snapshotWriter, bufferReplay, intelSubscriber, miaEquityScheduler, miaCryptoScheduler)
+	qcChecker := mme.NewQCChecker(mmeConfig, mediaStorage, prober, logger)
+	toolUsecase := mme.NewToolUsecase(mmeConfig, mmeTaskRepo, variantSetRepo, variantRepo, renderJobRepo, assetRepo, mediaStorage, renderer, prober, qcChecker, logger)
+	mmeRenderWorker := mmeworker.NewMmeRenderWorker(renderQueue, coreServer, mmeTaskUsecase, toolUsecase, logger)
+	icConfig := biz.NewIcConfig(bc)
+	intelSourceRepo := data.NewIntelSourceRepo(dataData, logger)
+	intelItemRepo := data.NewIntelItemRepo(dataData, logger)
+	intelClusterRepo := data.NewIntelClusterRepo(dataData, logger)
+	evidenceRepo := data.NewEvidenceRepo(dataData, logger)
+	fsEvidenceStore, err := iccollector.NewFSEvidenceStore(icConfig, evidenceRepo, logger)
+	if err != nil {
+		cleanup4()
+		cleanup3()
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	collectRunRepo := data.NewCollectRunRepo(dataData, logger)
+	hotlistCollector := iccollector.NewHotlistCollector(bc, icConfig, logger)
+	apiCollector := iccollector.NewAPICollector(bc, icConfig, logger)
+	rssCollector := iccollector.NewRSSCollector(bc, icConfig, logger)
+	crawlCollector := iccollector.NewCrawlCollector(bc, icConfig, logger)
+	sidecarCollector := iccollector.NewSidecarCollector(bc, icConfig, logger)
+	iccollectorRegistry := iccollector.NewRegistry(bc, hotlistCollector, apiCollector, rssCollector, crawlCollector, sidecarCollector, logger)
+	redisRateLimiter := iccollector.NewRedisRateLimiter(redisClient, logger)
+	robotsChecker := iccollector.NewRobotsChecker(icConfig, redisClient, logger)
+	natsIntelPublisher := icworker.NewNatsIntelPublisher(coreServer, logger)
+	icCollectUsecase := biz.NewIcCollectUsecase(icConfig, intelSourceRepo, intelItemRepo, collectRunRepo, iccollectorRegistry, fsEvidenceStore, redisRateLimiter, robotsChecker, natsIntelPublisher, evidenceRepo, logger)
+	shortlinkExpander := iccollector.NewShortlinkExpander(icConfig, logger)
+	disabledLLMEnhancer := iccollector.NewLLMEnhancer(icConfig, logger)
+	icExtractUsecase := biz.NewIcExtractUsecase(icConfig, disabledLLMEnhancer, logger)
+	dedupSampleRepo := data.NewDedupSampleRepo(dataData, logger)
+	disabledEmbedder := iccollector.NewEmbedder(icConfig, logger)
+	icDedupUsecase := biz.NewIcDedupUsecase(intelItemRepo, intelClusterRepo, dedupSampleRepo, disabledEmbedder, icConfig, logger)
+	complianceRuleRepo := data.NewComplianceRuleRepo(dataData, logger)
+	authorizationRecordRepo := data.NewAuthorizationRecordRepo(dataData, logger)
+	governanceGate := biz.NewGovernanceGate(complianceRuleRepo, authorizationRecordRepo, logger)
+	icNormalizeUsecase := biz.NewIcNormalizeUsecase(icConfig, intelItemRepo, intelSourceRepo, evidenceRepo, shortlinkExpander, icExtractUsecase, icDedupUsecase, governanceGate, natsIntelPublisher, logger)
+	scheduler := icworker.NewScheduler(asynqServer, icConfig, intelSourceRepo, intelItemRepo, intelClusterRepo, evidenceRepo, fsEvidenceStore, icCollectUsecase, icNormalizeUsecase, logger)
+	normalizerConsumer := icworker.NewNormalizerConsumer(coreServer, icConfig, icNormalizeUsecase, logger)
+	app := newApp(logger, registrar, httpServer, coreServer, asynqServer, taskWorker, siteMsgSubscriber, logRetentionWorker, radarEventRetentionWorker, ingestSubscriber, snapshotWriter, bufferReplay, intelSubscriber, miaEquityScheduler, miaCryptoScheduler, renderQueue, mmeRenderWorker, scheduler, normalizerConsumer)
 	return app, func() {
 		cleanup4()
 		cleanup3()

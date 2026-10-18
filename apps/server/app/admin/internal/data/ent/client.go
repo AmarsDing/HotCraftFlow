@@ -85,6 +85,7 @@ import (
 	"framework/app/admin/internal/data/ent/userpost"
 	"framework/app/admin/internal/data/ent/userrole"
 	"framework/app/admin/internal/data/ent/usertoken"
+	"framework/app/admin/internal/data/ent/weightconfig"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -245,6 +246,8 @@ type Client struct {
 	UserRole *UserRoleClient
 	// UserToken is the client for interacting with the UserToken builders.
 	UserToken *UserTokenClient
+	// WeightConfig is the client for interacting with the WeightConfig builders.
+	WeightConfig *WeightConfigClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -330,6 +333,7 @@ func (c *Client) init() {
 	c.UserPost = NewUserPostClient(c.config)
 	c.UserRole = NewUserRoleClient(c.config)
 	c.UserToken = NewUserTokenClient(c.config)
+	c.WeightConfig = NewWeightConfigClient(c.config)
 }
 
 type (
@@ -496,6 +500,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		UserPost:                     NewUserPostClient(cfg),
 		UserRole:                     NewUserRoleClient(cfg),
 		UserToken:                    NewUserTokenClient(cfg),
+		WeightConfig:                 NewWeightConfigClient(cfg),
 	}, nil
 }
 
@@ -589,6 +594,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		UserPost:                     NewUserPostClient(cfg),
 		UserRole:                     NewUserRoleClient(cfg),
 		UserToken:                    NewUserTokenClient(cfg),
+		WeightConfig:                 NewWeightConfigClient(cfg),
 	}, nil
 }
 
@@ -635,7 +641,7 @@ func (c *Client) Use(hooks ...Hook) {
 		c.RoleResourceGroup, c.StorageLayer, c.SystemConfig, c.Task, c.TaskExecution,
 		c.Tenant, c.ToolLink, c.ToolLinkCategory, c.ToolLinkSsoTicket,
 		c.ToolLinkUserMark, c.Topic, c.TopicSource, c.User, c.UserCredential,
-		c.UserPost, c.UserRole, c.UserToken,
+		c.UserPost, c.UserRole, c.UserToken, c.WeightConfig,
 	} {
 		n.Use(hooks...)
 	}
@@ -662,7 +668,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.RoleResourceGroup, c.StorageLayer, c.SystemConfig, c.Task, c.TaskExecution,
 		c.Tenant, c.ToolLink, c.ToolLinkCategory, c.ToolLinkSsoTicket,
 		c.ToolLinkUserMark, c.Topic, c.TopicSource, c.User, c.UserCredential,
-		c.UserPost, c.UserRole, c.UserToken,
+		c.UserPost, c.UserRole, c.UserToken, c.WeightConfig,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -819,6 +825,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.UserRole.mutate(ctx, m)
 	case *UserTokenMutation:
 		return c.UserToken.mutate(ctx, m)
+	case *WeightConfigMutation:
+		return c.WeightConfig.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -10900,6 +10908,139 @@ func (c *UserTokenClient) mutate(ctx context.Context, m *UserTokenMutation) (Val
 	}
 }
 
+// WeightConfigClient is a client for the WeightConfig schema.
+type WeightConfigClient struct {
+	config
+}
+
+// NewWeightConfigClient returns a client for the WeightConfig from the given config.
+func NewWeightConfigClient(c config) *WeightConfigClient {
+	return &WeightConfigClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `weightconfig.Hooks(f(g(h())))`.
+func (c *WeightConfigClient) Use(hooks ...Hook) {
+	c.hooks.WeightConfig = append(c.hooks.WeightConfig, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `weightconfig.Intercept(f(g(h())))`.
+func (c *WeightConfigClient) Intercept(interceptors ...Interceptor) {
+	c.inters.WeightConfig = append(c.inters.WeightConfig, interceptors...)
+}
+
+// Create returns a builder for creating a WeightConfig entity.
+func (c *WeightConfigClient) Create() *WeightConfigCreate {
+	mutation := newWeightConfigMutation(c.config, OpCreate)
+	return &WeightConfigCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of WeightConfig entities.
+func (c *WeightConfigClient) CreateBulk(builders ...*WeightConfigCreate) *WeightConfigCreateBulk {
+	return &WeightConfigCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *WeightConfigClient) MapCreateBulk(slice any, setFunc func(*WeightConfigCreate, int)) *WeightConfigCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &WeightConfigCreateBulk{err: fmt.Errorf("calling to WeightConfigClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*WeightConfigCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &WeightConfigCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for WeightConfig.
+func (c *WeightConfigClient) Update() *WeightConfigUpdate {
+	mutation := newWeightConfigMutation(c.config, OpUpdate)
+	return &WeightConfigUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *WeightConfigClient) UpdateOne(_m *WeightConfig) *WeightConfigUpdateOne {
+	mutation := newWeightConfigMutation(c.config, OpUpdateOne, withWeightConfig(_m))
+	return &WeightConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *WeightConfigClient) UpdateOneID(id int) *WeightConfigUpdateOne {
+	mutation := newWeightConfigMutation(c.config, OpUpdateOne, withWeightConfigID(id))
+	return &WeightConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for WeightConfig.
+func (c *WeightConfigClient) Delete() *WeightConfigDelete {
+	mutation := newWeightConfigMutation(c.config, OpDelete)
+	return &WeightConfigDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *WeightConfigClient) DeleteOne(_m *WeightConfig) *WeightConfigDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *WeightConfigClient) DeleteOneID(id int) *WeightConfigDeleteOne {
+	builder := c.Delete().Where(weightconfig.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &WeightConfigDeleteOne{builder}
+}
+
+// Query returns a query builder for WeightConfig.
+func (c *WeightConfigClient) Query() *WeightConfigQuery {
+	return &WeightConfigQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeWeightConfig},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a WeightConfig entity by its id.
+func (c *WeightConfigClient) Get(ctx context.Context, id int) (*WeightConfig, error) {
+	return c.Query().Where(weightconfig.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *WeightConfigClient) GetX(ctx context.Context, id int) *WeightConfig {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *WeightConfigClient) Hooks() []Hook {
+	return c.hooks.WeightConfig
+}
+
+// Interceptors returns the client interceptors.
+func (c *WeightConfigClient) Interceptors() []Interceptor {
+	return c.inters.WeightConfig
+}
+
+func (c *WeightConfigClient) mutate(ctx context.Context, m *WeightConfigMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&WeightConfigCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&WeightConfigUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&WeightConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&WeightConfigDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown WeightConfig mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
@@ -10917,7 +11058,8 @@ type (
 		RadarWatch, RadarWatchEvent, ResourceGroup, Role, RoleApi, RoleDept, RoleMenu,
 		RoleResourceGroup, StorageLayer, SystemConfig, Task, TaskExecution, Tenant,
 		ToolLink, ToolLinkCategory, ToolLinkSsoTicket, ToolLinkUserMark, Topic,
-		TopicSource, User, UserCredential, UserPost, UserRole, UserToken []ent.Hook
+		TopicSource, User, UserCredential, UserPost, UserRole, UserToken,
+		WeightConfig []ent.Hook
 	}
 	inters struct {
 		AdminLoginLog, AdminLoginRestriction, AdminOperationLog, ApiResource,
@@ -10934,7 +11076,7 @@ type (
 		RadarWatch, RadarWatchEvent, ResourceGroup, Role, RoleApi, RoleDept, RoleMenu,
 		RoleResourceGroup, StorageLayer, SystemConfig, Task, TaskExecution, Tenant,
 		ToolLink, ToolLinkCategory, ToolLinkSsoTicket, ToolLinkUserMark, Topic,
-		TopicSource, User, UserCredential, UserPost, UserRole,
-		UserToken []ent.Interceptor
+		TopicSource, User, UserCredential, UserPost, UserRole, UserToken,
+		WeightConfig []ent.Interceptor
 	}
 )

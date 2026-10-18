@@ -78,6 +78,7 @@ import (
 	"framework/app/admin/internal/data/ent/userpost"
 	"framework/app/admin/internal/data/ent/userrole"
 	"framework/app/admin/internal/data/ent/usertoken"
+	"framework/app/admin/internal/data/ent/weightconfig"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -87,7 +88,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 74)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 75)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   adminloginlog.Table,
@@ -1934,6 +1935,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			topicsource.FieldTopicID:       {Type: field.TypeString, Column: topicsource.FieldTopicID},
 			topicsource.FieldIntelID:       {Type: field.TypeString, Column: topicsource.FieldIntelID},
 			topicsource.FieldClusterKey:    {Type: field.TypeString, Column: topicsource.FieldClusterKey},
+			topicsource.FieldPlatform:      {Type: field.TypeString, Column: topicsource.FieldPlatform},
 			topicsource.FieldContributedAt: {Type: field.TypeTime, Column: topicsource.FieldContributedAt},
 			topicsource.FieldSimilarity:    {Type: field.TypeFloat64, Column: topicsource.FieldSimilarity},
 			topicsource.FieldMovedBy:       {Type: field.TypeString, Column: topicsource.FieldMovedBy},
@@ -2072,6 +2074,37 @@ var schemaGraph = func() *sqlgraph.Schema {
 			usertoken.FieldUserAgent:     {Type: field.TypeString, Column: usertoken.FieldUserAgent},
 			usertoken.FieldExpiresAt:     {Type: field.TypeTime, Column: usertoken.FieldExpiresAt},
 			usertoken.FieldRevoked:       {Type: field.TypeBool, Column: usertoken.FieldRevoked},
+		},
+	}
+	graph.Nodes[74] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   weightconfig.Table,
+			Columns: weightconfig.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: weightconfig.FieldID,
+			},
+		},
+		Type: "WeightConfig",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			weightconfig.FieldCreateTime:    {Type: field.TypeTime, Column: weightconfig.FieldCreateTime},
+			weightconfig.FieldUpdateTime:    {Type: field.TypeTime, Column: weightconfig.FieldUpdateTime},
+			weightconfig.FieldDeleteTime:    {Type: field.TypeTime, Column: weightconfig.FieldDeleteTime},
+			weightconfig.FieldCreateBy:      {Type: field.TypeUint32, Column: weightconfig.FieldCreateBy},
+			weightconfig.FieldTenantID:      {Type: field.TypeUint32, Column: weightconfig.FieldTenantID},
+			weightconfig.FieldConfigID:      {Type: field.TypeString, Column: weightconfig.FieldConfigID},
+			weightconfig.FieldScope:         {Type: field.TypeEnum, Column: weightconfig.FieldScope},
+			weightconfig.FieldWRank:         {Type: field.TypeFloat64, Column: weightconfig.FieldWRank},
+			weightconfig.FieldWEng:          {Type: field.TypeFloat64, Column: weightconfig.FieldWEng},
+			weightconfig.FieldWFresh:        {Type: field.TypeFloat64, Column: weightconfig.FieldWFresh},
+			weightconfig.FieldWBreadth:      {Type: field.TypeFloat64, Column: weightconfig.FieldWBreadth},
+			weightconfig.FieldWHot:          {Type: field.TypeFloat64, Column: weightconfig.FieldWHot},
+			weightconfig.FieldWFreshness:    {Type: field.TypeFloat64, Column: weightconfig.FieldWFreshness},
+			weightconfig.FieldWWorkability:  {Type: field.TypeFloat64, Column: weightconfig.FieldWWorkability},
+			weightconfig.FieldWCompliance:   {Type: field.TypeFloat64, Column: weightconfig.FieldWCompliance},
+			weightconfig.FieldEffectiveFrom: {Type: field.TypeTime, Column: weightconfig.FieldEffectiveFrom},
+			weightconfig.FieldActivatedBy:   {Type: field.TypeString, Column: weightconfig.FieldActivatedBy},
+			weightconfig.FieldNote:          {Type: field.TypeString, Column: weightconfig.FieldNote},
 		},
 	}
 	graph.MustAddE(
@@ -9910,6 +9943,11 @@ func (f *TopicSourceFilter) WhereClusterKey(p entql.StringP) {
 	f.Where(p.Field(topicsource.FieldClusterKey))
 }
 
+// WherePlatform applies the entql string predicate on the platform field.
+func (f *TopicSourceFilter) WherePlatform(p entql.StringP) {
+	f.Where(p.Field(topicsource.FieldPlatform))
+}
+
 // WhereContributedAt applies the entql time.Time predicate on the contributed_at field.
 func (f *TopicSourceFilter) WhereContributedAt(p entql.TimeP) {
 	f.Where(p.Field(topicsource.FieldContributedAt))
@@ -10473,4 +10511,134 @@ func (f *UserTokenFilter) WhereExpiresAt(p entql.TimeP) {
 // WhereRevoked applies the entql bool predicate on the revoked field.
 func (f *UserTokenFilter) WhereRevoked(p entql.BoolP) {
 	f.Where(p.Field(usertoken.FieldRevoked))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *WeightConfigQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the WeightConfigQuery builder.
+func (_q *WeightConfigQuery) Filter() *WeightConfigFilter {
+	return &WeightConfigFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *WeightConfigMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the WeightConfigMutation builder.
+func (m *WeightConfigMutation) Filter() *WeightConfigFilter {
+	return &WeightConfigFilter{config: m.config, predicateAdder: m}
+}
+
+// WeightConfigFilter provides a generic filtering capability at runtime for WeightConfigQuery.
+type WeightConfigFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *WeightConfigFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[74].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *WeightConfigFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(weightconfig.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *WeightConfigFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(weightconfig.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *WeightConfigFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(weightconfig.FieldUpdateTime))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *WeightConfigFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(weightconfig.FieldDeleteTime))
+}
+
+// WhereCreateBy applies the entql uint32 predicate on the create_by field.
+func (f *WeightConfigFilter) WhereCreateBy(p entql.Uint32P) {
+	f.Where(p.Field(weightconfig.FieldCreateBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *WeightConfigFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(weightconfig.FieldTenantID))
+}
+
+// WhereConfigID applies the entql string predicate on the config_id field.
+func (f *WeightConfigFilter) WhereConfigID(p entql.StringP) {
+	f.Where(p.Field(weightconfig.FieldConfigID))
+}
+
+// WhereScope applies the entql string predicate on the scope field.
+func (f *WeightConfigFilter) WhereScope(p entql.StringP) {
+	f.Where(p.Field(weightconfig.FieldScope))
+}
+
+// WhereWRank applies the entql float64 predicate on the w_rank field.
+func (f *WeightConfigFilter) WhereWRank(p entql.Float64P) {
+	f.Where(p.Field(weightconfig.FieldWRank))
+}
+
+// WhereWEng applies the entql float64 predicate on the w_eng field.
+func (f *WeightConfigFilter) WhereWEng(p entql.Float64P) {
+	f.Where(p.Field(weightconfig.FieldWEng))
+}
+
+// WhereWFresh applies the entql float64 predicate on the w_fresh field.
+func (f *WeightConfigFilter) WhereWFresh(p entql.Float64P) {
+	f.Where(p.Field(weightconfig.FieldWFresh))
+}
+
+// WhereWBreadth applies the entql float64 predicate on the w_breadth field.
+func (f *WeightConfigFilter) WhereWBreadth(p entql.Float64P) {
+	f.Where(p.Field(weightconfig.FieldWBreadth))
+}
+
+// WhereWHot applies the entql float64 predicate on the w_hot field.
+func (f *WeightConfigFilter) WhereWHot(p entql.Float64P) {
+	f.Where(p.Field(weightconfig.FieldWHot))
+}
+
+// WhereWFreshness applies the entql float64 predicate on the w_freshness field.
+func (f *WeightConfigFilter) WhereWFreshness(p entql.Float64P) {
+	f.Where(p.Field(weightconfig.FieldWFreshness))
+}
+
+// WhereWWorkability applies the entql float64 predicate on the w_workability field.
+func (f *WeightConfigFilter) WhereWWorkability(p entql.Float64P) {
+	f.Where(p.Field(weightconfig.FieldWWorkability))
+}
+
+// WhereWCompliance applies the entql float64 predicate on the w_compliance field.
+func (f *WeightConfigFilter) WhereWCompliance(p entql.Float64P) {
+	f.Where(p.Field(weightconfig.FieldWCompliance))
+}
+
+// WhereEffectiveFrom applies the entql time.Time predicate on the effective_from field.
+func (f *WeightConfigFilter) WhereEffectiveFrom(p entql.TimeP) {
+	f.Where(p.Field(weightconfig.FieldEffectiveFrom))
+}
+
+// WhereActivatedBy applies the entql string predicate on the activated_by field.
+func (f *WeightConfigFilter) WhereActivatedBy(p entql.StringP) {
+	f.Where(p.Field(weightconfig.FieldActivatedBy))
+}
+
+// WhereNote applies the entql string predicate on the note field.
+func (f *WeightConfigFilter) WhereNote(p entql.StringP) {
+	f.Where(p.Field(weightconfig.FieldNote))
 }

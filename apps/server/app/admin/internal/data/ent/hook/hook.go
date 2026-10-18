@@ -896,6 +896,18 @@ func (f UserTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserTokenMutation", m)
 }
 
+// The WeightConfigFunc type is an adapter to allow the use of ordinary
+// function as WeightConfig mutator.
+type WeightConfigFunc func(context.Context, *ent.WeightConfigMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WeightConfigFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WeightConfigMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WeightConfigMutation", m)
+}
+
 // Condition is a hook condition function.
 type Condition func(context.Context, ent.Mutation) bool
 

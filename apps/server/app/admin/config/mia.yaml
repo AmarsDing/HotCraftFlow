@@ -31,7 +31,7 @@ mia:
     providers: ["ccxt"]                     # openbb 许可证未复核，暂不启用
     read_only: true                         # 🔴 恒为 true
     enable_trading: false                   # 🔴 恒为 false
-    cache_ttl: 5m
+    cache_ttl: 300s                         # =5m（proto Duration 仅收秒格式）
     ccxt_sidecar_url: "http://127.0.0.1:8900"
   scoring:
     default_ttl_hours:

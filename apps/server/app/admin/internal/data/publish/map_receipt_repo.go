@@ -47,6 +47,9 @@ func (r *EntReceiptRepo) CreateReceipt(ctx context.Context, row *bizpub.ReceiptR
 	if row.PostURL != nil {
 		builder.SetNillablePostURL(row.PostURL)
 	}
+	if row.RequestPayloadHash != nil {
+		builder.SetNillableRequestPayloadHash(row.RequestPayloadHash)
+	}
 	e, err := builder.Save(ctx)
 	if err != nil {
 		if ent.IsConstraintError(err) {
@@ -142,15 +145,16 @@ func (r *EntReceiptRepo) CountReceiptsByPlatformSince(ctx context.Context, platf
 
 func receiptToRow(e *ent.MapPublishReceipt) *bizpub.ReceiptRow {
 	return &bizpub.ReceiptRow{
-		ID:             uint32(e.ID),
-		ReceiptID:      e.ReceiptID,
-		DispatchUnitID: e.DispatchUnitID,
-		AccountID:      e.AccountID,
-		PlatformKey:    e.PlatformKey,
-		PostID:         e.PostID,
-		PostURL:        e.PostURL,
-		Visibility:     string(e.Visibility),
-		PublishedAt:    e.PublishedAt,
-		Operator:       e.Operator,
+		ID:                 uint32(e.ID),
+		ReceiptID:          e.ReceiptID,
+		DispatchUnitID:     e.DispatchUnitID,
+		AccountID:          e.AccountID,
+		PlatformKey:        e.PlatformKey,
+		PostID:             e.PostID,
+		PostURL:            e.PostURL,
+		Visibility:         string(e.Visibility),
+		PublishedAt:        e.PublishedAt,
+		Operator:           e.Operator,
+		RequestPayloadHash: e.RequestPayloadHash,
 	}
 }

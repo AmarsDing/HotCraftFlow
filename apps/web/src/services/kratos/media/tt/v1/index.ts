@@ -119,5 +119,97 @@ export type Alert = {
   state: string | undefined;
 };
 
+// WeightView 一行 heat 权重配置（当前生效行 + 历史行同构）。
+export type WeightView = {
+  config_id: string | undefined;
+  w_rank: number | undefined;
+  w_eng: number | undefined;
+  w_fresh: number | undefined;
+  w_breadth: number | undefined;
+  effective_from: wellKnownTimestamp | undefined;
+  // epoch = sha256(config_id)[:8]（A-15 ②）：口径断点标记，看板分段依据。
+  // 表内无行时为 "default"（详设默认权重 {0.35, 0.25, 0.20, 0.20}）。
+  epoch: string | undefined;
+  activated_by: string | undefined;
+  note: string | undefined;
+  effective: boolean | undefined;
+};
+
+export type GetHeatWeightsRequest = {
+  history_limit: number | undefined;
+};
+
+export type GetHeatWeightsResponse = {
+  current: WeightView | undefined;
+  history: WeightView[] | undefined;
+};
+
+export type UpdateHeatWeightsRequest = {
+  w_rank: number | undefined;
+  w_eng: number | undefined;
+  w_fresh: number | undefined;
+  w_breadth: number | undefined;
+  note: string | undefined;
+};
+
+// TrendWeightService heat 权重查看与变更。
+// ⚠ 变更即时生效：写入侧后续快照点携带新 weight_epoch，话题动态链首个点
+// 强制 α=1 重置（A-15 ④）；变更窗口内突发告警应抑制一个采样周期（M4 落地）。
+export interface TrendWeightService {
+  GetHeatWeights(request: GetHeatWeightsRequest): Promise<GetHeatWeightsResponse>;
+  UpdateHeatWeights(request: UpdateHeatWeightsRequest): Promise<WeightView>;
+}
+
+type RequestType = {
+  path: string;
+  method: string;
+  body: string | null;
+};
+
+type RequestHandler = (request: RequestType, meta: { service: string, method: string }) => Promise<unknown>;
+
+export function createTrendWeightServiceClient(
+  handler: RequestHandler
+): TrendWeightService {
+  return {
+    GetHeatWeights(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/tt/weights/heat`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.history_limit) {
+        queryParams.push(`history_limit=${encodeURIComponent(request.history_limit.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "TrendWeightService",
+        method: "GetHeatWeights",
+      }) as Promise<GetHeatWeightsResponse>;
+    },
+    UpdateHeatWeights(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/tt/weights/heat`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "PUT",
+        body,
+      }, {
+        service: "TrendWeightService",
+        method: "UpdateHeatWeights",
+      }) as Promise<WeightView>;
+    },
+  };
+}
 
 // @@protoc_insertion_point(typescript-http-eof)

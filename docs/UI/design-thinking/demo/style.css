@@ -1,0 +1,253 @@
+/* ==========================================================================
+   HOTCRAFTFLOW // NIGHT SHIFT —— 设计哲学检验台
+   全部参数抄自 .claude/skills/dark-tech-ui/assets/tokens-base.css 与五篇分册，
+   凡偏离文档处都在 demo-verify.md 里诚实记录（ADJUST 项）。
+   ========================================================================== */
+
+:root{
+  /* 总论#1 近黑不是纯黑（青灰倾向，GrokBot 一系） */
+  --bg-page:#0A0E10; --bg-card:#0C0C18; --bg-elev:#12161F; --bg-inset:#15181F;
+  /* 总论#2 发丝线 */
+  --line:rgba(255,255,255,.08); --hair:rgba(255,255,255,.05); --line-2:rgba(255,255,255,.14);
+  /* 文字四级 */
+  --tx1:#F5F3FF; --tx2:#A9AEBC; --tx3:#61667A; --tx4:#4A5060;
+  /* 总论#3 一色一语义（语义轨：状态/动作结果） */
+  --green:#52D89D; --red:#F05959; --amber:#F6C157; --pink:#F25E97;
+  /* 交互轨（长桥决策1 双轨：可点/激活/流动） */
+  --accent:#41D2F3; --cyan:#41D2F3; --blue:#4C86F9; --purple:#A489FA;
+  /* 派生公式（tokens-base §强调色派生）：12% 底 / 35-45% 线 / 100% 字 */
+  --green-bg:rgba(82,216,157,.12); --amber-bg:rgba(246,193,87,.10); --red-bg:rgba(240,89,89,.10);
+  --green-line:rgba(82,216,157,.35); --amber-line:rgba(246,193,87,.45);
+  /* 总论#8 同色辉光（特许制：全场仅 LED 数 / 金门 / 节点hub 三处） */
+  --glow-green:0 0 22px -6px rgba(82,216,157,.55);
+  --glow-gold:0 0 0 1px rgba(246,193,87,.38), 0 16px 44px -12px rgba(246,193,87,.30);
+  /* 总论#7 动效令牌 */
+  --e-out:cubic-bezier(.2,.9,.2,1); --e-soft:cubic-bezier(.4,0,.2,1);
+  --d-micro:120ms; --d-fast:180ms; --d-base:260ms; --d-slow:500ms; --d-flash:600ms;
+  --mono:'JetBrains Mono','Cascadia Code',Consolas,monospace;
+  --ui:'Inter',system-ui,'PingFang SC','Microsoft YaHei',sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--bg-page); color:var(--tx1); font-family:var(--ui); font-size:12px;
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+.num,.mono{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+
+/* GrokBot 决策10：彩色光斑"房间"——卡片是夜里的灯 */
+.room{position:fixed;inset:0;pointer-events:none;filter:blur(90px);opacity:.55}
+.room i{position:absolute;border-radius:50%}
+.room i:nth-child(1){width:520px;height:520px;left:-140px;top:-160px;background:radial-gradient(circle,rgba(65,180,243,.20),transparent 70%)}
+.room i:nth-child(2){width:460px;height:460px;right:-120px;bottom:-180px;background:radial-gradient(circle,rgba(246,193,87,.14),transparent 70%)}
+.room i:nth-child(3){width:380px;height:380px;right:8%;top:-120px;background:radial-gradient(circle,rgba(242,94,151,.12),transparent 70%)}
+.room i:nth-child(4){width:300px;height:300px;left:12%;bottom:-100px;background:radial-gradient(circle,rgba(164,137,250,.12),transparent 70%)}
+
+/* ---------- 窗口（GrokBot 决策9：交通灯 = 最便宜的"真应用"税） ---------- */
+.win{
+  position:relative; width:1240px; height:768px; background:var(--bg-card);
+  border:1px solid var(--line); border-radius:14px; overflow:hidden;
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.03);
+  display:flex; flex-direction:column;
+}
+.chrome{
+  height:34px; flex:none; display:flex; align-items:center; padding:0 14px;
+  background:var(--bg-elev); border-bottom:1px solid var(--line);
+  font-family:var(--mono); font-size:10px; color:var(--tx3); letter-spacing:.08em;
+}
+.chrome b{width:11px;height:11px;border-radius:50%;display:inline-block;margin-right:6px}
+.chrome b:nth-child(1){background:#FF5F57}.chrome b:nth-child(2){background:#FEBC2E}.chrome b:nth-child(3){background:#28C840}
+.chrome span{margin-left:10px}
+.chrome .dbg{margin-left:auto;color:var(--tx4)}
+
+/* ---------- 顶栏 ---------- */
+.topbar{flex:none;display:flex;align-items:center;gap:14px;padding:10px 16px 8px;border-bottom:1px solid var(--hair)}
+.sq{width:26px;height:26px;border-radius:6px;background:rgba(76,134,249,.14);border:1px solid rgba(76,134,249,.5);
+    color:#9DB6F2;font-family:var(--mono);font-weight:700;font-size:10px;display:grid;place-items:center}
+h1{font-size:15px;font-weight:700;letter-spacing:.02em}
+h1 small{color:var(--tx3);font-weight:500;font-family:var(--mono);font-size:11px}
+.micro{font-size:9.5px;font-weight:600;letter-spacing:.14em;color:var(--tx4);text-transform:uppercase}
+.badge{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 7px;border-radius:3px;white-space:nowrap}
+.b-ris{background:rgba(240,89,89,.14);color:#F28383}
+.b-mode{background:rgba(246,193,87,.12);color:var(--amber)}
+.b-ghost{background:rgba(255,255,255,.05);color:var(--tx3);border:1px solid var(--line)}
+.topstats{margin-left:auto;display:flex;gap:22px;align-items:baseline;font-family:var(--mono)}
+.stat{text-align:right}
+.stat .k{font-size:9px;letter-spacing:.14em;color:var(--tx4)}
+.stat .v{font-size:15px;font-weight:700;color:var(--tx1)}
+.stat .v.cy{color:var(--cyan)}
+.clock{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--tx2);min-width:96px;text-align:right}
+.btn{
+  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;cursor:pointer;
+  background:transparent;color:var(--tx2);border:1px solid var(--line-2);border-radius:6px;padding:5px 10px;
+  transition:background var(--d-fast) var(--e-out), color var(--d-fast) var(--e-out);
+}
+.btn:hover{background:var(--tx1);color:#0B0D12;border-color:var(--tx1)}  /* GrokBot 决策4：幽灵→hover翻实 */
+
+/* ---------- 情报带（SPIDERORB 决策8：静态，不跑马灯） ---------- */
+.tape{
+  flex:none;display:flex;gap:26px;align-items:center;overflow:hidden;white-space:nowrap;
+  padding:6px 16px;border-bottom:1px solid var(--hair);
+  font-family:var(--mono);font-size:10px;color:var(--tx3);
+}
+.tape .tag{color:#F28383;font-weight:700}
+.tape b{color:var(--tx2);font-weight:600}
+.tape .g{color:var(--green)} .tape .r{color:#F28383} .tape .a{color:var(--amber)}
+
+/* ---------- 主区三栏 ---------- */
+.main{flex:1;display:grid;grid-template-columns:300px 1fr 330px;min-height:0}
+.col{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--hair)}
+.col:last-child{border-right:none}
+.phead{
+  flex:none;display:flex;align-items:center;gap:8px;padding:10px 14px 8px;
+  font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--tx2);
+}
+.phead .dia{color:var(--tx3);font-size:10px}          /* SPIDERORB 决策3：◆ 前缀 */
+.phead .meta{margin-left:auto;font-family:var(--mono);font-size:9.5px;font-weight:500;color:var(--tx3);letter-spacing:.06em}
+
+/* 左栏 PLATFORMS：总论#2 发丝线行 + 色条 + GrokBot 决策6 暗态预置行 */
+.rows{flex:1;overflow:hidden}
+.rrow{
+  position:relative;display:flex;align-items:center;gap:10px;padding:9px 14px 9px 16px;
+}
+.rrow + .rrow{border-top:1px solid var(--hair)}
+.rrow::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:2px;background:var(--rc,var(--tx4))}
+.rrow .dot{width:7px;height:7px;border-radius:50%;background:var(--rc);flex:none}
+.rrow .nm{font-size:12.5px;font-weight:600}
+.rrow .sub{font-family:var(--mono);font-size:9.5px;color:var(--tx3);margin-top:1px}
+.rrow .rg{margin-left:auto;text-align:right;font-family:var(--mono)}
+.rrow .rg .v{font-size:13px;font-weight:700}
+.rrow .rg .s{font-size:9px;color:var(--tx3);letter-spacing:.08em}
+.rrow.dim{opacity:.34}                                   /* 暗态预置：集合已知，成员未激活 */
+.rrow .tagx{font-size:9px;font-family:var(--mono);letter-spacing:.06em;padding:2px 6px;border-radius:3px}
+.tagx.ok{background:var(--green-bg);color:var(--green)}
+.tagx.wait{background:var(--amber-bg);color:var(--amber)}
+.tagx.idle{background:rgba(255,255,255,.05);color:var(--tx4)}
+
+/* 中栏 PIPELINE：GrokBot 决策3 点链 + SPIDERORB 决策7 放射hub（canvas 实现） */
+.pipewrap{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
+.pipe-cap{
+  flex:none;display:flex;gap:18px;padding:6px 16px;border-top:1px solid var(--hair);
+  font-family:var(--mono);font-size:9.5px;color:var(--tx3);letter-spacing:.10em;
+}
+.pipe-cap i{font-style:normal}
+#pipe{flex:1;width:100%;min-height:0;display:block}
+
+/* 右栏 DECISION QUEUE：GrokBot 决策4 dotted琥珀占位 + DOTS 决策6 金门 */
+.queue{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.qrow{
+  display:flex;align-items:center;gap:10px;padding:9px 14px;
+  background:rgba(255,255,255,.015);
+}
+.qrow + .qrow{border-top:1px solid var(--hair)}
+.qrow .verb{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 7px;border-radius:3px;flex:none}
+.qrow .tt{font-size:11.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qrow .mt{font-family:var(--mono);font-size:9px;color:var(--tx3);margin-top:1px}
+.qrow .spin{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--tx3);flex:none}
+.v-pub{background:var(--green-bg);color:var(--green)}
+.v-blk{background:var(--red-bg);color:#F28383}
+.v-skp{background:rgba(246,193,87,.12);color:var(--amber)}
+.qrow.pending{                                           /* dotted 琥珀 = 未定稿，等你签 */
+  border:1px dotted var(--amber-line); background:var(--amber-bg); border-radius:6px; margin:6px 10px;
+}
+.qrow.pending + .qrow{border-top:1px solid var(--hair)}
+.qrow.done-pub{opacity:.55}
+.qrow.flash{animation:flashUp var(--d-flash) var(--e-soft)}   /* 长桥决策2：只闪背景不闪字 */
+
+/* AWAIT USER 金门（DOTS：全场唯一实体按钮，密中取空） */
+.gate{
+  flex:none;margin:10px 12px;padding:12px 14px;border-radius:10px;
+  border:1px solid var(--amber-line);
+  background:linear-gradient(180deg,rgba(246,193,87,.14),rgba(246,193,87,.06));
+  display:flex;align-items:center;gap:12px;
+}
+.gate.arm{box-shadow:var(--glow-gold);animation:gateBreath 2.4s ease-in-out infinite}   /* 循环时长 2-14s 档 */
+@keyframes gateBreath{0%,100%{box-shadow:0 0 0 1px rgba(246,193,87,.28),0 10px 30px -14px rgba(246,193,87,.22)}50%{box-shadow:var(--glow-gold)}}
+.gate .gk{font-size:9.5px;font-weight:700;letter-spacing:.16em;color:var(--amber)}
+.gate .gv{font-family:var(--mono);font-size:11px;color:var(--tx2);margin-top:2px}
+.gate .approve{
+  margin-left:auto;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.10em;cursor:pointer;
+  padding:8px 14px;border-radius:6px;border:1px solid var(--amber-line);color:var(--amber);background:transparent;
+  transition:all var(--d-fast) var(--e-out);
+}
+.gate .approve:hover{background:var(--amber);color:#171207;border-color:var(--amber)}
+.gate.idle{opacity:.45;filter:saturate(.4)}
+.gate.idle .approve{pointer-events:none}
+
+/* ---------- 底带：LED 计数 + 双折线 + 日志 ---------- */
+.bottom{flex:none;height:196px;display:grid;grid-template-columns:330px 300px 1fr;border-top:1px solid var(--line)}
+.bcell{padding:12px 16px;border-right:1px solid var(--hair);min-width:0;overflow:hidden;position:relative}
+.bcell:last-child{border-right:none}
+/* SPIDERORB 决策4：LED 大计数器 = 全屏唯二辉光特许 */
+.led{font-family:var(--mono);font-size:44px;font-weight:700;color:var(--green);letter-spacing:.02em;
+     text-shadow:0 0 14px rgba(82,216,157,.75);line-height:1.1;position:relative}
+.led small{font-size:14px;color:var(--tx3);font-weight:500}
+.ledrow{display:flex;gap:24px;align-items:baseline;margin-top:2px}
+.ledsub{font-family:var(--mono);font-size:10px;color:var(--tx3)}
+.ledsub b{color:var(--tx2)}
+.kv{margin-top:10px;display:flex;gap:18px;font-family:var(--mono);font-size:10px;color:var(--tx3)}
+.kv b{color:var(--tx1)}
+.kv .g{color:var(--green)} .kv .p{color:var(--pink)}
+#money{width:100%;height:110px;display:block;margin-top:6px}
+.mleg{display:flex;gap:14px;font-family:var(--mono);font-size:9.5px;color:var(--tx3);margin-top:4px}
+.mleg i{font-style:normal}
+.mleg .g{color:var(--green)} .mleg .p{color:var(--pink)}
+
+/* 日志流（SPIDERORB 决策2：代号着色 + GrokBot 决策7 账簿行） */
+.log{height:100%;overflow:hidden;font-family:var(--mono);font-size:10.5px;line-height:19px}
+.logline{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx2)}
+.logline + .logline{border-top:1px solid var(--hair)}   /* 总论#2 账簿，不用卡片 */
+.logline.enter{animation:logIn var(--d-fast) var(--e-out)}
+@keyframes logIn{from{opacity:0}to{opacity:1}}
+.logline .t{color:var(--tx4);margin-right:8px}
+.code{font-weight:700;margin-right:7px}
+.c-HAR{color:var(--cyan)} .c-WRI{color:var(--purple)} .c-SCH{color:var(--blue)}
+.c-RIS{color:#F28383} .c-PUB{color:var(--green)} .c-YOU{color:var(--amber)} .c-OK{color:var(--green)}
+.logline b{color:var(--tx1)}
+.logline .amt{color:var(--green);font-weight:700}
+
+/* ---------- SPIDERORB 决策5：质感四层 ≤5%（可开关做 A/B 对照） ---------- */
+.fx{position:absolute;inset:0;pointer-events:none;z-index:60}
+.fx.noise{opacity:.018;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='128' height='128' filter='url(%23n)'/></svg>")}
+.fx.scan{opacity:.25;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.12) 3px 4px)}
+.fx.vig{background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.38) 100%)}
+body.nofx .fx{display:none}
+
+/* ---------- DOC CHECK 检验面板（本 demo 的自证装置） ---------- */
+.check{
+  position:absolute;right:14px;bottom:210px;width:340px;max-height:420px;z-index:70;
+  background:rgba(13,14,25,.92);border:1px solid var(--line-2);border-radius:10px;
+  backdrop-filter:blur(8px);display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 18px 50px -18px rgba(0,0,0,.85);
+}
+.check .ch{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--hair)}
+.check .ch .dia{color:var(--tx3);font-size:10px}
+.check .ch .t{font-size:11.5px;font-weight:700;letter-spacing:.06em}
+.check .ch .hint{margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--tx4)}
+.chlist{overflow-y:auto;padding:6px 0}
+.check.closed .chlist{display:none}
+.chk{display:flex;gap:8px;align-items:flex-start;padding:6px 12px;cursor:pointer;border-left:2px solid transparent}
+.chk:hover{background:rgba(255,255,255,.04)}
+.chk .n{font-family:var(--mono);font-size:9px;color:var(--tx4);width:16px;flex:none;padding-top:2px}
+.chk .tx{font-size:10.5px;color:var(--tx2);line-height:1.45}
+.chk .tx small{display:block;color:var(--tx4);font-size:9px;margin-top:1px}
+.chk .st{margin-left:auto;flex:none;font-family:var(--mono);font-size:8.5px;font-weight:700;letter-spacing:.08em;padding:2px 6px;border-radius:3px}
+.st.pass{background:var(--green-bg);color:var(--green)}
+.st.adj{background:var(--amber-bg);color:var(--amber)}
+/* 点击检验项 → 锚定元素高亮（验证"论断→落点"可追踪） */
+.anchor{outline:1.5px solid var(--cyan)!important;outline-offset:2px;border-radius:4px;
+        transition:outline-color var(--d-micro) var(--e-out)}
+
+/* 页脚（SPIDERORB 决策10：页脚复读全局数据，unit 自洽） */
+.foot{
+  flex:none;height:26px;display:flex;align-items:center;gap:22px;padding:0 16px;
+  border-top:1px solid var(--hair);font-family:var(--mono);font-size:9px;letter-spacing:.10em;color:var(--tx4);
+}
+.foot .sig{margin-left:auto;color:var(--tx4)}
+
+/* 总论#7 降级 */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:150ms!important;transition-duration:150ms!important}
+}

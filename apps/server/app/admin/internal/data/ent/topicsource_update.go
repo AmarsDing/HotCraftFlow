@@ -171,6 +171,20 @@ func (_u *TopicSourceUpdate) ClearClusterKey() *TopicSourceUpdate {
 	return _u
 }
 
+// SetPlatform sets the "platform" field.
+func (_u *TopicSourceUpdate) SetPlatform(v string) *TopicSourceUpdate {
+	_u.mutation.SetPlatform(v)
+	return _u
+}
+
+// SetNillablePlatform sets the "platform" field if the given value is not nil.
+func (_u *TopicSourceUpdate) SetNillablePlatform(v *string) *TopicSourceUpdate {
+	if v != nil {
+		_u.SetPlatform(*v)
+	}
+	return _u
+}
+
 // SetContributedAt sets the "contributed_at" field.
 func (_u *TopicSourceUpdate) SetContributedAt(v time.Time) *TopicSourceUpdate {
 	_u.mutation.SetContributedAt(v)
@@ -290,6 +304,11 @@ func (_u *TopicSourceUpdate) check() error {
 			return &ValidationError{Name: "intel_id", err: fmt.Errorf(`ent: validator failed for field "TopicSource.intel_id": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Platform(); ok {
+		if err := topicsource.PlatformValidator(v); err != nil {
+			return &ValidationError{Name: "platform", err: fmt.Errorf(`ent: validator failed for field "TopicSource.platform": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -358,6 +377,9 @@ func (_u *TopicSourceUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if _u.mutation.ClusterKeyCleared() {
 		_spec.ClearField(topicsource.FieldClusterKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.Platform(); ok {
+		_spec.SetField(topicsource.FieldPlatform, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.ContributedAt(); ok {
 		_spec.SetField(topicsource.FieldContributedAt, field.TypeTime, value)
@@ -544,6 +566,20 @@ func (_u *TopicSourceUpdateOne) ClearClusterKey() *TopicSourceUpdateOne {
 	return _u
 }
 
+// SetPlatform sets the "platform" field.
+func (_u *TopicSourceUpdateOne) SetPlatform(v string) *TopicSourceUpdateOne {
+	_u.mutation.SetPlatform(v)
+	return _u
+}
+
+// SetNillablePlatform sets the "platform" field if the given value is not nil.
+func (_u *TopicSourceUpdateOne) SetNillablePlatform(v *string) *TopicSourceUpdateOne {
+	if v != nil {
+		_u.SetPlatform(*v)
+	}
+	return _u
+}
+
 // SetContributedAt sets the "contributed_at" field.
 func (_u *TopicSourceUpdateOne) SetContributedAt(v time.Time) *TopicSourceUpdateOne {
 	_u.mutation.SetContributedAt(v)
@@ -676,6 +712,11 @@ func (_u *TopicSourceUpdateOne) check() error {
 			return &ValidationError{Name: "intel_id", err: fmt.Errorf(`ent: validator failed for field "TopicSource.intel_id": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Platform(); ok {
+		if err := topicsource.PlatformValidator(v); err != nil {
+			return &ValidationError{Name: "platform", err: fmt.Errorf(`ent: validator failed for field "TopicSource.platform": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -761,6 +802,9 @@ func (_u *TopicSourceUpdateOne) sqlSave(ctx context.Context) (_node *TopicSource
 	}
 	if _u.mutation.ClusterKeyCleared() {
 		_spec.ClearField(topicsource.FieldClusterKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.Platform(); ok {
+		_spec.SetField(topicsource.FieldPlatform, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.ContributedAt(); ok {
 		_spec.SetField(topicsource.FieldContributedAt, field.TypeTime, value)

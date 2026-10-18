@@ -35,6 +35,8 @@ type TopicSource struct {
 	IntelID string `json:"intel_id,omitempty"`
 	// IC 去重簇 ID（cl_ 前缀；B-1 Step1 硬键，命中直接归入本话题）
 	ClusterKey *string `json:"cluster_key,omitempty"`
+	// 贡献平台（weibo/bilibili/youtube ……；A-5 breadth 滑动窗口统计维度）
+	Platform string `json:"platform,omitempty"`
 	// 该条目归入话题的样本时间（UTC；S-17 滑动窗口统计基础）
 	ContributedAt time.Time `json:"contributed_at,omitempty"`
 	// 归入时的相似度（Step1 硬键命中记 1.0）
@@ -55,7 +57,7 @@ func (*TopicSource) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case topicsource.FieldID, topicsource.FieldCreateBy, topicsource.FieldUpdateBy, topicsource.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case topicsource.FieldTopicID, topicsource.FieldIntelID, topicsource.FieldClusterKey, topicsource.FieldMovedBy:
+		case topicsource.FieldTopicID, topicsource.FieldIntelID, topicsource.FieldClusterKey, topicsource.FieldPlatform, topicsource.FieldMovedBy:
 			values[i] = new(sql.NullString)
 		case topicsource.FieldCreateTime, topicsource.FieldUpdateTime, topicsource.FieldDeleteTime, topicsource.FieldContributedAt, topicsource.FieldMovedAt:
 			values[i] = new(sql.NullTime)
@@ -140,6 +142,12 @@ func (_m *TopicSource) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ClusterKey = new(string)
 				*_m.ClusterKey = value.String
+			}
+		case topicsource.FieldPlatform:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field platform", values[i])
+			} else if value.Valid {
+				_m.Platform = value.String
 			}
 		case topicsource.FieldContributedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -243,6 +251,9 @@ func (_m *TopicSource) String() string {
 		builder.WriteString("cluster_key=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	builder.WriteString("platform=")
+	builder.WriteString(_m.Platform)
 	builder.WriteString(", ")
 	builder.WriteString("contributed_at=")
 	builder.WriteString(_m.ContributedAt.Format(time.ANSIC))

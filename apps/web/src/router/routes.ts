@@ -152,6 +152,34 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('../pages/visualization/Topology3DPage.vue'),
         meta: { title: '3D 拓扑' },
       },
+      {
+        // ⑤ MAP 分发单元详情（不进菜单；从审批队列/日历/回执页跳转）
+        path: 'media/map/dispatch-units/:id',
+        name: 'media-map-dispatch-detail',
+        component: () => import('../pages/media/map/MapDispatchDetailPage.vue'),
+        meta: { title: '分发单元详情' },
+      },
+      {
+        // ④ MME 混剪任务详情（手工 EDL / 分析 / 矩阵展开入口；不进菜单）
+        path: 'media/mme/tasks/:id',
+        name: 'media-mme-task-detail',
+        component: () => import('../pages/media/mme/TaskDetailPage.vue'),
+        meta: { title: '混剪任务详情' },
+      },
+      {
+        // ④ MME 变体矩阵（选区 / 差异化 / 批量渲染；不进菜单）
+        path: 'media/mme/variant-sets/:id',
+        name: 'media-mme-variant-set',
+        component: () => import('../pages/media/mme/VariantMatrixPage.vue'),
+        meta: { title: '变体矩阵' },
+      },
+      {
+        // ④ MME 审核台（QC 硬门禁可视 / 强制驳回原因 / Dispatch；不进菜单）
+        path: 'media/mme/variant-sets/:id/review',
+        name: 'media-mme-review-desk',
+        component: () => import('../pages/media/mme/ReviewDeskPage.vue'),
+        meta: { title: '审核台' },
+      },
       { path: ':pathMatch(.*)*', name: 'not-found', component: NotFoundPage },
     ],
   },

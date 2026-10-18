@@ -100,6 +100,7 @@ func (r *EntTopicRepo) CreateTopicWithSource(ctx context.Context, in biztt.Creat
 		sc := tx.TopicSource.Create().
 			SetTopicID(topicID).
 			SetIntelID(in.IntelID).
+			SetPlatform(in.Platform).
 			SetContributedAt(in.SeenAt).
 			SetSimilarity(1.0)
 		if in.ClusterKey != "" {
@@ -119,6 +120,7 @@ func (r *EntTopicRepo) AttachSource(ctx context.Context, topicID string, in bizt
 	create := r.cli.Client().TopicSource.Create().
 		SetTopicID(topicID).
 		SetIntelID(in.IntelID).
+		SetPlatform(in.Platform).
 		SetContributedAt(in.ContributedAt).
 		SetSimilarity(in.Similarity)
 	if in.ClusterKey != "" {
@@ -148,6 +150,73 @@ func (r *EntTopicRepo) TouchSeen(ctx context.Context, topicID string, seenAt tim
 		return err
 	}
 	return nil
+}
+
+// GetTopicHeatMeta normalize 取数（M2）：
+//   - first_seen_at / category 直取 Topic 行；
+//   - pc(t) = contributed_at ∈ (at-24h, at] 的 distinct platform（A-5/S-17 样本窗口，
+//     B-4 历史可重现——TopicSource 只追加，重算迟到点得当时窗口）。
+func (r *EntTopicRepo) GetTopicHeatMeta(ctx context.Context, topicID string, at time.Time) (biztt.TopicHeatMeta, error) {
+	var out biztt.TopicHeatMeta
+
+	t, err := r.cli.Client().Topic.Query().
+		Where(topic.TopicID(topicID)).
+		Select(topic.FieldFirstSeenAt, topic.FieldCategory).
+		First(ctx)
+	if err != nil {
+		return out, err
+	}
+	out.FirstSeenAt = t.FirstSeenAt.UTC()
+	out.Category = string(t.Category)
+
+	// 样本窗口内 distinct 平台（GROUP BY platform 后聚合）。数据量级：
+	// 单话题日来源数十条，索引 (topic_id, contributed_at) 覆盖范围扫描。
+	platforms, err := r.cli.Client().TopicSource.Query().
+		Where(
+			topicsource.TopicID(topicID),
+			topicsource.ContributedAtGT(at.UTC().Add(-24*time.Hour)),
+			topicsource.ContributedAtLTE(at.UTC()),
+		).
+		GroupBy(topicsource.FieldPlatform).
+		Strings(ctx)
+	if err != nil {
+		return out, err
+	}
+	out.Platforms24h = platforms
+	out.PlatformCount24h = len(platforms)
+	return out, nil
+}
+
+// UpdateTopicHeatState 回写热度/动态/因子明细（B-3 落库，NFR-TT-05 门禁）。
+// 全量字段覆盖式 UPDATE（同字段并发写由调用方串行度兜底——权重 epoch 不变时
+// 各点单调推进，偶发乱序只影响下个点自愈）。
+func (r *EntTopicRepo) UpdateTopicHeatState(ctx context.Context, topicID string, in biztt.TopicHeatUpdate) error {
+	missing := in.Missing
+	if missing == nil {
+		missing = []string{}
+	}
+	platforms := in.Platforms24h
+	if platforms == nil {
+		platforms = []string{}
+	}
+	return r.cli.Client().Topic.Update().
+		Where(topic.TopicID(topicID)).
+		SetHeatScore(in.HeatScore).
+		SetVelocity(in.Velocity).
+		SetAccel(in.Accel).
+		SetRankPct(in.RankPct).
+		SetEngPct(in.EngPct).
+		SetFreshness(in.Freshness).
+		SetBreadth(in.Breadth).
+		SetWRankEff(in.WeightsEff.WRank).
+		SetWEngEff(in.WeightsEff.WEng).
+		SetWFreshEff(in.WeightsEff.WFresh).
+		SetWBreadthEff(in.WeightsEff.WBreadth).
+		SetMissingFactors(missing).
+		SetWeightEpoch(in.WeightEpoch).
+		SetPlatformCount(in.PlatformCount24h).
+		SetPlatforms(platforms).
+		Exec(ctx)
 }
 
 // runInTx 局部事务助手（避免 ttdata 依赖整个 data 包）。

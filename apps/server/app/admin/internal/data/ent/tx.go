@@ -160,6 +160,8 @@ type Tx struct {
 	UserRole *UserRoleClient
 	// UserToken is the client for interacting with the UserToken builders.
 	UserToken *UserTokenClient
+	// WeightConfig is the client for interacting with the WeightConfig builders.
+	WeightConfig *WeightConfigClient
 
 	// lazily loaded.
 	client     *Client
@@ -365,6 +367,7 @@ func (tx *Tx) init() {
 	tx.UserPost = NewUserPostClient(tx.config)
 	tx.UserRole = NewUserRoleClient(tx.config)
 	tx.UserToken = NewUserTokenClient(tx.config)
+	tx.WeightConfig = NewWeightConfigClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

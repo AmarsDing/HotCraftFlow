@@ -157,6 +157,7 @@
         :class="{ 'is-filter-on': onlyNew }"
         role="button"
         tabindex="0"
+        :aria-pressed="onlyNew"
         @click="onlyNew = !onlyNew"
         @keydown.enter="onlyNew = !onlyNew"
         @keydown.space.prevent="onlyNew = !onlyNew"
@@ -309,6 +310,18 @@
               <span class="text-caption" style="color: var(--color-text-tertiary, var(--color-text-secondary))">{{
                 relTime(n.created_at, t)
               }}</span>
+              <q-btn
+                v-if="!n.read"
+                dense
+                flat
+                round
+                size="xs"
+                icon="done"
+                :aria-label="t('githubRadar.watchEventRead')"
+                @click="markNotificationRead(n.id)"
+              >
+                <q-tooltip>{{ t('githubRadar.watchEventRead') }}</q-tooltip>
+              </q-btn>
             </div>
             <div class="text-caption" style="color: var(--color-text-secondary)">{{ n.body }}</div>
           </div>
@@ -616,13 +629,15 @@ const topLicenseLabel = computed(() => {
   return entries[0]?.[0] || '—';
 });
 
+// 刷新时间：当天 hh:mm；跨天补 MM-DD 前缀，避免隔夜数据被误认为刚刷新
 function formatRefreshed(iso: string): string {
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
   const hh = String(d.getHours()).padStart(2, '0');
   const mm = String(d.getMinutes()).padStart(2, '0');
-  return `${hh}:${mm}`;
+  if (d.toDateString() === new Date().toDateString()) return `${hh}:${mm}`;
+  return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${hh}:${mm}`;
 }
 
 // loadBoardSeq 竞态防护：快速连续切换筛选时，只采纳最后一次请求的响应。
@@ -856,6 +871,17 @@ function onOpenWatch(w: WatchItem) {
     html_url: w.html_url || '',
     sparkline: w.sparkline || [],
   });
+}
+
+// 单条通知已读（通知弹窗入口）：通知=事件视图，置位后两视图同步
+async function markNotificationRead(id: string) {
+  try {
+    await radarNotifyService.markRead([id]);
+    notifications.value = notifications.value.map((n) => (n.id === id ? { ...n, read: true } : n));
+    events.value = events.value.map((e) => (e.id === id ? { ...e, read: true } : e));
+  } catch (e) {
+    Notify.create({ type: 'negative', message: (e as Error).message });
+  }
 }
 
 // 单条事件已读：事件视图与通知视图同步置位（后端复用事件 ids 拒绝空集合，故传具体 id）

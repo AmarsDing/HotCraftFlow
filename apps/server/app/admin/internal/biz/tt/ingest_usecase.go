@@ -2,6 +2,7 @@ package tt
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -64,6 +65,7 @@ type IngestUsecase struct {
 	guard   GuardStore
 	pub     SnapshotPublisher
 	redis   biz.RedisStore
+	heat    *HeatEnricher // M2 归一化编排器；nil 时保持 M1 哨兵行为（测试可注入）
 	clock   func() time.Time // 可注入便于测试；默认 time.Now
 	log     *log.Helper
 }
@@ -75,6 +77,7 @@ func NewIngestUsecase(
 	guard GuardStore,
 	pub SnapshotPublisher,
 	redis biz.RedisStore,
+	heat *HeatEnricher,
 	logger log.Logger,
 ) *IngestUsecase {
 	return &IngestUsecase{
@@ -83,6 +86,7 @@ func NewIngestUsecase(
 		guard: guard,
 		pub:   pub,
 		redis: redis,
+		heat:  heat,
 		clock: time.Now,
 		log:   log.NewHelper(log.With(logger, "module", "biz/tt-ingest")),
 	}
@@ -167,20 +171,55 @@ func (uc *IngestUsecase) HandleIntelData(ctx context.Context, data []byte) (Hand
 		}
 	}
 
-	// 8) 迟到标记（M1：写 Redis 标记占位；重算 worker 随 M2/M3 落地后扫描消费）。
+	// 8) M2 归一化回填（B-3/C-15：因子取值、生效权重、weight_epoch、动态随点落盘）。
+	enriched := false
+	var heatMeta TopicHeatMeta
+	if uc.heat != nil {
+		meta, err := uc.heat.Enrich(ctx, &point)
+		if err != nil {
+			if errors.Is(err, ErrNoFactor) {
+				// A-6：heat=null，不写 InfluxDB（避免 null 污染曲线），ACK 丢弃。
+				uc.log.Warnf("topic %s 四因子全缺失，跳过发布（TT_HEAT_NO_FACTOR）", topicID)
+				return ResultOK, nil
+			}
+			return ResultError, fmt.Errorf("heat enrich: %w", err)
+		}
+		heatMeta, enriched = meta, true
+	}
+
+	// 9) 迟到标记（写 Redis 标记占位；重算 worker 随后续里程碑落地后扫描消费）。
 	if kind == TimeLate {
 		uc.markRecompute(ctx, topicID)
 	}
 
-	// 9) 发布快照事件；失败 → ResultError → NAK 重投（不重发已去重 event_id，第 7 步守卫兜底幂等）。
+	// 10) 发布快照事件；失败 → ResultError → NAK 重投（不重发已去重 event_id，第 7 步守卫兜底幂等）。
 	if err := uc.pub.PublishSnapshot(ctx, point, env.TraceID); err != nil {
 		return ResultError, fmt.Errorf("publish snapshot: %w", err)
 	}
 
-	// 10) 推进话题活跃时间（样本时间口径，B-4）。
+	// 11) 推进话题活跃时间（样本时间口径，B-4）。
 	if err := uc.repo.TouchSeen(ctx, topicID, t); err != nil {
 		// 非致命：元数据滞后不影响时序写入，告警即可。
 		uc.log.Warnf("touch topic %s seen_at failed: %v", topicID, err)
+	}
+
+	// 12) 回写话题热度状态（B-3：Topic 行冗余最新热度/因子/生效权重，门禁可查）。
+	if enriched {
+		if err := uc.repo.UpdateTopicHeatState(ctx, topicID, TopicHeatUpdate{
+			HeatScore: point.HeatScore, Velocity: point.Velocity, Accel: point.Accel,
+			RankPct: point.RankPct, EngPct: point.EngPct,
+			Freshness: point.Freshness, Breadth: point.Breadth,
+			WeightsEff: HeatWeights{
+				WRank: point.WRankEff, WEng: point.WEngEff,
+				WFresh: point.WFreshEff, WBreadth: point.WBreadthEff,
+			},
+			Missing:          point.Missing,
+			WeightEpoch:      point.WeightEpoch,
+			PlatformCount24h: heatMeta.PlatformCount24h,
+			Platforms24h:     heatMeta.Platforms24h,
+		}); err != nil {
+			uc.log.Warnf("update topic %s heat state failed: %v", topicID, err)
+		}
 	}
 
 	IngestEventTotal.WithLabelValues("ok").Inc()
@@ -201,6 +240,7 @@ func (uc *IngestUsecase) assignTopic(ctx context.Context, item *mediacontract.In
 			if err := uc.repo.AttachSource(ctx, topicID, AttachSourceInput{
 				IntelID:       item.IntelID,
 				ClusterKey:    clusterKey,
+				Platform:      item.Source.Platform,
 				ContributedAt: seenAt,
 				Similarity:    1.0,
 			}); err != nil {

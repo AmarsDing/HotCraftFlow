@@ -29,6 +29,16 @@ const componentMap: Record<string, () => Promise<any>> = {
   'log/OperationLogPage': () => import('../pages/log/OperationLogPage.vue'),
 
   'github-radar/RadarPage': () => import('../pages/github-radar/RadarPage.vue'),
+
+  // ⑤ MAP 媒体发布矩阵（键与 seed Menu.component 对齐；分发详情页不进菜单，走静态路由）
+  'media/map/MapApprovalsPage': () => import('../pages/media/map/MapApprovalsPage.vue'),
+  'media/map/MapAccountsPage': () => import('../pages/media/map/MapAccountsPage.vue'),
+  'media/map/MapCalendarPage': () => import('../pages/media/map/MapCalendarPage.vue'),
+  'media/map/MapReceiptsPage': () => import('../pages/media/map/MapReceiptsPage.vue'),
+
+  // ④ MME 矩阵混剪（键与 seed Menu.component 对齐；详情/矩阵/审核台不进菜单，走静态路由）
+  'media/mme/TaskListPage': () => import('../pages/media/mme/TaskListPage.vue'),
+  'media/mme/RenderQueuePage': () => import('../pages/media/mme/RenderQueuePage.vue'),
 };
 
 export function resolveMenuComponent(name?: string | null) {

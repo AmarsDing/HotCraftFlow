@@ -23,12 +23,15 @@ type IcConfig struct {
 	EmbeddingWindowHours  int32   // 默认 24（质心比对 72h 由簇逻辑另取）
 	EmbeddingDailyCap     int32   // B-7 硬熔断
 	EmbeddingStoreEnabled bool    // store != none
+	// DedupMergeWindow L1 URL 归一 + L2 SimHash 的回望合并窗口。
+	// 默认 72h = 48h 闲时闭簇（S-2，闭簇不再吸新成员）+ 一个采集周期余量（03 §4.4）。
+	DedupMergeWindow time.Duration
 	// IDFPath 周任务产出路径（非配置项，conf proto 未开放——周任务与该默认值同源，
 	// 倒挂契约风险低于增面：见 B-9 「idf 表 data/ic/idf.json 周任务产出」）。
 	IDFPath string
 
 	// 证据
-	EvidenceStorageDir string
+	EvidenceStorageDir  string
 	EvidenceRawMaxBytes int64
 	EvidenceRetainDays  int32
 
@@ -39,17 +42,18 @@ type IcConfig struct {
 	BreakerCooldown        time.Duration
 
 	// 合规外部依赖
-	RobotsUserAgent string
-	RobotsTimeout   time.Duration
-	RobotsTTL       time.Duration
+	RobotsUserAgent       string
+	RobotsTimeout         time.Duration
+	RobotsTTL             time.Duration
 	ShortlinkMaxRedirects int32
 
 	// 保留期
-	RetentionIntelDays         int32
-	RetentionClusterIdleHours  int32 // S-2：48h 无更新闭簇
+	RetentionIntelDays        int32
+	RetentionClusterIdleHours int32 // S-2：48h 无更新闭簇
+	RetentionSweepCron        string
 
 	// LLM（ADR-IC-07：默认关闭，开启失败回退规则）
-	LLMEnabled       bool
+	LLMEnabled        bool
 	LLMFallbackToRule bool
 }
 
@@ -68,6 +72,7 @@ func ResolveIcConfig(bc *conf.Bootstrap) *IcConfig {
 		EmbeddingThreshold:   0.86,
 		EmbeddingWindowHours: 24,
 		EmbeddingDailyCap:    5000,
+		DedupMergeWindow:     72 * time.Hour,
 
 		EvidenceStorageDir:  "./storage/ic/evidence",
 		EvidenceRawMaxBytes: 4 << 20,
@@ -86,6 +91,7 @@ func ResolveIcConfig(bc *conf.Bootstrap) *IcConfig {
 
 		RetentionIntelDays:        365,
 		RetentionClusterIdleHours: 48,
+		RetentionSweepCron:        "0 3 * * *",
 
 		IDFPath:           "./data/ic/idf.json",
 		LLMFallbackToRule: true,
@@ -118,6 +124,9 @@ func ResolveIcConfig(bc *conf.Bootstrap) *IcConfig {
 		}
 		if v := d.GetEmbeddingWindowHours(); v > 0 {
 			cfg.EmbeddingWindowHours = v
+		}
+		if v := d.GetMergeWindowHours(); v > 0 {
+			cfg.DedupMergeWindow = time.Duration(v) * time.Hour
 		}
 		if e := d.GetEmbedding(); e != nil {
 			cfg.EmbeddingStoreEnabled = e.GetStore() != "" && e.GetStore() != "none"
@@ -175,6 +184,9 @@ func ResolveIcConfig(bc *conf.Bootstrap) *IcConfig {
 		}
 		if v := rt.GetClusterIdleCloseHours(); v > 0 {
 			cfg.RetentionClusterIdleHours = v
+		}
+		if v := rt.GetSweepCron(); v != "" {
+			cfg.RetentionSweepCron = v
 		}
 	}
 	if ll := ic.GetLlm(); ll != nil {

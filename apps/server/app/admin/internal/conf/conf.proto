@@ -237,6 +237,7 @@ message Ic {
       string store = 7;                     // redis_vss | pgvector | none（none = L3 停用并公告）
     }
     Embedding embedding = 4;
+    int32 merge_window_hours = 5;           // L1/L2 合并窗口（默认 72 = 48h 闲时闭簇 + 一个周期余量；03 §4.4）
   }
   message Evidence {
     int32 retain_days = 1;                  // 默认 90（NFR-IC-08）

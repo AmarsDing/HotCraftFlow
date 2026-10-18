@@ -99,6 +99,11 @@ func ClusterKey(v string) predicate.TopicSource {
 	return predicate.TopicSource(sql.FieldEQ(FieldClusterKey, v))
 }
 
+// Platform applies equality check predicate on the "platform" field. It's identical to PlatformEQ.
+func Platform(v string) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldEQ(FieldPlatform, v))
+}
+
 // ContributedAt applies equality check predicate on the "contributed_at" field. It's identical to ContributedAtEQ.
 func ContributedAt(v time.Time) predicate.TopicSource {
 	return predicate.TopicSource(sql.FieldEQ(FieldContributedAt, v))
@@ -622,6 +627,71 @@ func ClusterKeyEqualFold(v string) predicate.TopicSource {
 // ClusterKeyContainsFold applies the ContainsFold predicate on the "cluster_key" field.
 func ClusterKeyContainsFold(v string) predicate.TopicSource {
 	return predicate.TopicSource(sql.FieldContainsFold(FieldClusterKey, v))
+}
+
+// PlatformEQ applies the EQ predicate on the "platform" field.
+func PlatformEQ(v string) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldEQ(FieldPlatform, v))
+}
+
+// PlatformNEQ applies the NEQ predicate on the "platform" field.
+func PlatformNEQ(v string) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNEQ(FieldPlatform, v))
+}
+
+// PlatformIn applies the In predicate on the "platform" field.
+func PlatformIn(vs ...string) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldIn(FieldPlatform, vs...))
+}
+
+// PlatformNotIn applies the NotIn predicate on the "platform" field.
+func PlatformNotIn(vs ...string) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNotIn(FieldPlatform, vs...))
+}
+
+// PlatformGT applies the GT predicate on the "platform" field.
+func PlatformGT(v string) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldGT(FieldPlatform, v))
+}
+
+// PlatformGTE applies the GTE predicate on the "platform" field.
+func PlatformGTE(v string) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldGTE(FieldPlatform, v))
+}
+
+// PlatformLT applies the LT predicate on the "platform" field.
+func PlatformLT(v string) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldLT(FieldPlatform, v))
+}
+
+// PlatformLTE applies the LTE predicate on the "platform" field.
+func PlatformLTE(v string) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldLTE(FieldPlatform, v))
+}
+
+// PlatformContains applies the Contains predicate on the "platform" field.
+func PlatformContains(v string) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldContains(FieldPlatform, v))
+}
+
+// PlatformHasPrefix applies the HasPrefix predicate on the "platform" field.
+func PlatformHasPrefix(v string) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldHasPrefix(FieldPlatform, v))
+}
+
+// PlatformHasSuffix applies the HasSuffix predicate on the "platform" field.
+func PlatformHasSuffix(v string) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldHasSuffix(FieldPlatform, v))
+}
+
+// PlatformEqualFold applies the EqualFold predicate on the "platform" field.
+func PlatformEqualFold(v string) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldEqualFold(FieldPlatform, v))
+}
+
+// PlatformContainsFold applies the ContainsFold predicate on the "platform" field.
+func PlatformContainsFold(v string) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldContainsFold(FieldPlatform, v))
 }
 
 // ContributedAtEQ applies the EQ predicate on the "contributed_at" field.

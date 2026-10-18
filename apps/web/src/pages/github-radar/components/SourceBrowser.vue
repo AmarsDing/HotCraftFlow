@@ -39,7 +39,7 @@
         <q-banner v-if="truncated" dense class="bg-warning text-white q-ma-sm">
           {{ t('githubRadar.treeTruncated') }}
         </q-banner>
-        <div class="source-browser__tree-body scroll" role="tree" :aria-label="repoName">
+        <div ref="treeBody" class="source-browser__tree-body scroll" role="tree" :aria-label="repoName">
           <div
             v-for="row in visibleRows"
             :key="row.path"
@@ -48,6 +48,7 @@
             :style="{ paddingLeft: `${row.depth * 14 + 8}px` }"
             role="treeitem"
             :aria-expanded="row.type === 'tree' ? isOpen(row.path) : undefined"
+            :data-path="row.path"
             tabindex="0"
             @click="onNodeClick(row)"
             @keydown.enter="onNodeClick(row)"
@@ -171,7 +172,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuasar } from 'quasar';
 import { radarRepoService } from '../../../services';
@@ -218,6 +219,10 @@ const fileDownloadUrl = ref('');
 const fileSize = ref('');
 const fileLanguage = ref('');
 const codeLines = ref<string[]>([]);
+const treeBody = ref<HTMLElement | null>(null);
+// 请求乱序防护：树/内容各自递增序号，快速连点或分支切换期间只采纳最后一次响应
+let treeSeq = 0;
+let contentSeq = 0;
 
 const repoName = computed(() => splitFullName(props.fullName).name || props.fullName);
 const effectiveBranch = computed(() => props.branch || defaultBranch.value);
@@ -288,10 +293,12 @@ function isOpen(path: string): boolean {
 }
 
 async function loadTree() {
+  const seq = ++treeSeq;
   loadingTree.value = true;
   treeError.value = '';
   try {
     const res = await radarRepoService.getTree(props.fullName, props.branch || undefined);
+    if (seq !== treeSeq) return;
     defaultBranch.value = res.defaultBranch || '';
     truncated.value = !!res.truncated;
     flatNodes.value = (res.nodes || []).map((n) => {
@@ -303,10 +310,18 @@ async function loadTree() {
         name: path.split('/').pop() || path,
       };
     });
+    // 首次（或切分支）打开源码页自动选中根目录 README*：一眼有内容，无需先手动找
+    if (!activePath.value) {
+      const readme = flatNodes.value.find(
+        (n) => n.type === 'blob' && !n.path.includes('/') && /^readme([.-]|$)/i.test(n.name),
+      );
+      if (readme) void loadContent(readme.path, readme.size);
+    }
   } catch (e) {
+    if (seq !== treeSeq) return;
     treeError.value = t('githubRadar.treeLoadFailed', { msg: (e as Error).message });
   } finally {
-    loadingTree.value = false;
+    if (seq === treeSeq) loadingTree.value = false;
   }
 }
 
@@ -314,10 +329,14 @@ async function onNodeClick(row: RowNode) {
   if (row.type === 'tree') {
     const next = new Set(openDirs.value);
     if (filter.value) {
-      // 过滤态点目录：展开它并回到常态树（带它全部祖先）
+      // 过滤态点目录：展开它并回到常态树（带它全部祖先），再把该行滚进视野
       openChain(row.path, next);
       filter.value = '';
-    } else if (next.has(row.path)) {
+      openDirs.value = next;
+      scrollToRow(row.path);
+      return;
+    }
+    if (next.has(row.path)) {
       next.delete(row.path);
     } else {
       next.add(row.path);
@@ -338,15 +357,26 @@ function openChain(path: string, target: Set<string>) {
   }
 }
 
-/** 面包屑目录段点击：在树中展开该目录（连同祖先） */
+/** 面包屑目录段点击：在树中展开该目录（连同祖先），并把树滚动到目标行可见 */
 function openDirBySegment(i: number) {
   const path = crumbs.value.slice(0, i + 1).join('/');
   const next = new Set(openDirs.value);
   openChain(path, next);
   openDirs.value = next;
+  scrollToRow(path);
+}
+
+/** 树内定位：深树展开后目标行可能在视口外；只滚动树容器，不带动外层弹窗 */
+function scrollToRow(path: string) {
+  void nextTick().then(() => {
+    const box = treeBody.value;
+    const el = box?.querySelector<HTMLElement>(`[data-path="${CSS.escape(path)}"]`);
+    if (box && el) box.scrollTop = el.offsetTop - box.clientHeight / 2;
+  });
 }
 
 async function loadContent(path: string, sizeHint?: number) {
+  const seq = ++contentSeq;
   activePath.value = path;
   loadingContent.value = true;
   contentError.value = '';
@@ -359,6 +389,7 @@ async function loadContent(path: string, sizeHint?: number) {
   fileSize.value = sizeHint ? formatBytes(sizeHint) : '';
   try {
     const res = await radarRepoService.getContent(props.fullName, path, effectiveBranch.value || undefined);
+    if (seq !== contentSeq) return; // 已被更新的点击/分支切换取代
     fileHtmlUrl.value = res.htmlUrl || '';
     fileDownloadUrl.value = res.downloadUrl || '';
     fileLanguage.value = res.language || '';
@@ -371,9 +402,10 @@ async function loadContent(path: string, sizeHint?: number) {
     isTextFile.value = true;
     codeLines.value = (res.content || '').replace(/\n$/, '').split('\n');
   } catch (e) {
+    if (seq !== contentSeq) return;
     contentError.value = (e as Error).message || t('githubRadar.fileLoadFailed');
   } finally {
-    loadingContent.value = false;
+    if (seq === contentSeq) loadingContent.value = false;
   }
 }
 

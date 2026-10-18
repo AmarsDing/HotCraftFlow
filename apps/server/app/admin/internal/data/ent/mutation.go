@@ -82,6 +82,7 @@ import (
 	"framework/app/admin/internal/data/ent/userpost"
 	"framework/app/admin/internal/data/ent/userrole"
 	"framework/app/admin/internal/data/ent/usertoken"
+	"framework/app/admin/internal/data/ent/weightconfig"
 	"framework/pkg/mediacontract"
 	"sync"
 	"time"
@@ -173,6 +174,7 @@ const (
 	TypeUserPost                     = "UserPost"
 	TypeUserRole                     = "UserRole"
 	TypeUserToken                    = "UserToken"
+	TypeWeightConfig                 = "WeightConfig"
 )
 
 // AdminLoginLogMutation represents an operation that mutates the AdminLoginLog nodes in the graph.
@@ -90517,6 +90519,7 @@ type TopicSourceMutation struct {
 	topic_id       *string
 	intel_id       *string
 	cluster_key    *string
+	platform       *string
 	contributed_at *time.Time
 	similarity     *float64
 	addsimilarity  *float64
@@ -91104,6 +91107,42 @@ func (m *TopicSourceMutation) ResetClusterKey() {
 	delete(m.clearedFields, topicsource.FieldClusterKey)
 }
 
+// SetPlatform sets the "platform" field.
+func (m *TopicSourceMutation) SetPlatform(s string) {
+	m.platform = &s
+}
+
+// Platform returns the value of the "platform" field in the mutation.
+func (m *TopicSourceMutation) Platform() (r string, exists bool) {
+	v := m.platform
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPlatform returns the old "platform" field's value of the TopicSource entity.
+// If the TopicSource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TopicSourceMutation) OldPlatform(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPlatform is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPlatform requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPlatform: %w", err)
+	}
+	return oldValue.Platform, nil
+}
+
+// ResetPlatform resets all changes to the "platform" field.
+func (m *TopicSourceMutation) ResetPlatform() {
+	m.platform = nil
+}
+
 // SetContributedAt sets the "contributed_at" field.
 func (m *TopicSourceMutation) SetContributedAt(t time.Time) {
 	m.contributed_at = &t
@@ -91328,7 +91367,7 @@ func (m *TopicSourceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TopicSourceMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 14)
 	if m.create_time != nil {
 		fields = append(fields, topicsource.FieldCreateTime)
 	}
@@ -91355,6 +91394,9 @@ func (m *TopicSourceMutation) Fields() []string {
 	}
 	if m.cluster_key != nil {
 		fields = append(fields, topicsource.FieldClusterKey)
+	}
+	if m.platform != nil {
+		fields = append(fields, topicsource.FieldPlatform)
 	}
 	if m.contributed_at != nil {
 		fields = append(fields, topicsource.FieldContributedAt)
@@ -91394,6 +91436,8 @@ func (m *TopicSourceMutation) Field(name string) (ent.Value, bool) {
 		return m.IntelID()
 	case topicsource.FieldClusterKey:
 		return m.ClusterKey()
+	case topicsource.FieldPlatform:
+		return m.Platform()
 	case topicsource.FieldContributedAt:
 		return m.ContributedAt()
 	case topicsource.FieldSimilarity:
@@ -91429,6 +91473,8 @@ func (m *TopicSourceMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldIntelID(ctx)
 	case topicsource.FieldClusterKey:
 		return m.OldClusterKey(ctx)
+	case topicsource.FieldPlatform:
+		return m.OldPlatform(ctx)
 	case topicsource.FieldContributedAt:
 		return m.OldContributedAt(ctx)
 	case topicsource.FieldSimilarity:
@@ -91508,6 +91554,13 @@ func (m *TopicSourceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetClusterKey(v)
+		return nil
+	case topicsource.FieldPlatform:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPlatform(v)
 		return nil
 	case topicsource.FieldContributedAt:
 		v, ok := value.(time.Time)
@@ -91720,6 +91773,9 @@ func (m *TopicSourceMutation) ResetField(name string) error {
 		return nil
 	case topicsource.FieldClusterKey:
 		m.ResetClusterKey()
+		return nil
+	case topicsource.FieldPlatform:
+		m.ResetPlatform()
 		return nil
 	case topicsource.FieldContributedAt:
 		m.ResetContributedAt()
@@ -98690,4 +98746,1719 @@ func (m *UserTokenMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *UserTokenMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown UserToken edge %s", name)
+}
+
+// WeightConfigMutation represents an operation that mutates the WeightConfig nodes in the graph.
+type WeightConfigMutation struct {
+	config
+	op               Op
+	typ              string
+	id               *int
+	create_time      *time.Time
+	update_time      *time.Time
+	delete_time      *time.Time
+	create_by        *uint32
+	addcreate_by     *int32
+	tenant_id        *uint32
+	addtenant_id     *int32
+	config_id        *string
+	scope            *weightconfig.Scope
+	w_rank           *float64
+	addw_rank        *float64
+	w_eng            *float64
+	addw_eng         *float64
+	w_fresh          *float64
+	addw_fresh       *float64
+	w_breadth        *float64
+	addw_breadth     *float64
+	w_hot            *float64
+	addw_hot         *float64
+	w_freshness      *float64
+	addw_freshness   *float64
+	w_workability    *float64
+	addw_workability *float64
+	w_compliance     *float64
+	addw_compliance  *float64
+	effective_from   *time.Time
+	activated_by     *string
+	note             *string
+	clearedFields    map[string]struct{}
+	done             bool
+	oldValue         func(context.Context) (*WeightConfig, error)
+	predicates       []predicate.WeightConfig
+}
+
+var _ ent.Mutation = (*WeightConfigMutation)(nil)
+
+// weightconfigOption allows management of the mutation configuration using functional options.
+type weightconfigOption func(*WeightConfigMutation)
+
+// newWeightConfigMutation creates new mutation for the WeightConfig entity.
+func newWeightConfigMutation(c config, op Op, opts ...weightconfigOption) *WeightConfigMutation {
+	m := &WeightConfigMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeWeightConfig,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withWeightConfigID sets the ID field of the mutation.
+func withWeightConfigID(id int) weightconfigOption {
+	return func(m *WeightConfigMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *WeightConfig
+		)
+		m.oldValue = func(ctx context.Context) (*WeightConfig, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().WeightConfig.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withWeightConfig sets the old WeightConfig of the mutation.
+func withWeightConfig(node *WeightConfig) weightconfigOption {
+	return func(m *WeightConfigMutation) {
+		m.oldValue = func(context.Context) (*WeightConfig, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m WeightConfigMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m WeightConfigMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *WeightConfigMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *WeightConfigMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().WeightConfig.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *WeightConfigMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *WeightConfigMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldCreateTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ClearCreateTime clears the value of the "create_time" field.
+func (m *WeightConfigMutation) ClearCreateTime() {
+	m.create_time = nil
+	m.clearedFields[weightconfig.FieldCreateTime] = struct{}{}
+}
+
+// CreateTimeCleared returns if the "create_time" field was cleared in this mutation.
+func (m *WeightConfigMutation) CreateTimeCleared() bool {
+	_, ok := m.clearedFields[weightconfig.FieldCreateTime]
+	return ok
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *WeightConfigMutation) ResetCreateTime() {
+	m.create_time = nil
+	delete(m.clearedFields, weightconfig.FieldCreateTime)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *WeightConfigMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *WeightConfigMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldUpdateTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (m *WeightConfigMutation) ClearUpdateTime() {
+	m.update_time = nil
+	m.clearedFields[weightconfig.FieldUpdateTime] = struct{}{}
+}
+
+// UpdateTimeCleared returns if the "update_time" field was cleared in this mutation.
+func (m *WeightConfigMutation) UpdateTimeCleared() bool {
+	_, ok := m.clearedFields[weightconfig.FieldUpdateTime]
+	return ok
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *WeightConfigMutation) ResetUpdateTime() {
+	m.update_time = nil
+	delete(m.clearedFields, weightconfig.FieldUpdateTime)
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *WeightConfigMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *WeightConfigMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldDeleteTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *WeightConfigMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[weightconfig.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *WeightConfigMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[weightconfig.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *WeightConfigMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, weightconfig.FieldDeleteTime)
+}
+
+// SetCreateBy sets the "create_by" field.
+func (m *WeightConfigMutation) SetCreateBy(u uint32) {
+	m.create_by = &u
+	m.addcreate_by = nil
+}
+
+// CreateBy returns the value of the "create_by" field in the mutation.
+func (m *WeightConfigMutation) CreateBy() (r uint32, exists bool) {
+	v := m.create_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateBy returns the old "create_by" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldCreateBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateBy: %w", err)
+	}
+	return oldValue.CreateBy, nil
+}
+
+// AddCreateBy adds u to the "create_by" field.
+func (m *WeightConfigMutation) AddCreateBy(u int32) {
+	if m.addcreate_by != nil {
+		*m.addcreate_by += u
+	} else {
+		m.addcreate_by = &u
+	}
+}
+
+// AddedCreateBy returns the value that was added to the "create_by" field in this mutation.
+func (m *WeightConfigMutation) AddedCreateBy() (r int32, exists bool) {
+	v := m.addcreate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (m *WeightConfigMutation) ClearCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	m.clearedFields[weightconfig.FieldCreateBy] = struct{}{}
+}
+
+// CreateByCleared returns if the "create_by" field was cleared in this mutation.
+func (m *WeightConfigMutation) CreateByCleared() bool {
+	_, ok := m.clearedFields[weightconfig.FieldCreateBy]
+	return ok
+}
+
+// ResetCreateBy resets all changes to the "create_by" field.
+func (m *WeightConfigMutation) ResetCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	delete(m.clearedFields, weightconfig.FieldCreateBy)
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *WeightConfigMutation) SetTenantID(u uint32) {
+	m.tenant_id = &u
+	m.addtenant_id = nil
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *WeightConfigMutation) TenantID() (r uint32, exists bool) {
+	v := m.tenant_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldTenantID(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// AddTenantID adds u to the "tenant_id" field.
+func (m *WeightConfigMutation) AddTenantID(u int32) {
+	if m.addtenant_id != nil {
+		*m.addtenant_id += u
+	} else {
+		m.addtenant_id = &u
+	}
+}
+
+// AddedTenantID returns the value that was added to the "tenant_id" field in this mutation.
+func (m *WeightConfigMutation) AddedTenantID() (r int32, exists bool) {
+	v := m.addtenant_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearTenantID clears the value of the "tenant_id" field.
+func (m *WeightConfigMutation) ClearTenantID() {
+	m.tenant_id = nil
+	m.addtenant_id = nil
+	m.clearedFields[weightconfig.FieldTenantID] = struct{}{}
+}
+
+// TenantIDCleared returns if the "tenant_id" field was cleared in this mutation.
+func (m *WeightConfigMutation) TenantIDCleared() bool {
+	_, ok := m.clearedFields[weightconfig.FieldTenantID]
+	return ok
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *WeightConfigMutation) ResetTenantID() {
+	m.tenant_id = nil
+	m.addtenant_id = nil
+	delete(m.clearedFields, weightconfig.FieldTenantID)
+}
+
+// SetConfigID sets the "config_id" field.
+func (m *WeightConfigMutation) SetConfigID(s string) {
+	m.config_id = &s
+}
+
+// ConfigID returns the value of the "config_id" field in the mutation.
+func (m *WeightConfigMutation) ConfigID() (r string, exists bool) {
+	v := m.config_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConfigID returns the old "config_id" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldConfigID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConfigID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConfigID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConfigID: %w", err)
+	}
+	return oldValue.ConfigID, nil
+}
+
+// ResetConfigID resets all changes to the "config_id" field.
+func (m *WeightConfigMutation) ResetConfigID() {
+	m.config_id = nil
+}
+
+// SetScope sets the "scope" field.
+func (m *WeightConfigMutation) SetScope(w weightconfig.Scope) {
+	m.scope = &w
+}
+
+// Scope returns the value of the "scope" field in the mutation.
+func (m *WeightConfigMutation) Scope() (r weightconfig.Scope, exists bool) {
+	v := m.scope
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScope returns the old "scope" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldScope(ctx context.Context) (v weightconfig.Scope, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldScope is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldScope requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScope: %w", err)
+	}
+	return oldValue.Scope, nil
+}
+
+// ResetScope resets all changes to the "scope" field.
+func (m *WeightConfigMutation) ResetScope() {
+	m.scope = nil
+}
+
+// SetWRank sets the "w_rank" field.
+func (m *WeightConfigMutation) SetWRank(f float64) {
+	m.w_rank = &f
+	m.addw_rank = nil
+}
+
+// WRank returns the value of the "w_rank" field in the mutation.
+func (m *WeightConfigMutation) WRank() (r float64, exists bool) {
+	v := m.w_rank
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWRank returns the old "w_rank" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldWRank(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWRank is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWRank requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWRank: %w", err)
+	}
+	return oldValue.WRank, nil
+}
+
+// AddWRank adds f to the "w_rank" field.
+func (m *WeightConfigMutation) AddWRank(f float64) {
+	if m.addw_rank != nil {
+		*m.addw_rank += f
+	} else {
+		m.addw_rank = &f
+	}
+}
+
+// AddedWRank returns the value that was added to the "w_rank" field in this mutation.
+func (m *WeightConfigMutation) AddedWRank() (r float64, exists bool) {
+	v := m.addw_rank
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWRank resets all changes to the "w_rank" field.
+func (m *WeightConfigMutation) ResetWRank() {
+	m.w_rank = nil
+	m.addw_rank = nil
+}
+
+// SetWEng sets the "w_eng" field.
+func (m *WeightConfigMutation) SetWEng(f float64) {
+	m.w_eng = &f
+	m.addw_eng = nil
+}
+
+// WEng returns the value of the "w_eng" field in the mutation.
+func (m *WeightConfigMutation) WEng() (r float64, exists bool) {
+	v := m.w_eng
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWEng returns the old "w_eng" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldWEng(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWEng is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWEng requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWEng: %w", err)
+	}
+	return oldValue.WEng, nil
+}
+
+// AddWEng adds f to the "w_eng" field.
+func (m *WeightConfigMutation) AddWEng(f float64) {
+	if m.addw_eng != nil {
+		*m.addw_eng += f
+	} else {
+		m.addw_eng = &f
+	}
+}
+
+// AddedWEng returns the value that was added to the "w_eng" field in this mutation.
+func (m *WeightConfigMutation) AddedWEng() (r float64, exists bool) {
+	v := m.addw_eng
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWEng resets all changes to the "w_eng" field.
+func (m *WeightConfigMutation) ResetWEng() {
+	m.w_eng = nil
+	m.addw_eng = nil
+}
+
+// SetWFresh sets the "w_fresh" field.
+func (m *WeightConfigMutation) SetWFresh(f float64) {
+	m.w_fresh = &f
+	m.addw_fresh = nil
+}
+
+// WFresh returns the value of the "w_fresh" field in the mutation.
+func (m *WeightConfigMutation) WFresh() (r float64, exists bool) {
+	v := m.w_fresh
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWFresh returns the old "w_fresh" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldWFresh(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWFresh is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWFresh requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWFresh: %w", err)
+	}
+	return oldValue.WFresh, nil
+}
+
+// AddWFresh adds f to the "w_fresh" field.
+func (m *WeightConfigMutation) AddWFresh(f float64) {
+	if m.addw_fresh != nil {
+		*m.addw_fresh += f
+	} else {
+		m.addw_fresh = &f
+	}
+}
+
+// AddedWFresh returns the value that was added to the "w_fresh" field in this mutation.
+func (m *WeightConfigMutation) AddedWFresh() (r float64, exists bool) {
+	v := m.addw_fresh
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWFresh resets all changes to the "w_fresh" field.
+func (m *WeightConfigMutation) ResetWFresh() {
+	m.w_fresh = nil
+	m.addw_fresh = nil
+}
+
+// SetWBreadth sets the "w_breadth" field.
+func (m *WeightConfigMutation) SetWBreadth(f float64) {
+	m.w_breadth = &f
+	m.addw_breadth = nil
+}
+
+// WBreadth returns the value of the "w_breadth" field in the mutation.
+func (m *WeightConfigMutation) WBreadth() (r float64, exists bool) {
+	v := m.w_breadth
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWBreadth returns the old "w_breadth" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldWBreadth(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWBreadth is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWBreadth requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWBreadth: %w", err)
+	}
+	return oldValue.WBreadth, nil
+}
+
+// AddWBreadth adds f to the "w_breadth" field.
+func (m *WeightConfigMutation) AddWBreadth(f float64) {
+	if m.addw_breadth != nil {
+		*m.addw_breadth += f
+	} else {
+		m.addw_breadth = &f
+	}
+}
+
+// AddedWBreadth returns the value that was added to the "w_breadth" field in this mutation.
+func (m *WeightConfigMutation) AddedWBreadth() (r float64, exists bool) {
+	v := m.addw_breadth
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWBreadth resets all changes to the "w_breadth" field.
+func (m *WeightConfigMutation) ResetWBreadth() {
+	m.w_breadth = nil
+	m.addw_breadth = nil
+}
+
+// SetWHot sets the "w_hot" field.
+func (m *WeightConfigMutation) SetWHot(f float64) {
+	m.w_hot = &f
+	m.addw_hot = nil
+}
+
+// WHot returns the value of the "w_hot" field in the mutation.
+func (m *WeightConfigMutation) WHot() (r float64, exists bool) {
+	v := m.w_hot
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWHot returns the old "w_hot" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldWHot(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWHot is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWHot requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWHot: %w", err)
+	}
+	return oldValue.WHot, nil
+}
+
+// AddWHot adds f to the "w_hot" field.
+func (m *WeightConfigMutation) AddWHot(f float64) {
+	if m.addw_hot != nil {
+		*m.addw_hot += f
+	} else {
+		m.addw_hot = &f
+	}
+}
+
+// AddedWHot returns the value that was added to the "w_hot" field in this mutation.
+func (m *WeightConfigMutation) AddedWHot() (r float64, exists bool) {
+	v := m.addw_hot
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWHot resets all changes to the "w_hot" field.
+func (m *WeightConfigMutation) ResetWHot() {
+	m.w_hot = nil
+	m.addw_hot = nil
+}
+
+// SetWFreshness sets the "w_freshness" field.
+func (m *WeightConfigMutation) SetWFreshness(f float64) {
+	m.w_freshness = &f
+	m.addw_freshness = nil
+}
+
+// WFreshness returns the value of the "w_freshness" field in the mutation.
+func (m *WeightConfigMutation) WFreshness() (r float64, exists bool) {
+	v := m.w_freshness
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWFreshness returns the old "w_freshness" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldWFreshness(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWFreshness is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWFreshness requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWFreshness: %w", err)
+	}
+	return oldValue.WFreshness, nil
+}
+
+// AddWFreshness adds f to the "w_freshness" field.
+func (m *WeightConfigMutation) AddWFreshness(f float64) {
+	if m.addw_freshness != nil {
+		*m.addw_freshness += f
+	} else {
+		m.addw_freshness = &f
+	}
+}
+
+// AddedWFreshness returns the value that was added to the "w_freshness" field in this mutation.
+func (m *WeightConfigMutation) AddedWFreshness() (r float64, exists bool) {
+	v := m.addw_freshness
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWFreshness resets all changes to the "w_freshness" field.
+func (m *WeightConfigMutation) ResetWFreshness() {
+	m.w_freshness = nil
+	m.addw_freshness = nil
+}
+
+// SetWWorkability sets the "w_workability" field.
+func (m *WeightConfigMutation) SetWWorkability(f float64) {
+	m.w_workability = &f
+	m.addw_workability = nil
+}
+
+// WWorkability returns the value of the "w_workability" field in the mutation.
+func (m *WeightConfigMutation) WWorkability() (r float64, exists bool) {
+	v := m.w_workability
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWWorkability returns the old "w_workability" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldWWorkability(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWWorkability is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWWorkability requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWWorkability: %w", err)
+	}
+	return oldValue.WWorkability, nil
+}
+
+// AddWWorkability adds f to the "w_workability" field.
+func (m *WeightConfigMutation) AddWWorkability(f float64) {
+	if m.addw_workability != nil {
+		*m.addw_workability += f
+	} else {
+		m.addw_workability = &f
+	}
+}
+
+// AddedWWorkability returns the value that was added to the "w_workability" field in this mutation.
+func (m *WeightConfigMutation) AddedWWorkability() (r float64, exists bool) {
+	v := m.addw_workability
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWWorkability resets all changes to the "w_workability" field.
+func (m *WeightConfigMutation) ResetWWorkability() {
+	m.w_workability = nil
+	m.addw_workability = nil
+}
+
+// SetWCompliance sets the "w_compliance" field.
+func (m *WeightConfigMutation) SetWCompliance(f float64) {
+	m.w_compliance = &f
+	m.addw_compliance = nil
+}
+
+// WCompliance returns the value of the "w_compliance" field in the mutation.
+func (m *WeightConfigMutation) WCompliance() (r float64, exists bool) {
+	v := m.w_compliance
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWCompliance returns the old "w_compliance" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldWCompliance(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWCompliance is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWCompliance requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWCompliance: %w", err)
+	}
+	return oldValue.WCompliance, nil
+}
+
+// AddWCompliance adds f to the "w_compliance" field.
+func (m *WeightConfigMutation) AddWCompliance(f float64) {
+	if m.addw_compliance != nil {
+		*m.addw_compliance += f
+	} else {
+		m.addw_compliance = &f
+	}
+}
+
+// AddedWCompliance returns the value that was added to the "w_compliance" field in this mutation.
+func (m *WeightConfigMutation) AddedWCompliance() (r float64, exists bool) {
+	v := m.addw_compliance
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWCompliance resets all changes to the "w_compliance" field.
+func (m *WeightConfigMutation) ResetWCompliance() {
+	m.w_compliance = nil
+	m.addw_compliance = nil
+}
+
+// SetEffectiveFrom sets the "effective_from" field.
+func (m *WeightConfigMutation) SetEffectiveFrom(t time.Time) {
+	m.effective_from = &t
+}
+
+// EffectiveFrom returns the value of the "effective_from" field in the mutation.
+func (m *WeightConfigMutation) EffectiveFrom() (r time.Time, exists bool) {
+	v := m.effective_from
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEffectiveFrom returns the old "effective_from" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldEffectiveFrom(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEffectiveFrom is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEffectiveFrom requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEffectiveFrom: %w", err)
+	}
+	return oldValue.EffectiveFrom, nil
+}
+
+// ResetEffectiveFrom resets all changes to the "effective_from" field.
+func (m *WeightConfigMutation) ResetEffectiveFrom() {
+	m.effective_from = nil
+}
+
+// SetActivatedBy sets the "activated_by" field.
+func (m *WeightConfigMutation) SetActivatedBy(s string) {
+	m.activated_by = &s
+}
+
+// ActivatedBy returns the value of the "activated_by" field in the mutation.
+func (m *WeightConfigMutation) ActivatedBy() (r string, exists bool) {
+	v := m.activated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActivatedBy returns the old "activated_by" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldActivatedBy(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActivatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActivatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActivatedBy: %w", err)
+	}
+	return oldValue.ActivatedBy, nil
+}
+
+// ClearActivatedBy clears the value of the "activated_by" field.
+func (m *WeightConfigMutation) ClearActivatedBy() {
+	m.activated_by = nil
+	m.clearedFields[weightconfig.FieldActivatedBy] = struct{}{}
+}
+
+// ActivatedByCleared returns if the "activated_by" field was cleared in this mutation.
+func (m *WeightConfigMutation) ActivatedByCleared() bool {
+	_, ok := m.clearedFields[weightconfig.FieldActivatedBy]
+	return ok
+}
+
+// ResetActivatedBy resets all changes to the "activated_by" field.
+func (m *WeightConfigMutation) ResetActivatedBy() {
+	m.activated_by = nil
+	delete(m.clearedFields, weightconfig.FieldActivatedBy)
+}
+
+// SetNote sets the "note" field.
+func (m *WeightConfigMutation) SetNote(s string) {
+	m.note = &s
+}
+
+// Note returns the value of the "note" field in the mutation.
+func (m *WeightConfigMutation) Note() (r string, exists bool) {
+	v := m.note
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNote returns the old "note" field's value of the WeightConfig entity.
+// If the WeightConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeightConfigMutation) OldNote(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNote is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNote requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNote: %w", err)
+	}
+	return oldValue.Note, nil
+}
+
+// ClearNote clears the value of the "note" field.
+func (m *WeightConfigMutation) ClearNote() {
+	m.note = nil
+	m.clearedFields[weightconfig.FieldNote] = struct{}{}
+}
+
+// NoteCleared returns if the "note" field was cleared in this mutation.
+func (m *WeightConfigMutation) NoteCleared() bool {
+	_, ok := m.clearedFields[weightconfig.FieldNote]
+	return ok
+}
+
+// ResetNote resets all changes to the "note" field.
+func (m *WeightConfigMutation) ResetNote() {
+	m.note = nil
+	delete(m.clearedFields, weightconfig.FieldNote)
+}
+
+// Where appends a list predicates to the WeightConfigMutation builder.
+func (m *WeightConfigMutation) Where(ps ...predicate.WeightConfig) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the WeightConfigMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *WeightConfigMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.WeightConfig, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *WeightConfigMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *WeightConfigMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (WeightConfig).
+func (m *WeightConfigMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *WeightConfigMutation) Fields() []string {
+	fields := make([]string, 0, 18)
+	if m.create_time != nil {
+		fields = append(fields, weightconfig.FieldCreateTime)
+	}
+	if m.update_time != nil {
+		fields = append(fields, weightconfig.FieldUpdateTime)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, weightconfig.FieldDeleteTime)
+	}
+	if m.create_by != nil {
+		fields = append(fields, weightconfig.FieldCreateBy)
+	}
+	if m.tenant_id != nil {
+		fields = append(fields, weightconfig.FieldTenantID)
+	}
+	if m.config_id != nil {
+		fields = append(fields, weightconfig.FieldConfigID)
+	}
+	if m.scope != nil {
+		fields = append(fields, weightconfig.FieldScope)
+	}
+	if m.w_rank != nil {
+		fields = append(fields, weightconfig.FieldWRank)
+	}
+	if m.w_eng != nil {
+		fields = append(fields, weightconfig.FieldWEng)
+	}
+	if m.w_fresh != nil {
+		fields = append(fields, weightconfig.FieldWFresh)
+	}
+	if m.w_breadth != nil {
+		fields = append(fields, weightconfig.FieldWBreadth)
+	}
+	if m.w_hot != nil {
+		fields = append(fields, weightconfig.FieldWHot)
+	}
+	if m.w_freshness != nil {
+		fields = append(fields, weightconfig.FieldWFreshness)
+	}
+	if m.w_workability != nil {
+		fields = append(fields, weightconfig.FieldWWorkability)
+	}
+	if m.w_compliance != nil {
+		fields = append(fields, weightconfig.FieldWCompliance)
+	}
+	if m.effective_from != nil {
+		fields = append(fields, weightconfig.FieldEffectiveFrom)
+	}
+	if m.activated_by != nil {
+		fields = append(fields, weightconfig.FieldActivatedBy)
+	}
+	if m.note != nil {
+		fields = append(fields, weightconfig.FieldNote)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *WeightConfigMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case weightconfig.FieldCreateTime:
+		return m.CreateTime()
+	case weightconfig.FieldUpdateTime:
+		return m.UpdateTime()
+	case weightconfig.FieldDeleteTime:
+		return m.DeleteTime()
+	case weightconfig.FieldCreateBy:
+		return m.CreateBy()
+	case weightconfig.FieldTenantID:
+		return m.TenantID()
+	case weightconfig.FieldConfigID:
+		return m.ConfigID()
+	case weightconfig.FieldScope:
+		return m.Scope()
+	case weightconfig.FieldWRank:
+		return m.WRank()
+	case weightconfig.FieldWEng:
+		return m.WEng()
+	case weightconfig.FieldWFresh:
+		return m.WFresh()
+	case weightconfig.FieldWBreadth:
+		return m.WBreadth()
+	case weightconfig.FieldWHot:
+		return m.WHot()
+	case weightconfig.FieldWFreshness:
+		return m.WFreshness()
+	case weightconfig.FieldWWorkability:
+		return m.WWorkability()
+	case weightconfig.FieldWCompliance:
+		return m.WCompliance()
+	case weightconfig.FieldEffectiveFrom:
+		return m.EffectiveFrom()
+	case weightconfig.FieldActivatedBy:
+		return m.ActivatedBy()
+	case weightconfig.FieldNote:
+		return m.Note()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *WeightConfigMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case weightconfig.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case weightconfig.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case weightconfig.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
+	case weightconfig.FieldCreateBy:
+		return m.OldCreateBy(ctx)
+	case weightconfig.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case weightconfig.FieldConfigID:
+		return m.OldConfigID(ctx)
+	case weightconfig.FieldScope:
+		return m.OldScope(ctx)
+	case weightconfig.FieldWRank:
+		return m.OldWRank(ctx)
+	case weightconfig.FieldWEng:
+		return m.OldWEng(ctx)
+	case weightconfig.FieldWFresh:
+		return m.OldWFresh(ctx)
+	case weightconfig.FieldWBreadth:
+		return m.OldWBreadth(ctx)
+	case weightconfig.FieldWHot:
+		return m.OldWHot(ctx)
+	case weightconfig.FieldWFreshness:
+		return m.OldWFreshness(ctx)
+	case weightconfig.FieldWWorkability:
+		return m.OldWWorkability(ctx)
+	case weightconfig.FieldWCompliance:
+		return m.OldWCompliance(ctx)
+	case weightconfig.FieldEffectiveFrom:
+		return m.OldEffectiveFrom(ctx)
+	case weightconfig.FieldActivatedBy:
+		return m.OldActivatedBy(ctx)
+	case weightconfig.FieldNote:
+		return m.OldNote(ctx)
+	}
+	return nil, fmt.Errorf("unknown WeightConfig field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WeightConfigMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case weightconfig.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case weightconfig.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case weightconfig.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
+	case weightconfig.FieldCreateBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateBy(v)
+		return nil
+	case weightconfig.FieldTenantID:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case weightconfig.FieldConfigID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConfigID(v)
+		return nil
+	case weightconfig.FieldScope:
+		v, ok := value.(weightconfig.Scope)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScope(v)
+		return nil
+	case weightconfig.FieldWRank:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWRank(v)
+		return nil
+	case weightconfig.FieldWEng:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWEng(v)
+		return nil
+	case weightconfig.FieldWFresh:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWFresh(v)
+		return nil
+	case weightconfig.FieldWBreadth:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWBreadth(v)
+		return nil
+	case weightconfig.FieldWHot:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWHot(v)
+		return nil
+	case weightconfig.FieldWFreshness:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWFreshness(v)
+		return nil
+	case weightconfig.FieldWWorkability:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWWorkability(v)
+		return nil
+	case weightconfig.FieldWCompliance:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWCompliance(v)
+		return nil
+	case weightconfig.FieldEffectiveFrom:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEffectiveFrom(v)
+		return nil
+	case weightconfig.FieldActivatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActivatedBy(v)
+		return nil
+	case weightconfig.FieldNote:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNote(v)
+		return nil
+	}
+	return fmt.Errorf("unknown WeightConfig field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *WeightConfigMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreate_by != nil {
+		fields = append(fields, weightconfig.FieldCreateBy)
+	}
+	if m.addtenant_id != nil {
+		fields = append(fields, weightconfig.FieldTenantID)
+	}
+	if m.addw_rank != nil {
+		fields = append(fields, weightconfig.FieldWRank)
+	}
+	if m.addw_eng != nil {
+		fields = append(fields, weightconfig.FieldWEng)
+	}
+	if m.addw_fresh != nil {
+		fields = append(fields, weightconfig.FieldWFresh)
+	}
+	if m.addw_breadth != nil {
+		fields = append(fields, weightconfig.FieldWBreadth)
+	}
+	if m.addw_hot != nil {
+		fields = append(fields, weightconfig.FieldWHot)
+	}
+	if m.addw_freshness != nil {
+		fields = append(fields, weightconfig.FieldWFreshness)
+	}
+	if m.addw_workability != nil {
+		fields = append(fields, weightconfig.FieldWWorkability)
+	}
+	if m.addw_compliance != nil {
+		fields = append(fields, weightconfig.FieldWCompliance)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *WeightConfigMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case weightconfig.FieldCreateBy:
+		return m.AddedCreateBy()
+	case weightconfig.FieldTenantID:
+		return m.AddedTenantID()
+	case weightconfig.FieldWRank:
+		return m.AddedWRank()
+	case weightconfig.FieldWEng:
+		return m.AddedWEng()
+	case weightconfig.FieldWFresh:
+		return m.AddedWFresh()
+	case weightconfig.FieldWBreadth:
+		return m.AddedWBreadth()
+	case weightconfig.FieldWHot:
+		return m.AddedWHot()
+	case weightconfig.FieldWFreshness:
+		return m.AddedWFreshness()
+	case weightconfig.FieldWWorkability:
+		return m.AddedWWorkability()
+	case weightconfig.FieldWCompliance:
+		return m.AddedWCompliance()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WeightConfigMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case weightconfig.FieldCreateBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreateBy(v)
+		return nil
+	case weightconfig.FieldTenantID:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTenantID(v)
+		return nil
+	case weightconfig.FieldWRank:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWRank(v)
+		return nil
+	case weightconfig.FieldWEng:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWEng(v)
+		return nil
+	case weightconfig.FieldWFresh:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWFresh(v)
+		return nil
+	case weightconfig.FieldWBreadth:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWBreadth(v)
+		return nil
+	case weightconfig.FieldWHot:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWHot(v)
+		return nil
+	case weightconfig.FieldWFreshness:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWFreshness(v)
+		return nil
+	case weightconfig.FieldWWorkability:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWWorkability(v)
+		return nil
+	case weightconfig.FieldWCompliance:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWCompliance(v)
+		return nil
+	}
+	return fmt.Errorf("unknown WeightConfig numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *WeightConfigMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(weightconfig.FieldCreateTime) {
+		fields = append(fields, weightconfig.FieldCreateTime)
+	}
+	if m.FieldCleared(weightconfig.FieldUpdateTime) {
+		fields = append(fields, weightconfig.FieldUpdateTime)
+	}
+	if m.FieldCleared(weightconfig.FieldDeleteTime) {
+		fields = append(fields, weightconfig.FieldDeleteTime)
+	}
+	if m.FieldCleared(weightconfig.FieldCreateBy) {
+		fields = append(fields, weightconfig.FieldCreateBy)
+	}
+	if m.FieldCleared(weightconfig.FieldTenantID) {
+		fields = append(fields, weightconfig.FieldTenantID)
+	}
+	if m.FieldCleared(weightconfig.FieldActivatedBy) {
+		fields = append(fields, weightconfig.FieldActivatedBy)
+	}
+	if m.FieldCleared(weightconfig.FieldNote) {
+		fields = append(fields, weightconfig.FieldNote)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *WeightConfigMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *WeightConfigMutation) ClearField(name string) error {
+	switch name {
+	case weightconfig.FieldCreateTime:
+		m.ClearCreateTime()
+		return nil
+	case weightconfig.FieldUpdateTime:
+		m.ClearUpdateTime()
+		return nil
+	case weightconfig.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	case weightconfig.FieldCreateBy:
+		m.ClearCreateBy()
+		return nil
+	case weightconfig.FieldTenantID:
+		m.ClearTenantID()
+		return nil
+	case weightconfig.FieldActivatedBy:
+		m.ClearActivatedBy()
+		return nil
+	case weightconfig.FieldNote:
+		m.ClearNote()
+		return nil
+	}
+	return fmt.Errorf("unknown WeightConfig nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *WeightConfigMutation) ResetField(name string) error {
+	switch name {
+	case weightconfig.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case weightconfig.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case weightconfig.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
+	case weightconfig.FieldCreateBy:
+		m.ResetCreateBy()
+		return nil
+	case weightconfig.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case weightconfig.FieldConfigID:
+		m.ResetConfigID()
+		return nil
+	case weightconfig.FieldScope:
+		m.ResetScope()
+		return nil
+	case weightconfig.FieldWRank:
+		m.ResetWRank()
+		return nil
+	case weightconfig.FieldWEng:
+		m.ResetWEng()
+		return nil
+	case weightconfig.FieldWFresh:
+		m.ResetWFresh()
+		return nil
+	case weightconfig.FieldWBreadth:
+		m.ResetWBreadth()
+		return nil
+	case weightconfig.FieldWHot:
+		m.ResetWHot()
+		return nil
+	case weightconfig.FieldWFreshness:
+		m.ResetWFreshness()
+		return nil
+	case weightconfig.FieldWWorkability:
+		m.ResetWWorkability()
+		return nil
+	case weightconfig.FieldWCompliance:
+		m.ResetWCompliance()
+		return nil
+	case weightconfig.FieldEffectiveFrom:
+		m.ResetEffectiveFrom()
+		return nil
+	case weightconfig.FieldActivatedBy:
+		m.ResetActivatedBy()
+		return nil
+	case weightconfig.FieldNote:
+		m.ResetNote()
+		return nil
+	}
+	return fmt.Errorf("unknown WeightConfig field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *WeightConfigMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *WeightConfigMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *WeightConfigMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *WeightConfigMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *WeightConfigMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *WeightConfigMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *WeightConfigMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown WeightConfig unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *WeightConfigMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown WeightConfig edge %s", name)
 }

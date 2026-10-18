@@ -230,6 +230,7 @@ func (s *MapService) CreateDispatchUnit(ctx context.Context, req *mapV1.CreateDi
 		Visibility:               req.GetVisibilityDefault(),
 		VisibilityOverrideReason: req.GetVisibilityOverrideReason(),
 		SubmittedBy:              actor.ID,
+		ActorType:                string(actor.Type),
 		Meta:                     mapAuditMeta(ctx),
 	})
 	if err != nil {

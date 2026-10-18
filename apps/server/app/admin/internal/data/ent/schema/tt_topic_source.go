@@ -48,6 +48,12 @@ func (TopicSource) Fields() []ent.Field {
 			Optional().
 			Nillable(),
 
+		// A-5 breadth 的统计基础：pc(t) = distinct platform where contributed_at ∈ (t-24h, t]，
+		// 平台取自 IntelItem.Source.Platform（冗余落本表，免回查 ic_intel_items）。
+		field.String("platform").
+			Comment("贡献平台（weibo/bilibili/youtube ……；A-5 breadth 滑动窗口统计维度）").
+			NotEmpty(),
+
 		field.Time("contributed_at").
 			Comment("该条目归入话题的样本时间（UTC；S-17 滑动窗口统计基础）"),
 

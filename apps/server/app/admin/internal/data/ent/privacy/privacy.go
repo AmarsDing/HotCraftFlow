@@ -1887,6 +1887,30 @@ func (f UserTokenMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutat
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.UserTokenMutation", m)
 }
 
+// The WeightConfigQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type WeightConfigQueryRuleFunc func(context.Context, *ent.WeightConfigQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f WeightConfigQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WeightConfigQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.WeightConfigQuery", q)
+}
+
+// The WeightConfigMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type WeightConfigMutationRuleFunc func(context.Context, *ent.WeightConfigMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f WeightConfigMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.WeightConfigMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.WeightConfigMutation", m)
+}
+
 type (
 	// Filter is the interface that wraps the Where function
 	// for filtering nodes in queries and mutations.
@@ -2070,6 +2094,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.UserTokenQuery:
 		return q.Filter(), nil
+	case *ent.WeightConfigQuery:
+		return q.Filter(), nil
 	default:
 		return nil, Denyf("ent/privacy: unexpected query type %T for query filter", q)
 	}
@@ -2224,6 +2250,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.UserRoleMutation:
 		return m.Filter(), nil
 	case *ent.UserTokenMutation:
+		return m.Filter(), nil
+	case *ent.WeightConfigMutation:
 		return m.Filter(), nil
 	default:
 		return nil, Denyf("ent/privacy: unexpected mutation type %T for mutation filter", m)

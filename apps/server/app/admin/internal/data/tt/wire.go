@@ -26,10 +26,16 @@ var ProviderSet = wire.NewSet(
 	NewRedisGuardStore,
 	NewEntTopicRepo,
 	NewInfluxSink,
+	NewRedisEngHistogram,
+	NewRedisDynamicsStore,
+	NewEntWeightConfigRepo,
 
 	wire.Bind(new(biztt.TimeSeries), new(*InfluxTS)),
 	wire.Bind(new(biztt.SnapshotBuffer), new(*RedisSnapshotBuffer)),
 	wire.Bind(new(biztt.GuardStore), new(*RedisGuardStore)),
 	wire.Bind(new(biztt.TopicRepo), new(*EntTopicRepo)),
 	wire.Bind(new(biztt.PointSink), new(*InfluxSink)),
+	wire.Bind(new(biztt.EngHistogram), new(*RedisEngHistogram)),
+	wire.Bind(new(biztt.DynamicsStateStore), new(*RedisDynamicsStore)),
+	wire.Bind(new(biztt.WeightConfigRepo), new(*EntWeightConfigRepo)),
 )

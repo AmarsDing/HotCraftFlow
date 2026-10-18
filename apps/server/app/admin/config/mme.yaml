@@ -5,7 +5,7 @@ mme:
   download:
     ytdlp_path: "yt-dlp"
     cookies_path: ""                   # 需要登录/风控平台时配置 Cookie 文件
-    timeout: 30m
+    timeout: 1800s                   # =30m 单任务下载超时（proto Duration 仅收秒格式）
   render:
     concurrency: 2                     # CPU 密集，默认 2（ADR-MME-05）
     ffmpeg_path: "ffmpeg"

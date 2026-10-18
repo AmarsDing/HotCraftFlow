@@ -79,6 +79,7 @@ import (
 	"framework/app/admin/internal/data/ent/userpost"
 	"framework/app/admin/internal/data/ent/userrole"
 	"framework/app/admin/internal/data/ent/usertoken"
+	"framework/app/admin/internal/data/ent/weightconfig"
 
 	"entgo.io/ent"
 	"entgo.io/ent/privacy"
@@ -3182,8 +3183,12 @@ func init() {
 	topicsourceDescIntelID := topicsourceFields[1].Descriptor()
 	// topicsource.IntelIDValidator is a validator for the "intel_id" field. It is called by the builders before save.
 	topicsource.IntelIDValidator = topicsourceDescIntelID.Validators[0].(func(string) error)
+	// topicsourceDescPlatform is the schema descriptor for platform field.
+	topicsourceDescPlatform := topicsourceFields[3].Descriptor()
+	// topicsource.PlatformValidator is a validator for the "platform" field. It is called by the builders before save.
+	topicsource.PlatformValidator = topicsourceDescPlatform.Validators[0].(func(string) error)
 	// topicsourceDescSimilarity is the schema descriptor for similarity field.
-	topicsourceDescSimilarity := topicsourceFields[4].Descriptor()
+	topicsourceDescSimilarity := topicsourceFields[5].Descriptor()
 	// topicsource.DefaultSimilarity holds the default value on creation for the similarity field.
 	topicsource.DefaultSimilarity = topicsourceDescSimilarity.Default.(float64)
 	userMixin := schema.User{}.Mixin()
@@ -3448,6 +3453,51 @@ func init() {
 	usertokenDescID := usertokenMixinFields0[0].Descriptor()
 	// usertoken.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	usertoken.IDValidator = usertokenDescID.Validators[0].(func(uint32) error)
+	weightconfigMixin := schema.WeightConfig{}.Mixin()
+	weightconfigMixinFields2 := weightconfigMixin[2].Fields()
+	_ = weightconfigMixinFields2
+	weightconfigFields := schema.WeightConfig{}.Fields()
+	_ = weightconfigFields
+	// weightconfigDescTenantID is the schema descriptor for tenant_id field.
+	weightconfigDescTenantID := weightconfigMixinFields2[0].Descriptor()
+	// weightconfig.TenantIDValidator is a validator for the "tenant_id" field. It is called by the builders before save.
+	weightconfig.TenantIDValidator = weightconfigDescTenantID.Validators[0].(func(uint32) error)
+	// weightconfigDescConfigID is the schema descriptor for config_id field.
+	weightconfigDescConfigID := weightconfigFields[0].Descriptor()
+	// weightconfig.ConfigIDValidator is a validator for the "config_id" field. It is called by the builders before save.
+	weightconfig.ConfigIDValidator = weightconfigDescConfigID.Validators[0].(func(string) error)
+	// weightconfigDescWRank is the schema descriptor for w_rank field.
+	weightconfigDescWRank := weightconfigFields[2].Descriptor()
+	// weightconfig.DefaultWRank holds the default value on creation for the w_rank field.
+	weightconfig.DefaultWRank = weightconfigDescWRank.Default.(float64)
+	// weightconfigDescWEng is the schema descriptor for w_eng field.
+	weightconfigDescWEng := weightconfigFields[3].Descriptor()
+	// weightconfig.DefaultWEng holds the default value on creation for the w_eng field.
+	weightconfig.DefaultWEng = weightconfigDescWEng.Default.(float64)
+	// weightconfigDescWFresh is the schema descriptor for w_fresh field.
+	weightconfigDescWFresh := weightconfigFields[4].Descriptor()
+	// weightconfig.DefaultWFresh holds the default value on creation for the w_fresh field.
+	weightconfig.DefaultWFresh = weightconfigDescWFresh.Default.(float64)
+	// weightconfigDescWBreadth is the schema descriptor for w_breadth field.
+	weightconfigDescWBreadth := weightconfigFields[5].Descriptor()
+	// weightconfig.DefaultWBreadth holds the default value on creation for the w_breadth field.
+	weightconfig.DefaultWBreadth = weightconfigDescWBreadth.Default.(float64)
+	// weightconfigDescWHot is the schema descriptor for w_hot field.
+	weightconfigDescWHot := weightconfigFields[6].Descriptor()
+	// weightconfig.DefaultWHot holds the default value on creation for the w_hot field.
+	weightconfig.DefaultWHot = weightconfigDescWHot.Default.(float64)
+	// weightconfigDescWFreshness is the schema descriptor for w_freshness field.
+	weightconfigDescWFreshness := weightconfigFields[7].Descriptor()
+	// weightconfig.DefaultWFreshness holds the default value on creation for the w_freshness field.
+	weightconfig.DefaultWFreshness = weightconfigDescWFreshness.Default.(float64)
+	// weightconfigDescWWorkability is the schema descriptor for w_workability field.
+	weightconfigDescWWorkability := weightconfigFields[8].Descriptor()
+	// weightconfig.DefaultWWorkability holds the default value on creation for the w_workability field.
+	weightconfig.DefaultWWorkability = weightconfigDescWWorkability.Default.(float64)
+	// weightconfigDescWCompliance is the schema descriptor for w_compliance field.
+	weightconfigDescWCompliance := weightconfigFields[9].Descriptor()
+	// weightconfig.DefaultWCompliance holds the default value on creation for the w_compliance field.
+	weightconfig.DefaultWCompliance = weightconfigDescWCompliance.Default.(float64)
 }
 
 const (

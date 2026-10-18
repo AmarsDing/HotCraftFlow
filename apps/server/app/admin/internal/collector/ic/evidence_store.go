@@ -26,17 +26,24 @@ import (
 // =============================================================================
 
 var (
-	rePIIEmail  = regexp.MustCompile(`[\w.+-]+@[\w-]+\.[\w.-]+`)
-	rePIIPhone  = regexp.MustCompile(`(?<!\d)1[3-9]\d{9}(?!\d)`)
-	rePIIIDCard = regexp.MustCompile(`(?<!\d)\d{17}[\dXx](?!\d)`)
+	rePIIEmail = regexp.MustCompile(`[\w.+-]+@[\w-]+\.[\w.-]+`)
+	// RE2 不支持 look-around（(?<!/(?!)，init 即 panic，radar_user_data.go 已有同款踩坑）：
+	// 数字边界改捕获组实现，替换时回写边界字符（见 redactPII 注释两遍语义）。
+	rePIIPhone  = regexp.MustCompile(`(^|[^\d])(1[3-9]\d{9})([^\d]|$)`)
+	rePIIIDCard = regexp.MustCompile(`(^|[^\d])([0-9]{17}[\dXx])([^\d]|$)`)
 )
 
 // redactPII 最佳努力脱敏（字节级；gzip 等压缩体不展开——采集 HTTP 栈不请求压缩编码，见 httpdo 无 Accept-Encoding 设置）。
+// 每个数字类规则跑两遍：首遍命中的尾部边界字符被消费，可能挡住紧邻的下一条命中，
+// 二遍扫描兜底；两遍收敛（每遍至少吃掉一半共享边界）。
 func redactPII(b []byte) []byte {
 	b = rePIIEmail.ReplaceAll(b, []byte("[email-redacted]"))
-	b = rePIIPhone.ReplaceAll(b, []byte("[phone-redacted]"))
-	b = rePIIIDCard.ReplaceAll(b, []byte("[id-redacted]"))
-	return b
+	s := string(b)
+	s = rePIIPhone.ReplaceAllString(s, "${1}[phone-redacted]${3}")
+	s = rePIIPhone.ReplaceAllString(s, "${1}[phone-redacted]${3}")
+	s = rePIIIDCard.ReplaceAllString(s, "${1}[id-redacted]${3}")
+	s = rePIIIDCard.ReplaceAllString(s, "${1}[id-redacted]${3}")
+	return []byte(s)
 }
 
 // FSEvidenceStore biz.EvidenceStorePort 实现。
@@ -176,18 +183,23 @@ func (s *FSEvidenceStore) Export(ctx context.Context, intelID string, meta map[s
 	if err := addJSONEntry(zw, "chain.json", map[string]any{
 		"intel_id": intelID, "count": len(chain), "entries": chain,
 	}); err != nil {
-		_ = zw.Close(); _ = f.Close(); _ = os.Remove(tmp)
+		_ = zw.Close()
+		_ = f.Close()
+		_ = os.Remove(tmp)
 		return "", "", err
 	}
 
 	// 3) meta.json（审计字段由调用方注入：导出者/时刻/用途）
 	if err := addJSONEntry(zw, "meta.json", meta); err != nil {
-		_ = zw.Close(); _ = f.Close(); _ = os.Remove(tmp)
+		_ = zw.Close()
+		_ = f.Close()
+		_ = os.Remove(tmp)
 		return "", "", err
 	}
 
 	if err := zw.Close(); err != nil {
-		_ = f.Close(); _ = os.Remove(tmp)
+		_ = f.Close()
+		_ = os.Remove(tmp)
 		return "", "", err
 	}
 	if err := f.Close(); err != nil {

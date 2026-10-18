@@ -18,6 +18,7 @@ logs/
 storage/
 tmp/
 *.log
+cover.tmp
 
 # OS junk
 .DS_Store
