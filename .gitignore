@@ -47,3 +47,4 @@ docs/UI/*.webm
 research-worker/
 # Local tool binaries (ffmpeg etc.; downloaded, not committed)
 apps/server/tools/
+docs/ui-verify
