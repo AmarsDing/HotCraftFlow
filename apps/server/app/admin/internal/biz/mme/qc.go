@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
+
+	"framework/pkg/mmesub"
 )
 
 // QCChecker 质检（🔴 硬门禁，契约 §4 / 详细设计 §2.7）：
@@ -142,11 +144,10 @@ func (c *QCChecker) CheckVariant(ctx context.Context, videoPath, srtPath string,
 
 // ForceStyleFor 字幕烧录 force_style（🔴 安全区底部留白 = MarginV）。
 // 简单档位 simple；dynamic 档位在 M13 后扩展，此处并档 simple 并在 manifest 标注。
+// M5 修复：样式唯一真相在 pkg/mmesub（与 media 委托渲染侧共享），本函数仅组装参数。
 func ForceStyleFor(aspect string, cfg Config) string {
 	m := cfg.MarginOf(aspect)
-	return "FontName=Microsoft YaHei,FontSize=14,PrimaryColour=&H00FFFFFF," +
-		"OutlineColour=&H80000000,BorderStyle=1,Outline=2,Shadow=0," +
-		"Alignment=2,MarginV=" + itoa(m.Bottom)
+	return mmesub.ForceStyle(m.Bottom)
 }
 
 func sprintfDur(got, want float64) string {

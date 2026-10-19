@@ -8,8 +8,8 @@ mme:
     timeout: 1800s                   # =30m 单任务下载超时（proto Duration 仅收秒格式）
   render:
     concurrency: 2                     # CPU 密集，默认 2（ADR-MME-05）
-    ffmpeg_path: "ffmpeg"
-    ffprobe_path: "ffprobe"
+    ffmpeg_path: "ffmpeg"      # 本机绝对路径经 MME_FFMPEG_PATH env 注入（受跟踪配置禁落绝对路径，评审 S2）
+    ffprobe_path: "ffprobe"    # 同上：MME_FFPROBE_PATH
     preset: "medium"
     crf: 23
     max_duration_sec: 300

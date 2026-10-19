@@ -2,6 +2,7 @@ package mme
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"framework/app/admin/internal/conf"
@@ -132,6 +133,7 @@ func ResolveConfig(bc *conf.Bootstrap) Config {
 		PyDraftURL:          "http://127.0.0.1:8901",
 		JianyingVersionNote: "[待测] 剪映版本兼容性未全面验证",
 	}
+	applyToolEnvOverrides(&c)
 	if bc == nil || bc.GetMme() == nil {
 		return c
 	}
@@ -270,7 +272,21 @@ func ResolveConfig(bc *conf.Bootstrap) Config {
 			c.JianyingVersionNote = v
 		}
 	}
+	applyToolEnvOverrides(&c)
 	return c
+}
+
+// applyToolEnvOverrides 本机工具路径 env 覆盖（评审 S2 配套）：受跟踪的 mme.yaml
+// 只放 PATH 名（"ffmpeg"/"ffprobe"），本机绝对路径（如 tools/ffmpeg 本地下载）经
+// MME_FFMPEG_PATH / MME_FFPROBE_PATH 注入，与本线 media 侧 MEDIA_FFMPEG_PATH 先例
+// 一致。env 优先级高于 yaml——调用点在所有 proto 覆盖之后。
+func applyToolEnvOverrides(c *Config) {
+	if v := os.Getenv("MME_FFMPEG_PATH"); v != "" {
+		c.FFmpegPath = v
+	}
+	if v := os.Getenv("MME_FFPROBE_PATH"); v != "" {
+		c.FFprobePath = v
+	}
 }
 
 // ============ 画幅规格（概要设计 §5.1 / 详细设计 §2.7） ============
