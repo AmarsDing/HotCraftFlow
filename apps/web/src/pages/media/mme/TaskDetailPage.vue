@@ -264,6 +264,35 @@ const expandForm = ref<{
   hooks: [{ id: 'h1', label: '悬念开场', text: '' }],
 });
 
+// 设置面板（W1）：展开默认值来自 mme.yaml 生效配置（GetSettings），
+// 后端 ExpandMatrix 对空 aspects/hooks 也走同一配置——双端同源。
+const HOOK_LABELS = ['Hook A', 'Hook B', 'Hook C', 'Hook D'];
+const HOOK_IDS = ['hook_a', 'hook_b', 'hook_c', 'hook_d'];
+const settingsLoaded = ref(false);
+
+async function fetchSettings() {
+  try {
+    const s = await mmeTaskService.getSettings();
+    if (s.defaultAspects && s.defaultAspects.length > 0) {
+      expandForm.value.aspects = [...s.defaultAspects];
+    }
+    // 与后端 DefaultHooks 同规则：数量取配置（下限 2、上限 4），仅在用户未改默认单条时预填
+    const n = Math.min(Math.max(s.defaultHookCount || 2, 2), 4);
+    const untouchedDefault = expandForm.value.hooks.length === 1 && expandForm.value.hooks[0].id === 'h1';
+    if (untouchedDefault) {
+      expandForm.value.hooks = HOOK_IDS.slice(0, n).map((id, i) => ({
+        id,
+        label: HOOK_LABELS[i],
+        text: '',
+      }));
+    }
+  } catch {
+    // 设置源不可用时保持页面内硬编码默认（后端仍按配置兜底），不阻断页面
+  } finally {
+    settingsLoaded.value = true;
+  }
+}
+
 const estimatedCount = computed(() => {
   const cv =
     expandForm.value.contentVersionIds.length > 0 ? expandForm.value.contentVersionIds.length : highlights.value.length;
@@ -374,5 +403,6 @@ async function doExpand() {
 onMounted(() => {
   fetchAll();
   fetchTemplates();
+  fetchSettings();
 });
 </script>

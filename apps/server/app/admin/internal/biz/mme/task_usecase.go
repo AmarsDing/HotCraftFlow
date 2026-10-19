@@ -390,6 +390,38 @@ func (u *TaskUsecase) RunAnalyze(ctx context.Context, taskID string) error {
 	return u.tasks.Update(ctx, t)
 }
 
+// SettingsSnapshot 生效设置快照（W1 设置面板只读源）。
+type SettingsSnapshot struct {
+	DefaultAspects    []string
+	DefaultHookCount  int
+	MaxVariantsPerSet int
+	RenderConcurrency int
+	Preset            string
+	CRF               int
+	MinDurSec         int
+	MaxDurSec         int
+	MediaDir          string
+	RetentionDays     int
+	CacheEnabled      bool
+}
+
+// Settings 生效设置快照（来自 mme.yaml + env 覆盖；只读）。
+func (u *TaskUsecase) Settings(context.Context) *SettingsSnapshot {
+	return &SettingsSnapshot{
+		DefaultAspects:    append([]string(nil), u.cfg.DefaultAspects...),
+		DefaultHookCount:  u.cfg.DefaultHookCount,
+		MaxVariantsPerSet: u.cfg.MaxVariantsPerSet,
+		RenderConcurrency: u.cfg.RenderConcurrency,
+		Preset:            u.cfg.Preset,
+		CRF:               u.cfg.CRF,
+		MinDurSec:         u.cfg.MinDurSec,
+		MaxDurSec:         u.cfg.MaxDurSec,
+		MediaDir:          u.cfg.MediaDir,
+		RetentionDays:     u.cfg.RetentionDays,
+		CacheEnabled:      u.cfg.CacheEnabled,
+	}
+}
+
 // Doctor 环境自检（前端任务列表页状态卡）。
 func (u *TaskUsecase) Doctor(ctx context.Context) (*DoctorReport, error) {
 	rep := &DoctorReport{OK: true}

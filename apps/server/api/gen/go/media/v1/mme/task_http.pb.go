@@ -26,6 +26,7 @@ const OperationMmeTaskServiceCreate = "/media.mme.v1.MmeTaskService/Create"
 const OperationMmeTaskServiceDelete = "/media.mme.v1.MmeTaskService/Delete"
 const OperationMmeTaskServiceDoctor = "/media.mme.v1.MmeTaskService/Doctor"
 const OperationMmeTaskServiceGet = "/media.mme.v1.MmeTaskService/Get"
+const OperationMmeTaskServiceGetSettings = "/media.mme.v1.MmeTaskService/GetSettings"
 const OperationMmeTaskServiceList = "/media.mme.v1.MmeTaskService/List"
 const OperationMmeTaskServiceListHighlights = "/media.mme.v1.MmeTaskService/ListHighlights"
 const OperationMmeTaskServiceUpsertHighlights = "/media.mme.v1.MmeTaskService/UpsertHighlights"
@@ -41,6 +42,8 @@ type MmeTaskServiceHTTPServer interface {
 	Doctor(context.Context, *emptypb.Empty) (*DoctorReport, error)
 	// Get 任务详情（含素材信息与高光）
 	Get(context.Context, *GetMontageTaskRequest) (*MontageTask, error)
+	// GetSettings 生效设置快照（W1 设置面板只读源：matrix/render/storage 默认值，来自 mme.yaml + env）
+	GetSettings(context.Context, *emptypb.Empty) (*MmeSettings, error)
 	// List 任务列表（分页，formValues 走 query）
 	List(context.Context, *v1.PagingRequest) (*ListMontageTasksResponse, error)
 	// ListHighlights 高光候选列表（B 维度内容版本来源；origin=manual|auto）
@@ -59,6 +62,7 @@ func RegisterMmeTaskServiceHTTPServer(s *http.Server, srv MmeTaskServiceHTTPServ
 	r.PUT("/api/v1/media/mme/tasks/{id}/highlights", _MmeTaskService_UpsertHighlights0_HTTP_Handler(srv))
 	r.POST("/api/v1/media/mme/tasks/{id}:analyze", _MmeTaskService_Analyze0_HTTP_Handler(srv))
 	r.GET("/api/v1/media/mme/doctor", _MmeTaskService_Doctor0_HTTP_Handler(srv))
+	r.GET("/api/v1/media/mme/settings", _MmeTaskService_GetSettings0_HTTP_Handler(srv))
 }
 
 func _MmeTaskService_List0_HTTP_Handler(srv MmeTaskServiceHTTPServer) func(ctx http.Context) error {
@@ -237,6 +241,25 @@ func _MmeTaskService_Doctor0_HTTP_Handler(srv MmeTaskServiceHTTPServer) func(ctx
 	}
 }
 
+func _MmeTaskService_GetSettings0_HTTP_Handler(srv MmeTaskServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in emptypb.Empty
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationMmeTaskServiceGetSettings)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetSettings(ctx, req.(*emptypb.Empty))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*MmeSettings)
+		return ctx.Result(200, reply)
+	}
+}
+
 type MmeTaskServiceHTTPClient interface {
 	// Analyze 触发分析（ASR → 章节/高光）；缺依赖时返回 MME_ASR_FAIL / MME_LLM_UNAVAILABLE
 	Analyze(ctx context.Context, req *GetMontageTaskRequest, opts ...http.CallOption) (rsp *MontageTask, err error)
@@ -248,6 +271,8 @@ type MmeTaskServiceHTTPClient interface {
 	Doctor(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *DoctorReport, err error)
 	// Get 任务详情（含素材信息与高光）
 	Get(ctx context.Context, req *GetMontageTaskRequest, opts ...http.CallOption) (rsp *MontageTask, err error)
+	// GetSettings 生效设置快照（W1 设置面板只读源：matrix/render/storage 默认值，来自 mme.yaml + env）
+	GetSettings(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *MmeSettings, err error)
 	// List 任务列表（分页，formValues 走 query）
 	List(ctx context.Context, req *v1.PagingRequest, opts ...http.CallOption) (rsp *ListMontageTasksResponse, err error)
 	// ListHighlights 高光候选列表（B 维度内容版本来源；origin=manual|auto）
@@ -326,6 +351,20 @@ func (c *MmeTaskServiceHTTPClientImpl) Get(ctx context.Context, in *GetMontageTa
 	pattern := "/api/v1/media/mme/tasks/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationMmeTaskServiceGet))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// GetSettings 生效设置快照（W1 设置面板只读源：matrix/render/storage 默认值，来自 mme.yaml + env）
+func (c *MmeTaskServiceHTTPClientImpl) GetSettings(ctx context.Context, in *emptypb.Empty, opts ...http.CallOption) (*MmeSettings, error) {
+	var out MmeSettings
+	pattern := "/api/v1/media/mme/settings"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationMmeTaskServiceGetSettings))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

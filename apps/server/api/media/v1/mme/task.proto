@@ -56,6 +56,10 @@ service MmeTaskService {
   rpc Doctor(google.protobuf.Empty) returns (DoctorReport) {
     option (google.api.http) = { get: "/api/v1/media/mme/doctor" };
   }
+  // 生效设置快照（W1 设置面板只读源：matrix/render/storage 默认值，来自 mme.yaml + env）
+  rpc GetSettings(google.protobuf.Empty) returns (MmeSettings) {
+    option (google.api.http) = { get: "/api/v1/media/mme/settings" };
+  }
 }
 
 // MontageTask 加工任务（Ent mme_montage_tasks 的 API 视图）。
@@ -136,4 +140,20 @@ message DoctorItem {
   bool required = 3;   // 关键依赖（缺失则渲染链路不可用）
   string version = 4;  // 探测到的版本号（未知为空）
   string detail = 5;   // 可读建议（如「winget install --id Gyan.FFmpeg -e」）
+}
+
+// MmeSettings 生效设置快照（只读；来源 mme.yaml，env 可覆盖路径类）。
+// 前端展开表单/渲染参数默认值的数据源（W1 设置面板）。
+message MmeSettings {
+  repeated string default_aspects = 1;  // 展开默认画幅（9:16/1:1/16:9）
+  int32 default_hook_count = 2;         // 展开默认 Hook 条数
+  int32 max_variants_per_set = 3;       // 规模上限保护
+  int32 render_concurrency = 4;         // 渲染并发（CPU 密集）
+  string render_preset = 5;             // ffmpeg preset
+  int32 render_crf = 6;                 // ffmpeg crf
+  int32 min_duration_sec = 7;           // 变体时长下界
+  int32 max_duration_sec = 8;           // 变体时长上界
+  string media_dir = 9;                 // 媒体根目录
+  int32 retention_days = 10;            // 保留天数
+  bool cache_enabled = 11;              // 分析缓存开关
 }

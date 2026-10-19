@@ -859,6 +859,22 @@ export type DoctorItem = {
   detail: string | undefined;
 };
 
+// MmeSettings 生效设置快照（只读；来源 mme.yaml，env 可覆盖路径类）。
+// 前端展开表单/渲染参数默认值的数据源（W1 设置面板）。
+export type MmeSettings = {
+  defaultAspects: string[] | undefined;
+  defaultHookCount: number | undefined;
+  maxVariantsPerSet: number | undefined;
+  renderConcurrency: number | undefined;
+  renderPreset: string | undefined;
+  renderCrf: number | undefined;
+  minDurationSec: number | undefined;
+  maxDurationSec: number | undefined;
+  mediaDir: string | undefined;
+  retentionDays: number | undefined;
+  cacheEnabled: boolean | undefined;
+};
+
 export interface MmeTaskService {
   // 任务列表（分页，formValues 走 query）
   List(request: pagination_PagingRequest): Promise<ListMontageTasksResponse>;
@@ -876,6 +892,8 @@ export interface MmeTaskService {
   Analyze(request: GetMontageTaskRequest): Promise<MontageTask>;
   // 基础设施体检：ffmpeg/ffprobe/yt-dlp/python/whisper/ollama/磁盘（文档 W1 门禁）
   Doctor(request: wellKnownEmpty): Promise<DoctorReport>;
+  // 生效设置快照（W1 设置面板只读源：matrix/render/storage 默认值，来自 mme.yaml + env）
+  GetSettings(request: wellKnownEmpty): Promise<MmeSettings>;
 }
 
 export function createMmeTaskServiceClient(
@@ -1094,6 +1112,23 @@ export function createMmeTaskServiceClient(
         service: "MmeTaskService",
         method: "Doctor",
       }) as Promise<DoctorReport>;
+    },
+    GetSettings(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/mme/settings`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "MmeTaskService",
+        method: "GetSettings",
+      }) as Promise<MmeSettings>;
     },
   };
 }

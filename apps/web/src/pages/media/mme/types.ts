@@ -6,6 +6,7 @@ export type {
   HighlightCandidate,
   DoctorReport,
   DoctorItem,
+  MmeSettings,
   VariantSetView,
   VariantItem,
   DiffResult,

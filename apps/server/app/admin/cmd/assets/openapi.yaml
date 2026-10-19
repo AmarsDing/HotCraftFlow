@@ -2221,6 +2221,25 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/v1/media/mme/settings:
+        get:
+            tags:
+                - MmeTaskService
+            description: 生效设置快照（W1 设置面板只读源：matrix/render/storage 默认值，来自 mme.yaml + env）
+            operationId: MmeTaskService_GetSettings
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MmeSettings'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/v1/media/mme/tasks:
         get:
             tags:
@@ -11728,6 +11747,43 @@ components:
             properties:
                 merged_item:
                     $ref: '#/components/schemas/EventCardItem'
+        MmeSettings:
+            type: object
+            properties:
+                defaultAspects:
+                    type: array
+                    items:
+                        type: string
+                defaultHookCount:
+                    type: integer
+                    format: int32
+                maxVariantsPerSet:
+                    type: integer
+                    format: int32
+                renderConcurrency:
+                    type: integer
+                    format: int32
+                renderPreset:
+                    type: string
+                renderCrf:
+                    type: integer
+                    format: int32
+                minDurationSec:
+                    type: integer
+                    format: int32
+                maxDurationSec:
+                    type: integer
+                    format: int32
+                mediaDir:
+                    type: string
+                retentionDays:
+                    type: integer
+                    format: int32
+                cacheEnabled:
+                    type: boolean
+            description: |-
+                MmeSettings 生效设置快照（只读；来源 mme.yaml，env 可覆盖路径类）。
+                 前端展开表单/渲染参数默认值的数据源（W1 设置面板）。
         MontageTask:
             type: object
             properties:

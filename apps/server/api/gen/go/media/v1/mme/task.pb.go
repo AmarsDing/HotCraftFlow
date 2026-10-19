@@ -756,6 +756,132 @@ func (x *DoctorItem) GetDetail() string {
 	return ""
 }
 
+// MmeSettings 生效设置快照（只读；来源 mme.yaml，env 可覆盖路径类）。
+// 前端展开表单/渲染参数默认值的数据源（W1 设置面板）。
+type MmeSettings struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	DefaultAspects    []string               `protobuf:"bytes,1,rep,name=default_aspects,json=defaultAspects,proto3" json:"default_aspects,omitempty"`               // 展开默认画幅（9:16/1:1/16:9）
+	DefaultHookCount  int32                  `protobuf:"varint,2,opt,name=default_hook_count,json=defaultHookCount,proto3" json:"default_hook_count,omitempty"`      // 展开默认 Hook 条数
+	MaxVariantsPerSet int32                  `protobuf:"varint,3,opt,name=max_variants_per_set,json=maxVariantsPerSet,proto3" json:"max_variants_per_set,omitempty"` // 规模上限保护
+	RenderConcurrency int32                  `protobuf:"varint,4,opt,name=render_concurrency,json=renderConcurrency,proto3" json:"render_concurrency,omitempty"`     // 渲染并发（CPU 密集）
+	RenderPreset      string                 `protobuf:"bytes,5,opt,name=render_preset,json=renderPreset,proto3" json:"render_preset,omitempty"`                     // ffmpeg preset
+	RenderCrf         int32                  `protobuf:"varint,6,opt,name=render_crf,json=renderCrf,proto3" json:"render_crf,omitempty"`                             // ffmpeg crf
+	MinDurationSec    int32                  `protobuf:"varint,7,opt,name=min_duration_sec,json=minDurationSec,proto3" json:"min_duration_sec,omitempty"`            // 变体时长下界
+	MaxDurationSec    int32                  `protobuf:"varint,8,opt,name=max_duration_sec,json=maxDurationSec,proto3" json:"max_duration_sec,omitempty"`            // 变体时长上界
+	MediaDir          string                 `protobuf:"bytes,9,opt,name=media_dir,json=mediaDir,proto3" json:"media_dir,omitempty"`                                 // 媒体根目录
+	RetentionDays     int32                  `protobuf:"varint,10,opt,name=retention_days,json=retentionDays,proto3" json:"retention_days,omitempty"`                // 保留天数
+	CacheEnabled      bool                   `protobuf:"varint,11,opt,name=cache_enabled,json=cacheEnabled,proto3" json:"cache_enabled,omitempty"`                   // 分析缓存开关
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *MmeSettings) Reset() {
+	*x = MmeSettings{}
+	mi := &file_media_v1_mme_task_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MmeSettings) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MmeSettings) ProtoMessage() {}
+
+func (x *MmeSettings) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_mme_task_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MmeSettings.ProtoReflect.Descriptor instead.
+func (*MmeSettings) Descriptor() ([]byte, []int) {
+	return file_media_v1_mme_task_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *MmeSettings) GetDefaultAspects() []string {
+	if x != nil {
+		return x.DefaultAspects
+	}
+	return nil
+}
+
+func (x *MmeSettings) GetDefaultHookCount() int32 {
+	if x != nil {
+		return x.DefaultHookCount
+	}
+	return 0
+}
+
+func (x *MmeSettings) GetMaxVariantsPerSet() int32 {
+	if x != nil {
+		return x.MaxVariantsPerSet
+	}
+	return 0
+}
+
+func (x *MmeSettings) GetRenderConcurrency() int32 {
+	if x != nil {
+		return x.RenderConcurrency
+	}
+	return 0
+}
+
+func (x *MmeSettings) GetRenderPreset() string {
+	if x != nil {
+		return x.RenderPreset
+	}
+	return ""
+}
+
+func (x *MmeSettings) GetRenderCrf() int32 {
+	if x != nil {
+		return x.RenderCrf
+	}
+	return 0
+}
+
+func (x *MmeSettings) GetMinDurationSec() int32 {
+	if x != nil {
+		return x.MinDurationSec
+	}
+	return 0
+}
+
+func (x *MmeSettings) GetMaxDurationSec() int32 {
+	if x != nil {
+		return x.MaxDurationSec
+	}
+	return 0
+}
+
+func (x *MmeSettings) GetMediaDir() string {
+	if x != nil {
+		return x.MediaDir
+	}
+	return ""
+}
+
+func (x *MmeSettings) GetRetentionDays() int32 {
+	if x != nil {
+		return x.RetentionDays
+	}
+	return 0
+}
+
+func (x *MmeSettings) GetCacheEnabled() bool {
+	if x != nil {
+		return x.CacheEnabled
+	}
+	return false
+}
+
 var File_media_v1_mme_task_proto protoreflect.FileDescriptor
 
 const file_media_v1_mme_task_proto_rawDesc = "" +
@@ -829,7 +955,21 @@ const file_media_v1_mme_task_proto_rawDesc = "" +
 	"\x02ok\x18\x02 \x01(\bR\x02ok\x12\x1a\n" +
 	"\brequired\x18\x03 \x01(\bR\brequired\x12\x18\n" +
 	"\aversion\x18\x04 \x01(\tR\aversion\x12\x16\n" +
-	"\x06detail\x18\x05 \x01(\tR\x06detail2\xc8\a\n" +
+	"\x06detail\x18\x05 \x01(\tR\x06detail\"\xc5\x03\n" +
+	"\vMmeSettings\x12'\n" +
+	"\x0fdefault_aspects\x18\x01 \x03(\tR\x0edefaultAspects\x12,\n" +
+	"\x12default_hook_count\x18\x02 \x01(\x05R\x10defaultHookCount\x12/\n" +
+	"\x14max_variants_per_set\x18\x03 \x01(\x05R\x11maxVariantsPerSet\x12-\n" +
+	"\x12render_concurrency\x18\x04 \x01(\x05R\x11renderConcurrency\x12#\n" +
+	"\rrender_preset\x18\x05 \x01(\tR\frenderPreset\x12\x1d\n" +
+	"\n" +
+	"render_crf\x18\x06 \x01(\x05R\trenderCrf\x12(\n" +
+	"\x10min_duration_sec\x18\a \x01(\x05R\x0eminDurationSec\x12(\n" +
+	"\x10max_duration_sec\x18\b \x01(\x05R\x0emaxDurationSec\x12\x1b\n" +
+	"\tmedia_dir\x18\t \x01(\tR\bmediaDir\x12%\n" +
+	"\x0eretention_days\x18\n" +
+	" \x01(\x05R\rretentionDays\x12#\n" +
+	"\rcache_enabled\x18\v \x01(\bR\fcacheEnabled2\xae\b\n" +
 	"\x0eMmeTaskService\x12j\n" +
 	"\x04List\x12\x19.pagination.PagingRequest\x1a&.media.mme.v1.ListMontageTasksResponse\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/api/v1/media/mme/tasks\x12k\n" +
 	"\x03Get\x12#.media.mme.v1.GetMontageTaskRequest\x1a\x19.media.mme.v1.MontageTask\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/api/v1/media/mme/tasks/{id}\x12o\n" +
@@ -838,7 +978,8 @@ const file_media_v1_mme_task_proto_rawDesc = "" +
 	"\x0eListHighlights\x12#.media.mme.v1.GetMontageTaskRequest\x1a$.media.mme.v1.ListHighlightsResponse\"/\x82\xd3\xe4\x93\x02)\x12'/api/v1/media/mme/tasks/{id}/highlights\x12\x93\x01\n" +
 	"\x10UpsertHighlights\x12%.media.mme.v1.UpsertHighlightsRequest\x1a$.media.mme.v1.ListHighlightsResponse\"2\x82\xd3\xe4\x93\x02,:\x01*\x1a'/api/v1/media/mme/tasks/{id}/highlights\x12z\n" +
 	"\aAnalyze\x12#.media.mme.v1.GetMontageTaskRequest\x1a\x19.media.mme.v1.MontageTask\"/\x82\xd3\xe4\x93\x02):\x01*\"$/api/v1/media/mme/tasks/{id}:analyze\x12^\n" +
-	"\x06Doctor\x12\x16.google.protobuf.Empty\x1a\x1a.media.mme.v1.DoctorReport\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/api/v1/media/mme/doctorB\x98\x01\n" +
+	"\x06Doctor\x12\x16.google.protobuf.Empty\x1a\x1a.media.mme.v1.DoctorReport\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/api/v1/media/mme/doctor\x12d\n" +
+	"\vGetSettings\x12\x16.google.protobuf.Empty\x1a\x19.media.mme.v1.MmeSettings\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/api/v1/media/mme/settingsB\x98\x01\n" +
 	"\x10com.media.mme.v1B\tTaskProtoP\x01Z'framework/api/gen/go/media/v1/mme;mmev1\xa2\x02\x03MMX\xaa\x02\fMedia.Mme.V1\xca\x02\fMedia\\Mme\\V1\xe2\x02\x18Media\\Mme\\V1\\GPBMetadata\xea\x02\x0eMedia::Mme::V1b\x06proto3"
 
 var (
@@ -853,7 +994,7 @@ func file_media_v1_mme_task_proto_rawDescGZIP() []byte {
 	return file_media_v1_mme_task_proto_rawDescData
 }
 
-var file_media_v1_mme_task_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_media_v1_mme_task_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_media_v1_mme_task_proto_goTypes = []any{
 	(*MontageTask)(nil),              // 0: media.mme.v1.MontageTask
 	(*AssetInfo)(nil),                // 1: media.mme.v1.AssetInfo
@@ -865,8 +1006,9 @@ var file_media_v1_mme_task_proto_goTypes = []any{
 	(*UpsertHighlightsRequest)(nil),  // 7: media.mme.v1.UpsertHighlightsRequest
 	(*DoctorReport)(nil),             // 8: media.mme.v1.DoctorReport
 	(*DoctorItem)(nil),               // 9: media.mme.v1.DoctorItem
-	(*v1.PagingRequest)(nil),         // 10: pagination.PagingRequest
-	(*emptypb.Empty)(nil),            // 11: google.protobuf.Empty
+	(*MmeSettings)(nil),              // 10: media.mme.v1.MmeSettings
+	(*v1.PagingRequest)(nil),         // 11: pagination.PagingRequest
+	(*emptypb.Empty)(nil),            // 12: google.protobuf.Empty
 }
 var file_media_v1_mme_task_proto_depIdxs = []int32{
 	1,  // 0: media.mme.v1.MontageTask.asset:type_name -> media.mme.v1.AssetInfo
@@ -874,24 +1016,26 @@ var file_media_v1_mme_task_proto_depIdxs = []int32{
 	2,  // 2: media.mme.v1.ListHighlightsResponse.items:type_name -> media.mme.v1.HighlightCandidate
 	2,  // 3: media.mme.v1.UpsertHighlightsRequest.items:type_name -> media.mme.v1.HighlightCandidate
 	9,  // 4: media.mme.v1.DoctorReport.items:type_name -> media.mme.v1.DoctorItem
-	10, // 5: media.mme.v1.MmeTaskService.List:input_type -> pagination.PagingRequest
+	11, // 5: media.mme.v1.MmeTaskService.List:input_type -> pagination.PagingRequest
 	5,  // 6: media.mme.v1.MmeTaskService.Get:input_type -> media.mme.v1.GetMontageTaskRequest
 	3,  // 7: media.mme.v1.MmeTaskService.Create:input_type -> media.mme.v1.CreateMontageTaskRequest
 	5,  // 8: media.mme.v1.MmeTaskService.Delete:input_type -> media.mme.v1.GetMontageTaskRequest
 	5,  // 9: media.mme.v1.MmeTaskService.ListHighlights:input_type -> media.mme.v1.GetMontageTaskRequest
 	7,  // 10: media.mme.v1.MmeTaskService.UpsertHighlights:input_type -> media.mme.v1.UpsertHighlightsRequest
 	5,  // 11: media.mme.v1.MmeTaskService.Analyze:input_type -> media.mme.v1.GetMontageTaskRequest
-	11, // 12: media.mme.v1.MmeTaskService.Doctor:input_type -> google.protobuf.Empty
-	4,  // 13: media.mme.v1.MmeTaskService.List:output_type -> media.mme.v1.ListMontageTasksResponse
-	0,  // 14: media.mme.v1.MmeTaskService.Get:output_type -> media.mme.v1.MontageTask
-	0,  // 15: media.mme.v1.MmeTaskService.Create:output_type -> media.mme.v1.MontageTask
-	11, // 16: media.mme.v1.MmeTaskService.Delete:output_type -> google.protobuf.Empty
-	6,  // 17: media.mme.v1.MmeTaskService.ListHighlights:output_type -> media.mme.v1.ListHighlightsResponse
-	6,  // 18: media.mme.v1.MmeTaskService.UpsertHighlights:output_type -> media.mme.v1.ListHighlightsResponse
-	0,  // 19: media.mme.v1.MmeTaskService.Analyze:output_type -> media.mme.v1.MontageTask
-	8,  // 20: media.mme.v1.MmeTaskService.Doctor:output_type -> media.mme.v1.DoctorReport
-	13, // [13:21] is the sub-list for method output_type
-	5,  // [5:13] is the sub-list for method input_type
+	12, // 12: media.mme.v1.MmeTaskService.Doctor:input_type -> google.protobuf.Empty
+	12, // 13: media.mme.v1.MmeTaskService.GetSettings:input_type -> google.protobuf.Empty
+	4,  // 14: media.mme.v1.MmeTaskService.List:output_type -> media.mme.v1.ListMontageTasksResponse
+	0,  // 15: media.mme.v1.MmeTaskService.Get:output_type -> media.mme.v1.MontageTask
+	0,  // 16: media.mme.v1.MmeTaskService.Create:output_type -> media.mme.v1.MontageTask
+	12, // 17: media.mme.v1.MmeTaskService.Delete:output_type -> google.protobuf.Empty
+	6,  // 18: media.mme.v1.MmeTaskService.ListHighlights:output_type -> media.mme.v1.ListHighlightsResponse
+	6,  // 19: media.mme.v1.MmeTaskService.UpsertHighlights:output_type -> media.mme.v1.ListHighlightsResponse
+	0,  // 20: media.mme.v1.MmeTaskService.Analyze:output_type -> media.mme.v1.MontageTask
+	8,  // 21: media.mme.v1.MmeTaskService.Doctor:output_type -> media.mme.v1.DoctorReport
+	10, // 22: media.mme.v1.MmeTaskService.GetSettings:output_type -> media.mme.v1.MmeSettings
+	14, // [14:23] is the sub-list for method output_type
+	5,  // [5:14] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name
 	5,  // [5:5] is the sub-list for extension extendee
 	0,  // [0:5] is the sub-list for field type_name
@@ -908,7 +1052,7 @@ func file_media_v1_mme_task_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_media_v1_mme_task_proto_rawDesc), len(file_media_v1_mme_task_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

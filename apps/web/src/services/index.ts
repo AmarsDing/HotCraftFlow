@@ -90,6 +90,7 @@ import {
   type HighlightCandidate,
   type DoctorReport,
   type DoctorItem,
+  type MmeSettings,
   type VariantSetView,
   type VariantItem,
   type DiffResult,
@@ -104,6 +105,34 @@ import {
   type QC,
   type VariantSet as MmeContractVariantSet,
 } from './kratos/media/mme/v1';
+
+// ③ MIA 市场影响分析（api/media/v1/mia/{event,impact,mapping}.proto 生成客户端）
+import {
+  createEventServiceClient,
+  createImpactServiceClient,
+  createMappingServiceClient,
+  type EventCardItem,
+  type ListEventCardsResponse,
+  type SplitEventCardResponse,
+  type MergeEventCardsResponse,
+  type ImpactCardListItem,
+  type ListImpactCardsResponse,
+  type GetImpactCardResponse,
+  type ImpactCard,
+  type AffectedItem,
+  type ImpactFactors,
+  type Verified,
+  type CalibrationReport,
+  type CalibrationBucket,
+  type TransmissionRuleItem,
+  type GetQuoteResponse,
+  type OhlcvBar,
+  type EntityAssetMappingItem,
+  type ListEntityMappingsResponse,
+  type ImportEntityMappingsResponse as MiaImportCsvResponse,
+  type NarrativeCoinMappingItem,
+  type ListNarrativeMappingsResponse,
+} from './kratos/media/mia/v1';
 
 
 // ===================== 类型定义（与后端 proto json_name 对齐） =====================
@@ -1372,11 +1401,16 @@ export type {
   PlatformCopy,
   QC,
   MmeContractVariantSet,
+  MmeSettings,
 };
 
 const mmeTaskClient = createMmeTaskServiceClient(requestHandler);
 const mmeVariantClient = createMmeVariantServiceClient(requestHandler);
 const mmeRenderClient = createMmeRenderServiceClient(requestHandler);
+
+const miaEventClient = createEventServiceClient(requestHandler);
+const miaImpactClient = createImpactServiceClient(requestHandler);
+const miaMappingClient = createMappingServiceClient(requestHandler);
 
 export const mmeTaskService = {
   list(opts: { page?: number; pageSize?: number; formValues?: Record<string, unknown> } = {}) {
@@ -1414,6 +1448,9 @@ export const mmeTaskService = {
   },
   doctor() {
     return mmeTaskClient.Doctor({}) as Promise<DoctorReport>;
+  },
+  getSettings() {
+    return mmeTaskClient.GetSettings({}) as Promise<MmeSettings>;
   },
 };
 
@@ -1474,5 +1511,177 @@ export const mmeRenderService = {
   },
   cancelJob(id: string) {
     return mmeRenderClient.CancelJob({ id }) as Promise<unknown>;
+  },
+};
+
+// ==================== ③ MIA 市场影响分析 ====================
+// 🔴 前端合规纪律（与详细设计 §7/§8 同源）：
+//   - 免责声明固定展示，不可折叠、不可隐藏（detail 页 fixed bar）。
+//   - is_transmission=true 的结论一律标「假设非因果」，不得当作确定因果。
+//   - affected 条目缺 path 不得渲染为结论（违规数据，按违约处理）。
+//   - engine=none（全引擎不可用）= 未产出方向结论（不猜），不得自行补方向。
+//   - 行情只读：本服务只提供 GetQuote；前端不存在任何交易操作入口。
+export type {
+  EventCardItem,
+  ListEventCardsResponse,
+  SplitEventCardResponse,
+  MergeEventCardsResponse,
+  ImpactCardListItem,
+  ListImpactCardsResponse,
+  GetImpactCardResponse,
+  ImpactCard,
+  AffectedItem,
+  ImpactFactors,
+  Verified,
+  CalibrationReport,
+  CalibrationBucket,
+  TransmissionRuleItem,
+  GetQuoteResponse,
+  OhlcvBar,
+  EntityAssetMappingItem,
+  ListEntityMappingsResponse,
+  MiaImportCsvResponse,
+  NarrativeCoinMappingItem,
+  ListNarrativeMappingsResponse,
+};
+
+export const miaEventService = {
+  list(opts: {
+    page?: number;
+    pageSize?: number;
+    category?: string;
+    keyword?: string;
+    occurredAfter?: string;
+    occurredBefore?: string;
+  } = {}) {
+    return miaEventClient.ListEventCards({
+      page: opts.page ?? 1,
+      page_size: opts.pageSize ?? 20,
+      category: opts.category || undefined,
+      keyword: opts.keyword || undefined,
+      occurred_after: opts.occurredAfter || undefined,
+      occurred_before: opts.occurredBefore || undefined,
+    }) as Promise<ListEventCardsResponse>;
+  },
+  get(eventId: string) {
+    return miaEventClient.GetEventCard({ event_id: eventId }) as Promise<EventCardItem>;
+  },
+  /** 人工拆分：把指定来源指针从原卡拆出（拆分后两卡均被锁定另存）。 */
+  split(eventId: string, sourceIntelIds: string[]) {
+    return miaEventClient.SplitEventCard({
+      event_id: eventId,
+      source_intel_ids: sourceIntelIds,
+    }) as Promise<SplitEventCardResponse>;
+  },
+  /** 人工合并：≥2 张卡合并到第一张（目标卡合并后锁定另存）。 */
+  merge(eventIds: string[]) {
+    return miaEventClient.MergeEventCards({ event_ids: eventIds }) as Promise<MergeEventCardsResponse>;
+  },
+};
+
+export const miaImpactService = {
+  list(opts: {
+    page?: number;
+    pageSize?: number;
+    direction?: string;
+    minScore?: number;
+    includeExpired?: boolean;
+    occurredAfter?: string;
+  } = {}) {
+    return miaImpactClient.ListImpactCards({
+      page: opts.page ?? 1,
+      page_size: opts.pageSize ?? 20,
+      direction: opts.direction || undefined,
+      min_score: opts.minScore ?? undefined,
+      include_expired: opts.includeExpired || undefined,
+      occurred_after: opts.occurredAfter || undefined,
+    }) as Promise<ListImpactCardsResponse>;
+  },
+  get(impactId: string) {
+    return miaImpactClient.GetImpactCard({ impact_id: impactId }) as Promise<GetImpactCardResponse>;
+  },
+  getCalibration(opts: { since?: string; until?: string } = {}) {
+    return miaImpactClient.GetCalibration({
+      since: opts.since || undefined,
+      until: opts.until || undefined,
+    }) as Promise<CalibrationReport>;
+  },
+  listTransmissionRules(enabledOnly?: boolean) {
+    return miaImpactClient.ListTransmissionRules({
+      enabled_only: enabledOnly || undefined,
+    }) as Promise<{ items?: TransmissionRuleItem[] }>;
+  },
+  /** 行情只读（symbol 如 BTC/USDT / NVDA；无任何交易接口）。 */
+  getQuote(symbol: string) {
+    return miaImpactClient.GetQuote({ symbol }) as Promise<GetQuoteResponse>;
+  },
+};
+
+export const miaMappingService = {
+  // ---- 表 A：实体 → 标的 ----
+  listEntity(opts: {
+    page?: number;
+    pageSize?: number;
+    keyword?: string;
+    entityType?: string;
+    assetClass?: string;
+    enabledOnly?: boolean;
+  } = {}) {
+    return miaMappingClient.ListEntityMappings({
+      page: opts.page ?? 1,
+      page_size: opts.pageSize ?? 50,
+      keyword: opts.keyword || undefined,
+      entity_type: opts.entityType || undefined,
+      asset_class: opts.assetClass || undefined,
+      enabled_only: opts.enabledOnly || undefined,
+    }) as Promise<ListEntityMappingsResponse>;
+  },
+  createEntity(item: EntityAssetMappingItem) {
+    return miaMappingClient.CreateEntityMapping({ item }) as Promise<EntityAssetMappingItem>;
+  },
+  updateEntity(id: number, item: EntityAssetMappingItem) {
+    return miaMappingClient.UpdateEntityMapping({ id, item }) as Promise<EntityAssetMappingItem>;
+  },
+  deleteEntity(id: number) {
+    return miaMappingClient.DeleteEntityMapping({ id }) as Promise<unknown>;
+  },
+  /** CSV 导入（服务端按 实体名+资产类别+标的 幂等 upsert；行级错误累计返回）。 */
+  importEntityCsv(csv: string) {
+    return miaMappingClient.ImportEntityMappings({ csv }) as Promise<MiaImportCsvResponse>;
+  },
+  async exportEntityCsv(): Promise<string> {
+    const res = await miaMappingClient.ExportEntityMappings({});
+    return res.csv ?? '';
+  },
+
+  // ---- 表 B：叙事 → 币种 ----
+  listNarrative(opts: {
+    page?: number;
+    pageSize?: number;
+    keyword?: string;
+    enabledOnly?: boolean;
+  } = {}) {
+    return miaMappingClient.ListNarrativeMappings({
+      page: opts.page ?? 1,
+      page_size: opts.pageSize ?? 50,
+      keyword: opts.keyword || undefined,
+      enabled_only: opts.enabledOnly || undefined,
+    }) as Promise<ListNarrativeMappingsResponse>;
+  },
+  createNarrative(item: NarrativeCoinMappingItem) {
+    return miaMappingClient.CreateNarrativeMapping({ item }) as Promise<NarrativeCoinMappingItem>;
+  },
+  updateNarrative(id: number, item: NarrativeCoinMappingItem) {
+    return miaMappingClient.UpdateNarrativeMapping({ id, item }) as Promise<NarrativeCoinMappingItem>;
+  },
+  deleteNarrative(id: number) {
+    return miaMappingClient.DeleteNarrativeMapping({ id }) as Promise<unknown>;
+  },
+  importNarrativeCsv(csv: string) {
+    return miaMappingClient.ImportNarrativeMappings({ csv }) as Promise<MiaImportCsvResponse>;
+  },
+  async exportNarrativeCsv(): Promise<string> {
+    const res = await miaMappingClient.ExportNarrativeMappings({});
+    return res.csv ?? '';
   },
 };

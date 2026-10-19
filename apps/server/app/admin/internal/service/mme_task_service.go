@@ -151,6 +151,24 @@ func (s *MmeTaskService) Doctor(ctx context.Context, _ *emptypb.Empty) (*mmeV1.D
 	return &mmeV1.DoctorReport{Ready: r.OK, Items: items}, nil
 }
 
+// GetSettings 生效设置快照（W1 设置面板：matrix/render/storage 默认值）。
+func (s *MmeTaskService) GetSettings(ctx context.Context, _ *emptypb.Empty) (*mmeV1.MmeSettings, error) {
+	snap := s.uc.Settings(ctx)
+	return &mmeV1.MmeSettings{
+		DefaultAspects:    snap.DefaultAspects,
+		DefaultHookCount:  int32(snap.DefaultHookCount),
+		MaxVariantsPerSet: int32(snap.MaxVariantsPerSet),
+		RenderConcurrency: int32(snap.RenderConcurrency),
+		RenderPreset:      snap.Preset,
+		RenderCrf:         int32(snap.CRF),
+		MinDurationSec:    int32(snap.MinDurSec),
+		MaxDurationSec:    int32(snap.MaxDurSec),
+		MediaDir:          snap.MediaDir,
+		RetentionDays:     int32(snap.RetentionDays),
+		CacheEnabled:      snap.CacheEnabled,
+	}, nil
+}
+
 // ---- 映射 ----
 
 func toProtoMontageTask(t *bizmme.Task, asset *bizmme.Asset) *mmeV1.MontageTask {

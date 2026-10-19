@@ -29,6 +29,7 @@ const (
 	MmeTaskService_UpsertHighlights_FullMethodName = "/media.mme.v1.MmeTaskService/UpsertHighlights"
 	MmeTaskService_Analyze_FullMethodName          = "/media.mme.v1.MmeTaskService/Analyze"
 	MmeTaskService_Doctor_FullMethodName           = "/media.mme.v1.MmeTaskService/Doctor"
+	MmeTaskService_GetSettings_FullMethodName      = "/media.mme.v1.MmeTaskService/GetSettings"
 )
 
 // MmeTaskServiceClient is the client API for MmeTaskService service.
@@ -51,6 +52,8 @@ type MmeTaskServiceClient interface {
 	Analyze(ctx context.Context, in *GetMontageTaskRequest, opts ...grpc.CallOption) (*MontageTask, error)
 	// 基础设施体检：ffmpeg/ffprobe/yt-dlp/python/whisper/ollama/磁盘（文档 W1 门禁）
 	Doctor(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DoctorReport, error)
+	// 生效设置快照（W1 设置面板只读源：matrix/render/storage 默认值，来自 mme.yaml + env）
+	GetSettings(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*MmeSettings, error)
 }
 
 type mmeTaskServiceClient struct {
@@ -141,6 +144,16 @@ func (c *mmeTaskServiceClient) Doctor(ctx context.Context, in *emptypb.Empty, op
 	return out, nil
 }
 
+func (c *mmeTaskServiceClient) GetSettings(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*MmeSettings, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MmeSettings)
+	err := c.cc.Invoke(ctx, MmeTaskService_GetSettings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MmeTaskServiceServer is the server API for MmeTaskService service.
 // All implementations must embed UnimplementedMmeTaskServiceServer
 // for forward compatibility.
@@ -161,6 +174,8 @@ type MmeTaskServiceServer interface {
 	Analyze(context.Context, *GetMontageTaskRequest) (*MontageTask, error)
 	// 基础设施体检：ffmpeg/ffprobe/yt-dlp/python/whisper/ollama/磁盘（文档 W1 门禁）
 	Doctor(context.Context, *emptypb.Empty) (*DoctorReport, error)
+	// 生效设置快照（W1 设置面板只读源：matrix/render/storage 默认值，来自 mme.yaml + env）
+	GetSettings(context.Context, *emptypb.Empty) (*MmeSettings, error)
 	mustEmbedUnimplementedMmeTaskServiceServer()
 }
 
@@ -194,6 +209,9 @@ func (UnimplementedMmeTaskServiceServer) Analyze(context.Context, *GetMontageTas
 }
 func (UnimplementedMmeTaskServiceServer) Doctor(context.Context, *emptypb.Empty) (*DoctorReport, error) {
 	return nil, status.Error(codes.Unimplemented, "method Doctor not implemented")
+}
+func (UnimplementedMmeTaskServiceServer) GetSettings(context.Context, *emptypb.Empty) (*MmeSettings, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSettings not implemented")
 }
 func (UnimplementedMmeTaskServiceServer) mustEmbedUnimplementedMmeTaskServiceServer() {}
 func (UnimplementedMmeTaskServiceServer) testEmbeddedByValue()                        {}
@@ -360,6 +378,24 @@ func _MmeTaskService_Doctor_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MmeTaskService_GetSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MmeTaskServiceServer).GetSettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MmeTaskService_GetSettings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MmeTaskServiceServer).GetSettings(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MmeTaskService_ServiceDesc is the grpc.ServiceDesc for MmeTaskService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -398,6 +434,10 @@ var MmeTaskService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Doctor",
 			Handler:    _MmeTaskService_Doctor_Handler,
+		},
+		{
+			MethodName: "GetSettings",
+			Handler:    _MmeTaskService_GetSettings_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

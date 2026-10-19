@@ -2221,6 +2221,25 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/v1/media/mme/settings:
+        get:
+            tags:
+                - MmeTaskService
+            description: 生效设置快照（W1 设置面板只读源：matrix/render/storage 默认值，来自 mme.yaml + env）
+            operationId: MmeTaskService_GetSettings
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MmeSettings'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/v1/media/mme/tasks:
         get:
             tags:
@@ -3006,6 +3025,190 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MediaJob'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/media/tt/topics/merge:
+        post:
+            tags:
+                - TopicAdminService
+            operationId: TopicAdminService_MergeTopics
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/MergeTopicsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MergeTopicsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/media/tt/topics/needs-review:
+        get:
+            tags:
+                - TopicAdminService
+            operationId: TopicAdminService_ListNeedsReview
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: page_size
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListNeedsReviewResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/media/tt/topics/{topic_id}/ack-review:
+        post:
+            tags:
+                - TopicAdminService
+            operationId: TopicAdminService_AckReview
+            parameters:
+                - name: topic_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AckReviewRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AckReviewResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/media/tt/topics/{topic_id}/detail:
+        get:
+            tags:
+                - TopicAdminService
+            operationId: TopicAdminService_GetTopicDetail
+            parameters:
+                - name: topic_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetTopicDetailResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/media/tt/topics/{topic_id}/split:
+        post:
+            tags:
+                - TopicAdminService
+            operationId: TopicAdminService_SplitTopic
+            parameters:
+                - name: topic_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SplitTopicRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SplitTopicResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/media/tt/weights/heat:
+        get:
+            tags:
+                - TrendWeightService
+            operationId: TrendWeightService_GetHeatWeights
+            parameters:
+                - name: history_limit
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetHeatWeightsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        put:
+            tags:
+                - TrendWeightService
+            operationId: TrendWeightService_UpdateHeatWeights
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateHeatWeightsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/WeightView'
                 default:
                     description: Default error response
                     content:
@@ -8625,6 +8828,21 @@ components:
                 error:
                     type: string
             description: AIInsight AI 总结（三级：brief / summary / deep）。
+        AckReviewRequest:
+            type: object
+            properties:
+                topic_id:
+                    type: string
+                action:
+                    type: string
+                    description: |-
+                        action: "confirm"（确认归并正确，needs_review=false）/
+                                 "split"（确认归并错误，引导拆分对话框，needs_review 保持 true）
+        AckReviewResponse:
+            type: object
+            properties:
+                ok:
+                    type: boolean
         AddWatchRequest:
             type: object
             properties:
@@ -10075,6 +10293,15 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/SourceHealthEntry'
+        GetHeatWeightsResponse:
+            type: object
+            properties:
+                current:
+                    $ref: '#/components/schemas/WeightView'
+                history:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/WeightView'
         GetImpactCardResponse:
             type: object
             properties:
@@ -10180,6 +10407,15 @@ components:
                     type: string
                 truncated:
                     type: boolean
+        GetTopicDetailResponse:
+            type: object
+            properties:
+                topic:
+                    $ref: '#/components/schemas/TopicItem'
+                sources:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/TopicSourceItem'
         GetVariantSetRequest:
             type: object
             properties:
@@ -10953,6 +11189,15 @@ components:
                 total:
                     type: integer
                     format: int32
+        ListNeedsReviewResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/TopicItem'
+                total:
+                    type: string
         ListNotificationMessageCategoryResponse:
             type: object
             properties:
@@ -11728,6 +11973,60 @@ components:
             properties:
                 merged_item:
                     $ref: '#/components/schemas/EventCardItem'
+        MergeTopicsRequest:
+            type: object
+            properties:
+                target_topic_id:
+                    type: string
+                source_topic_ids:
+                    type: array
+                    items:
+                        type: string
+                reason:
+                    type: string
+        MergeTopicsResponse:
+            type: object
+            properties:
+                merged_count:
+                    type: integer
+                    format: int32
+        MmeSettings:
+            type: object
+            properties:
+                defaultAspects:
+                    type: array
+                    items:
+                        type: string
+                defaultHookCount:
+                    type: integer
+                    format: int32
+                maxVariantsPerSet:
+                    type: integer
+                    format: int32
+                renderConcurrency:
+                    type: integer
+                    format: int32
+                renderPreset:
+                    type: string
+                renderCrf:
+                    type: integer
+                    format: int32
+                minDurationSec:
+                    type: integer
+                    format: int32
+                maxDurationSec:
+                    type: integer
+                    format: int32
+                mediaDir:
+                    type: string
+                retentionDays:
+                    type: integer
+                    format: int32
+                cacheEnabled:
+                    type: boolean
+            description: |-
+                MmeSettings 生效设置快照（只读；来源 mme.yaml，env 可覆盖路径类）。
+                 前端展开表单/渲染参数默认值的数据源（W1 设置面板）。
         MontageTask:
             type: object
             properties:
@@ -13010,6 +13309,22 @@ components:
                     $ref: '#/components/schemas/EventCardItem'
                 parent_item:
                     $ref: '#/components/schemas/EventCardItem'
+        SplitTopicRequest:
+            type: object
+            properties:
+                topic_id:
+                    type: string
+                intel_ids:
+                    type: array
+                    items:
+                        type: string
+                reason:
+                    type: string
+        SplitTopicResponse:
+            type: object
+            properties:
+                new_topic_id:
+                    type: string
         Status:
             type: object
             properties:
@@ -13518,6 +13833,60 @@ components:
                     description: 删除时间
                     format: date-time
             description: 工具链接分类
+        TopicItem:
+            type: object
+            properties:
+                topic_id:
+                    type: string
+                label:
+                    type: string
+                category:
+                    type: string
+                stage:
+                    type: string
+                heat_score:
+                    type: number
+                    format: double
+                velocity:
+                    type: number
+                    format: double
+                platform_count:
+                    type: integer
+                    format: int32
+                merge_lock:
+                    type: boolean
+                needs_review:
+                    type: boolean
+                is_archived:
+                    type: boolean
+                first_seen_at:
+                    type: string
+                    format: date-time
+                last_seen_at:
+                    type: string
+                    format: date-time
+                source_count:
+                    type: integer
+                    format: int32
+            description: TopicItem 话题视图（列表/详情共用）。
+        TopicSourceItem:
+            type: object
+            properties:
+                intel_id:
+                    type: string
+                platform:
+                    type: string
+                contributed_at:
+                    type: string
+                    format: date-time
+                similarity:
+                    type: number
+                    format: double
+                cluster_key:
+                    type: string
+                moved_by:
+                    type: string
+            description: TopicSourceItem 话题来源条目（拆分对话框数据源）。
         TransmissionRule:
             type: object
             properties:
@@ -13897,6 +14266,23 @@ components:
                     description: 要更新的文件ID（URL 路径参数）
                     format: uint32
             description: 更新 - 请求
+        UpdateHeatWeightsRequest:
+            type: object
+            properties:
+                w_rank:
+                    type: number
+                    format: double
+                w_eng:
+                    type: number
+                    format: double
+                w_fresh:
+                    type: number
+                    format: double
+                w_breadth:
+                    type: number
+                    format: double
+                note:
+                    type: string
         UpdateIntelSourceRequest:
             type: object
             properties:
@@ -14559,6 +14945,38 @@ components:
                         type: string
                 htmlUrl:
                     type: string
+        WeightView:
+            type: object
+            properties:
+                config_id:
+                    type: string
+                w_rank:
+                    type: number
+                    format: double
+                w_eng:
+                    type: number
+                    format: double
+                w_fresh:
+                    type: number
+                    format: double
+                w_breadth:
+                    type: number
+                    format: double
+                effective_from:
+                    type: string
+                    format: date-time
+                epoch:
+                    type: string
+                    description: |-
+                        epoch = sha256(config_id)[:8]（A-15 ②）：口径断点标记，看板分段依据。
+                         表内无行时为 "default"（详设默认权重 {0.35, 0.25, 0.20, 0.20}）。
+                activated_by:
+                    type: string
+                note:
+                    type: string
+                effective:
+                    type: boolean
+            description: WeightView 一行 heat 权重配置（当前生效行 + 历史行同构）。
     responses:
         default:
             description: default kratos response
@@ -14664,6 +15082,13 @@ tags:
       description: 工具链接分类服务
     - name: ToolLinkService
       description: 工具链接门户服务
+    - name: TopicAdminService
+      description: TopicAdminService 话题人工管理（合并/拆分/复核）。
+    - name: TrendWeightService
+      description: |-
+        TrendWeightService heat 权重查看与变更。
+         ⚠ 变更即时生效：写入侧后续快照点携带新 weight_epoch，话题动态链首个点
+         强制 α=1 重置（A-15 ④）；变更窗口内突发告警应抑制一个采样周期（M4 落地）。
     - name: TrendingService
       description: TrendingService 热门 / 新星榜
     - name: UEditorService
