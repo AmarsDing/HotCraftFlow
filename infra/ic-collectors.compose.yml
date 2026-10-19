@@ -1,0 +1,54 @@
+# ① IC 情报收集 · M0 外部依赖部署清单（docs/systems/01-IC/04-开发进度.md M0）
+#
+# 与主 docker-compose.yml 叠加启用（IC 采集器独立开闭，不影响平台基建）：
+#   docker compose -f docker-compose.yml -f ic-collectors.compose.yml up -d
+#
+# 决策口径（PRD §12，[建议] 状态，正式拍板记录待 PRD 回写）：
+#   Q4 newsnow 必须自部署，禁止指向公共实例
+#   Q5 RSSHub 独立容器 + HTTP 调用，禁止 fork 进主仓（AGPL 合规边界）
+#   Q8 V1 只采集聚合统计，不采集个体评论内容
+#
+# ⚠️ 镜像与容器内端口未实机验证（[未实机验证] 纪律标注）：
+#   首次部署必须实测确认 image 名 / 容器端口，成功后回写本文件并更新下方 README 的实测日期。
+services:
+  newsnow:
+    # 上游项目：ourongxing/newsnow（自部署热榜聚合）[镜像名未实机验证]
+    image: ghcr.io/ourongxing/newsnow:latest
+    container_name: framework-newsnow
+    restart: unless-stopped
+    ports:
+      - "6688:4444" # host 6688 与 ic.yaml newsnow.base_url 对齐；容器内端口 [未实机验证]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4444/api/s?id=weibo || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  rsshub:
+    # 上游项目：DIYgod/RSSHub（独立服务，AGPL——仅 HTTP 调用，不 fork）[镜像名未实机验证]
+    image: diygod/rsshub:latest
+    container_name: framework-rsshub
+    restart: unless-stopped
+    ports:
+      - "1200:1200" # host 1200 与 ic.yaml rsshub.base_url 对齐
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:1200/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  crawl4ai:
+    # 上游项目：unclecode/crawl4ai（URL → Markdown）[镜像名/容器端口未实机验证]
+    image: unclecode/crawl4ai:latest
+    container_name: framework-crawl4ai
+    restart: unless-stopped
+    ports:
+      - "8787:11235" # host 8787 与 ic.yaml crawl4ai.base_url 对齐；容器内端口 [未实机验证]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:11235/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
