@@ -78,6 +78,8 @@ var entityCSVHeader = []string{
 func (u *MappingUsecase) ImportEntityCSV(ctx context.Context, r io.Reader) (created, updated, skipped int, errs []string, err error) {
 	cr := csv.NewReader(r)
 	cr.TrimLeadingSpace = true
+	// 变长容忍：列数不足交行级跳过（累计进 errors），而非整体 parse 失败。
+	cr.FieldsPerRecord = -1
 	rows, err := cr.ReadAll()
 	if err != nil {
 		return 0, 0, 0, nil, fmt.Errorf("parse csv: %w", err)
@@ -111,7 +113,8 @@ func (u *MappingUsecase) ImportEntityCSV(ctx context.Context, r io.Reader) (crea
 		if item.Source == "" {
 			item.Source = "import"
 		}
-		if item.EntityType == "" || item.AssetClass == "" || item.DirectionBias == "" {
+		// 🔴 枚举合法性须走 Valid()（非空检查会放行 alien 这类垃圾入映射库）。
+		if !item.EntityType.Valid() || !item.AssetClass.Valid() || !item.DirectionBias.Valid() {
 			errs = append(errs, fmt.Sprintf("L%d: 非法枚举（type=%s class=%s bias=%s）", lineNo, row[2], row[3], row[5]))
 			skipped++
 			continue
@@ -210,6 +213,8 @@ var narrativeCSVHeader = []string{
 func (u *MappingUsecase) ImportNarrativeCSV(ctx context.Context, r io.Reader) (created, updated, skipped int, errs []string, err error) {
 	cr := csv.NewReader(r)
 	cr.TrimLeadingSpace = true
+	// 变长容忍：列数不足交行级跳过（累计进 errors），而非整体 parse 失败。
+	cr.FieldsPerRecord = -1
 	rows, err := cr.ReadAll()
 	if err != nil {
 		return 0, 0, 0, nil, fmt.Errorf("parse csv: %w", err)

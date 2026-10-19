@@ -39,6 +39,12 @@ const componentMap: Record<string, () => Promise<any>> = {
   // ④ MME 矩阵混剪（键与 seed Menu.component 对齐；详情/矩阵/审核台不进菜单，走静态路由）
   'media/mme/TaskListPage': () => import('../pages/media/mme/TaskListPage.vue'),
   'media/mme/RenderQueuePage': () => import('../pages/media/mme/RenderQueuePage.vue'),
+
+  // ③ MIA 市场影响分析（键与 seed Menu.component 对齐；影响卡详情不进菜单，走静态路由）
+  'media/mia/ImpactListPage': () => import('../pages/media/mia/ImpactListPage.vue'),
+  'media/mia/EventListPage': () => import('../pages/media/mia/EventListPage.vue'),
+  'media/mia/MappingPage': () => import('../pages/media/mia/MappingPage.vue'),
+  'media/mia/CalibrationPage': () => import('../pages/media/mia/CalibrationPage.vue'),
 };
 
 export function resolveMenuComponent(name?: string | null) {

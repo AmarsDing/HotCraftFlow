@@ -180,6 +180,13 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('../pages/media/mme/ReviewDeskPage.vue'),
         meta: { title: '审核台' },
       },
+      {
+        // ③ MIA 影响卡详情（四因子面板 / 假设非因果徽标 / 固定免责声明；不进菜单）
+        path: 'media/mia/impacts/:id',
+        name: 'media-mia-impact-detail',
+        component: () => import('../pages/media/mia/ImpactDetailPage.vue'),
+        meta: { title: '影响卡详情' },
+      },
       { path: ':pathMatch(.*)*', name: 'not-found', component: NotFoundPage },
     ],
   },
