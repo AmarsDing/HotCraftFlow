@@ -57,6 +57,9 @@ type DictCategory func(*sql.Selector)
 // EntityAssetMapping is the predicate function for entityassetmapping builders.
 type EntityAssetMapping func(*sql.Selector)
 
+// EntityIndex is the predicate function for entityindex builders.
+type EntityIndex func(*sql.Selector)
+
 // EvidenceSnapshot is the predicate function for evidencesnapshot builders.
 type EvidenceSnapshot func(*sql.Selector)
 

@@ -46,6 +46,8 @@ type Tx struct {
 	DictCategory *DictCategoryClient
 	// EntityAssetMapping is the client for interacting with the EntityAssetMapping builders.
 	EntityAssetMapping *EntityAssetMappingClient
+	// EntityIndex is the client for interacting with the EntityIndex builders.
+	EntityIndex *EntityIndexClient
 	// EvidenceSnapshot is the client for interacting with the EvidenceSnapshot builders.
 	EvidenceSnapshot *EvidenceSnapshotClient
 	// File is the client for interacting with the File builders.
@@ -310,6 +312,7 @@ func (tx *Tx) init() {
 	tx.Dict = NewDictClient(tx.config)
 	tx.DictCategory = NewDictCategoryClient(tx.config)
 	tx.EntityAssetMapping = NewEntityAssetMappingClient(tx.config)
+	tx.EntityIndex = NewEntityIndexClient(tx.config)
 	tx.EvidenceSnapshot = NewEvidenceSnapshotClient(tx.config)
 	tx.File = NewFileClient(tx.config)
 	tx.IntelCluster = NewIntelClusterClient(tx.config)

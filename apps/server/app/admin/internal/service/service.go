@@ -58,6 +58,9 @@ var ProviderSet = wire.NewSet(
 	// ② TT 热点追踪（M2 权重配置页：查看 + 变更，A-15 断点口径）
 	NewTtWeightService,
 
+	// ② TT M3 话题人工管理（合并/拆分/复核；Step5 merge_lock 写入路径）
+	NewTtTopicAdminService,
+
 	// ① IC 情报收集（信源/规则 + 情报治理 + 采集器管理三服务；02 §6.2 路由面）
 	NewIcSourceService,
 	NewIcIntelService,

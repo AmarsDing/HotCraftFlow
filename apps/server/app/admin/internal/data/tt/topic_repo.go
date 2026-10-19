@@ -106,6 +106,15 @@ func (r *EntTopicRepo) CreateTopicWithSource(ctx context.Context, in biztt.Creat
 		if in.ClusterKey != "" {
 			sc.SetClusterKey(in.ClusterKey)
 		}
+		// B-1 Step2：SimHash 分段 + 完整指纹（召回倒排键 + 打分通道）
+		if in.TitleSimhash != 0 {
+			segs := biztt.SimHashSegments(in.TitleSimhash)
+			sc.SetTitleSimhash(in.TitleSimhash).
+				SetSimhashSeg0(segs[0]).
+				SetSimhashSeg1(segs[1]).
+				SetSimhashSeg2(segs[2]).
+				SetSimhashSeg3(segs[3])
+		}
 		_, err := sc.Save(ctx)
 		return err
 	})
@@ -125,6 +134,15 @@ func (r *EntTopicRepo) AttachSource(ctx context.Context, topicID string, in bizt
 		SetSimilarity(in.Similarity)
 	if in.ClusterKey != "" {
 		create.SetClusterKey(in.ClusterKey)
+	}
+	// B-1 Step2：SimHash 分段 + 完整指纹（召回倒排键 + 打分通道）
+	if in.TitleSimhash != 0 {
+		segs := biztt.SimHashSegments(in.TitleSimhash)
+		create.SetTitleSimhash(in.TitleSimhash).
+			SetSimhashSeg0(segs[0]).
+			SetSimhashSeg1(segs[1]).
+			SetSimhashSeg2(segs[2]).
+			SetSimhashSeg3(segs[3])
 	}
 	_, err := create.Save(ctx)
 	if err != nil && ent.IsConstraintError(err) {

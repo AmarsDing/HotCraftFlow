@@ -519,6 +519,30 @@ func (f EntityAssetMappingMutationRuleFunc) EvalMutation(ctx context.Context, m 
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.EntityAssetMappingMutation", m)
 }
 
+// The EntityIndexQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type EntityIndexQueryRuleFunc func(context.Context, *ent.EntityIndexQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f EntityIndexQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.EntityIndexQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.EntityIndexQuery", q)
+}
+
+// The EntityIndexMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type EntityIndexMutationRuleFunc func(context.Context, *ent.EntityIndexMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f EntityIndexMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.EntityIndexMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.EntityIndexMutation", m)
+}
+
 // The EvidenceSnapshotQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type EvidenceSnapshotQueryRuleFunc func(context.Context, *ent.EvidenceSnapshotQuery) error
@@ -1980,6 +2004,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.EntityAssetMappingQuery:
 		return q.Filter(), nil
+	case *ent.EntityIndexQuery:
+		return q.Filter(), nil
 	case *ent.EvidenceSnapshotQuery:
 		return q.Filter(), nil
 	case *ent.FileQuery:
@@ -2136,6 +2162,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.DictCategoryMutation:
 		return m.Filter(), nil
 	case *ent.EntityAssetMappingMutation:
+		return m.Filter(), nil
+	case *ent.EntityIndexMutation:
 		return m.Filter(), nil
 	case *ent.EvidenceSnapshotMutation:
 		return m.Filter(), nil

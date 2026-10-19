@@ -260,6 +260,141 @@ func (_u *TopicSourceUpdate) ClearMovedAt() *TopicSourceUpdate {
 	return _u
 }
 
+// SetSimhashSeg0 sets the "simhash_seg0" field.
+func (_u *TopicSourceUpdate) SetSimhashSeg0(v int16) *TopicSourceUpdate {
+	_u.mutation.ResetSimhashSeg0()
+	_u.mutation.SetSimhashSeg0(v)
+	return _u
+}
+
+// SetNillableSimhashSeg0 sets the "simhash_seg0" field if the given value is not nil.
+func (_u *TopicSourceUpdate) SetNillableSimhashSeg0(v *int16) *TopicSourceUpdate {
+	if v != nil {
+		_u.SetSimhashSeg0(*v)
+	}
+	return _u
+}
+
+// AddSimhashSeg0 adds value to the "simhash_seg0" field.
+func (_u *TopicSourceUpdate) AddSimhashSeg0(v int16) *TopicSourceUpdate {
+	_u.mutation.AddSimhashSeg0(v)
+	return _u
+}
+
+// ClearSimhashSeg0 clears the value of the "simhash_seg0" field.
+func (_u *TopicSourceUpdate) ClearSimhashSeg0() *TopicSourceUpdate {
+	_u.mutation.ClearSimhashSeg0()
+	return _u
+}
+
+// SetSimhashSeg1 sets the "simhash_seg1" field.
+func (_u *TopicSourceUpdate) SetSimhashSeg1(v int16) *TopicSourceUpdate {
+	_u.mutation.ResetSimhashSeg1()
+	_u.mutation.SetSimhashSeg1(v)
+	return _u
+}
+
+// SetNillableSimhashSeg1 sets the "simhash_seg1" field if the given value is not nil.
+func (_u *TopicSourceUpdate) SetNillableSimhashSeg1(v *int16) *TopicSourceUpdate {
+	if v != nil {
+		_u.SetSimhashSeg1(*v)
+	}
+	return _u
+}
+
+// AddSimhashSeg1 adds value to the "simhash_seg1" field.
+func (_u *TopicSourceUpdate) AddSimhashSeg1(v int16) *TopicSourceUpdate {
+	_u.mutation.AddSimhashSeg1(v)
+	return _u
+}
+
+// ClearSimhashSeg1 clears the value of the "simhash_seg1" field.
+func (_u *TopicSourceUpdate) ClearSimhashSeg1() *TopicSourceUpdate {
+	_u.mutation.ClearSimhashSeg1()
+	return _u
+}
+
+// SetSimhashSeg2 sets the "simhash_seg2" field.
+func (_u *TopicSourceUpdate) SetSimhashSeg2(v int16) *TopicSourceUpdate {
+	_u.mutation.ResetSimhashSeg2()
+	_u.mutation.SetSimhashSeg2(v)
+	return _u
+}
+
+// SetNillableSimhashSeg2 sets the "simhash_seg2" field if the given value is not nil.
+func (_u *TopicSourceUpdate) SetNillableSimhashSeg2(v *int16) *TopicSourceUpdate {
+	if v != nil {
+		_u.SetSimhashSeg2(*v)
+	}
+	return _u
+}
+
+// AddSimhashSeg2 adds value to the "simhash_seg2" field.
+func (_u *TopicSourceUpdate) AddSimhashSeg2(v int16) *TopicSourceUpdate {
+	_u.mutation.AddSimhashSeg2(v)
+	return _u
+}
+
+// ClearSimhashSeg2 clears the value of the "simhash_seg2" field.
+func (_u *TopicSourceUpdate) ClearSimhashSeg2() *TopicSourceUpdate {
+	_u.mutation.ClearSimhashSeg2()
+	return _u
+}
+
+// SetSimhashSeg3 sets the "simhash_seg3" field.
+func (_u *TopicSourceUpdate) SetSimhashSeg3(v int16) *TopicSourceUpdate {
+	_u.mutation.ResetSimhashSeg3()
+	_u.mutation.SetSimhashSeg3(v)
+	return _u
+}
+
+// SetNillableSimhashSeg3 sets the "simhash_seg3" field if the given value is not nil.
+func (_u *TopicSourceUpdate) SetNillableSimhashSeg3(v *int16) *TopicSourceUpdate {
+	if v != nil {
+		_u.SetSimhashSeg3(*v)
+	}
+	return _u
+}
+
+// AddSimhashSeg3 adds value to the "simhash_seg3" field.
+func (_u *TopicSourceUpdate) AddSimhashSeg3(v int16) *TopicSourceUpdate {
+	_u.mutation.AddSimhashSeg3(v)
+	return _u
+}
+
+// ClearSimhashSeg3 clears the value of the "simhash_seg3" field.
+func (_u *TopicSourceUpdate) ClearSimhashSeg3() *TopicSourceUpdate {
+	_u.mutation.ClearSimhashSeg3()
+	return _u
+}
+
+// SetTitleSimhash sets the "title_simhash" field.
+func (_u *TopicSourceUpdate) SetTitleSimhash(v uint64) *TopicSourceUpdate {
+	_u.mutation.ResetTitleSimhash()
+	_u.mutation.SetTitleSimhash(v)
+	return _u
+}
+
+// SetNillableTitleSimhash sets the "title_simhash" field if the given value is not nil.
+func (_u *TopicSourceUpdate) SetNillableTitleSimhash(v *uint64) *TopicSourceUpdate {
+	if v != nil {
+		_u.SetTitleSimhash(*v)
+	}
+	return _u
+}
+
+// AddTitleSimhash adds value to the "title_simhash" field.
+func (_u *TopicSourceUpdate) AddTitleSimhash(v int64) *TopicSourceUpdate {
+	_u.mutation.AddTitleSimhash(v)
+	return _u
+}
+
+// ClearTitleSimhash clears the value of the "title_simhash" field.
+func (_u *TopicSourceUpdate) ClearTitleSimhash() *TopicSourceUpdate {
+	_u.mutation.ClearTitleSimhash()
+	return _u
+}
+
 // Mutation returns the TopicSourceMutation object of the builder.
 func (_u *TopicSourceUpdate) Mutation() *TopicSourceMutation {
 	return _u.mutation
@@ -401,6 +536,51 @@ func (_u *TopicSourceUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if _u.mutation.MovedAtCleared() {
 		_spec.ClearField(topicsource.FieldMovedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.SimhashSeg0(); ok {
+		_spec.SetField(topicsource.FieldSimhashSeg0, field.TypeInt16, value)
+	}
+	if value, ok := _u.mutation.AddedSimhashSeg0(); ok {
+		_spec.AddField(topicsource.FieldSimhashSeg0, field.TypeInt16, value)
+	}
+	if _u.mutation.SimhashSeg0Cleared() {
+		_spec.ClearField(topicsource.FieldSimhashSeg0, field.TypeInt16)
+	}
+	if value, ok := _u.mutation.SimhashSeg1(); ok {
+		_spec.SetField(topicsource.FieldSimhashSeg1, field.TypeInt16, value)
+	}
+	if value, ok := _u.mutation.AddedSimhashSeg1(); ok {
+		_spec.AddField(topicsource.FieldSimhashSeg1, field.TypeInt16, value)
+	}
+	if _u.mutation.SimhashSeg1Cleared() {
+		_spec.ClearField(topicsource.FieldSimhashSeg1, field.TypeInt16)
+	}
+	if value, ok := _u.mutation.SimhashSeg2(); ok {
+		_spec.SetField(topicsource.FieldSimhashSeg2, field.TypeInt16, value)
+	}
+	if value, ok := _u.mutation.AddedSimhashSeg2(); ok {
+		_spec.AddField(topicsource.FieldSimhashSeg2, field.TypeInt16, value)
+	}
+	if _u.mutation.SimhashSeg2Cleared() {
+		_spec.ClearField(topicsource.FieldSimhashSeg2, field.TypeInt16)
+	}
+	if value, ok := _u.mutation.SimhashSeg3(); ok {
+		_spec.SetField(topicsource.FieldSimhashSeg3, field.TypeInt16, value)
+	}
+	if value, ok := _u.mutation.AddedSimhashSeg3(); ok {
+		_spec.AddField(topicsource.FieldSimhashSeg3, field.TypeInt16, value)
+	}
+	if _u.mutation.SimhashSeg3Cleared() {
+		_spec.ClearField(topicsource.FieldSimhashSeg3, field.TypeInt16)
+	}
+	if value, ok := _u.mutation.TitleSimhash(); ok {
+		_spec.SetField(topicsource.FieldTitleSimhash, field.TypeUint64, value)
+	}
+	if value, ok := _u.mutation.AddedTitleSimhash(); ok {
+		_spec.AddField(topicsource.FieldTitleSimhash, field.TypeUint64, value)
+	}
+	if _u.mutation.TitleSimhashCleared() {
+		_spec.ClearField(topicsource.FieldTitleSimhash, field.TypeUint64)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
@@ -655,6 +835,141 @@ func (_u *TopicSourceUpdateOne) ClearMovedAt() *TopicSourceUpdateOne {
 	return _u
 }
 
+// SetSimhashSeg0 sets the "simhash_seg0" field.
+func (_u *TopicSourceUpdateOne) SetSimhashSeg0(v int16) *TopicSourceUpdateOne {
+	_u.mutation.ResetSimhashSeg0()
+	_u.mutation.SetSimhashSeg0(v)
+	return _u
+}
+
+// SetNillableSimhashSeg0 sets the "simhash_seg0" field if the given value is not nil.
+func (_u *TopicSourceUpdateOne) SetNillableSimhashSeg0(v *int16) *TopicSourceUpdateOne {
+	if v != nil {
+		_u.SetSimhashSeg0(*v)
+	}
+	return _u
+}
+
+// AddSimhashSeg0 adds value to the "simhash_seg0" field.
+func (_u *TopicSourceUpdateOne) AddSimhashSeg0(v int16) *TopicSourceUpdateOne {
+	_u.mutation.AddSimhashSeg0(v)
+	return _u
+}
+
+// ClearSimhashSeg0 clears the value of the "simhash_seg0" field.
+func (_u *TopicSourceUpdateOne) ClearSimhashSeg0() *TopicSourceUpdateOne {
+	_u.mutation.ClearSimhashSeg0()
+	return _u
+}
+
+// SetSimhashSeg1 sets the "simhash_seg1" field.
+func (_u *TopicSourceUpdateOne) SetSimhashSeg1(v int16) *TopicSourceUpdateOne {
+	_u.mutation.ResetSimhashSeg1()
+	_u.mutation.SetSimhashSeg1(v)
+	return _u
+}
+
+// SetNillableSimhashSeg1 sets the "simhash_seg1" field if the given value is not nil.
+func (_u *TopicSourceUpdateOne) SetNillableSimhashSeg1(v *int16) *TopicSourceUpdateOne {
+	if v != nil {
+		_u.SetSimhashSeg1(*v)
+	}
+	return _u
+}
+
+// AddSimhashSeg1 adds value to the "simhash_seg1" field.
+func (_u *TopicSourceUpdateOne) AddSimhashSeg1(v int16) *TopicSourceUpdateOne {
+	_u.mutation.AddSimhashSeg1(v)
+	return _u
+}
+
+// ClearSimhashSeg1 clears the value of the "simhash_seg1" field.
+func (_u *TopicSourceUpdateOne) ClearSimhashSeg1() *TopicSourceUpdateOne {
+	_u.mutation.ClearSimhashSeg1()
+	return _u
+}
+
+// SetSimhashSeg2 sets the "simhash_seg2" field.
+func (_u *TopicSourceUpdateOne) SetSimhashSeg2(v int16) *TopicSourceUpdateOne {
+	_u.mutation.ResetSimhashSeg2()
+	_u.mutation.SetSimhashSeg2(v)
+	return _u
+}
+
+// SetNillableSimhashSeg2 sets the "simhash_seg2" field if the given value is not nil.
+func (_u *TopicSourceUpdateOne) SetNillableSimhashSeg2(v *int16) *TopicSourceUpdateOne {
+	if v != nil {
+		_u.SetSimhashSeg2(*v)
+	}
+	return _u
+}
+
+// AddSimhashSeg2 adds value to the "simhash_seg2" field.
+func (_u *TopicSourceUpdateOne) AddSimhashSeg2(v int16) *TopicSourceUpdateOne {
+	_u.mutation.AddSimhashSeg2(v)
+	return _u
+}
+
+// ClearSimhashSeg2 clears the value of the "simhash_seg2" field.
+func (_u *TopicSourceUpdateOne) ClearSimhashSeg2() *TopicSourceUpdateOne {
+	_u.mutation.ClearSimhashSeg2()
+	return _u
+}
+
+// SetSimhashSeg3 sets the "simhash_seg3" field.
+func (_u *TopicSourceUpdateOne) SetSimhashSeg3(v int16) *TopicSourceUpdateOne {
+	_u.mutation.ResetSimhashSeg3()
+	_u.mutation.SetSimhashSeg3(v)
+	return _u
+}
+
+// SetNillableSimhashSeg3 sets the "simhash_seg3" field if the given value is not nil.
+func (_u *TopicSourceUpdateOne) SetNillableSimhashSeg3(v *int16) *TopicSourceUpdateOne {
+	if v != nil {
+		_u.SetSimhashSeg3(*v)
+	}
+	return _u
+}
+
+// AddSimhashSeg3 adds value to the "simhash_seg3" field.
+func (_u *TopicSourceUpdateOne) AddSimhashSeg3(v int16) *TopicSourceUpdateOne {
+	_u.mutation.AddSimhashSeg3(v)
+	return _u
+}
+
+// ClearSimhashSeg3 clears the value of the "simhash_seg3" field.
+func (_u *TopicSourceUpdateOne) ClearSimhashSeg3() *TopicSourceUpdateOne {
+	_u.mutation.ClearSimhashSeg3()
+	return _u
+}
+
+// SetTitleSimhash sets the "title_simhash" field.
+func (_u *TopicSourceUpdateOne) SetTitleSimhash(v uint64) *TopicSourceUpdateOne {
+	_u.mutation.ResetTitleSimhash()
+	_u.mutation.SetTitleSimhash(v)
+	return _u
+}
+
+// SetNillableTitleSimhash sets the "title_simhash" field if the given value is not nil.
+func (_u *TopicSourceUpdateOne) SetNillableTitleSimhash(v *uint64) *TopicSourceUpdateOne {
+	if v != nil {
+		_u.SetTitleSimhash(*v)
+	}
+	return _u
+}
+
+// AddTitleSimhash adds value to the "title_simhash" field.
+func (_u *TopicSourceUpdateOne) AddTitleSimhash(v int64) *TopicSourceUpdateOne {
+	_u.mutation.AddTitleSimhash(v)
+	return _u
+}
+
+// ClearTitleSimhash clears the value of the "title_simhash" field.
+func (_u *TopicSourceUpdateOne) ClearTitleSimhash() *TopicSourceUpdateOne {
+	_u.mutation.ClearTitleSimhash()
+	return _u
+}
+
 // Mutation returns the TopicSourceMutation object of the builder.
 func (_u *TopicSourceUpdateOne) Mutation() *TopicSourceMutation {
 	return _u.mutation
@@ -826,6 +1141,51 @@ func (_u *TopicSourceUpdateOne) sqlSave(ctx context.Context) (_node *TopicSource
 	}
 	if _u.mutation.MovedAtCleared() {
 		_spec.ClearField(topicsource.FieldMovedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.SimhashSeg0(); ok {
+		_spec.SetField(topicsource.FieldSimhashSeg0, field.TypeInt16, value)
+	}
+	if value, ok := _u.mutation.AddedSimhashSeg0(); ok {
+		_spec.AddField(topicsource.FieldSimhashSeg0, field.TypeInt16, value)
+	}
+	if _u.mutation.SimhashSeg0Cleared() {
+		_spec.ClearField(topicsource.FieldSimhashSeg0, field.TypeInt16)
+	}
+	if value, ok := _u.mutation.SimhashSeg1(); ok {
+		_spec.SetField(topicsource.FieldSimhashSeg1, field.TypeInt16, value)
+	}
+	if value, ok := _u.mutation.AddedSimhashSeg1(); ok {
+		_spec.AddField(topicsource.FieldSimhashSeg1, field.TypeInt16, value)
+	}
+	if _u.mutation.SimhashSeg1Cleared() {
+		_spec.ClearField(topicsource.FieldSimhashSeg1, field.TypeInt16)
+	}
+	if value, ok := _u.mutation.SimhashSeg2(); ok {
+		_spec.SetField(topicsource.FieldSimhashSeg2, field.TypeInt16, value)
+	}
+	if value, ok := _u.mutation.AddedSimhashSeg2(); ok {
+		_spec.AddField(topicsource.FieldSimhashSeg2, field.TypeInt16, value)
+	}
+	if _u.mutation.SimhashSeg2Cleared() {
+		_spec.ClearField(topicsource.FieldSimhashSeg2, field.TypeInt16)
+	}
+	if value, ok := _u.mutation.SimhashSeg3(); ok {
+		_spec.SetField(topicsource.FieldSimhashSeg3, field.TypeInt16, value)
+	}
+	if value, ok := _u.mutation.AddedSimhashSeg3(); ok {
+		_spec.AddField(topicsource.FieldSimhashSeg3, field.TypeInt16, value)
+	}
+	if _u.mutation.SimhashSeg3Cleared() {
+		_spec.ClearField(topicsource.FieldSimhashSeg3, field.TypeInt16)
+	}
+	if value, ok := _u.mutation.TitleSimhash(); ok {
+		_spec.SetField(topicsource.FieldTitleSimhash, field.TypeUint64, value)
+	}
+	if value, ok := _u.mutation.AddedTitleSimhash(); ok {
+		_spec.AddField(topicsource.FieldTitleSimhash, field.TypeUint64, value)
+	}
+	if _u.mutation.TitleSimhashCleared() {
+		_spec.ClearField(topicsource.FieldTitleSimhash, field.TypeUint64)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &TopicSource{config: _u.config}

@@ -212,6 +212,18 @@ func (f EntityAssetMappingFunc) Mutate(ctx context.Context, m ent.Mutation) (ent
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EntityAssetMappingMutation", m)
 }
 
+// The EntityIndexFunc type is an adapter to allow the use of ordinary
+// function as EntityIndex mutator.
+type EntityIndexFunc func(context.Context, *ent.EntityIndexMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EntityIndexFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EntityIndexMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EntityIndexMutation", m)
+}
+
 // The EvidenceSnapshotFunc type is an adapter to allow the use of ordinary
 // function as EvidenceSnapshot mutator.
 type EvidenceSnapshotFunc func(context.Context, *ent.EvidenceSnapshotMutation) (ent.Value, error)

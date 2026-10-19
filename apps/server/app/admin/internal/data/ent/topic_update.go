@@ -645,6 +645,38 @@ func (_u *TopicUpdate) SetNillableNeedsReview(v *bool) *TopicUpdate {
 	return _u
 }
 
+// SetStageEvidence sets the "stage_evidence" field.
+func (_u *TopicUpdate) SetStageEvidence(v map[string]interface{}) *TopicUpdate {
+	_u.mutation.SetStageEvidence(v)
+	return _u
+}
+
+// ClearStageEvidence clears the value of the "stage_evidence" field.
+func (_u *TopicUpdate) ClearStageEvidence() *TopicUpdate {
+	_u.mutation.ClearStageEvidence()
+	return _u
+}
+
+// SetRecomputeLock sets the "recompute_lock" field.
+func (_u *TopicUpdate) SetRecomputeLock(v time.Time) *TopicUpdate {
+	_u.mutation.SetRecomputeLock(v)
+	return _u
+}
+
+// SetNillableRecomputeLock sets the "recompute_lock" field if the given value is not nil.
+func (_u *TopicUpdate) SetNillableRecomputeLock(v *time.Time) *TopicUpdate {
+	if v != nil {
+		_u.SetRecomputeLock(*v)
+	}
+	return _u
+}
+
+// ClearRecomputeLock clears the value of the "recompute_lock" field.
+func (_u *TopicUpdate) ClearRecomputeLock() *TopicUpdate {
+	_u.mutation.ClearRecomputeLock()
+	return _u
+}
+
 // SetIsArchived sets the "is_archived" field.
 func (_u *TopicUpdate) SetIsArchived(v bool) *TopicUpdate {
 	_u.mutation.SetIsArchived(v)
@@ -923,6 +955,18 @@ func (_u *TopicUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.NeedsReview(); ok {
 		_spec.SetField(topic.FieldNeedsReview, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.StageEvidence(); ok {
+		_spec.SetField(topic.FieldStageEvidence, field.TypeJSON, value)
+	}
+	if _u.mutation.StageEvidenceCleared() {
+		_spec.ClearField(topic.FieldStageEvidence, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.RecomputeLock(); ok {
+		_spec.SetField(topic.FieldRecomputeLock, field.TypeTime, value)
+	}
+	if _u.mutation.RecomputeLockCleared() {
+		_spec.ClearField(topic.FieldRecomputeLock, field.TypeTime)
 	}
 	if value, ok := _u.mutation.IsArchived(); ok {
 		_spec.SetField(topic.FieldIsArchived, field.TypeBool, value)
@@ -1564,6 +1608,38 @@ func (_u *TopicUpdateOne) SetNillableNeedsReview(v *bool) *TopicUpdateOne {
 	return _u
 }
 
+// SetStageEvidence sets the "stage_evidence" field.
+func (_u *TopicUpdateOne) SetStageEvidence(v map[string]interface{}) *TopicUpdateOne {
+	_u.mutation.SetStageEvidence(v)
+	return _u
+}
+
+// ClearStageEvidence clears the value of the "stage_evidence" field.
+func (_u *TopicUpdateOne) ClearStageEvidence() *TopicUpdateOne {
+	_u.mutation.ClearStageEvidence()
+	return _u
+}
+
+// SetRecomputeLock sets the "recompute_lock" field.
+func (_u *TopicUpdateOne) SetRecomputeLock(v time.Time) *TopicUpdateOne {
+	_u.mutation.SetRecomputeLock(v)
+	return _u
+}
+
+// SetNillableRecomputeLock sets the "recompute_lock" field if the given value is not nil.
+func (_u *TopicUpdateOne) SetNillableRecomputeLock(v *time.Time) *TopicUpdateOne {
+	if v != nil {
+		_u.SetRecomputeLock(*v)
+	}
+	return _u
+}
+
+// ClearRecomputeLock clears the value of the "recompute_lock" field.
+func (_u *TopicUpdateOne) ClearRecomputeLock() *TopicUpdateOne {
+	_u.mutation.ClearRecomputeLock()
+	return _u
+}
+
 // SetIsArchived sets the "is_archived" field.
 func (_u *TopicUpdateOne) SetIsArchived(v bool) *TopicUpdateOne {
 	_u.mutation.SetIsArchived(v)
@@ -1872,6 +1948,18 @@ func (_u *TopicUpdateOne) sqlSave(ctx context.Context) (_node *Topic, err error)
 	}
 	if value, ok := _u.mutation.NeedsReview(); ok {
 		_spec.SetField(topic.FieldNeedsReview, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.StageEvidence(); ok {
+		_spec.SetField(topic.FieldStageEvidence, field.TypeJSON, value)
+	}
+	if _u.mutation.StageEvidenceCleared() {
+		_spec.ClearField(topic.FieldStageEvidence, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.RecomputeLock(); ok {
+		_spec.SetField(topic.FieldRecomputeLock, field.TypeTime, value)
+	}
+	if _u.mutation.RecomputeLockCleared() {
+		_spec.ClearField(topic.FieldRecomputeLock, field.TypeTime)
 	}
 	if value, ok := _u.mutation.IsArchived(); ok {
 		_spec.SetField(topic.FieldIsArchived, field.TypeBool, value)

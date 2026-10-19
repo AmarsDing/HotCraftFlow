@@ -13,6 +13,7 @@ var ProviderSet = wire.NewSet(
 	NewIngestSubscriber,
 	NewSnapshotWriter,
 	NewBufferReplay,
+	NewLifecycleWorker,
 
 	wire.Bind(new(biztt.SnapshotPublisher), new(*NatsSnapshotPublisher)),
 )

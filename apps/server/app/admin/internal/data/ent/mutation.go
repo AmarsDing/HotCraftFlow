@@ -24,6 +24,7 @@ import (
 	"framework/app/admin/internal/data/ent/dict"
 	"framework/app/admin/internal/data/ent/dictcategory"
 	"framework/app/admin/internal/data/ent/entityassetmapping"
+	"framework/app/admin/internal/data/ent/entityindex"
 	"framework/app/admin/internal/data/ent/evidencesnapshot"
 	"framework/app/admin/internal/data/ent/file"
 	"framework/app/admin/internal/data/ent/intelcluster"
@@ -117,6 +118,7 @@ const (
 	TypeDict                         = "Dict"
 	TypeDictCategory                 = "DictCategory"
 	TypeEntityAssetMapping           = "EntityAssetMapping"
+	TypeEntityIndex                  = "EntityIndex"
 	TypeEvidenceSnapshot             = "EvidenceSnapshot"
 	TypeFile                         = "File"
 	TypeIntelCluster                 = "IntelCluster"
@@ -22151,6 +22153,826 @@ func (m *EntityAssetMappingMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *EntityAssetMappingMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown EntityAssetMapping edge %s", name)
+}
+
+// EntityIndexMutation represents an operation that mutates the EntityIndex nodes in the graph.
+type EntityIndexMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	create_time   *time.Time
+	update_time   *time.Time
+	delete_time   *time.Time
+	tenant_id     *uint32
+	addtenant_id  *int32
+	entity_key    *string
+	topic_id      *string
+	intel_id      *string
+	indexed_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*EntityIndex, error)
+	predicates    []predicate.EntityIndex
+}
+
+var _ ent.Mutation = (*EntityIndexMutation)(nil)
+
+// entityindexOption allows management of the mutation configuration using functional options.
+type entityindexOption func(*EntityIndexMutation)
+
+// newEntityIndexMutation creates new mutation for the EntityIndex entity.
+func newEntityIndexMutation(c config, op Op, opts ...entityindexOption) *EntityIndexMutation {
+	m := &EntityIndexMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeEntityIndex,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withEntityIndexID sets the ID field of the mutation.
+func withEntityIndexID(id int) entityindexOption {
+	return func(m *EntityIndexMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *EntityIndex
+		)
+		m.oldValue = func(ctx context.Context) (*EntityIndex, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().EntityIndex.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withEntityIndex sets the old EntityIndex of the mutation.
+func withEntityIndex(node *EntityIndex) entityindexOption {
+	return func(m *EntityIndexMutation) {
+		m.oldValue = func(context.Context) (*EntityIndex, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m EntityIndexMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m EntityIndexMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *EntityIndexMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *EntityIndexMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().EntityIndex.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *EntityIndexMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *EntityIndexMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the EntityIndex entity.
+// If the EntityIndex object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EntityIndexMutation) OldCreateTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ClearCreateTime clears the value of the "create_time" field.
+func (m *EntityIndexMutation) ClearCreateTime() {
+	m.create_time = nil
+	m.clearedFields[entityindex.FieldCreateTime] = struct{}{}
+}
+
+// CreateTimeCleared returns if the "create_time" field was cleared in this mutation.
+func (m *EntityIndexMutation) CreateTimeCleared() bool {
+	_, ok := m.clearedFields[entityindex.FieldCreateTime]
+	return ok
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *EntityIndexMutation) ResetCreateTime() {
+	m.create_time = nil
+	delete(m.clearedFields, entityindex.FieldCreateTime)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *EntityIndexMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *EntityIndexMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the EntityIndex entity.
+// If the EntityIndex object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EntityIndexMutation) OldUpdateTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ClearUpdateTime clears the value of the "update_time" field.
+func (m *EntityIndexMutation) ClearUpdateTime() {
+	m.update_time = nil
+	m.clearedFields[entityindex.FieldUpdateTime] = struct{}{}
+}
+
+// UpdateTimeCleared returns if the "update_time" field was cleared in this mutation.
+func (m *EntityIndexMutation) UpdateTimeCleared() bool {
+	_, ok := m.clearedFields[entityindex.FieldUpdateTime]
+	return ok
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *EntityIndexMutation) ResetUpdateTime() {
+	m.update_time = nil
+	delete(m.clearedFields, entityindex.FieldUpdateTime)
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *EntityIndexMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *EntityIndexMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the EntityIndex entity.
+// If the EntityIndex object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EntityIndexMutation) OldDeleteTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *EntityIndexMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[entityindex.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *EntityIndexMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[entityindex.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *EntityIndexMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, entityindex.FieldDeleteTime)
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *EntityIndexMutation) SetTenantID(u uint32) {
+	m.tenant_id = &u
+	m.addtenant_id = nil
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *EntityIndexMutation) TenantID() (r uint32, exists bool) {
+	v := m.tenant_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the EntityIndex entity.
+// If the EntityIndex object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EntityIndexMutation) OldTenantID(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// AddTenantID adds u to the "tenant_id" field.
+func (m *EntityIndexMutation) AddTenantID(u int32) {
+	if m.addtenant_id != nil {
+		*m.addtenant_id += u
+	} else {
+		m.addtenant_id = &u
+	}
+}
+
+// AddedTenantID returns the value that was added to the "tenant_id" field in this mutation.
+func (m *EntityIndexMutation) AddedTenantID() (r int32, exists bool) {
+	v := m.addtenant_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearTenantID clears the value of the "tenant_id" field.
+func (m *EntityIndexMutation) ClearTenantID() {
+	m.tenant_id = nil
+	m.addtenant_id = nil
+	m.clearedFields[entityindex.FieldTenantID] = struct{}{}
+}
+
+// TenantIDCleared returns if the "tenant_id" field was cleared in this mutation.
+func (m *EntityIndexMutation) TenantIDCleared() bool {
+	_, ok := m.clearedFields[entityindex.FieldTenantID]
+	return ok
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *EntityIndexMutation) ResetTenantID() {
+	m.tenant_id = nil
+	m.addtenant_id = nil
+	delete(m.clearedFields, entityindex.FieldTenantID)
+}
+
+// SetEntityKey sets the "entity_key" field.
+func (m *EntityIndexMutation) SetEntityKey(s string) {
+	m.entity_key = &s
+}
+
+// EntityKey returns the value of the "entity_key" field in the mutation.
+func (m *EntityIndexMutation) EntityKey() (r string, exists bool) {
+	v := m.entity_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEntityKey returns the old "entity_key" field's value of the EntityIndex entity.
+// If the EntityIndex object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EntityIndexMutation) OldEntityKey(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEntityKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEntityKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEntityKey: %w", err)
+	}
+	return oldValue.EntityKey, nil
+}
+
+// ResetEntityKey resets all changes to the "entity_key" field.
+func (m *EntityIndexMutation) ResetEntityKey() {
+	m.entity_key = nil
+}
+
+// SetTopicID sets the "topic_id" field.
+func (m *EntityIndexMutation) SetTopicID(s string) {
+	m.topic_id = &s
+}
+
+// TopicID returns the value of the "topic_id" field in the mutation.
+func (m *EntityIndexMutation) TopicID() (r string, exists bool) {
+	v := m.topic_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTopicID returns the old "topic_id" field's value of the EntityIndex entity.
+// If the EntityIndex object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EntityIndexMutation) OldTopicID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTopicID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTopicID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTopicID: %w", err)
+	}
+	return oldValue.TopicID, nil
+}
+
+// ResetTopicID resets all changes to the "topic_id" field.
+func (m *EntityIndexMutation) ResetTopicID() {
+	m.topic_id = nil
+}
+
+// SetIntelID sets the "intel_id" field.
+func (m *EntityIndexMutation) SetIntelID(s string) {
+	m.intel_id = &s
+}
+
+// IntelID returns the value of the "intel_id" field in the mutation.
+func (m *EntityIndexMutation) IntelID() (r string, exists bool) {
+	v := m.intel_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIntelID returns the old "intel_id" field's value of the EntityIndex entity.
+// If the EntityIndex object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EntityIndexMutation) OldIntelID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIntelID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIntelID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIntelID: %w", err)
+	}
+	return oldValue.IntelID, nil
+}
+
+// ResetIntelID resets all changes to the "intel_id" field.
+func (m *EntityIndexMutation) ResetIntelID() {
+	m.intel_id = nil
+}
+
+// SetIndexedAt sets the "indexed_at" field.
+func (m *EntityIndexMutation) SetIndexedAt(t time.Time) {
+	m.indexed_at = &t
+}
+
+// IndexedAt returns the value of the "indexed_at" field in the mutation.
+func (m *EntityIndexMutation) IndexedAt() (r time.Time, exists bool) {
+	v := m.indexed_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIndexedAt returns the old "indexed_at" field's value of the EntityIndex entity.
+// If the EntityIndex object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EntityIndexMutation) OldIndexedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIndexedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIndexedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIndexedAt: %w", err)
+	}
+	return oldValue.IndexedAt, nil
+}
+
+// ResetIndexedAt resets all changes to the "indexed_at" field.
+func (m *EntityIndexMutation) ResetIndexedAt() {
+	m.indexed_at = nil
+}
+
+// Where appends a list predicates to the EntityIndexMutation builder.
+func (m *EntityIndexMutation) Where(ps ...predicate.EntityIndex) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the EntityIndexMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *EntityIndexMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.EntityIndex, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *EntityIndexMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *EntityIndexMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (EntityIndex).
+func (m *EntityIndexMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *EntityIndexMutation) Fields() []string {
+	fields := make([]string, 0, 8)
+	if m.create_time != nil {
+		fields = append(fields, entityindex.FieldCreateTime)
+	}
+	if m.update_time != nil {
+		fields = append(fields, entityindex.FieldUpdateTime)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, entityindex.FieldDeleteTime)
+	}
+	if m.tenant_id != nil {
+		fields = append(fields, entityindex.FieldTenantID)
+	}
+	if m.entity_key != nil {
+		fields = append(fields, entityindex.FieldEntityKey)
+	}
+	if m.topic_id != nil {
+		fields = append(fields, entityindex.FieldTopicID)
+	}
+	if m.intel_id != nil {
+		fields = append(fields, entityindex.FieldIntelID)
+	}
+	if m.indexed_at != nil {
+		fields = append(fields, entityindex.FieldIndexedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *EntityIndexMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case entityindex.FieldCreateTime:
+		return m.CreateTime()
+	case entityindex.FieldUpdateTime:
+		return m.UpdateTime()
+	case entityindex.FieldDeleteTime:
+		return m.DeleteTime()
+	case entityindex.FieldTenantID:
+		return m.TenantID()
+	case entityindex.FieldEntityKey:
+		return m.EntityKey()
+	case entityindex.FieldTopicID:
+		return m.TopicID()
+	case entityindex.FieldIntelID:
+		return m.IntelID()
+	case entityindex.FieldIndexedAt:
+		return m.IndexedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *EntityIndexMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case entityindex.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case entityindex.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case entityindex.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
+	case entityindex.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case entityindex.FieldEntityKey:
+		return m.OldEntityKey(ctx)
+	case entityindex.FieldTopicID:
+		return m.OldTopicID(ctx)
+	case entityindex.FieldIntelID:
+		return m.OldIntelID(ctx)
+	case entityindex.FieldIndexedAt:
+		return m.OldIndexedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown EntityIndex field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *EntityIndexMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case entityindex.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case entityindex.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case entityindex.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
+	case entityindex.FieldTenantID:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case entityindex.FieldEntityKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEntityKey(v)
+		return nil
+	case entityindex.FieldTopicID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTopicID(v)
+		return nil
+	case entityindex.FieldIntelID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIntelID(v)
+		return nil
+	case entityindex.FieldIndexedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIndexedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown EntityIndex field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *EntityIndexMutation) AddedFields() []string {
+	var fields []string
+	if m.addtenant_id != nil {
+		fields = append(fields, entityindex.FieldTenantID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *EntityIndexMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case entityindex.FieldTenantID:
+		return m.AddedTenantID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *EntityIndexMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case entityindex.FieldTenantID:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTenantID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown EntityIndex numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *EntityIndexMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(entityindex.FieldCreateTime) {
+		fields = append(fields, entityindex.FieldCreateTime)
+	}
+	if m.FieldCleared(entityindex.FieldUpdateTime) {
+		fields = append(fields, entityindex.FieldUpdateTime)
+	}
+	if m.FieldCleared(entityindex.FieldDeleteTime) {
+		fields = append(fields, entityindex.FieldDeleteTime)
+	}
+	if m.FieldCleared(entityindex.FieldTenantID) {
+		fields = append(fields, entityindex.FieldTenantID)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *EntityIndexMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *EntityIndexMutation) ClearField(name string) error {
+	switch name {
+	case entityindex.FieldCreateTime:
+		m.ClearCreateTime()
+		return nil
+	case entityindex.FieldUpdateTime:
+		m.ClearUpdateTime()
+		return nil
+	case entityindex.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	case entityindex.FieldTenantID:
+		m.ClearTenantID()
+		return nil
+	}
+	return fmt.Errorf("unknown EntityIndex nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *EntityIndexMutation) ResetField(name string) error {
+	switch name {
+	case entityindex.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case entityindex.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case entityindex.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
+	case entityindex.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case entityindex.FieldEntityKey:
+		m.ResetEntityKey()
+		return nil
+	case entityindex.FieldTopicID:
+		m.ResetTopicID()
+		return nil
+	case entityindex.FieldIntelID:
+		m.ResetIntelID()
+		return nil
+	case entityindex.FieldIndexedAt:
+		m.ResetIndexedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown EntityIndex field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *EntityIndexMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *EntityIndexMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *EntityIndexMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *EntityIndexMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *EntityIndexMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *EntityIndexMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *EntityIndexMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown EntityIndex unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *EntityIndexMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown EntityIndex edge %s", name)
 }
 
 // EvidenceSnapshotMutation represents an operation that mutates the EvidenceSnapshot nodes in the graph.
@@ -87545,6 +88367,8 @@ type TopicMutation struct {
 	representative_intel_id  *string
 	merge_lock               *bool
 	needs_review             *bool
+	stage_evidence           *map[string]interface{}
+	recompute_lock           *time.Time
 	is_archived              *bool
 	clearedFields            map[string]struct{}
 	done                     bool
@@ -89421,6 +90245,104 @@ func (m *TopicMutation) ResetNeedsReview() {
 	m.needs_review = nil
 }
 
+// SetStageEvidence sets the "stage_evidence" field.
+func (m *TopicMutation) SetStageEvidence(value map[string]interface{}) {
+	m.stage_evidence = &value
+}
+
+// StageEvidence returns the value of the "stage_evidence" field in the mutation.
+func (m *TopicMutation) StageEvidence() (r map[string]interface{}, exists bool) {
+	v := m.stage_evidence
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStageEvidence returns the old "stage_evidence" field's value of the Topic entity.
+// If the Topic object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TopicMutation) OldStageEvidence(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStageEvidence is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStageEvidence requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStageEvidence: %w", err)
+	}
+	return oldValue.StageEvidence, nil
+}
+
+// ClearStageEvidence clears the value of the "stage_evidence" field.
+func (m *TopicMutation) ClearStageEvidence() {
+	m.stage_evidence = nil
+	m.clearedFields[topic.FieldStageEvidence] = struct{}{}
+}
+
+// StageEvidenceCleared returns if the "stage_evidence" field was cleared in this mutation.
+func (m *TopicMutation) StageEvidenceCleared() bool {
+	_, ok := m.clearedFields[topic.FieldStageEvidence]
+	return ok
+}
+
+// ResetStageEvidence resets all changes to the "stage_evidence" field.
+func (m *TopicMutation) ResetStageEvidence() {
+	m.stage_evidence = nil
+	delete(m.clearedFields, topic.FieldStageEvidence)
+}
+
+// SetRecomputeLock sets the "recompute_lock" field.
+func (m *TopicMutation) SetRecomputeLock(t time.Time) {
+	m.recompute_lock = &t
+}
+
+// RecomputeLock returns the value of the "recompute_lock" field in the mutation.
+func (m *TopicMutation) RecomputeLock() (r time.Time, exists bool) {
+	v := m.recompute_lock
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRecomputeLock returns the old "recompute_lock" field's value of the Topic entity.
+// If the Topic object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TopicMutation) OldRecomputeLock(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRecomputeLock is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRecomputeLock requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRecomputeLock: %w", err)
+	}
+	return oldValue.RecomputeLock, nil
+}
+
+// ClearRecomputeLock clears the value of the "recompute_lock" field.
+func (m *TopicMutation) ClearRecomputeLock() {
+	m.recompute_lock = nil
+	m.clearedFields[topic.FieldRecomputeLock] = struct{}{}
+}
+
+// RecomputeLockCleared returns if the "recompute_lock" field was cleared in this mutation.
+func (m *TopicMutation) RecomputeLockCleared() bool {
+	_, ok := m.clearedFields[topic.FieldRecomputeLock]
+	return ok
+}
+
+// ResetRecomputeLock resets all changes to the "recompute_lock" field.
+func (m *TopicMutation) ResetRecomputeLock() {
+	m.recompute_lock = nil
+	delete(m.clearedFields, topic.FieldRecomputeLock)
+}
+
 // SetIsArchived sets the "is_archived" field.
 func (m *TopicMutation) SetIsArchived(b bool) {
 	m.is_archived = &b
@@ -89491,7 +90413,7 @@ func (m *TopicMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TopicMutation) Fields() []string {
-	fields := make([]string, 0, 36)
+	fields := make([]string, 0, 38)
 	if m.create_time != nil {
 		fields = append(fields, topic.FieldCreateTime)
 	}
@@ -89597,6 +90519,12 @@ func (m *TopicMutation) Fields() []string {
 	if m.needs_review != nil {
 		fields = append(fields, topic.FieldNeedsReview)
 	}
+	if m.stage_evidence != nil {
+		fields = append(fields, topic.FieldStageEvidence)
+	}
+	if m.recompute_lock != nil {
+		fields = append(fields, topic.FieldRecomputeLock)
+	}
 	if m.is_archived != nil {
 		fields = append(fields, topic.FieldIsArchived)
 	}
@@ -89678,6 +90606,10 @@ func (m *TopicMutation) Field(name string) (ent.Value, bool) {
 		return m.MergeLock()
 	case topic.FieldNeedsReview:
 		return m.NeedsReview()
+	case topic.FieldStageEvidence:
+		return m.StageEvidence()
+	case topic.FieldRecomputeLock:
+		return m.RecomputeLock()
 	case topic.FieldIsArchived:
 		return m.IsArchived()
 	}
@@ -89759,6 +90691,10 @@ func (m *TopicMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldMergeLock(ctx)
 	case topic.FieldNeedsReview:
 		return m.OldNeedsReview(ctx)
+	case topic.FieldStageEvidence:
+		return m.OldStageEvidence(ctx)
+	case topic.FieldRecomputeLock:
+		return m.OldRecomputeLock(ctx)
 	case topic.FieldIsArchived:
 		return m.OldIsArchived(ctx)
 	}
@@ -90014,6 +90950,20 @@ func (m *TopicMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetNeedsReview(v)
+		return nil
+	case topic.FieldStageEvidence:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStageEvidence(v)
+		return nil
+	case topic.FieldRecomputeLock:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRecomputeLock(v)
 		return nil
 	case topic.FieldIsArchived:
 		v, ok := value.(bool)
@@ -90283,6 +91233,12 @@ func (m *TopicMutation) ClearedFields() []string {
 	if m.FieldCleared(topic.FieldRepresentativeIntelID) {
 		fields = append(fields, topic.FieldRepresentativeIntelID)
 	}
+	if m.FieldCleared(topic.FieldStageEvidence) {
+		fields = append(fields, topic.FieldStageEvidence)
+	}
+	if m.FieldCleared(topic.FieldRecomputeLock) {
+		fields = append(fields, topic.FieldRecomputeLock)
+	}
 	return fields
 }
 
@@ -90332,6 +91288,12 @@ func (m *TopicMutation) ClearField(name string) error {
 		return nil
 	case topic.FieldRepresentativeIntelID:
 		m.ClearRepresentativeIntelID()
+		return nil
+	case topic.FieldStageEvidence:
+		m.ClearStageEvidence()
+		return nil
+	case topic.FieldRecomputeLock:
+		m.ClearRecomputeLock()
 		return nil
 	}
 	return fmt.Errorf("unknown Topic nullable field %s", name)
@@ -90446,6 +91408,12 @@ func (m *TopicMutation) ResetField(name string) error {
 	case topic.FieldNeedsReview:
 		m.ResetNeedsReview()
 		return nil
+	case topic.FieldStageEvidence:
+		m.ResetStageEvidence()
+		return nil
+	case topic.FieldRecomputeLock:
+		m.ResetRecomputeLock()
+		return nil
 	case topic.FieldIsArchived:
 		m.ResetIsArchived()
 		return nil
@@ -90504,31 +91472,41 @@ func (m *TopicMutation) ResetEdge(name string) error {
 // TopicSourceMutation represents an operation that mutates the TopicSource nodes in the graph.
 type TopicSourceMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *int
-	create_time    *time.Time
-	update_time    *time.Time
-	delete_time    *time.Time
-	create_by      *uint32
-	addcreate_by   *int32
-	update_by      *uint32
-	addupdate_by   *int32
-	tenant_id      *uint32
-	addtenant_id   *int32
-	topic_id       *string
-	intel_id       *string
-	cluster_key    *string
-	platform       *string
-	contributed_at *time.Time
-	similarity     *float64
-	addsimilarity  *float64
-	moved_by       *string
-	moved_at       *time.Time
-	clearedFields  map[string]struct{}
-	done           bool
-	oldValue       func(context.Context) (*TopicSource, error)
-	predicates     []predicate.TopicSource
+	op               Op
+	typ              string
+	id               *int
+	create_time      *time.Time
+	update_time      *time.Time
+	delete_time      *time.Time
+	create_by        *uint32
+	addcreate_by     *int32
+	update_by        *uint32
+	addupdate_by     *int32
+	tenant_id        *uint32
+	addtenant_id     *int32
+	topic_id         *string
+	intel_id         *string
+	cluster_key      *string
+	platform         *string
+	contributed_at   *time.Time
+	similarity       *float64
+	addsimilarity    *float64
+	moved_by         *string
+	moved_at         *time.Time
+	simhash_seg0     *int16
+	addsimhash_seg0  *int16
+	simhash_seg1     *int16
+	addsimhash_seg1  *int16
+	simhash_seg2     *int16
+	addsimhash_seg2  *int16
+	simhash_seg3     *int16
+	addsimhash_seg3  *int16
+	title_simhash    *uint64
+	addtitle_simhash *int64
+	clearedFields    map[string]struct{}
+	done             bool
+	oldValue         func(context.Context) (*TopicSource, error)
+	predicates       []predicate.TopicSource
 }
 
 var _ ent.Mutation = (*TopicSourceMutation)(nil)
@@ -91333,6 +92311,356 @@ func (m *TopicSourceMutation) ResetMovedAt() {
 	delete(m.clearedFields, topicsource.FieldMovedAt)
 }
 
+// SetSimhashSeg0 sets the "simhash_seg0" field.
+func (m *TopicSourceMutation) SetSimhashSeg0(i int16) {
+	m.simhash_seg0 = &i
+	m.addsimhash_seg0 = nil
+}
+
+// SimhashSeg0 returns the value of the "simhash_seg0" field in the mutation.
+func (m *TopicSourceMutation) SimhashSeg0() (r int16, exists bool) {
+	v := m.simhash_seg0
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSimhashSeg0 returns the old "simhash_seg0" field's value of the TopicSource entity.
+// If the TopicSource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TopicSourceMutation) OldSimhashSeg0(ctx context.Context) (v int16, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSimhashSeg0 is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSimhashSeg0 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSimhashSeg0: %w", err)
+	}
+	return oldValue.SimhashSeg0, nil
+}
+
+// AddSimhashSeg0 adds i to the "simhash_seg0" field.
+func (m *TopicSourceMutation) AddSimhashSeg0(i int16) {
+	if m.addsimhash_seg0 != nil {
+		*m.addsimhash_seg0 += i
+	} else {
+		m.addsimhash_seg0 = &i
+	}
+}
+
+// AddedSimhashSeg0 returns the value that was added to the "simhash_seg0" field in this mutation.
+func (m *TopicSourceMutation) AddedSimhashSeg0() (r int16, exists bool) {
+	v := m.addsimhash_seg0
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSimhashSeg0 clears the value of the "simhash_seg0" field.
+func (m *TopicSourceMutation) ClearSimhashSeg0() {
+	m.simhash_seg0 = nil
+	m.addsimhash_seg0 = nil
+	m.clearedFields[topicsource.FieldSimhashSeg0] = struct{}{}
+}
+
+// SimhashSeg0Cleared returns if the "simhash_seg0" field was cleared in this mutation.
+func (m *TopicSourceMutation) SimhashSeg0Cleared() bool {
+	_, ok := m.clearedFields[topicsource.FieldSimhashSeg0]
+	return ok
+}
+
+// ResetSimhashSeg0 resets all changes to the "simhash_seg0" field.
+func (m *TopicSourceMutation) ResetSimhashSeg0() {
+	m.simhash_seg0 = nil
+	m.addsimhash_seg0 = nil
+	delete(m.clearedFields, topicsource.FieldSimhashSeg0)
+}
+
+// SetSimhashSeg1 sets the "simhash_seg1" field.
+func (m *TopicSourceMutation) SetSimhashSeg1(i int16) {
+	m.simhash_seg1 = &i
+	m.addsimhash_seg1 = nil
+}
+
+// SimhashSeg1 returns the value of the "simhash_seg1" field in the mutation.
+func (m *TopicSourceMutation) SimhashSeg1() (r int16, exists bool) {
+	v := m.simhash_seg1
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSimhashSeg1 returns the old "simhash_seg1" field's value of the TopicSource entity.
+// If the TopicSource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TopicSourceMutation) OldSimhashSeg1(ctx context.Context) (v int16, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSimhashSeg1 is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSimhashSeg1 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSimhashSeg1: %w", err)
+	}
+	return oldValue.SimhashSeg1, nil
+}
+
+// AddSimhashSeg1 adds i to the "simhash_seg1" field.
+func (m *TopicSourceMutation) AddSimhashSeg1(i int16) {
+	if m.addsimhash_seg1 != nil {
+		*m.addsimhash_seg1 += i
+	} else {
+		m.addsimhash_seg1 = &i
+	}
+}
+
+// AddedSimhashSeg1 returns the value that was added to the "simhash_seg1" field in this mutation.
+func (m *TopicSourceMutation) AddedSimhashSeg1() (r int16, exists bool) {
+	v := m.addsimhash_seg1
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSimhashSeg1 clears the value of the "simhash_seg1" field.
+func (m *TopicSourceMutation) ClearSimhashSeg1() {
+	m.simhash_seg1 = nil
+	m.addsimhash_seg1 = nil
+	m.clearedFields[topicsource.FieldSimhashSeg1] = struct{}{}
+}
+
+// SimhashSeg1Cleared returns if the "simhash_seg1" field was cleared in this mutation.
+func (m *TopicSourceMutation) SimhashSeg1Cleared() bool {
+	_, ok := m.clearedFields[topicsource.FieldSimhashSeg1]
+	return ok
+}
+
+// ResetSimhashSeg1 resets all changes to the "simhash_seg1" field.
+func (m *TopicSourceMutation) ResetSimhashSeg1() {
+	m.simhash_seg1 = nil
+	m.addsimhash_seg1 = nil
+	delete(m.clearedFields, topicsource.FieldSimhashSeg1)
+}
+
+// SetSimhashSeg2 sets the "simhash_seg2" field.
+func (m *TopicSourceMutation) SetSimhashSeg2(i int16) {
+	m.simhash_seg2 = &i
+	m.addsimhash_seg2 = nil
+}
+
+// SimhashSeg2 returns the value of the "simhash_seg2" field in the mutation.
+func (m *TopicSourceMutation) SimhashSeg2() (r int16, exists bool) {
+	v := m.simhash_seg2
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSimhashSeg2 returns the old "simhash_seg2" field's value of the TopicSource entity.
+// If the TopicSource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TopicSourceMutation) OldSimhashSeg2(ctx context.Context) (v int16, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSimhashSeg2 is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSimhashSeg2 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSimhashSeg2: %w", err)
+	}
+	return oldValue.SimhashSeg2, nil
+}
+
+// AddSimhashSeg2 adds i to the "simhash_seg2" field.
+func (m *TopicSourceMutation) AddSimhashSeg2(i int16) {
+	if m.addsimhash_seg2 != nil {
+		*m.addsimhash_seg2 += i
+	} else {
+		m.addsimhash_seg2 = &i
+	}
+}
+
+// AddedSimhashSeg2 returns the value that was added to the "simhash_seg2" field in this mutation.
+func (m *TopicSourceMutation) AddedSimhashSeg2() (r int16, exists bool) {
+	v := m.addsimhash_seg2
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSimhashSeg2 clears the value of the "simhash_seg2" field.
+func (m *TopicSourceMutation) ClearSimhashSeg2() {
+	m.simhash_seg2 = nil
+	m.addsimhash_seg2 = nil
+	m.clearedFields[topicsource.FieldSimhashSeg2] = struct{}{}
+}
+
+// SimhashSeg2Cleared returns if the "simhash_seg2" field was cleared in this mutation.
+func (m *TopicSourceMutation) SimhashSeg2Cleared() bool {
+	_, ok := m.clearedFields[topicsource.FieldSimhashSeg2]
+	return ok
+}
+
+// ResetSimhashSeg2 resets all changes to the "simhash_seg2" field.
+func (m *TopicSourceMutation) ResetSimhashSeg2() {
+	m.simhash_seg2 = nil
+	m.addsimhash_seg2 = nil
+	delete(m.clearedFields, topicsource.FieldSimhashSeg2)
+}
+
+// SetSimhashSeg3 sets the "simhash_seg3" field.
+func (m *TopicSourceMutation) SetSimhashSeg3(i int16) {
+	m.simhash_seg3 = &i
+	m.addsimhash_seg3 = nil
+}
+
+// SimhashSeg3 returns the value of the "simhash_seg3" field in the mutation.
+func (m *TopicSourceMutation) SimhashSeg3() (r int16, exists bool) {
+	v := m.simhash_seg3
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSimhashSeg3 returns the old "simhash_seg3" field's value of the TopicSource entity.
+// If the TopicSource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TopicSourceMutation) OldSimhashSeg3(ctx context.Context) (v int16, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSimhashSeg3 is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSimhashSeg3 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSimhashSeg3: %w", err)
+	}
+	return oldValue.SimhashSeg3, nil
+}
+
+// AddSimhashSeg3 adds i to the "simhash_seg3" field.
+func (m *TopicSourceMutation) AddSimhashSeg3(i int16) {
+	if m.addsimhash_seg3 != nil {
+		*m.addsimhash_seg3 += i
+	} else {
+		m.addsimhash_seg3 = &i
+	}
+}
+
+// AddedSimhashSeg3 returns the value that was added to the "simhash_seg3" field in this mutation.
+func (m *TopicSourceMutation) AddedSimhashSeg3() (r int16, exists bool) {
+	v := m.addsimhash_seg3
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSimhashSeg3 clears the value of the "simhash_seg3" field.
+func (m *TopicSourceMutation) ClearSimhashSeg3() {
+	m.simhash_seg3 = nil
+	m.addsimhash_seg3 = nil
+	m.clearedFields[topicsource.FieldSimhashSeg3] = struct{}{}
+}
+
+// SimhashSeg3Cleared returns if the "simhash_seg3" field was cleared in this mutation.
+func (m *TopicSourceMutation) SimhashSeg3Cleared() bool {
+	_, ok := m.clearedFields[topicsource.FieldSimhashSeg3]
+	return ok
+}
+
+// ResetSimhashSeg3 resets all changes to the "simhash_seg3" field.
+func (m *TopicSourceMutation) ResetSimhashSeg3() {
+	m.simhash_seg3 = nil
+	m.addsimhash_seg3 = nil
+	delete(m.clearedFields, topicsource.FieldSimhashSeg3)
+}
+
+// SetTitleSimhash sets the "title_simhash" field.
+func (m *TopicSourceMutation) SetTitleSimhash(u uint64) {
+	m.title_simhash = &u
+	m.addtitle_simhash = nil
+}
+
+// TitleSimhash returns the value of the "title_simhash" field in the mutation.
+func (m *TopicSourceMutation) TitleSimhash() (r uint64, exists bool) {
+	v := m.title_simhash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitleSimhash returns the old "title_simhash" field's value of the TopicSource entity.
+// If the TopicSource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TopicSourceMutation) OldTitleSimhash(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitleSimhash is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitleSimhash requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitleSimhash: %w", err)
+	}
+	return oldValue.TitleSimhash, nil
+}
+
+// AddTitleSimhash adds u to the "title_simhash" field.
+func (m *TopicSourceMutation) AddTitleSimhash(u int64) {
+	if m.addtitle_simhash != nil {
+		*m.addtitle_simhash += u
+	} else {
+		m.addtitle_simhash = &u
+	}
+}
+
+// AddedTitleSimhash returns the value that was added to the "title_simhash" field in this mutation.
+func (m *TopicSourceMutation) AddedTitleSimhash() (r int64, exists bool) {
+	v := m.addtitle_simhash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearTitleSimhash clears the value of the "title_simhash" field.
+func (m *TopicSourceMutation) ClearTitleSimhash() {
+	m.title_simhash = nil
+	m.addtitle_simhash = nil
+	m.clearedFields[topicsource.FieldTitleSimhash] = struct{}{}
+}
+
+// TitleSimhashCleared returns if the "title_simhash" field was cleared in this mutation.
+func (m *TopicSourceMutation) TitleSimhashCleared() bool {
+	_, ok := m.clearedFields[topicsource.FieldTitleSimhash]
+	return ok
+}
+
+// ResetTitleSimhash resets all changes to the "title_simhash" field.
+func (m *TopicSourceMutation) ResetTitleSimhash() {
+	m.title_simhash = nil
+	m.addtitle_simhash = nil
+	delete(m.clearedFields, topicsource.FieldTitleSimhash)
+}
+
 // Where appends a list predicates to the TopicSourceMutation builder.
 func (m *TopicSourceMutation) Where(ps ...predicate.TopicSource) {
 	m.predicates = append(m.predicates, ps...)
@@ -91367,7 +92695,7 @@ func (m *TopicSourceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TopicSourceMutation) Fields() []string {
-	fields := make([]string, 0, 14)
+	fields := make([]string, 0, 19)
 	if m.create_time != nil {
 		fields = append(fields, topicsource.FieldCreateTime)
 	}
@@ -91410,6 +92738,21 @@ func (m *TopicSourceMutation) Fields() []string {
 	if m.moved_at != nil {
 		fields = append(fields, topicsource.FieldMovedAt)
 	}
+	if m.simhash_seg0 != nil {
+		fields = append(fields, topicsource.FieldSimhashSeg0)
+	}
+	if m.simhash_seg1 != nil {
+		fields = append(fields, topicsource.FieldSimhashSeg1)
+	}
+	if m.simhash_seg2 != nil {
+		fields = append(fields, topicsource.FieldSimhashSeg2)
+	}
+	if m.simhash_seg3 != nil {
+		fields = append(fields, topicsource.FieldSimhashSeg3)
+	}
+	if m.title_simhash != nil {
+		fields = append(fields, topicsource.FieldTitleSimhash)
+	}
 	return fields
 }
 
@@ -91446,6 +92789,16 @@ func (m *TopicSourceMutation) Field(name string) (ent.Value, bool) {
 		return m.MovedBy()
 	case topicsource.FieldMovedAt:
 		return m.MovedAt()
+	case topicsource.FieldSimhashSeg0:
+		return m.SimhashSeg0()
+	case topicsource.FieldSimhashSeg1:
+		return m.SimhashSeg1()
+	case topicsource.FieldSimhashSeg2:
+		return m.SimhashSeg2()
+	case topicsource.FieldSimhashSeg3:
+		return m.SimhashSeg3()
+	case topicsource.FieldTitleSimhash:
+		return m.TitleSimhash()
 	}
 	return nil, false
 }
@@ -91483,6 +92836,16 @@ func (m *TopicSourceMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldMovedBy(ctx)
 	case topicsource.FieldMovedAt:
 		return m.OldMovedAt(ctx)
+	case topicsource.FieldSimhashSeg0:
+		return m.OldSimhashSeg0(ctx)
+	case topicsource.FieldSimhashSeg1:
+		return m.OldSimhashSeg1(ctx)
+	case topicsource.FieldSimhashSeg2:
+		return m.OldSimhashSeg2(ctx)
+	case topicsource.FieldSimhashSeg3:
+		return m.OldSimhashSeg3(ctx)
+	case topicsource.FieldTitleSimhash:
+		return m.OldTitleSimhash(ctx)
 	}
 	return nil, fmt.Errorf("unknown TopicSource field %s", name)
 }
@@ -91590,6 +92953,41 @@ func (m *TopicSourceMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetMovedAt(v)
 		return nil
+	case topicsource.FieldSimhashSeg0:
+		v, ok := value.(int16)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSimhashSeg0(v)
+		return nil
+	case topicsource.FieldSimhashSeg1:
+		v, ok := value.(int16)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSimhashSeg1(v)
+		return nil
+	case topicsource.FieldSimhashSeg2:
+		v, ok := value.(int16)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSimhashSeg2(v)
+		return nil
+	case topicsource.FieldSimhashSeg3:
+		v, ok := value.(int16)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSimhashSeg3(v)
+		return nil
+	case topicsource.FieldTitleSimhash:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitleSimhash(v)
+		return nil
 	}
 	return fmt.Errorf("unknown TopicSource field %s", name)
 }
@@ -91610,6 +93008,21 @@ func (m *TopicSourceMutation) AddedFields() []string {
 	if m.addsimilarity != nil {
 		fields = append(fields, topicsource.FieldSimilarity)
 	}
+	if m.addsimhash_seg0 != nil {
+		fields = append(fields, topicsource.FieldSimhashSeg0)
+	}
+	if m.addsimhash_seg1 != nil {
+		fields = append(fields, topicsource.FieldSimhashSeg1)
+	}
+	if m.addsimhash_seg2 != nil {
+		fields = append(fields, topicsource.FieldSimhashSeg2)
+	}
+	if m.addsimhash_seg3 != nil {
+		fields = append(fields, topicsource.FieldSimhashSeg3)
+	}
+	if m.addtitle_simhash != nil {
+		fields = append(fields, topicsource.FieldTitleSimhash)
+	}
 	return fields
 }
 
@@ -91626,6 +93039,16 @@ func (m *TopicSourceMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedTenantID()
 	case topicsource.FieldSimilarity:
 		return m.AddedSimilarity()
+	case topicsource.FieldSimhashSeg0:
+		return m.AddedSimhashSeg0()
+	case topicsource.FieldSimhashSeg1:
+		return m.AddedSimhashSeg1()
+	case topicsource.FieldSimhashSeg2:
+		return m.AddedSimhashSeg2()
+	case topicsource.FieldSimhashSeg3:
+		return m.AddedSimhashSeg3()
+	case topicsource.FieldTitleSimhash:
+		return m.AddedTitleSimhash()
 	}
 	return nil, false
 }
@@ -91663,6 +93086,41 @@ func (m *TopicSourceMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddSimilarity(v)
 		return nil
+	case topicsource.FieldSimhashSeg0:
+		v, ok := value.(int16)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSimhashSeg0(v)
+		return nil
+	case topicsource.FieldSimhashSeg1:
+		v, ok := value.(int16)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSimhashSeg1(v)
+		return nil
+	case topicsource.FieldSimhashSeg2:
+		v, ok := value.(int16)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSimhashSeg2(v)
+		return nil
+	case topicsource.FieldSimhashSeg3:
+		v, ok := value.(int16)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSimhashSeg3(v)
+		return nil
+	case topicsource.FieldTitleSimhash:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTitleSimhash(v)
+		return nil
 	}
 	return fmt.Errorf("unknown TopicSource numeric field %s", name)
 }
@@ -91697,6 +93155,21 @@ func (m *TopicSourceMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(topicsource.FieldMovedAt) {
 		fields = append(fields, topicsource.FieldMovedAt)
+	}
+	if m.FieldCleared(topicsource.FieldSimhashSeg0) {
+		fields = append(fields, topicsource.FieldSimhashSeg0)
+	}
+	if m.FieldCleared(topicsource.FieldSimhashSeg1) {
+		fields = append(fields, topicsource.FieldSimhashSeg1)
+	}
+	if m.FieldCleared(topicsource.FieldSimhashSeg2) {
+		fields = append(fields, topicsource.FieldSimhashSeg2)
+	}
+	if m.FieldCleared(topicsource.FieldSimhashSeg3) {
+		fields = append(fields, topicsource.FieldSimhashSeg3)
+	}
+	if m.FieldCleared(topicsource.FieldTitleSimhash) {
+		fields = append(fields, topicsource.FieldTitleSimhash)
 	}
 	return fields
 }
@@ -91738,6 +93211,21 @@ func (m *TopicSourceMutation) ClearField(name string) error {
 		return nil
 	case topicsource.FieldMovedAt:
 		m.ClearMovedAt()
+		return nil
+	case topicsource.FieldSimhashSeg0:
+		m.ClearSimhashSeg0()
+		return nil
+	case topicsource.FieldSimhashSeg1:
+		m.ClearSimhashSeg1()
+		return nil
+	case topicsource.FieldSimhashSeg2:
+		m.ClearSimhashSeg2()
+		return nil
+	case topicsource.FieldSimhashSeg3:
+		m.ClearSimhashSeg3()
+		return nil
+	case topicsource.FieldTitleSimhash:
+		m.ClearTitleSimhash()
 		return nil
 	}
 	return fmt.Errorf("unknown TopicSource nullable field %s", name)
@@ -91788,6 +93276,21 @@ func (m *TopicSourceMutation) ResetField(name string) error {
 		return nil
 	case topicsource.FieldMovedAt:
 		m.ResetMovedAt()
+		return nil
+	case topicsource.FieldSimhashSeg0:
+		m.ResetSimhashSeg0()
+		return nil
+	case topicsource.FieldSimhashSeg1:
+		m.ResetSimhashSeg1()
+		return nil
+	case topicsource.FieldSimhashSeg2:
+		m.ResetSimhashSeg2()
+		return nil
+	case topicsource.FieldSimhashSeg3:
+		m.ResetSimhashSeg3()
+		return nil
+	case topicsource.FieldTitleSimhash:
+		m.ResetTitleSimhash()
 		return nil
 	}
 	return fmt.Errorf("unknown TopicSource field %s", name)

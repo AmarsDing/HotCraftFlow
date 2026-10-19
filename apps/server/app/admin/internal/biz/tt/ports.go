@@ -93,6 +93,12 @@ type CreateTopicInput struct {
 	ClusterKey string // 可空（无 cluster_id 时）
 	OriginURL  string
 	Platform   string
+	// TitleSimhash B-1 Step2 召回倒排键（标题 SimHash64；0 = 无标题/无效指纹）
+	TitleSimhash uint64
+	// Entities 实体集合（confidence≥0.6 过滤后的规范化 (type:value) 串；Step2 召回通道①）
+	Entities []string
+	// Lang 语言脚本（zh/en/...；Step3 跨语言判定依据）
+	Lang string
 }
 
 // AttachSourceInput 追加来源入参。
@@ -102,6 +108,12 @@ type AttachSourceInput struct {
 	Platform      string // A-5 breadth 统计维度（来源平台，冗余落 TopicSource.platform）
 	ContributedAt time.Time
 	Similarity    float64
+	// TitleSimhash B-1 Step2 召回倒排键（标题 SimHash64；0 = 无标题/无效指纹）
+	TitleSimhash uint64
+	// Entities 实体集合（Step2 召回通道①，写入 tt_entity_index）
+	Entities []string
+	// Lang 语言脚本（Step3 跨语言判定依据）
+	Lang string
 }
 
 // TopicHeatMeta 话题热度元数据（normalize 取数一次性回包）。

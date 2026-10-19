@@ -88,6 +88,10 @@ type Topic struct {
 	MergeLock bool `json:"merge_lock,omitempty"`
 	// 低置信归并（0.70≤s<0.82）待人工复核
 	NeedsReview bool `json:"needs_review,omitempty"`
+	// 最近一次阶段变更证据（{rule,from,to,at,heat,v,rising_streak,decay_streak}）
+	StageEvidence map[string]interface{} `json:"stage_evidence,omitempty"`
+	// 迟到回填锁（UTC；非空表示正在重算，告警/生命周期评估抑制）
+	RecomputeLock *time.Time `json:"recompute_lock,omitempty"`
 	// 已归档（M-17 归档任务：last_seen_at < now-30d 或 dormant>7d）
 	IsArchived   bool `json:"is_archived,omitempty"`
 	selectValues sql.SelectValues
@@ -98,7 +102,7 @@ func (*Topic) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case topic.FieldMissingFactors, topic.FieldPlatforms, topic.FieldOrigin:
+		case topic.FieldMissingFactors, topic.FieldPlatforms, topic.FieldOrigin, topic.FieldStageEvidence:
 			values[i] = new([]byte)
 		case topic.FieldMergeLock, topic.FieldNeedsReview, topic.FieldIsArchived:
 			values[i] = new(sql.NullBool)
@@ -108,7 +112,7 @@ func (*Topic) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case topic.FieldTopicID, topic.FieldAPIVersion, topic.FieldLabel, topic.FieldCategory, topic.FieldRegion, topic.FieldStage, topic.FieldWeightEpoch, topic.FieldRepresentativeIntelID:
 			values[i] = new(sql.NullString)
-		case topic.FieldCreateTime, topic.FieldUpdateTime, topic.FieldDeleteTime, topic.FieldStageSince, topic.FieldFirstSeenAt, topic.FieldLastSeenAt:
+		case topic.FieldCreateTime, topic.FieldUpdateTime, topic.FieldDeleteTime, topic.FieldStageSince, topic.FieldFirstSeenAt, topic.FieldLastSeenAt, topic.FieldRecomputeLock:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -355,6 +359,21 @@ func (_m *Topic) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.NeedsReview = value.Bool
 			}
+		case topic.FieldStageEvidence:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field stage_evidence", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.StageEvidence); err != nil {
+					return fmt.Errorf("unmarshal field stage_evidence: %w", err)
+				}
+			}
+		case topic.FieldRecomputeLock:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field recompute_lock", values[i])
+			} else if value.Valid {
+				_m.RecomputeLock = new(time.Time)
+				*_m.RecomputeLock = value.Time
+			}
 		case topic.FieldIsArchived:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_archived", values[i])
@@ -517,6 +536,14 @@ func (_m *Topic) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("needs_review=")
 	builder.WriteString(fmt.Sprintf("%v", _m.NeedsReview))
+	builder.WriteString(", ")
+	builder.WriteString("stage_evidence=")
+	builder.WriteString(fmt.Sprintf("%v", _m.StageEvidence))
+	builder.WriteString(", ")
+	if v := _m.RecomputeLock; v != nil {
+		builder.WriteString("recompute_lock=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("is_archived=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IsArchived))

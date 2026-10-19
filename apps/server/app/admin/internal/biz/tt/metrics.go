@@ -58,6 +58,12 @@ var (
 		Help: "缓冲重放批计数",
 	}, []string{"result"})
 
+	// LifecycleEvalTotal 生命周期单话题评估计数（result: changed/unchanged/error）。
+	LifecycleEvalTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "tt_lifecycle_eval_total",
+		Help: "生命周期评估计数（worker 每轮每话题一条）",
+	}, []string{"result"})
+
 	// TopicCreatedTotal 话题新建计数（source: cluster_key/no_cluster_key）。
 	TopicCreatedTotal = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "tt_topic_created_total",
@@ -87,4 +93,10 @@ var (
 		Name: "tt_weight_changed_total",
 		Help: "heat 权重变更次数（每次插入一行 WeightConfig，生效后首点强制 α=1）",
 	})
+
+	// ClusterFallbackTotal 聚类决策回退/命中计数（reason: resolve_error/hit_merge/hit_review/new）。
+	ClusterFallbackTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "tt_cluster_fallback_total",
+		Help: "Step2-4 聚类决策计数（resolve_error=聚类失败降级新建；hit_merge/hit_review=归并命中）",
+	}, []string{"reason"})
 )

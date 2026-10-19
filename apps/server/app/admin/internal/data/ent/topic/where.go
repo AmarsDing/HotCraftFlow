@@ -194,6 +194,11 @@ func NeedsReview(v bool) predicate.Topic {
 	return predicate.Topic(sql.FieldEQ(FieldNeedsReview, v))
 }
 
+// RecomputeLock applies equality check predicate on the "recompute_lock" field. It's identical to RecomputeLockEQ.
+func RecomputeLock(v time.Time) predicate.Topic {
+	return predicate.Topic(sql.FieldEQ(FieldRecomputeLock, v))
+}
+
 // IsArchived applies equality check predicate on the "is_archived" field. It's identical to IsArchivedEQ.
 func IsArchived(v bool) predicate.Topic {
 	return predicate.Topic(sql.FieldEQ(FieldIsArchived, v))
@@ -1602,6 +1607,66 @@ func NeedsReviewEQ(v bool) predicate.Topic {
 // NeedsReviewNEQ applies the NEQ predicate on the "needs_review" field.
 func NeedsReviewNEQ(v bool) predicate.Topic {
 	return predicate.Topic(sql.FieldNEQ(FieldNeedsReview, v))
+}
+
+// StageEvidenceIsNil applies the IsNil predicate on the "stage_evidence" field.
+func StageEvidenceIsNil() predicate.Topic {
+	return predicate.Topic(sql.FieldIsNull(FieldStageEvidence))
+}
+
+// StageEvidenceNotNil applies the NotNil predicate on the "stage_evidence" field.
+func StageEvidenceNotNil() predicate.Topic {
+	return predicate.Topic(sql.FieldNotNull(FieldStageEvidence))
+}
+
+// RecomputeLockEQ applies the EQ predicate on the "recompute_lock" field.
+func RecomputeLockEQ(v time.Time) predicate.Topic {
+	return predicate.Topic(sql.FieldEQ(FieldRecomputeLock, v))
+}
+
+// RecomputeLockNEQ applies the NEQ predicate on the "recompute_lock" field.
+func RecomputeLockNEQ(v time.Time) predicate.Topic {
+	return predicate.Topic(sql.FieldNEQ(FieldRecomputeLock, v))
+}
+
+// RecomputeLockIn applies the In predicate on the "recompute_lock" field.
+func RecomputeLockIn(vs ...time.Time) predicate.Topic {
+	return predicate.Topic(sql.FieldIn(FieldRecomputeLock, vs...))
+}
+
+// RecomputeLockNotIn applies the NotIn predicate on the "recompute_lock" field.
+func RecomputeLockNotIn(vs ...time.Time) predicate.Topic {
+	return predicate.Topic(sql.FieldNotIn(FieldRecomputeLock, vs...))
+}
+
+// RecomputeLockGT applies the GT predicate on the "recompute_lock" field.
+func RecomputeLockGT(v time.Time) predicate.Topic {
+	return predicate.Topic(sql.FieldGT(FieldRecomputeLock, v))
+}
+
+// RecomputeLockGTE applies the GTE predicate on the "recompute_lock" field.
+func RecomputeLockGTE(v time.Time) predicate.Topic {
+	return predicate.Topic(sql.FieldGTE(FieldRecomputeLock, v))
+}
+
+// RecomputeLockLT applies the LT predicate on the "recompute_lock" field.
+func RecomputeLockLT(v time.Time) predicate.Topic {
+	return predicate.Topic(sql.FieldLT(FieldRecomputeLock, v))
+}
+
+// RecomputeLockLTE applies the LTE predicate on the "recompute_lock" field.
+func RecomputeLockLTE(v time.Time) predicate.Topic {
+	return predicate.Topic(sql.FieldLTE(FieldRecomputeLock, v))
+}
+
+// RecomputeLockIsNil applies the IsNil predicate on the "recompute_lock" field.
+func RecomputeLockIsNil() predicate.Topic {
+	return predicate.Topic(sql.FieldIsNull(FieldRecomputeLock))
+}
+
+// RecomputeLockNotNil applies the NotNil predicate on the "recompute_lock" field.
+func RecomputeLockNotNil() predicate.Topic {
+	return predicate.Topic(sql.FieldNotNull(FieldRecomputeLock))
 }
 
 // IsArchivedEQ applies the EQ predicate on the "is_archived" field.

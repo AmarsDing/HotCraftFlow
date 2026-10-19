@@ -124,6 +124,31 @@ func MovedAt(v time.Time) predicate.TopicSource {
 	return predicate.TopicSource(sql.FieldEQ(FieldMovedAt, v))
 }
 
+// SimhashSeg0 applies equality check predicate on the "simhash_seg0" field. It's identical to SimhashSeg0EQ.
+func SimhashSeg0(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldEQ(FieldSimhashSeg0, v))
+}
+
+// SimhashSeg1 applies equality check predicate on the "simhash_seg1" field. It's identical to SimhashSeg1EQ.
+func SimhashSeg1(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldEQ(FieldSimhashSeg1, v))
+}
+
+// SimhashSeg2 applies equality check predicate on the "simhash_seg2" field. It's identical to SimhashSeg2EQ.
+func SimhashSeg2(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldEQ(FieldSimhashSeg2, v))
+}
+
+// SimhashSeg3 applies equality check predicate on the "simhash_seg3" field. It's identical to SimhashSeg3EQ.
+func SimhashSeg3(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldEQ(FieldSimhashSeg3, v))
+}
+
+// TitleSimhash applies equality check predicate on the "title_simhash" field. It's identical to TitleSimhashEQ.
+func TitleSimhash(v uint64) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldEQ(FieldTitleSimhash, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.TopicSource {
 	return predicate.TopicSource(sql.FieldEQ(FieldCreateTime, v))
@@ -897,6 +922,256 @@ func MovedAtIsNil() predicate.TopicSource {
 // MovedAtNotNil applies the NotNil predicate on the "moved_at" field.
 func MovedAtNotNil() predicate.TopicSource {
 	return predicate.TopicSource(sql.FieldNotNull(FieldMovedAt))
+}
+
+// SimhashSeg0EQ applies the EQ predicate on the "simhash_seg0" field.
+func SimhashSeg0EQ(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldEQ(FieldSimhashSeg0, v))
+}
+
+// SimhashSeg0NEQ applies the NEQ predicate on the "simhash_seg0" field.
+func SimhashSeg0NEQ(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNEQ(FieldSimhashSeg0, v))
+}
+
+// SimhashSeg0In applies the In predicate on the "simhash_seg0" field.
+func SimhashSeg0In(vs ...int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldIn(FieldSimhashSeg0, vs...))
+}
+
+// SimhashSeg0NotIn applies the NotIn predicate on the "simhash_seg0" field.
+func SimhashSeg0NotIn(vs ...int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNotIn(FieldSimhashSeg0, vs...))
+}
+
+// SimhashSeg0GT applies the GT predicate on the "simhash_seg0" field.
+func SimhashSeg0GT(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldGT(FieldSimhashSeg0, v))
+}
+
+// SimhashSeg0GTE applies the GTE predicate on the "simhash_seg0" field.
+func SimhashSeg0GTE(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldGTE(FieldSimhashSeg0, v))
+}
+
+// SimhashSeg0LT applies the LT predicate on the "simhash_seg0" field.
+func SimhashSeg0LT(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldLT(FieldSimhashSeg0, v))
+}
+
+// SimhashSeg0LTE applies the LTE predicate on the "simhash_seg0" field.
+func SimhashSeg0LTE(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldLTE(FieldSimhashSeg0, v))
+}
+
+// SimhashSeg0IsNil applies the IsNil predicate on the "simhash_seg0" field.
+func SimhashSeg0IsNil() predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldIsNull(FieldSimhashSeg0))
+}
+
+// SimhashSeg0NotNil applies the NotNil predicate on the "simhash_seg0" field.
+func SimhashSeg0NotNil() predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNotNull(FieldSimhashSeg0))
+}
+
+// SimhashSeg1EQ applies the EQ predicate on the "simhash_seg1" field.
+func SimhashSeg1EQ(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldEQ(FieldSimhashSeg1, v))
+}
+
+// SimhashSeg1NEQ applies the NEQ predicate on the "simhash_seg1" field.
+func SimhashSeg1NEQ(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNEQ(FieldSimhashSeg1, v))
+}
+
+// SimhashSeg1In applies the In predicate on the "simhash_seg1" field.
+func SimhashSeg1In(vs ...int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldIn(FieldSimhashSeg1, vs...))
+}
+
+// SimhashSeg1NotIn applies the NotIn predicate on the "simhash_seg1" field.
+func SimhashSeg1NotIn(vs ...int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNotIn(FieldSimhashSeg1, vs...))
+}
+
+// SimhashSeg1GT applies the GT predicate on the "simhash_seg1" field.
+func SimhashSeg1GT(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldGT(FieldSimhashSeg1, v))
+}
+
+// SimhashSeg1GTE applies the GTE predicate on the "simhash_seg1" field.
+func SimhashSeg1GTE(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldGTE(FieldSimhashSeg1, v))
+}
+
+// SimhashSeg1LT applies the LT predicate on the "simhash_seg1" field.
+func SimhashSeg1LT(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldLT(FieldSimhashSeg1, v))
+}
+
+// SimhashSeg1LTE applies the LTE predicate on the "simhash_seg1" field.
+func SimhashSeg1LTE(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldLTE(FieldSimhashSeg1, v))
+}
+
+// SimhashSeg1IsNil applies the IsNil predicate on the "simhash_seg1" field.
+func SimhashSeg1IsNil() predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldIsNull(FieldSimhashSeg1))
+}
+
+// SimhashSeg1NotNil applies the NotNil predicate on the "simhash_seg1" field.
+func SimhashSeg1NotNil() predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNotNull(FieldSimhashSeg1))
+}
+
+// SimhashSeg2EQ applies the EQ predicate on the "simhash_seg2" field.
+func SimhashSeg2EQ(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldEQ(FieldSimhashSeg2, v))
+}
+
+// SimhashSeg2NEQ applies the NEQ predicate on the "simhash_seg2" field.
+func SimhashSeg2NEQ(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNEQ(FieldSimhashSeg2, v))
+}
+
+// SimhashSeg2In applies the In predicate on the "simhash_seg2" field.
+func SimhashSeg2In(vs ...int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldIn(FieldSimhashSeg2, vs...))
+}
+
+// SimhashSeg2NotIn applies the NotIn predicate on the "simhash_seg2" field.
+func SimhashSeg2NotIn(vs ...int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNotIn(FieldSimhashSeg2, vs...))
+}
+
+// SimhashSeg2GT applies the GT predicate on the "simhash_seg2" field.
+func SimhashSeg2GT(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldGT(FieldSimhashSeg2, v))
+}
+
+// SimhashSeg2GTE applies the GTE predicate on the "simhash_seg2" field.
+func SimhashSeg2GTE(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldGTE(FieldSimhashSeg2, v))
+}
+
+// SimhashSeg2LT applies the LT predicate on the "simhash_seg2" field.
+func SimhashSeg2LT(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldLT(FieldSimhashSeg2, v))
+}
+
+// SimhashSeg2LTE applies the LTE predicate on the "simhash_seg2" field.
+func SimhashSeg2LTE(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldLTE(FieldSimhashSeg2, v))
+}
+
+// SimhashSeg2IsNil applies the IsNil predicate on the "simhash_seg2" field.
+func SimhashSeg2IsNil() predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldIsNull(FieldSimhashSeg2))
+}
+
+// SimhashSeg2NotNil applies the NotNil predicate on the "simhash_seg2" field.
+func SimhashSeg2NotNil() predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNotNull(FieldSimhashSeg2))
+}
+
+// SimhashSeg3EQ applies the EQ predicate on the "simhash_seg3" field.
+func SimhashSeg3EQ(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldEQ(FieldSimhashSeg3, v))
+}
+
+// SimhashSeg3NEQ applies the NEQ predicate on the "simhash_seg3" field.
+func SimhashSeg3NEQ(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNEQ(FieldSimhashSeg3, v))
+}
+
+// SimhashSeg3In applies the In predicate on the "simhash_seg3" field.
+func SimhashSeg3In(vs ...int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldIn(FieldSimhashSeg3, vs...))
+}
+
+// SimhashSeg3NotIn applies the NotIn predicate on the "simhash_seg3" field.
+func SimhashSeg3NotIn(vs ...int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNotIn(FieldSimhashSeg3, vs...))
+}
+
+// SimhashSeg3GT applies the GT predicate on the "simhash_seg3" field.
+func SimhashSeg3GT(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldGT(FieldSimhashSeg3, v))
+}
+
+// SimhashSeg3GTE applies the GTE predicate on the "simhash_seg3" field.
+func SimhashSeg3GTE(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldGTE(FieldSimhashSeg3, v))
+}
+
+// SimhashSeg3LT applies the LT predicate on the "simhash_seg3" field.
+func SimhashSeg3LT(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldLT(FieldSimhashSeg3, v))
+}
+
+// SimhashSeg3LTE applies the LTE predicate on the "simhash_seg3" field.
+func SimhashSeg3LTE(v int16) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldLTE(FieldSimhashSeg3, v))
+}
+
+// SimhashSeg3IsNil applies the IsNil predicate on the "simhash_seg3" field.
+func SimhashSeg3IsNil() predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldIsNull(FieldSimhashSeg3))
+}
+
+// SimhashSeg3NotNil applies the NotNil predicate on the "simhash_seg3" field.
+func SimhashSeg3NotNil() predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNotNull(FieldSimhashSeg3))
+}
+
+// TitleSimhashEQ applies the EQ predicate on the "title_simhash" field.
+func TitleSimhashEQ(v uint64) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldEQ(FieldTitleSimhash, v))
+}
+
+// TitleSimhashNEQ applies the NEQ predicate on the "title_simhash" field.
+func TitleSimhashNEQ(v uint64) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNEQ(FieldTitleSimhash, v))
+}
+
+// TitleSimhashIn applies the In predicate on the "title_simhash" field.
+func TitleSimhashIn(vs ...uint64) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldIn(FieldTitleSimhash, vs...))
+}
+
+// TitleSimhashNotIn applies the NotIn predicate on the "title_simhash" field.
+func TitleSimhashNotIn(vs ...uint64) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNotIn(FieldTitleSimhash, vs...))
+}
+
+// TitleSimhashGT applies the GT predicate on the "title_simhash" field.
+func TitleSimhashGT(v uint64) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldGT(FieldTitleSimhash, v))
+}
+
+// TitleSimhashGTE applies the GTE predicate on the "title_simhash" field.
+func TitleSimhashGTE(v uint64) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldGTE(FieldTitleSimhash, v))
+}
+
+// TitleSimhashLT applies the LT predicate on the "title_simhash" field.
+func TitleSimhashLT(v uint64) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldLT(FieldTitleSimhash, v))
+}
+
+// TitleSimhashLTE applies the LTE predicate on the "title_simhash" field.
+func TitleSimhashLTE(v uint64) predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldLTE(FieldTitleSimhash, v))
+}
+
+// TitleSimhashIsNil applies the IsNil predicate on the "title_simhash" field.
+func TitleSimhashIsNil() predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldIsNull(FieldTitleSimhash))
+}
+
+// TitleSimhashNotNil applies the NotNil predicate on the "title_simhash" field.
+func TitleSimhashNotNil() predicate.TopicSource {
+	return predicate.TopicSource(sql.FieldNotNull(FieldTitleSimhash))
 }
 
 // And groups predicates with the AND operator between them.

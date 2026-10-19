@@ -56,21 +56,21 @@ func MinDwellStage(s Stage) int {
 // LifecycleConf 阶段判定阈值（03 §2.2 判据表默认 + A-8 终稿）。
 type LifecycleConf struct {
 	// VMin rising 判据的 v_ewma 下限（分/小时；A-10 burst 级 8.0 更严另有其用）。
-	VMin float64
+	VMin float64 `json:"v_min"`
 	// HeatPeakMin 绝对热度 peak 线（heat ≥ 80 → peak）。
-	HeatPeakMin float64
+	HeatPeakMin float64 `json:"heat_peak_min"`
 	// HeatTurnMin velocity 由正转分支的 heat 下限（v<0 ∧ heat≥60 ∧ 上阶段∈{rising,peak} → peak）。
-	HeatTurnMin float64
+	HeatTurnMin float64 `json:"heat_turn_min"`
 	// LongTailHeatMax 长尾热度上限（heat < 20 → long_tail 分支 A）。
-	LongTailHeatMax float64
+	LongTailHeatMax float64 `json:"long_tail_heat_max"`
 	// LongTailAgeDays 长尾分支 B 的话题年龄下限（>7d）。
-	LongTailAgeDays float64
+	LongTailAgeDays float64 `json:"long_tail_age_days"`
 	// DormantHours 无更新进入 dormant 的墙钟阈值（48h）。
-	DormantHours float64
+	DormantHours float64 `json:"dormant_hours"`
 	// RisingMinStreak rising 持续点数（A-8 规则 3：≥2）。
-	RisingMinStreak int
+	RisingMinStreak int `json:"rising_min_streak"`
 	// DecayMinStreak decaying 持续点数（A-8 规则 4：≥3）。
-	DecayMinStreak int
+	DecayMinStreak int `json:"decay_min_streak"`
 }
 
 // DefaultLifecycleConf 评审终稿默认值。

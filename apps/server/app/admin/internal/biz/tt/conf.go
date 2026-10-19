@@ -13,13 +13,14 @@ import (
 // 不设为 proto（避免 conf.pb.go 再生成的重链），由 main 用 kratos config
 // `c.Value("tt").Scan(&ttb)` 扫描该结构（json tag 须与 yaml 键名一致）。
 type Conf struct {
-	Enabled  bool          `json:"enabled"`
-	Ingest   IngestConf    `json:"ingest"`
-	Sampling SamplingConf  `json:"sampling"`
-	Influx   InfluxConf    `json:"influx"`
-	Buffer   BufferConf    `json:"buffer"`
-	Timezone TimezoneConf  `json:"timezone"`
-	Heat     HeatConf      `json:"heat"`
+	Enabled   bool                `json:"enabled"`
+	Ingest    IngestConf          `json:"ingest"`
+	Sampling  SamplingConf        `json:"sampling"`
+	Influx    InfluxConf          `json:"influx"`
+	Buffer    BufferConf          `json:"buffer"`
+	Timezone  TimezoneConf        `json:"timezone"`
+	Heat      HeatConf            `json:"heat"`
+	Lifecycle LifecycleWorkerConf `json:"lifecycle"`
 }
 
 // durationJSONPaths 登记 Conf 中所有 time.Duration 字段的 JSON 路径。
@@ -32,6 +33,7 @@ var durationJSONPaths = [][]string{
 	{"ingest", "last_wins_guard_ttl"},
 	{"influx", "timeout"},
 	{"buffer", "replay_interval"},
+	{"lifecycle", "interval"},
 }
 
 // UnmarshalJSON 时长字面量 "24h" → 纳秒数的预归一（动机见 durationJSONPaths 注释）。
@@ -168,6 +170,48 @@ type TimezoneConf struct {
 	Display string `json:"display"`
 }
 
+// LifecycleWorkerConf 生命周期评估 worker 运行参数（A-8 周期评估）。
+type LifecycleWorkerConf struct {
+	// Interval 评估周期（默认 15min，对齐采样桶节奏；重启幂等使周期错位无害）。
+	Interval time.Duration `json:"interval"`
+	// ScanLimit 单轮扫描话题上限（≤0 取 data 层默认 500；topic_id 升序游标）。
+	ScanLimit int `json:"scan_limit"`
+	// Concurrency 单轮并发评估数（每话题 2 次时序读，钳制 InfluxDB 查询尖峰）。
+	Concurrency int `json:"concurrency"`
+	// Rules 阶段判定阈值（零值整块由 Normalize 填 DefaultLifecycleConf；
+	// 部分覆盖的逐项填，见 NormalizeLifecycleRules）。
+	Rules LifecycleConf `json:"rules"`
+}
+
+// NormalizeLifecycleRules 逐项填充零值规则字段（yaml 只覆盖关心的键）。
+func (c *LifecycleWorkerConf) NormalizeLifecycleRules() {
+	d := DefaultLifecycleConf()
+	if c.Rules.VMin == 0 {
+		c.Rules.VMin = d.VMin
+	}
+	if c.Rules.HeatPeakMin == 0 {
+		c.Rules.HeatPeakMin = d.HeatPeakMin
+	}
+	if c.Rules.HeatTurnMin == 0 {
+		c.Rules.HeatTurnMin = d.HeatTurnMin
+	}
+	if c.Rules.LongTailHeatMax == 0 {
+		c.Rules.LongTailHeatMax = d.LongTailHeatMax
+	}
+	if c.Rules.LongTailAgeDays == 0 {
+		c.Rules.LongTailAgeDays = d.LongTailAgeDays
+	}
+	if c.Rules.DormantHours == 0 {
+		c.Rules.DormantHours = d.DormantHours
+	}
+	if c.Rules.RisingMinStreak == 0 {
+		c.Rules.RisingMinStreak = d.RisingMinStreak
+	}
+	if c.Rules.DecayMinStreak == 0 {
+		c.Rules.DecayMinStreak = d.DecayMinStreak
+	}
+}
+
 // DefaultConf 返回文档默认配置（与 02-TT 03-详细设计.md §4 tt.yaml 对齐）。
 func DefaultConf() Conf {
 	return Conf{
@@ -217,6 +261,12 @@ func DefaultConf() Conf {
 			SupportedPlatforms: 0, // 0 = 按 A-5 ref=8 兼容口径
 			EngMinWindowN:      200,
 			Dynamics:           DefaultDynamicsConf(),
+		},
+		Lifecycle: LifecycleWorkerConf{
+			Interval:    15 * time.Minute,
+			ScanLimit:   500,
+			Concurrency: 8,
+			Rules:       DefaultLifecycleConf(),
 		},
 	}
 }
@@ -320,6 +370,17 @@ func (c *Conf) Normalize() {
 	if c.Heat.Dynamics.EWMATauHours <= 0 {
 		c.Heat.Dynamics.EWMATauHours = d.Heat.Dynamics.EWMATauHours
 	}
+	if c.Lifecycle.Interval <= 0 {
+		c.Lifecycle.Interval = d.Lifecycle.Interval
+	}
+	if c.Lifecycle.ScanLimit <= 0 {
+		c.Lifecycle.ScanLimit = d.Lifecycle.ScanLimit
+	}
+	if c.Lifecycle.Concurrency <= 0 {
+		c.Lifecycle.Concurrency = d.Lifecycle.Concurrency
+	}
+	// 规则零值逐项兜底（Rules 无整块零值判定——Validate 拒零值配置前须先填默认）。
+	c.Lifecycle.NormalizeLifecycleRules()
 }
 
 // Validate 校验红线配置。

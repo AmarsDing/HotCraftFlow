@@ -21,6 +21,7 @@ import (
 	"framework/app/admin/internal/data/ent/dict"
 	"framework/app/admin/internal/data/ent/dictcategory"
 	"framework/app/admin/internal/data/ent/entityassetmapping"
+	"framework/app/admin/internal/data/ent/entityindex"
 	"framework/app/admin/internal/data/ent/evidencesnapshot"
 	"framework/app/admin/internal/data/ent/file"
 	"framework/app/admin/internal/data/ent/intelcluster"
@@ -892,6 +893,27 @@ func init() {
 	entityassetmappingDescEnabled := entityassetmappingFields[9].Descriptor()
 	// entityassetmapping.DefaultEnabled holds the default value on creation for the enabled field.
 	entityassetmapping.DefaultEnabled = entityassetmappingDescEnabled.Default.(bool)
+	entityindexMixin := schema.EntityIndex{}.Mixin()
+	entityindexMixinFields1 := entityindexMixin[1].Fields()
+	_ = entityindexMixinFields1
+	entityindexFields := schema.EntityIndex{}.Fields()
+	_ = entityindexFields
+	// entityindexDescTenantID is the schema descriptor for tenant_id field.
+	entityindexDescTenantID := entityindexMixinFields1[0].Descriptor()
+	// entityindex.TenantIDValidator is a validator for the "tenant_id" field. It is called by the builders before save.
+	entityindex.TenantIDValidator = entityindexDescTenantID.Validators[0].(func(uint32) error)
+	// entityindexDescEntityKey is the schema descriptor for entity_key field.
+	entityindexDescEntityKey := entityindexFields[0].Descriptor()
+	// entityindex.EntityKeyValidator is a validator for the "entity_key" field. It is called by the builders before save.
+	entityindex.EntityKeyValidator = entityindexDescEntityKey.Validators[0].(func(string) error)
+	// entityindexDescTopicID is the schema descriptor for topic_id field.
+	entityindexDescTopicID := entityindexFields[1].Descriptor()
+	// entityindex.TopicIDValidator is a validator for the "topic_id" field. It is called by the builders before save.
+	entityindex.TopicIDValidator = entityindexDescTopicID.Validators[0].(func(string) error)
+	// entityindexDescIntelID is the schema descriptor for intel_id field.
+	entityindexDescIntelID := entityindexFields[2].Descriptor()
+	// entityindex.IntelIDValidator is a validator for the "intel_id" field. It is called by the builders before save.
+	entityindex.IntelIDValidator = entityindexDescIntelID.Validators[0].(func(string) error)
 	evidencesnapshotFields := schema.EvidenceSnapshot{}.Fields()
 	_ = evidencesnapshotFields
 	// evidencesnapshotDescIntelID is the schema descriptor for intel_id field.
@@ -3163,7 +3185,7 @@ func init() {
 	// topic.DefaultNeedsReview holds the default value on creation for the needs_review field.
 	topic.DefaultNeedsReview = topicDescNeedsReview.Default.(bool)
 	// topicDescIsArchived is the schema descriptor for is_archived field.
-	topicDescIsArchived := topicFields[29].Descriptor()
+	topicDescIsArchived := topicFields[31].Descriptor()
 	// topic.DefaultIsArchived holds the default value on creation for the is_archived field.
 	topic.DefaultIsArchived = topicDescIsArchived.Default.(bool)
 	topicsourceMixin := schema.TopicSource{}.Mixin()

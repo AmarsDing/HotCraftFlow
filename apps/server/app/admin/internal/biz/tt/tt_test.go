@@ -295,7 +295,9 @@ func TestIngestHandle(t *testing.T) {
 		repo := &fakeTopicRepo{byCluster: map[string]string{}}
 		guard := &fakeGuard{accepted: true}
 		pub := &fakePublisher{}
-		uc := NewIngestUsecase(&conf, repo, guard, pub, nil, nil, log.DefaultLogger)
+		// cluster 传 nil：本测试不触聚类路径（M3-b 起 NewIngestUsecase 增参，
+		// 不归并分支 nil 守护）。
+		uc := NewIngestUsecase(&conf, repo, guard, pub, nil, nil, nil, log.DefaultLogger)
 		uc.clock = func() time.Time { return now } // 固定时钟（同包测试）
 		return uc, repo, guard, pub
 	}

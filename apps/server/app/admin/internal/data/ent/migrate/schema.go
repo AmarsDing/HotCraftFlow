@@ -687,6 +687,47 @@ var (
 			},
 		},
 	}
+	// TtEntityIndexColumns holds the columns for the "tt_entity_index" table.
+	TtEntityIndexColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "update_time", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID"},
+		{Name: "entity_key", Type: field.TypeString, Comment: "(type:value) 规范化实体串，如 'person:马云' / 'org:阿里巴巴'"},
+		{Name: "topic_id", Type: field.TypeString, Comment: "话题 ID（tt_topics.topic_id，tp_ 前缀）"},
+		{Name: "intel_id", Type: field.TypeString, Comment: "贡献该实体的情报 ID（ic_intel_items.intel_id，溯源用）"},
+		{Name: "indexed_at", Type: field.TypeTime, Comment: "索引建立时间（UTC；7d 窗口清理依据）"},
+	}
+	// TtEntityIndexTable holds the schema information for the "tt_entity_index" table.
+	TtEntityIndexTable = &schema.Table{
+		Name:       "tt_entity_index",
+		Comment:    "TT 实体倒排索引：Step2 召回 term→topic 关联（7d 窗口）",
+		Columns:    TtEntityIndexColumns,
+		PrimaryKey: []*schema.Column{TtEntityIndexColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "entityindex_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{TtEntityIndexColumns[4]},
+			},
+			{
+				Name:    "entityindex_entity_key_indexed_at",
+				Unique:  false,
+				Columns: []*schema.Column{TtEntityIndexColumns[5], TtEntityIndexColumns[8]},
+			},
+			{
+				Name:    "entityindex_indexed_at",
+				Unique:  false,
+				Columns: []*schema.Column{TtEntityIndexColumns[8]},
+			},
+			{
+				Name:    "entityindex_entity_key_topic_id_intel_id",
+				Unique:  true,
+				Columns: []*schema.Column{TtEntityIndexColumns[5], TtEntityIndexColumns[6], TtEntityIndexColumns[7]},
+			},
+		},
+	}
 	// IcEvidenceSnapshotsColumns holds the columns for the "ic_evidence_snapshots" table.
 	IcEvidenceSnapshotsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true, Size: 30, Comment: "快照 ID，ev_ 前缀 ULID"},
@@ -2848,6 +2889,8 @@ var (
 		{Name: "representative_intel_id", Type: field.TypeString, Nullable: true, Comment: "主条目 it_ ID（M-19 同 label 选取规则）"},
 		{Name: "merge_lock", Type: field.TypeBool, Comment: "人工合并/拆分后置 true，自动聚类不得再拆散", Default: false},
 		{Name: "needs_review", Type: field.TypeBool, Comment: "低置信归并（0.70≤s<0.82）待人工复核", Default: false},
+		{Name: "stage_evidence", Type: field.TypeJSON, Nullable: true, Comment: "最近一次阶段变更证据（{rule,from,to,at,heat,v,rising_streak,decay_streak}）"},
+		{Name: "recompute_lock", Type: field.TypeTime, Nullable: true, Comment: "迟到回填锁（UTC；非空表示正在重算，告警/生命周期评估抑制）"},
 		{Name: "is_archived", Type: field.TypeBool, Comment: "已归档（M-17 归档任务：last_seen_at < now-30d 或 dormant>7d）", Default: false},
 	}
 	// TtTopicsTable holds the schema information for the "tt_topics" table.
@@ -2865,7 +2908,7 @@ var (
 			{
 				Name:    "topic_is_archived_stage_last_seen_at",
 				Unique:  false,
-				Columns: []*schema.Column{TtTopicsColumns[36], TtTopicsColumns[12], TtTopicsColumns[31]},
+				Columns: []*schema.Column{TtTopicsColumns[38], TtTopicsColumns[12], TtTopicsColumns[31]},
 			},
 			{
 				Name:    "topic_heat_score",
@@ -2896,6 +2939,11 @@ var (
 		{Name: "similarity", Type: field.TypeFloat64, Comment: "归入时的相似度（Step1 硬键命中记 1.0）", Default: 1},
 		{Name: "moved_by", Type: field.TypeString, Nullable: true, Comment: "人工合并/拆分操作者，可空（空=自动聚类归入）"},
 		{Name: "moved_at", Type: field.TypeTime, Nullable: true, Comment: "人工移动时间（UTC）"},
+		{Name: "simhash_seg0", Type: field.TypeInt16, Nullable: true, Comment: "标题 SimHash [63:48]（pigeonhole 段 0）"},
+		{Name: "simhash_seg1", Type: field.TypeInt16, Nullable: true, Comment: "标题 SimHash [47:32]（pigeonhole 段 1）"},
+		{Name: "simhash_seg2", Type: field.TypeInt16, Nullable: true, Comment: "标题 SimHash [31:16]（pigeonhole 段 2）"},
+		{Name: "simhash_seg3", Type: field.TypeInt16, Nullable: true, Comment: "标题 SimHash [15:0]（pigeonhole 段 3）"},
+		{Name: "title_simhash", Type: field.TypeUint64, Nullable: true, Comment: "标题 SimHash64 完整指纹（打分通道用）"},
 	}
 	// TtTopicSourcesTable holds the schema information for the "tt_topic_sources" table.
 	TtTopicSourcesTable = &schema.Table{
@@ -2923,6 +2971,26 @@ var (
 				Name:    "topicsource_topic_id_contributed_at",
 				Unique:  false,
 				Columns: []*schema.Column{TtTopicSourcesColumns[7], TtTopicSourcesColumns[11]},
+			},
+			{
+				Name:    "topicsource_simhash_seg0",
+				Unique:  false,
+				Columns: []*schema.Column{TtTopicSourcesColumns[15]},
+			},
+			{
+				Name:    "topicsource_simhash_seg1",
+				Unique:  false,
+				Columns: []*schema.Column{TtTopicSourcesColumns[16]},
+			},
+			{
+				Name:    "topicsource_simhash_seg2",
+				Unique:  false,
+				Columns: []*schema.Column{TtTopicSourcesColumns[17]},
+			},
+			{
+				Name:    "topicsource_simhash_seg3",
+				Unique:  false,
+				Columns: []*schema.Column{TtTopicSourcesColumns[18]},
 			},
 		},
 	}
@@ -3215,6 +3283,7 @@ var (
 		DictTable,
 		DictCategoryTable,
 		MiaEntityAssetMappingsTable,
+		TtEntityIndexTable,
 		IcEvidenceSnapshotsTable,
 		FilesTable,
 		IcIntelClustersTable,
@@ -3360,6 +3429,11 @@ func init() {
 	}
 	MiaEntityAssetMappingsTable.Annotation = &entsql.Annotation{
 		Table:     "mia_entity_asset_mappings",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_bin",
+	}
+	TtEntityIndexTable.Annotation = &entsql.Annotation{
+		Table:     "tt_entity_index",
 		Charset:   "utf8mb4",
 		Collation: "utf8mb4_bin",
 	}

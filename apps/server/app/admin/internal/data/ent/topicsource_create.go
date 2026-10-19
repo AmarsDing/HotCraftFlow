@@ -186,6 +186,76 @@ func (_c *TopicSourceCreate) SetNillableMovedAt(v *time.Time) *TopicSourceCreate
 	return _c
 }
 
+// SetSimhashSeg0 sets the "simhash_seg0" field.
+func (_c *TopicSourceCreate) SetSimhashSeg0(v int16) *TopicSourceCreate {
+	_c.mutation.SetSimhashSeg0(v)
+	return _c
+}
+
+// SetNillableSimhashSeg0 sets the "simhash_seg0" field if the given value is not nil.
+func (_c *TopicSourceCreate) SetNillableSimhashSeg0(v *int16) *TopicSourceCreate {
+	if v != nil {
+		_c.SetSimhashSeg0(*v)
+	}
+	return _c
+}
+
+// SetSimhashSeg1 sets the "simhash_seg1" field.
+func (_c *TopicSourceCreate) SetSimhashSeg1(v int16) *TopicSourceCreate {
+	_c.mutation.SetSimhashSeg1(v)
+	return _c
+}
+
+// SetNillableSimhashSeg1 sets the "simhash_seg1" field if the given value is not nil.
+func (_c *TopicSourceCreate) SetNillableSimhashSeg1(v *int16) *TopicSourceCreate {
+	if v != nil {
+		_c.SetSimhashSeg1(*v)
+	}
+	return _c
+}
+
+// SetSimhashSeg2 sets the "simhash_seg2" field.
+func (_c *TopicSourceCreate) SetSimhashSeg2(v int16) *TopicSourceCreate {
+	_c.mutation.SetSimhashSeg2(v)
+	return _c
+}
+
+// SetNillableSimhashSeg2 sets the "simhash_seg2" field if the given value is not nil.
+func (_c *TopicSourceCreate) SetNillableSimhashSeg2(v *int16) *TopicSourceCreate {
+	if v != nil {
+		_c.SetSimhashSeg2(*v)
+	}
+	return _c
+}
+
+// SetSimhashSeg3 sets the "simhash_seg3" field.
+func (_c *TopicSourceCreate) SetSimhashSeg3(v int16) *TopicSourceCreate {
+	_c.mutation.SetSimhashSeg3(v)
+	return _c
+}
+
+// SetNillableSimhashSeg3 sets the "simhash_seg3" field if the given value is not nil.
+func (_c *TopicSourceCreate) SetNillableSimhashSeg3(v *int16) *TopicSourceCreate {
+	if v != nil {
+		_c.SetSimhashSeg3(*v)
+	}
+	return _c
+}
+
+// SetTitleSimhash sets the "title_simhash" field.
+func (_c *TopicSourceCreate) SetTitleSimhash(v uint64) *TopicSourceCreate {
+	_c.mutation.SetTitleSimhash(v)
+	return _c
+}
+
+// SetNillableTitleSimhash sets the "title_simhash" field if the given value is not nil.
+func (_c *TopicSourceCreate) SetNillableTitleSimhash(v *uint64) *TopicSourceCreate {
+	if v != nil {
+		_c.SetTitleSimhash(*v)
+	}
+	return _c
+}
+
 // Mutation returns the TopicSourceMutation object of the builder.
 func (_c *TopicSourceCreate) Mutation() *TopicSourceMutation {
 	return _c.mutation
@@ -346,6 +416,26 @@ func (_c *TopicSourceCreate) createSpec() (*TopicSource, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.MovedAt(); ok {
 		_spec.SetField(topicsource.FieldMovedAt, field.TypeTime, value)
 		_node.MovedAt = &value
+	}
+	if value, ok := _c.mutation.SimhashSeg0(); ok {
+		_spec.SetField(topicsource.FieldSimhashSeg0, field.TypeInt16, value)
+		_node.SimhashSeg0 = value
+	}
+	if value, ok := _c.mutation.SimhashSeg1(); ok {
+		_spec.SetField(topicsource.FieldSimhashSeg1, field.TypeInt16, value)
+		_node.SimhashSeg1 = value
+	}
+	if value, ok := _c.mutation.SimhashSeg2(); ok {
+		_spec.SetField(topicsource.FieldSimhashSeg2, field.TypeInt16, value)
+		_node.SimhashSeg2 = value
+	}
+	if value, ok := _c.mutation.SimhashSeg3(); ok {
+		_spec.SetField(topicsource.FieldSimhashSeg3, field.TypeInt16, value)
+		_node.SimhashSeg3 = value
+	}
+	if value, ok := _c.mutation.TitleSimhash(); ok {
+		_spec.SetField(topicsource.FieldTitleSimhash, field.TypeUint64, value)
+		_node.TitleSimhash = value
 	}
 	return _node, _spec
 }
@@ -600,6 +690,126 @@ func (u *TopicSourceUpsert) UpdateMovedAt() *TopicSourceUpsert {
 // ClearMovedAt clears the value of the "moved_at" field.
 func (u *TopicSourceUpsert) ClearMovedAt() *TopicSourceUpsert {
 	u.SetNull(topicsource.FieldMovedAt)
+	return u
+}
+
+// SetSimhashSeg0 sets the "simhash_seg0" field.
+func (u *TopicSourceUpsert) SetSimhashSeg0(v int16) *TopicSourceUpsert {
+	u.Set(topicsource.FieldSimhashSeg0, v)
+	return u
+}
+
+// UpdateSimhashSeg0 sets the "simhash_seg0" field to the value that was provided on create.
+func (u *TopicSourceUpsert) UpdateSimhashSeg0() *TopicSourceUpsert {
+	u.SetExcluded(topicsource.FieldSimhashSeg0)
+	return u
+}
+
+// AddSimhashSeg0 adds v to the "simhash_seg0" field.
+func (u *TopicSourceUpsert) AddSimhashSeg0(v int16) *TopicSourceUpsert {
+	u.Add(topicsource.FieldSimhashSeg0, v)
+	return u
+}
+
+// ClearSimhashSeg0 clears the value of the "simhash_seg0" field.
+func (u *TopicSourceUpsert) ClearSimhashSeg0() *TopicSourceUpsert {
+	u.SetNull(topicsource.FieldSimhashSeg0)
+	return u
+}
+
+// SetSimhashSeg1 sets the "simhash_seg1" field.
+func (u *TopicSourceUpsert) SetSimhashSeg1(v int16) *TopicSourceUpsert {
+	u.Set(topicsource.FieldSimhashSeg1, v)
+	return u
+}
+
+// UpdateSimhashSeg1 sets the "simhash_seg1" field to the value that was provided on create.
+func (u *TopicSourceUpsert) UpdateSimhashSeg1() *TopicSourceUpsert {
+	u.SetExcluded(topicsource.FieldSimhashSeg1)
+	return u
+}
+
+// AddSimhashSeg1 adds v to the "simhash_seg1" field.
+func (u *TopicSourceUpsert) AddSimhashSeg1(v int16) *TopicSourceUpsert {
+	u.Add(topicsource.FieldSimhashSeg1, v)
+	return u
+}
+
+// ClearSimhashSeg1 clears the value of the "simhash_seg1" field.
+func (u *TopicSourceUpsert) ClearSimhashSeg1() *TopicSourceUpsert {
+	u.SetNull(topicsource.FieldSimhashSeg1)
+	return u
+}
+
+// SetSimhashSeg2 sets the "simhash_seg2" field.
+func (u *TopicSourceUpsert) SetSimhashSeg2(v int16) *TopicSourceUpsert {
+	u.Set(topicsource.FieldSimhashSeg2, v)
+	return u
+}
+
+// UpdateSimhashSeg2 sets the "simhash_seg2" field to the value that was provided on create.
+func (u *TopicSourceUpsert) UpdateSimhashSeg2() *TopicSourceUpsert {
+	u.SetExcluded(topicsource.FieldSimhashSeg2)
+	return u
+}
+
+// AddSimhashSeg2 adds v to the "simhash_seg2" field.
+func (u *TopicSourceUpsert) AddSimhashSeg2(v int16) *TopicSourceUpsert {
+	u.Add(topicsource.FieldSimhashSeg2, v)
+	return u
+}
+
+// ClearSimhashSeg2 clears the value of the "simhash_seg2" field.
+func (u *TopicSourceUpsert) ClearSimhashSeg2() *TopicSourceUpsert {
+	u.SetNull(topicsource.FieldSimhashSeg2)
+	return u
+}
+
+// SetSimhashSeg3 sets the "simhash_seg3" field.
+func (u *TopicSourceUpsert) SetSimhashSeg3(v int16) *TopicSourceUpsert {
+	u.Set(topicsource.FieldSimhashSeg3, v)
+	return u
+}
+
+// UpdateSimhashSeg3 sets the "simhash_seg3" field to the value that was provided on create.
+func (u *TopicSourceUpsert) UpdateSimhashSeg3() *TopicSourceUpsert {
+	u.SetExcluded(topicsource.FieldSimhashSeg3)
+	return u
+}
+
+// AddSimhashSeg3 adds v to the "simhash_seg3" field.
+func (u *TopicSourceUpsert) AddSimhashSeg3(v int16) *TopicSourceUpsert {
+	u.Add(topicsource.FieldSimhashSeg3, v)
+	return u
+}
+
+// ClearSimhashSeg3 clears the value of the "simhash_seg3" field.
+func (u *TopicSourceUpsert) ClearSimhashSeg3() *TopicSourceUpsert {
+	u.SetNull(topicsource.FieldSimhashSeg3)
+	return u
+}
+
+// SetTitleSimhash sets the "title_simhash" field.
+func (u *TopicSourceUpsert) SetTitleSimhash(v uint64) *TopicSourceUpsert {
+	u.Set(topicsource.FieldTitleSimhash, v)
+	return u
+}
+
+// UpdateTitleSimhash sets the "title_simhash" field to the value that was provided on create.
+func (u *TopicSourceUpsert) UpdateTitleSimhash() *TopicSourceUpsert {
+	u.SetExcluded(topicsource.FieldTitleSimhash)
+	return u
+}
+
+// AddTitleSimhash adds v to the "title_simhash" field.
+func (u *TopicSourceUpsert) AddTitleSimhash(v uint64) *TopicSourceUpsert {
+	u.Add(topicsource.FieldTitleSimhash, v)
+	return u
+}
+
+// ClearTitleSimhash clears the value of the "title_simhash" field.
+func (u *TopicSourceUpsert) ClearTitleSimhash() *TopicSourceUpsert {
+	u.SetNull(topicsource.FieldTitleSimhash)
 	return u
 }
 
@@ -886,6 +1096,146 @@ func (u *TopicSourceUpsertOne) UpdateMovedAt() *TopicSourceUpsertOne {
 func (u *TopicSourceUpsertOne) ClearMovedAt() *TopicSourceUpsertOne {
 	return u.Update(func(s *TopicSourceUpsert) {
 		s.ClearMovedAt()
+	})
+}
+
+// SetSimhashSeg0 sets the "simhash_seg0" field.
+func (u *TopicSourceUpsertOne) SetSimhashSeg0(v int16) *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.SetSimhashSeg0(v)
+	})
+}
+
+// AddSimhashSeg0 adds v to the "simhash_seg0" field.
+func (u *TopicSourceUpsertOne) AddSimhashSeg0(v int16) *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.AddSimhashSeg0(v)
+	})
+}
+
+// UpdateSimhashSeg0 sets the "simhash_seg0" field to the value that was provided on create.
+func (u *TopicSourceUpsertOne) UpdateSimhashSeg0() *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.UpdateSimhashSeg0()
+	})
+}
+
+// ClearSimhashSeg0 clears the value of the "simhash_seg0" field.
+func (u *TopicSourceUpsertOne) ClearSimhashSeg0() *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.ClearSimhashSeg0()
+	})
+}
+
+// SetSimhashSeg1 sets the "simhash_seg1" field.
+func (u *TopicSourceUpsertOne) SetSimhashSeg1(v int16) *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.SetSimhashSeg1(v)
+	})
+}
+
+// AddSimhashSeg1 adds v to the "simhash_seg1" field.
+func (u *TopicSourceUpsertOne) AddSimhashSeg1(v int16) *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.AddSimhashSeg1(v)
+	})
+}
+
+// UpdateSimhashSeg1 sets the "simhash_seg1" field to the value that was provided on create.
+func (u *TopicSourceUpsertOne) UpdateSimhashSeg1() *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.UpdateSimhashSeg1()
+	})
+}
+
+// ClearSimhashSeg1 clears the value of the "simhash_seg1" field.
+func (u *TopicSourceUpsertOne) ClearSimhashSeg1() *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.ClearSimhashSeg1()
+	})
+}
+
+// SetSimhashSeg2 sets the "simhash_seg2" field.
+func (u *TopicSourceUpsertOne) SetSimhashSeg2(v int16) *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.SetSimhashSeg2(v)
+	})
+}
+
+// AddSimhashSeg2 adds v to the "simhash_seg2" field.
+func (u *TopicSourceUpsertOne) AddSimhashSeg2(v int16) *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.AddSimhashSeg2(v)
+	})
+}
+
+// UpdateSimhashSeg2 sets the "simhash_seg2" field to the value that was provided on create.
+func (u *TopicSourceUpsertOne) UpdateSimhashSeg2() *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.UpdateSimhashSeg2()
+	})
+}
+
+// ClearSimhashSeg2 clears the value of the "simhash_seg2" field.
+func (u *TopicSourceUpsertOne) ClearSimhashSeg2() *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.ClearSimhashSeg2()
+	})
+}
+
+// SetSimhashSeg3 sets the "simhash_seg3" field.
+func (u *TopicSourceUpsertOne) SetSimhashSeg3(v int16) *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.SetSimhashSeg3(v)
+	})
+}
+
+// AddSimhashSeg3 adds v to the "simhash_seg3" field.
+func (u *TopicSourceUpsertOne) AddSimhashSeg3(v int16) *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.AddSimhashSeg3(v)
+	})
+}
+
+// UpdateSimhashSeg3 sets the "simhash_seg3" field to the value that was provided on create.
+func (u *TopicSourceUpsertOne) UpdateSimhashSeg3() *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.UpdateSimhashSeg3()
+	})
+}
+
+// ClearSimhashSeg3 clears the value of the "simhash_seg3" field.
+func (u *TopicSourceUpsertOne) ClearSimhashSeg3() *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.ClearSimhashSeg3()
+	})
+}
+
+// SetTitleSimhash sets the "title_simhash" field.
+func (u *TopicSourceUpsertOne) SetTitleSimhash(v uint64) *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.SetTitleSimhash(v)
+	})
+}
+
+// AddTitleSimhash adds v to the "title_simhash" field.
+func (u *TopicSourceUpsertOne) AddTitleSimhash(v uint64) *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.AddTitleSimhash(v)
+	})
+}
+
+// UpdateTitleSimhash sets the "title_simhash" field to the value that was provided on create.
+func (u *TopicSourceUpsertOne) UpdateTitleSimhash() *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.UpdateTitleSimhash()
+	})
+}
+
+// ClearTitleSimhash clears the value of the "title_simhash" field.
+func (u *TopicSourceUpsertOne) ClearTitleSimhash() *TopicSourceUpsertOne {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.ClearTitleSimhash()
 	})
 }
 
@@ -1338,6 +1688,146 @@ func (u *TopicSourceUpsertBulk) UpdateMovedAt() *TopicSourceUpsertBulk {
 func (u *TopicSourceUpsertBulk) ClearMovedAt() *TopicSourceUpsertBulk {
 	return u.Update(func(s *TopicSourceUpsert) {
 		s.ClearMovedAt()
+	})
+}
+
+// SetSimhashSeg0 sets the "simhash_seg0" field.
+func (u *TopicSourceUpsertBulk) SetSimhashSeg0(v int16) *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.SetSimhashSeg0(v)
+	})
+}
+
+// AddSimhashSeg0 adds v to the "simhash_seg0" field.
+func (u *TopicSourceUpsertBulk) AddSimhashSeg0(v int16) *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.AddSimhashSeg0(v)
+	})
+}
+
+// UpdateSimhashSeg0 sets the "simhash_seg0" field to the value that was provided on create.
+func (u *TopicSourceUpsertBulk) UpdateSimhashSeg0() *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.UpdateSimhashSeg0()
+	})
+}
+
+// ClearSimhashSeg0 clears the value of the "simhash_seg0" field.
+func (u *TopicSourceUpsertBulk) ClearSimhashSeg0() *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.ClearSimhashSeg0()
+	})
+}
+
+// SetSimhashSeg1 sets the "simhash_seg1" field.
+func (u *TopicSourceUpsertBulk) SetSimhashSeg1(v int16) *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.SetSimhashSeg1(v)
+	})
+}
+
+// AddSimhashSeg1 adds v to the "simhash_seg1" field.
+func (u *TopicSourceUpsertBulk) AddSimhashSeg1(v int16) *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.AddSimhashSeg1(v)
+	})
+}
+
+// UpdateSimhashSeg1 sets the "simhash_seg1" field to the value that was provided on create.
+func (u *TopicSourceUpsertBulk) UpdateSimhashSeg1() *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.UpdateSimhashSeg1()
+	})
+}
+
+// ClearSimhashSeg1 clears the value of the "simhash_seg1" field.
+func (u *TopicSourceUpsertBulk) ClearSimhashSeg1() *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.ClearSimhashSeg1()
+	})
+}
+
+// SetSimhashSeg2 sets the "simhash_seg2" field.
+func (u *TopicSourceUpsertBulk) SetSimhashSeg2(v int16) *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.SetSimhashSeg2(v)
+	})
+}
+
+// AddSimhashSeg2 adds v to the "simhash_seg2" field.
+func (u *TopicSourceUpsertBulk) AddSimhashSeg2(v int16) *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.AddSimhashSeg2(v)
+	})
+}
+
+// UpdateSimhashSeg2 sets the "simhash_seg2" field to the value that was provided on create.
+func (u *TopicSourceUpsertBulk) UpdateSimhashSeg2() *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.UpdateSimhashSeg2()
+	})
+}
+
+// ClearSimhashSeg2 clears the value of the "simhash_seg2" field.
+func (u *TopicSourceUpsertBulk) ClearSimhashSeg2() *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.ClearSimhashSeg2()
+	})
+}
+
+// SetSimhashSeg3 sets the "simhash_seg3" field.
+func (u *TopicSourceUpsertBulk) SetSimhashSeg3(v int16) *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.SetSimhashSeg3(v)
+	})
+}
+
+// AddSimhashSeg3 adds v to the "simhash_seg3" field.
+func (u *TopicSourceUpsertBulk) AddSimhashSeg3(v int16) *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.AddSimhashSeg3(v)
+	})
+}
+
+// UpdateSimhashSeg3 sets the "simhash_seg3" field to the value that was provided on create.
+func (u *TopicSourceUpsertBulk) UpdateSimhashSeg3() *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.UpdateSimhashSeg3()
+	})
+}
+
+// ClearSimhashSeg3 clears the value of the "simhash_seg3" field.
+func (u *TopicSourceUpsertBulk) ClearSimhashSeg3() *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.ClearSimhashSeg3()
+	})
+}
+
+// SetTitleSimhash sets the "title_simhash" field.
+func (u *TopicSourceUpsertBulk) SetTitleSimhash(v uint64) *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.SetTitleSimhash(v)
+	})
+}
+
+// AddTitleSimhash adds v to the "title_simhash" field.
+func (u *TopicSourceUpsertBulk) AddTitleSimhash(v uint64) *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.AddTitleSimhash(v)
+	})
+}
+
+// UpdateTitleSimhash sets the "title_simhash" field to the value that was provided on create.
+func (u *TopicSourceUpsertBulk) UpdateTitleSimhash() *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.UpdateTitleSimhash()
+	})
+}
+
+// ClearTitleSimhash clears the value of the "title_simhash" field.
+func (u *TopicSourceUpsertBulk) ClearTitleSimhash() *TopicSourceUpsertBulk {
+	return u.Update(func(s *TopicSourceUpsert) {
+		s.ClearTitleSimhash()
 	})
 }
 

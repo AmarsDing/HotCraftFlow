@@ -151,6 +151,17 @@ func (Topic) Fields() []ent.Field {
 			Comment("低置信归并（0.70≤s<0.82）待人工复核").
 			Default(false),
 
+		// A-8 评审：阶段变更证据落库（rule/from/to/heat/v/streak JSON），可追溯
+		field.JSON("stage_evidence", map[string]any{}).
+			Comment("最近一次阶段变更证据（{rule,from,to,at,heat,v,rising_streak,decay_streak}）").
+			Optional(),
+
+		// S-23：迟到回填锁（重算期间抑制告警评估；评估器见此字段跳过）
+		field.Time("recompute_lock").
+			Comment("迟到回填锁（UTC；非空表示正在重算，告警/生命周期评估抑制）").
+			Optional().
+			Nillable(),
+
 		field.Bool("is_archived").
 			Comment("已归档（M-17 归档任务：last_seen_at < now-30d 或 dormant>7d）").
 			Default(false),

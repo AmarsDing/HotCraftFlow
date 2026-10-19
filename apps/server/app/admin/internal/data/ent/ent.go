@@ -23,6 +23,7 @@ import (
 	"framework/app/admin/internal/data/ent/dict"
 	"framework/app/admin/internal/data/ent/dictcategory"
 	"framework/app/admin/internal/data/ent/entityassetmapping"
+	"framework/app/admin/internal/data/ent/entityindex"
 	"framework/app/admin/internal/data/ent/evidencesnapshot"
 	"framework/app/admin/internal/data/ent/file"
 	"framework/app/admin/internal/data/ent/intelcluster"
@@ -164,6 +165,7 @@ func checkColumn(t, c string) error {
 			dict.Table:                         dict.ValidColumn,
 			dictcategory.Table:                 dictcategory.ValidColumn,
 			entityassetmapping.Table:           entityassetmapping.ValidColumn,
+			entityindex.Table:                  entityindex.ValidColumn,
 			evidencesnapshot.Table:             evidencesnapshot.ValidColumn,
 			file.Table:                         file.ValidColumn,
 			intelcluster.Table:                 intelcluster.ValidColumn,

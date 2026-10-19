@@ -83,6 +83,10 @@ const (
 	FieldMergeLock = "merge_lock"
 	// FieldNeedsReview holds the string denoting the needs_review field in the database.
 	FieldNeedsReview = "needs_review"
+	// FieldStageEvidence holds the string denoting the stage_evidence field in the database.
+	FieldStageEvidence = "stage_evidence"
+	// FieldRecomputeLock holds the string denoting the recompute_lock field in the database.
+	FieldRecomputeLock = "recompute_lock"
 	// FieldIsArchived holds the string denoting the is_archived field in the database.
 	FieldIsArchived = "is_archived"
 	// Table holds the table name of the topic in the database.
@@ -127,6 +131,8 @@ var Columns = []string{
 	FieldRepresentativeIntelID,
 	FieldMergeLock,
 	FieldNeedsReview,
+	FieldStageEvidence,
+	FieldRecomputeLock,
 	FieldIsArchived,
 }
 
@@ -429,6 +435,11 @@ func ByMergeLock(opts ...sql.OrderTermOption) OrderOption {
 // ByNeedsReview orders the results by the needs_review field.
 func ByNeedsReview(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNeedsReview, opts...).ToFunc()
+}
+
+// ByRecomputeLock orders the results by the recompute_lock field.
+func ByRecomputeLock(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRecomputeLock, opts...).ToFunc()
 }
 
 // ByIsArchived orders the results by the is_archived field.

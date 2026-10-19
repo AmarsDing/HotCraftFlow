@@ -39,6 +39,16 @@ const (
 	FieldMovedBy = "moved_by"
 	// FieldMovedAt holds the string denoting the moved_at field in the database.
 	FieldMovedAt = "moved_at"
+	// FieldSimhashSeg0 holds the string denoting the simhash_seg0 field in the database.
+	FieldSimhashSeg0 = "simhash_seg0"
+	// FieldSimhashSeg1 holds the string denoting the simhash_seg1 field in the database.
+	FieldSimhashSeg1 = "simhash_seg1"
+	// FieldSimhashSeg2 holds the string denoting the simhash_seg2 field in the database.
+	FieldSimhashSeg2 = "simhash_seg2"
+	// FieldSimhashSeg3 holds the string denoting the simhash_seg3 field in the database.
+	FieldSimhashSeg3 = "simhash_seg3"
+	// FieldTitleSimhash holds the string denoting the title_simhash field in the database.
+	FieldTitleSimhash = "title_simhash"
 	// Table holds the table name of the topicsource in the database.
 	Table = "tt_topic_sources"
 )
@@ -60,6 +70,11 @@ var Columns = []string{
 	FieldSimilarity,
 	FieldMovedBy,
 	FieldMovedAt,
+	FieldSimhashSeg0,
+	FieldSimhashSeg1,
+	FieldSimhashSeg2,
+	FieldSimhashSeg3,
+	FieldTitleSimhash,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -161,4 +176,29 @@ func ByMovedBy(opts ...sql.OrderTermOption) OrderOption {
 // ByMovedAt orders the results by the moved_at field.
 func ByMovedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMovedAt, opts...).ToFunc()
+}
+
+// BySimhashSeg0 orders the results by the simhash_seg0 field.
+func BySimhashSeg0(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSimhashSeg0, opts...).ToFunc()
+}
+
+// BySimhashSeg1 orders the results by the simhash_seg1 field.
+func BySimhashSeg1(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSimhashSeg1, opts...).ToFunc()
+}
+
+// BySimhashSeg2 orders the results by the simhash_seg2 field.
+func BySimhashSeg2(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSimhashSeg2, opts...).ToFunc()
+}
+
+// BySimhashSeg3 orders the results by the simhash_seg3 field.
+func BySimhashSeg3(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSimhashSeg3, opts...).ToFunc()
+}
+
+// ByTitleSimhash orders the results by the title_simhash field.
+func ByTitleSimhash(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTitleSimhash, opts...).ToFunc()
 }

@@ -28,6 +28,7 @@ import (
 	"framework/app/admin/internal/data/ent/dict"
 	"framework/app/admin/internal/data/ent/dictcategory"
 	"framework/app/admin/internal/data/ent/entityassetmapping"
+	"framework/app/admin/internal/data/ent/entityindex"
 	"framework/app/admin/internal/data/ent/evidencesnapshot"
 	"framework/app/admin/internal/data/ent/file"
 	"framework/app/admin/internal/data/ent/intelcluster"
@@ -132,6 +133,8 @@ type Client struct {
 	DictCategory *DictCategoryClient
 	// EntityAssetMapping is the client for interacting with the EntityAssetMapping builders.
 	EntityAssetMapping *EntityAssetMappingClient
+	// EntityIndex is the client for interacting with the EntityIndex builders.
+	EntityIndex *EntityIndexClient
 	// EvidenceSnapshot is the client for interacting with the EvidenceSnapshot builders.
 	EvidenceSnapshot *EvidenceSnapshotClient
 	// File is the client for interacting with the File builders.
@@ -276,6 +279,7 @@ func (c *Client) init() {
 	c.Dict = NewDictClient(c.config)
 	c.DictCategory = NewDictCategoryClient(c.config)
 	c.EntityAssetMapping = NewEntityAssetMappingClient(c.config)
+	c.EntityIndex = NewEntityIndexClient(c.config)
 	c.EvidenceSnapshot = NewEvidenceSnapshotClient(c.config)
 	c.File = NewFileClient(c.config)
 	c.IntelCluster = NewIntelClusterClient(c.config)
@@ -443,6 +447,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Dict:                         NewDictClient(cfg),
 		DictCategory:                 NewDictCategoryClient(cfg),
 		EntityAssetMapping:           NewEntityAssetMappingClient(cfg),
+		EntityIndex:                  NewEntityIndexClient(cfg),
 		EvidenceSnapshot:             NewEvidenceSnapshotClient(cfg),
 		File:                         NewFileClient(cfg),
 		IntelCluster:                 NewIntelClusterClient(cfg),
@@ -537,6 +542,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Dict:                         NewDictClient(cfg),
 		DictCategory:                 NewDictCategoryClient(cfg),
 		EntityAssetMapping:           NewEntityAssetMappingClient(cfg),
+		EntityIndex:                  NewEntityIndexClient(cfg),
 		EvidenceSnapshot:             NewEvidenceSnapshotClient(cfg),
 		File:                         NewFileClient(cfg),
 		IntelCluster:                 NewIntelClusterClient(cfg),
@@ -628,8 +634,8 @@ func (c *Client) Use(hooks ...Hook) {
 		c.AuthorizationRecord, c.CasbinRule, c.ClusterMergeEvent, c.CollectRun,
 		c.ComplianceRule, c.CredentialAccount, c.DataPermission, c.DeadLetter,
 		c.DedupSample, c.Department, c.Dict, c.DictCategory, c.EntityAssetMapping,
-		c.EvidenceSnapshot, c.File, c.IntelCluster, c.IntelItem, c.IntelSource,
-		c.LoginFailCounter, c.MapApprovalRecord, c.MapDispatchUnit,
+		c.EntityIndex, c.EvidenceSnapshot, c.File, c.IntelCluster, c.IntelItem,
+		c.IntelSource, c.LoginFailCounter, c.MapApprovalRecord, c.MapDispatchUnit,
 		c.MapPerformanceSnapshot, c.MapPublishAccount, c.MapPublishChannel,
 		c.MapPublishReceipt, c.Menu, c.MiaEventCard, c.MiaImpactCard, c.MiaQuoteCache,
 		c.MiaTransmissionRule, c.MmeAnalysisCache, c.MmeAsset, c.MmeMontageTask,
@@ -655,8 +661,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.AuthorizationRecord, c.CasbinRule, c.ClusterMergeEvent, c.CollectRun,
 		c.ComplianceRule, c.CredentialAccount, c.DataPermission, c.DeadLetter,
 		c.DedupSample, c.Department, c.Dict, c.DictCategory, c.EntityAssetMapping,
-		c.EvidenceSnapshot, c.File, c.IntelCluster, c.IntelItem, c.IntelSource,
-		c.LoginFailCounter, c.MapApprovalRecord, c.MapDispatchUnit,
+		c.EntityIndex, c.EvidenceSnapshot, c.File, c.IntelCluster, c.IntelItem,
+		c.IntelSource, c.LoginFailCounter, c.MapApprovalRecord, c.MapDispatchUnit,
 		c.MapPerformanceSnapshot, c.MapPublishAccount, c.MapPublishChannel,
 		c.MapPublishReceipt, c.Menu, c.MiaEventCard, c.MiaImpactCard, c.MiaQuoteCache,
 		c.MiaTransmissionRule, c.MmeAnalysisCache, c.MmeAsset, c.MmeMontageTask,
@@ -711,6 +717,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.DictCategory.mutate(ctx, m)
 	case *EntityAssetMappingMutation:
 		return c.EntityAssetMapping.mutate(ctx, m)
+	case *EntityIndexMutation:
+		return c.EntityIndex.mutate(ctx, m)
 	case *EvidenceSnapshotMutation:
 		return c.EvidenceSnapshot.mutate(ctx, m)
 	case *FileMutation:
@@ -3131,6 +3139,139 @@ func (c *EntityAssetMappingClient) mutate(ctx context.Context, m *EntityAssetMap
 		return (&EntityAssetMappingDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown EntityAssetMapping mutation op: %q", m.Op())
+	}
+}
+
+// EntityIndexClient is a client for the EntityIndex schema.
+type EntityIndexClient struct {
+	config
+}
+
+// NewEntityIndexClient returns a client for the EntityIndex from the given config.
+func NewEntityIndexClient(c config) *EntityIndexClient {
+	return &EntityIndexClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `entityindex.Hooks(f(g(h())))`.
+func (c *EntityIndexClient) Use(hooks ...Hook) {
+	c.hooks.EntityIndex = append(c.hooks.EntityIndex, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `entityindex.Intercept(f(g(h())))`.
+func (c *EntityIndexClient) Intercept(interceptors ...Interceptor) {
+	c.inters.EntityIndex = append(c.inters.EntityIndex, interceptors...)
+}
+
+// Create returns a builder for creating a EntityIndex entity.
+func (c *EntityIndexClient) Create() *EntityIndexCreate {
+	mutation := newEntityIndexMutation(c.config, OpCreate)
+	return &EntityIndexCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of EntityIndex entities.
+func (c *EntityIndexClient) CreateBulk(builders ...*EntityIndexCreate) *EntityIndexCreateBulk {
+	return &EntityIndexCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *EntityIndexClient) MapCreateBulk(slice any, setFunc func(*EntityIndexCreate, int)) *EntityIndexCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &EntityIndexCreateBulk{err: fmt.Errorf("calling to EntityIndexClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*EntityIndexCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &EntityIndexCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for EntityIndex.
+func (c *EntityIndexClient) Update() *EntityIndexUpdate {
+	mutation := newEntityIndexMutation(c.config, OpUpdate)
+	return &EntityIndexUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *EntityIndexClient) UpdateOne(_m *EntityIndex) *EntityIndexUpdateOne {
+	mutation := newEntityIndexMutation(c.config, OpUpdateOne, withEntityIndex(_m))
+	return &EntityIndexUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *EntityIndexClient) UpdateOneID(id int) *EntityIndexUpdateOne {
+	mutation := newEntityIndexMutation(c.config, OpUpdateOne, withEntityIndexID(id))
+	return &EntityIndexUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for EntityIndex.
+func (c *EntityIndexClient) Delete() *EntityIndexDelete {
+	mutation := newEntityIndexMutation(c.config, OpDelete)
+	return &EntityIndexDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *EntityIndexClient) DeleteOne(_m *EntityIndex) *EntityIndexDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *EntityIndexClient) DeleteOneID(id int) *EntityIndexDeleteOne {
+	builder := c.Delete().Where(entityindex.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &EntityIndexDeleteOne{builder}
+}
+
+// Query returns a query builder for EntityIndex.
+func (c *EntityIndexClient) Query() *EntityIndexQuery {
+	return &EntityIndexQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeEntityIndex},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a EntityIndex entity by its id.
+func (c *EntityIndexClient) Get(ctx context.Context, id int) (*EntityIndex, error) {
+	return c.Query().Where(entityindex.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *EntityIndexClient) GetX(ctx context.Context, id int) *EntityIndex {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *EntityIndexClient) Hooks() []Hook {
+	return c.hooks.EntityIndex
+}
+
+// Interceptors returns the client interceptors.
+func (c *EntityIndexClient) Interceptors() []Interceptor {
+	return c.inters.EntityIndex
+}
+
+func (c *EntityIndexClient) mutate(ctx context.Context, m *EntityIndexMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&EntityIndexCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&EntityIndexUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&EntityIndexUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&EntityIndexDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown EntityIndex mutation op: %q", m.Op())
 	}
 }
 
@@ -11047,9 +11188,9 @@ type (
 		AdminLoginLog, AdminLoginRestriction, AdminOperationLog, ApiResource,
 		AuthorizationRecord, CasbinRule, ClusterMergeEvent, CollectRun, ComplianceRule,
 		CredentialAccount, DataPermission, DeadLetter, DedupSample, Department, Dict,
-		DictCategory, EntityAssetMapping, EvidenceSnapshot, File, IntelCluster,
-		IntelItem, IntelSource, LoginFailCounter, MapApprovalRecord, MapDispatchUnit,
-		MapPerformanceSnapshot, MapPublishAccount, MapPublishChannel,
+		DictCategory, EntityAssetMapping, EntityIndex, EvidenceSnapshot, File,
+		IntelCluster, IntelItem, IntelSource, LoginFailCounter, MapApprovalRecord,
+		MapDispatchUnit, MapPerformanceSnapshot, MapPublishAccount, MapPublishChannel,
 		MapPublishReceipt, Menu, MiaEventCard, MiaImpactCard, MiaQuoteCache,
 		MiaTransmissionRule, MmeAnalysisCache, MmeAsset, MmeMontageTask, MmeRenderJob,
 		MmeTemplate, MmeVariant, MmeVariantSet, NarrativeCoinMapping,
@@ -11065,9 +11206,9 @@ type (
 		AdminLoginLog, AdminLoginRestriction, AdminOperationLog, ApiResource,
 		AuthorizationRecord, CasbinRule, ClusterMergeEvent, CollectRun, ComplianceRule,
 		CredentialAccount, DataPermission, DeadLetter, DedupSample, Department, Dict,
-		DictCategory, EntityAssetMapping, EvidenceSnapshot, File, IntelCluster,
-		IntelItem, IntelSource, LoginFailCounter, MapApprovalRecord, MapDispatchUnit,
-		MapPerformanceSnapshot, MapPublishAccount, MapPublishChannel,
+		DictCategory, EntityAssetMapping, EntityIndex, EvidenceSnapshot, File,
+		IntelCluster, IntelItem, IntelSource, LoginFailCounter, MapApprovalRecord,
+		MapDispatchUnit, MapPerformanceSnapshot, MapPublishAccount, MapPublishChannel,
 		MapPublishReceipt, Menu, MiaEventCard, MiaImpactCard, MiaQuoteCache,
 		MiaTransmissionRule, MmeAnalysisCache, MmeAsset, MmeMontageTask, MmeRenderJob,
 		MmeTemplate, MmeVariant, MmeVariantSet, NarrativeCoinMapping,

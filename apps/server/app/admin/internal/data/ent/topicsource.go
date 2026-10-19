@@ -44,7 +44,17 @@ type TopicSource struct {
 	// 人工合并/拆分操作者，可空（空=自动聚类归入）
 	MovedBy *string `json:"moved_by,omitempty"`
 	// 人工移动时间（UTC）
-	MovedAt      *time.Time `json:"moved_at,omitempty"`
+	MovedAt *time.Time `json:"moved_at,omitempty"`
+	// 标题 SimHash [63:48]（pigeonhole 段 0）
+	SimhashSeg0 int16 `json:"simhash_seg0,omitempty"`
+	// 标题 SimHash [47:32]（pigeonhole 段 1）
+	SimhashSeg1 int16 `json:"simhash_seg1,omitempty"`
+	// 标题 SimHash [31:16]（pigeonhole 段 2）
+	SimhashSeg2 int16 `json:"simhash_seg2,omitempty"`
+	// 标题 SimHash [15:0]（pigeonhole 段 3）
+	SimhashSeg3 int16 `json:"simhash_seg3,omitempty"`
+	// 标题 SimHash64 完整指纹（打分通道用）
+	TitleSimhash uint64 `json:"title_simhash,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -55,7 +65,7 @@ func (*TopicSource) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case topicsource.FieldSimilarity:
 			values[i] = new(sql.NullFloat64)
-		case topicsource.FieldID, topicsource.FieldCreateBy, topicsource.FieldUpdateBy, topicsource.FieldTenantID:
+		case topicsource.FieldID, topicsource.FieldCreateBy, topicsource.FieldUpdateBy, topicsource.FieldTenantID, topicsource.FieldSimhashSeg0, topicsource.FieldSimhashSeg1, topicsource.FieldSimhashSeg2, topicsource.FieldSimhashSeg3, topicsource.FieldTitleSimhash:
 			values[i] = new(sql.NullInt64)
 		case topicsource.FieldTopicID, topicsource.FieldIntelID, topicsource.FieldClusterKey, topicsource.FieldPlatform, topicsource.FieldMovedBy:
 			values[i] = new(sql.NullString)
@@ -175,6 +185,36 @@ func (_m *TopicSource) assignValues(columns []string, values []any) error {
 				_m.MovedAt = new(time.Time)
 				*_m.MovedAt = value.Time
 			}
+		case topicsource.FieldSimhashSeg0:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field simhash_seg0", values[i])
+			} else if value.Valid {
+				_m.SimhashSeg0 = int16(value.Int64)
+			}
+		case topicsource.FieldSimhashSeg1:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field simhash_seg1", values[i])
+			} else if value.Valid {
+				_m.SimhashSeg1 = int16(value.Int64)
+			}
+		case topicsource.FieldSimhashSeg2:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field simhash_seg2", values[i])
+			} else if value.Valid {
+				_m.SimhashSeg2 = int16(value.Int64)
+			}
+		case topicsource.FieldSimhashSeg3:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field simhash_seg3", values[i])
+			} else if value.Valid {
+				_m.SimhashSeg3 = int16(value.Int64)
+			}
+		case topicsource.FieldTitleSimhash:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field title_simhash", values[i])
+			} else if value.Valid {
+				_m.TitleSimhash = uint64(value.Int64)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -270,6 +310,21 @@ func (_m *TopicSource) String() string {
 		builder.WriteString("moved_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("simhash_seg0=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SimhashSeg0))
+	builder.WriteString(", ")
+	builder.WriteString("simhash_seg1=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SimhashSeg1))
+	builder.WriteString(", ")
+	builder.WriteString("simhash_seg2=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SimhashSeg2))
+	builder.WriteString(", ")
+	builder.WriteString("simhash_seg3=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SimhashSeg3))
+	builder.WriteString(", ")
+	builder.WriteString("title_simhash=")
+	builder.WriteString(fmt.Sprintf("%v", _m.TitleSimhash))
 	builder.WriteByte(')')
 	return builder.String()
 }

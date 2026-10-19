@@ -59,18 +59,25 @@ const labelMaxLen = 200
 //  1. event_id Redis SET NX 去重（JetStream 至少一次重投，TTL DedupTTL）。
 //  2. 同桶 last-wins 守卫（A-14：_as_of 最大者胜出，防乱序覆盖）。
 //  3. InfluxDB (measurement+tag set+ts) 覆盖写（NFR-TT-07 兜底）。
+// ClusterResolver 聚类决策端口（接口化以便测试注入 fake）。
+type ClusterResolver interface {
+	Resolve(ctx context.Context, in ClusterInput) (ClusterOutcome, error)
+}
+
 type IngestUsecase struct {
 	conf    *Conf
 	repo    TopicRepo
 	guard   GuardStore
 	pub     SnapshotPublisher
 	redis   biz.RedisStore
-	heat    *HeatEnricher // M2 归一化编排器；nil 时保持 M1 哨兵行为（测试可注入）
+	heat    *HeatEnricher   // M2 归一化编排器；nil 时保持 M1 哨兵行为（测试可注入）
+	cluster ClusterResolver // M3 语义聚类编排器（Step2-4）；nil 时降级 Step1 miss→新建话题
 	clock   func() time.Time // 可注入便于测试；默认 time.Now
 	log     *log.Helper
 }
 
 // NewIngestUsecase 构造（redis 用于 event_id 去重与 recompute 标记；可为 nil 降级放行）。
+// cluster 可 nil：未注入时 Step1 硬键未命中 → 直接新建话题（降级路径，不阻断主链）。
 func NewIngestUsecase(
 	conf *Conf,
 	repo TopicRepo,
@@ -78,17 +85,23 @@ func NewIngestUsecase(
 	pub SnapshotPublisher,
 	redis biz.RedisStore,
 	heat *HeatEnricher,
+	cluster *ClusterUsecase,
 	logger log.Logger,
 ) *IngestUsecase {
+	var cr ClusterResolver
+	if cluster != nil {
+		cr = cluster
+	}
 	return &IngestUsecase{
-		conf:  conf,
-		repo:  repo,
-		guard: guard,
-		pub:   pub,
-		redis: redis,
-		heat:  heat,
-		clock: time.Now,
-		log:   log.NewHelper(log.With(logger, "module", "biz/tt-ingest")),
+		conf:    conf,
+		repo:    repo,
+		guard:   guard,
+		pub:     pub,
+		redis:   redis,
+		heat:    heat,
+		cluster: cr,
+		clock:   time.Now,
+		log:     log.NewHelper(log.With(logger, "module", "biz/tt-ingest")),
 	}
 }
 
@@ -226,10 +239,12 @@ func (uc *IngestUsecase) HandleIntelData(ctx context.Context, data []byte) (Hand
 	return ResultOK, nil
 }
 
-// assignTopic B-1 Step1 硬键归并：
-//   - dedup.cluster_id 命中 TopicSource.cluster_key → 复用话题（并补记 intel 关联）；
-//   - 未命中或无 cluster_id → 新建话题（topic_id 由 TT 生成 tp_ 前缀，ADR-TT-02
-//     与 S-22 砍单口径：聚类降级路径也只保 Step1，不直接复用 cl_ 作 topic_id）。
+// assignTopic B-1 话题归并：
+//   - Step1 硬键：dedup.cluster_id 命中 TopicSource.cluster_key → 复用话题；
+//   - Step2-4 语义召回：硬键未命中且 cluster 可用 → ClusterUsecase.Resolve
+//     （实体倒排 ∪ SimHash 桶召回 → 三路打分 → merge/review/new 决策）；
+//   - 兜底：Step1/Step2-4 均未命中或聚类失败 → 新建话题（topic_id 由 TT 生成 tp_
+//     前缀，ADR-TT-02 与 S-22 砍单口径：不直接复用 cl_ 作 topic_id）。
 func (uc *IngestUsecase) assignTopic(ctx context.Context, item *mediacontract.IntelItem, seenAt time.Time) (string, error) {
 	clusterKey := item.Dedup.ClusterID
 	if clusterKey != "" {
@@ -243,6 +258,8 @@ func (uc *IngestUsecase) assignTopic(ctx context.Context, item *mediacontract.In
 				Platform:      item.Source.Platform,
 				ContributedAt: seenAt,
 				Similarity:    1.0,
+				TitleSimhash:  TitleSimHash64(item.Payload.Title),
+				Entities:      extractEntityKeys(item),
 			}); err != nil {
 				uc.log.Warnf("attach source intel=%s topic=%s failed: %v", item.IntelID, topicID, err)
 			}
@@ -250,7 +267,30 @@ func (uc *IngestUsecase) assignTopic(ctx context.Context, item *mediacontract.In
 		}
 	}
 
-	// 新建话题。
+	// Step2-4 语义召回（硬键未命中；M3 落地后启用）
+	if uc.cluster != nil {
+		outcome, err := uc.cluster.Resolve(ctx, ClusterInput{
+			IntelID:     item.IntelID,
+			ClusterKey:  clusterKey,
+			Platform:    item.Source.Platform,
+			Entities:    extractEntityKeys(item),
+			Lang:        detectLang(item.Payload.Title),
+			Fp:          TitleSimHash64(item.Payload.Title),
+			CollectedAt: seenAt,
+		})
+		if err != nil {
+			// 聚类失败不阻断主链：降级为新建话题（诚实口径：计 metric 供运维观测）
+			uc.log.Warnf("cluster resolve failed (intel=%s), fallback to new topic: %v", item.IntelID, err)
+			ClusterFallbackTotal.WithLabelValues("resolve_error").Inc()
+		} else if outcome.Decision == ClusterMerge || outcome.Decision == ClusterReview {
+			// 归并命中：ClusterUsecase 内部已 AttachSource + (review 档) MarkNeedsReview
+			ClusterFallbackTotal.WithLabelValues("hit_" + string(outcome.Decision)).Inc()
+			return outcome.TopicID, nil
+		}
+		// ClusterNew：继续走下方新建话题路径
+	}
+
+	// 新建话题（Step1 未命中 + Step2-4 未归并）。
 	source := "no_cluster_key"
 	if clusterKey != "" {
 		source = "cluster_key"
@@ -264,6 +304,9 @@ func (uc *IngestUsecase) assignTopic(ctx context.Context, item *mediacontract.In
 		ClusterKey: clusterKey,
 		OriginURL:  item.Source.URL,
 		Platform:   item.Source.Platform,
+		TitleSimhash: TitleSimHash64(item.Payload.Title),
+		Entities:     extractEntityKeys(item),
+		Lang:         detectLang(item.Payload.Title),
 	}
 	if in.Label == "" {
 		in.Label = fallbackLabel(item)
@@ -274,6 +317,33 @@ func (uc *IngestUsecase) assignTopic(ctx context.Context, item *mediacontract.In
 	}
 	TopicCreatedTotal.WithLabelValues(source).Inc()
 	return topicID, nil
+}
+
+// extractEntityKeys 从 IntelItem.Entities 抽取规范化实体串
+// （confidence≥0.6 过滤 + (type:value) 格式化）。
+func extractEntityKeys(item *mediacontract.IntelItem) []string {
+	if item == nil || len(item.Entities) == 0 {
+		return nil
+	}
+	out := make([]string, 0, len(item.Entities))
+	for _, e := range item.Entities {
+		if e.Confidence < 0.6 {
+			continue // B-18 置信度下限
+		}
+		out = append(out, string(e.Type)+":"+e.Value)
+	}
+	return out
+}
+
+// detectLang 简易语言脚本判定（中文标题 vs 其他）。
+// 完整版可引入 unicode script 检测；当前 zh/en 二分足够（Step3 跨语言判定用）。
+func detectLang(title string) string {
+	for _, r := range title {
+		if r >= 0x4E00 && r <= 0x9FFF { // CJK Unified Ideographs
+			return "zh"
+		}
+	}
+	return "en"
 }
 
 // markRecompute 迟到回填重算标记（A-14：重算区间 [t_late, now] 内的派生指标）。

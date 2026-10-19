@@ -448,6 +448,26 @@ func (_c *TopicCreate) SetNillableNeedsReview(v *bool) *TopicCreate {
 	return _c
 }
 
+// SetStageEvidence sets the "stage_evidence" field.
+func (_c *TopicCreate) SetStageEvidence(v map[string]interface{}) *TopicCreate {
+	_c.mutation.SetStageEvidence(v)
+	return _c
+}
+
+// SetRecomputeLock sets the "recompute_lock" field.
+func (_c *TopicCreate) SetRecomputeLock(v time.Time) *TopicCreate {
+	_c.mutation.SetRecomputeLock(v)
+	return _c
+}
+
+// SetNillableRecomputeLock sets the "recompute_lock" field if the given value is not nil.
+func (_c *TopicCreate) SetNillableRecomputeLock(v *time.Time) *TopicCreate {
+	if v != nil {
+		_c.SetRecomputeLock(*v)
+	}
+	return _c
+}
+
 // SetIsArchived sets the "is_archived" field.
 func (_c *TopicCreate) SetIsArchived(v bool) *TopicCreate {
 	_c.mutation.SetIsArchived(v)
@@ -840,6 +860,14 @@ func (_c *TopicCreate) createSpec() (*Topic, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.NeedsReview(); ok {
 		_spec.SetField(topic.FieldNeedsReview, field.TypeBool, value)
 		_node.NeedsReview = value
+	}
+	if value, ok := _c.mutation.StageEvidence(); ok {
+		_spec.SetField(topic.FieldStageEvidence, field.TypeJSON, value)
+		_node.StageEvidence = value
+	}
+	if value, ok := _c.mutation.RecomputeLock(); ok {
+		_spec.SetField(topic.FieldRecomputeLock, field.TypeTime, value)
+		_node.RecomputeLock = &value
 	}
 	if value, ok := _c.mutation.IsArchived(); ok {
 		_spec.SetField(topic.FieldIsArchived, field.TypeBool, value)
@@ -1440,6 +1468,42 @@ func (u *TopicUpsert) SetNeedsReview(v bool) *TopicUpsert {
 // UpdateNeedsReview sets the "needs_review" field to the value that was provided on create.
 func (u *TopicUpsert) UpdateNeedsReview() *TopicUpsert {
 	u.SetExcluded(topic.FieldNeedsReview)
+	return u
+}
+
+// SetStageEvidence sets the "stage_evidence" field.
+func (u *TopicUpsert) SetStageEvidence(v map[string]interface{}) *TopicUpsert {
+	u.Set(topic.FieldStageEvidence, v)
+	return u
+}
+
+// UpdateStageEvidence sets the "stage_evidence" field to the value that was provided on create.
+func (u *TopicUpsert) UpdateStageEvidence() *TopicUpsert {
+	u.SetExcluded(topic.FieldStageEvidence)
+	return u
+}
+
+// ClearStageEvidence clears the value of the "stage_evidence" field.
+func (u *TopicUpsert) ClearStageEvidence() *TopicUpsert {
+	u.SetNull(topic.FieldStageEvidence)
+	return u
+}
+
+// SetRecomputeLock sets the "recompute_lock" field.
+func (u *TopicUpsert) SetRecomputeLock(v time.Time) *TopicUpsert {
+	u.Set(topic.FieldRecomputeLock, v)
+	return u
+}
+
+// UpdateRecomputeLock sets the "recompute_lock" field to the value that was provided on create.
+func (u *TopicUpsert) UpdateRecomputeLock() *TopicUpsert {
+	u.SetExcluded(topic.FieldRecomputeLock)
+	return u
+}
+
+// ClearRecomputeLock clears the value of the "recompute_lock" field.
+func (u *TopicUpsert) ClearRecomputeLock() *TopicUpsert {
+	u.SetNull(topic.FieldRecomputeLock)
 	return u
 }
 
@@ -2137,6 +2201,48 @@ func (u *TopicUpsertOne) SetNeedsReview(v bool) *TopicUpsertOne {
 func (u *TopicUpsertOne) UpdateNeedsReview() *TopicUpsertOne {
 	return u.Update(func(s *TopicUpsert) {
 		s.UpdateNeedsReview()
+	})
+}
+
+// SetStageEvidence sets the "stage_evidence" field.
+func (u *TopicUpsertOne) SetStageEvidence(v map[string]interface{}) *TopicUpsertOne {
+	return u.Update(func(s *TopicUpsert) {
+		s.SetStageEvidence(v)
+	})
+}
+
+// UpdateStageEvidence sets the "stage_evidence" field to the value that was provided on create.
+func (u *TopicUpsertOne) UpdateStageEvidence() *TopicUpsertOne {
+	return u.Update(func(s *TopicUpsert) {
+		s.UpdateStageEvidence()
+	})
+}
+
+// ClearStageEvidence clears the value of the "stage_evidence" field.
+func (u *TopicUpsertOne) ClearStageEvidence() *TopicUpsertOne {
+	return u.Update(func(s *TopicUpsert) {
+		s.ClearStageEvidence()
+	})
+}
+
+// SetRecomputeLock sets the "recompute_lock" field.
+func (u *TopicUpsertOne) SetRecomputeLock(v time.Time) *TopicUpsertOne {
+	return u.Update(func(s *TopicUpsert) {
+		s.SetRecomputeLock(v)
+	})
+}
+
+// UpdateRecomputeLock sets the "recompute_lock" field to the value that was provided on create.
+func (u *TopicUpsertOne) UpdateRecomputeLock() *TopicUpsertOne {
+	return u.Update(func(s *TopicUpsert) {
+		s.UpdateRecomputeLock()
+	})
+}
+
+// ClearRecomputeLock clears the value of the "recompute_lock" field.
+func (u *TopicUpsertOne) ClearRecomputeLock() *TopicUpsertOne {
+	return u.Update(func(s *TopicUpsert) {
+		s.ClearRecomputeLock()
 	})
 }
 
@@ -3002,6 +3108,48 @@ func (u *TopicUpsertBulk) SetNeedsReview(v bool) *TopicUpsertBulk {
 func (u *TopicUpsertBulk) UpdateNeedsReview() *TopicUpsertBulk {
 	return u.Update(func(s *TopicUpsert) {
 		s.UpdateNeedsReview()
+	})
+}
+
+// SetStageEvidence sets the "stage_evidence" field.
+func (u *TopicUpsertBulk) SetStageEvidence(v map[string]interface{}) *TopicUpsertBulk {
+	return u.Update(func(s *TopicUpsert) {
+		s.SetStageEvidence(v)
+	})
+}
+
+// UpdateStageEvidence sets the "stage_evidence" field to the value that was provided on create.
+func (u *TopicUpsertBulk) UpdateStageEvidence() *TopicUpsertBulk {
+	return u.Update(func(s *TopicUpsert) {
+		s.UpdateStageEvidence()
+	})
+}
+
+// ClearStageEvidence clears the value of the "stage_evidence" field.
+func (u *TopicUpsertBulk) ClearStageEvidence() *TopicUpsertBulk {
+	return u.Update(func(s *TopicUpsert) {
+		s.ClearStageEvidence()
+	})
+}
+
+// SetRecomputeLock sets the "recompute_lock" field.
+func (u *TopicUpsertBulk) SetRecomputeLock(v time.Time) *TopicUpsertBulk {
+	return u.Update(func(s *TopicUpsert) {
+		s.SetRecomputeLock(v)
+	})
+}
+
+// UpdateRecomputeLock sets the "recompute_lock" field to the value that was provided on create.
+func (u *TopicUpsertBulk) UpdateRecomputeLock() *TopicUpsertBulk {
+	return u.Update(func(s *TopicUpsert) {
+		s.UpdateRecomputeLock()
+	})
+}
+
+// ClearRecomputeLock clears the value of the "recompute_lock" field.
+func (u *TopicUpsertBulk) ClearRecomputeLock() *TopicUpsertBulk {
+	return u.Update(func(s *TopicUpsert) {
+		s.ClearRecomputeLock()
 	})
 }
 

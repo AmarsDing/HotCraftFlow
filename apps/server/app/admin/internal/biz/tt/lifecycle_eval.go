@@ -65,6 +65,13 @@ func NewLifecycleEvaluator(repo LifecycleRepo, ts TimeSeries, conf LifecycleConf
 	return &LifecycleEvaluator{repo: repo, ts: ts, conf: conf}, nil
 }
 
+// ListActiveTopics 透传扫描一批活跃话题（worker 每轮入口；limit≤0 由
+// data 层取默认批次）。挂在评估器上而非让 worker 直持 repo：
+// worker 只见评估抽象，端口不外泄。
+func (e *LifecycleEvaluator) ListActiveTopics(ctx context.Context, limit int) ([]LifecycleTopicRow, error) {
+	return e.repo.ListActiveTopics(ctx, limit)
+}
+
 // EvaluateOne 评估单个话题。返回是否变更（供 metrics/日志）。
 // now 为评估时刻（UTC）；样本时间口径（B-4：历史可重现）。
 func (e *LifecycleEvaluator) EvaluateOne(ctx context.Context, row LifecycleTopicRow, now time.Time) (bool, error) {

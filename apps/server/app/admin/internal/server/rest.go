@@ -172,6 +172,7 @@ func NewRESTServer(
 	miaEventSvc *service.MiaEventService,
 	miaImpactSvc *service.MiaImpactService,
 	ttWeightSvc *service.TtWeightService,
+	ttTopicAdminSvc *service.TtTopicAdminService,
 	icSourceSvc *service.IcSourceService,
 	icIntelSvc *service.IcIntelService,
 	icCollectorSvc *service.IcCollectorService,
@@ -231,8 +232,9 @@ func NewRESTServer(
 	miaV1.RegisterEventServiceHTTPServer(srv, miaEventSvc)
 	miaV1.RegisterImpactServiceHTTPServer(srv, miaImpactSvc)
 
-	// ② TT 热点追踪（M2 权重配置页）
+	// ② TT 热点追踪（M2 权重配置页 + M3 话题人工管理）
 	ttV1.RegisterTrendWeightServiceHTTPServer(srv, ttWeightSvc)
+	ttV1.RegisterTopicAdminServiceHTTPServer(srv, ttTopicAdminSvc)
 
 	// ① IC 情报收集（路由：/api/v1/media/ic/**；信源+规则 / 情报+簇 / 采集器+死信）
 	icV1.RegisterIntelSourceServiceHTTPServer(srv, icSourceSvc)

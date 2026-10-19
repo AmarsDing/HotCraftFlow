@@ -8,4 +8,7 @@ var ProviderSet = wire.NewSet(
 	NewWriterUsecase,
 	NewHeatEnricher,
 	NewWeightUsecase,
+	NewClusterUsecase,
+	NewTopicAdminUsecase,
+	NewLifecycleEvaluator,
 )
