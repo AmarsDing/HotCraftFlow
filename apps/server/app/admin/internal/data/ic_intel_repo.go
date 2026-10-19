@@ -77,15 +77,20 @@ func (r *IntelItemRepo) GetByDedupKey(ctx context.Context, dedupKey string) (*bi
 }
 
 // FindRecentByURLKey L1 去重：窗口内同 url_key 命中即合并（03 §4.1）。
-func (r *IntelItemRepo) FindRecentByURLKey(ctx context.Context, urlKey string, window time.Duration) (*biz.IntelItemRow, error) {
+// selfID 排除自身（含空串兜底不排除）：现役行必然在窗内且按 collected_at 倒序排第一，
+// 不排除自身会让 usecase 的 self 守卫恒触发、L1 仅在乱序归一化时才可能命中（M-27 实锤）。
+func (r *IntelItemRepo) FindRecentByURLKey(ctx context.Context, selfID, urlKey string, window time.Duration) (*biz.IntelItemRow, error) {
 	since := time.Now().UTC().Add(-window)
-	e, err := r.data.db.Client().IntelItem.Query().
+	q := r.data.db.Client().IntelItem.Query().
 		Where(
 			intelitem.URLKeyNotNil(),
 			intelitem.URLKeyEQ(urlKey),
 			intelitem.CollectedAtGT(since),
-		).
-		Order(ent.Desc(intelitem.FieldCollectedAt)).
+		)
+	if selfID != "" {
+		q = q.Where(intelitem.IDNEQ(selfID))
+	}
+	e, err := q.Order(ent.Desc(intelitem.FieldCollectedAt)).
 		First(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {

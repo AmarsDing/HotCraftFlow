@@ -1,5 +1,5 @@
-// Package schemagate ② TT 契约（TrendSeries / TopicCandidate / Alert）的
-// JSON Schema 闸门。发布前校验，违约消息不得出门（评审 C-1~C-15 的落地检查点）。
+// Package schemagate 跨系统契约（① IC IntelItem；② TT TrendSeries / TopicCandidate /
+// Alert）的 JSON Schema 闸门。发布前校验，违约消息不得出门（评审 C-1~C-15 的落地检查点）。
 //
 // schema 内嵌自 docs/systems/00-shared/schema/ 的同名片段（SSOT 在 docs），
 // gate_test.go 的漂移测试防两侧不一致。
@@ -21,13 +21,15 @@ const (
 	TrendSeries    = "trend-series.v1.json"
 	TopicCandidate = "topic-candidate.v1.json"
 	Alert          = "alert.v1.json"
+	// IntelItem ① IC 输出契约（S-34；跨系统词表全部锚定契约 §1 闭集）。
+	IntelItem = "intel-item.v1.json"
 )
 
 var compiled = mustCompile()
 
 func mustCompile() map[string]*jsonschema.Schema {
 	out := map[string]*jsonschema.Schema{}
-	for _, name := range []string{TrendSeries, TopicCandidate, Alert} {
+	for _, name := range []string{TrendSeries, TopicCandidate, Alert, IntelItem} {
 		raw, err := schemaFS.ReadFile("schemas/" + name)
 		if err != nil {
 			panic(fmt.Sprintf("schemagate: read %s: %v", name, err))
@@ -63,7 +65,8 @@ func Validate(schemaName string, doc []byte) error {
 	return sch.Validate(inst)
 }
 
-// ValidateTrendSeries / ValidateTopicCandidate / ValidateAlert 常用快捷入口。
+// ValidateTrendSeries / ValidateTopicCandidate / ValidateAlert / ValidateIntelItem 常用快捷入口。
 func ValidateTrendSeries(doc []byte) error    { return Validate(TrendSeries, doc) }
 func ValidateTopicCandidate(doc []byte) error { return Validate(TopicCandidate, doc) }
 func ValidateAlert(doc []byte) error          { return Validate(Alert, doc) }
+func ValidateIntelItem(doc []byte) error      { return Validate(IntelItem, doc) }

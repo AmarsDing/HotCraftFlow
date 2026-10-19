@@ -66,7 +66,8 @@ func (u *IcDedupUsecase) Resolve(ctx context.Context, row *IntelItemRow, sim *Si
 	self := row.IntelID
 
 	// ---- L1：url_key 窗口命中（03 §4.1；短链已在此前展开重算 key）----
-	if hit, err := u.intel.FindRecentByURLKey(ctx, row.Dedup.URLKey, u.cfg.DedupMergeWindow); err != nil {
+	// selfID 排除自身是必要条件：现役行在窗内且最新，SQL 不排除则命中恒为自身（M-27）。
+	if hit, err := u.intel.FindRecentByURLKey(ctx, self, row.Dedup.URLKey, u.cfg.DedupMergeWindow); err != nil {
 		return nil, err
 	} else if hit != nil && hit.IntelID != self {
 		out, merr := u.mergeIntoCluster(ctx, row, hit.Dedup.ClusterID, hit.IntelID, "L1", 1.0)

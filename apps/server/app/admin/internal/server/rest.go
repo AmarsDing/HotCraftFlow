@@ -35,6 +35,7 @@ import (
 	bizmme "framework/app/admin/internal/biz/mme"
 
 	radarV1 "framework/api/gen/go/radar/v1"
+	icV1 "framework/api/gen/go/media/v1/ic"
 	miaV1 "framework/api/gen/go/media/v1/mia"
 	mapV1 "framework/api/gen/go/media/v1/map"
 	mmeV1 "framework/api/gen/go/media/v1/mme"
@@ -171,6 +172,9 @@ func NewRESTServer(
 	miaEventSvc *service.MiaEventService,
 	miaImpactSvc *service.MiaImpactService,
 	ttWeightSvc *service.TtWeightService,
+	icSourceSvc *service.IcSourceService,
+	icIntelSvc *service.IcIntelService,
+	icCollectorSvc *service.IcCollectorService,
 	mapSvc *service.MapService,
 	mmeTaskSvc *service.MmeTaskService,
 	mmeVariantSvc *service.MmeVariantService,
@@ -229,6 +233,11 @@ func NewRESTServer(
 
 	// ② TT 热点追踪（M2 权重配置页）
 	ttV1.RegisterTrendWeightServiceHTTPServer(srv, ttWeightSvc)
+
+	// ① IC 情报收集（路由：/api/v1/media/ic/**；信源+规则 / 情报+簇 / 采集器+死信）
+	icV1.RegisterIntelSourceServiceHTTPServer(srv, icSourceSvc)
+	icV1.RegisterIntelServiceHTTPServer(srv, icIntelSvc)
+	icV1.RegisterIntelCollectorServiceHTTPServer(srv, icCollectorSvc)
 
 	// ⑤ MAP 媒体发布矩阵（路由：/api/v1/media/map/**；详细设计 map_service.proto）
 	mapV1.RegisterMapServiceHTTPServer(srv, mapSvc)

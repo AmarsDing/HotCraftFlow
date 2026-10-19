@@ -202,7 +202,7 @@ func (u *IcNormalizeUsecase) expandShortlink(ctx context.Context, row *IntelItem
 	}
 	if err := u.intel.UpdateDedupKey(ctx, row.IntelID, urlKey, newDedupKey); err != nil {
 		// 另一行已占该键：L1 语义合并（本行就是对同 URL 的迟到重复采样）。
-		peer, qerr := u.intel.FindRecentByURLKey(ctx, urlKey, u.cfg.DedupMergeWindow)
+		peer, qerr := u.intel.FindRecentByURLKey(ctx, row.IntelID, urlKey, u.cfg.DedupMergeWindow)
 		if qerr != nil {
 			return "", qerr
 		}

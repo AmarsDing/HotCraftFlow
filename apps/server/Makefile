@@ -143,3 +143,18 @@ docker-release:   ; powershell -ExecutionPolicy Bypass -File docker/build-releas
 docker-migrate:   ; powershell -ExecutionPolicy Bypass -File docker/migrate-data.ps1
 docker-models:    ; powershell -ExecutionPolicy Bypass -File docker/fetch-voice-models.ps1
 docker-wgrib2:    ; powershell -ExecutionPolicy Bypass -File docker/build-wgrib2.ps1
+
+# ===================== 测试（① IC 覆盖率门禁，S-35） =====================
+# biz/ic_* 语句覆盖 ≥85%（评审目标 70，实测 91.7% 已上拧）；去重与闸门面（ic_dedup/
+# ic_simhash/ic_urlnorm/ic_governance + collector/ic/robots.go）≥85%。只许向上拧。
+.PHONY: test-ic test-ic-html
+test-ic:
+	mkdir -p coverage
+	$(GOCMD) test -count=1 \
+		-coverpkg=./app/admin/internal/biz/...,./app/admin/internal/collector/ic/... \
+		-coverprofile=coverage/ic.out ./app/admin/...
+	sh scripts/ic_coverage_gate.sh coverage/ic.out
+
+test-ic-html: test-ic
+	$(GOCMD) tool cover -html=coverage/ic.out -o coverage/ic.html
+	@echo "coverage/ic.html"

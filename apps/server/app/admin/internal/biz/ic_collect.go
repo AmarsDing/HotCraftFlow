@@ -56,81 +56,10 @@ func NewIcCollectUsecase(
 
 // RunSource 执行一轮采集；trigger = cron|manual|retry。
 // 上一级 worker 的调用协议：每个信源每周期一次；本函数自含运行记录与熔断回执。
+// 编排主体在 ic_fetch.go 的 RunWithStats（RunCollector RPC 需要统计面，两处共用同一实现防漂移）。
 func (u *IcCollectUsecase) RunSource(ctx context.Context, sourceID, trigger string) (runID string, err error) {
-	src, err := u.sources.GetByID(ctx, sourceID)
-	if err != nil {
-		return "", err
-	}
-	if src == nil {
-		return "", ErrIcSourceNotFound
-	}
-	now := time.Now().UTC()
-
-	// ---- 熔断门（S-12）：paused 窗口内直接跳过，不产生 run（跳过 ≠ 失败）----
-	if !Runnable(src, now) {
-		return "", nil
-	}
-	if src.Status == "paused" {
-		// 能走到这 = 熔断窗已过（Runnable 判定）→ 拨回 active（S-12 恢复语义）
-		if err := u.sources.SetStatus(ctx, sourceID, "active", nil); err != nil {
-			return "", err
-		}
-	}
-
-	collector, ok := u.registry.Get(src.Method)
-	if !ok {
-		return "", ErrIcCollectorUnavailable
-	}
-
-	// ---- 限流（S-10）：平台级桶 > 信源级桶；任一不足本轮跳过 ----
-	if allowed, err := u.allowRate(ctx, src); err != nil {
-		return "", err
-	} else if !allowed {
-		return "", nil
-	}
-
-	// ---- 运行记录开账 ----
-	runID, err = u.runs.Create(ctx, sourceID, trigger, now)
-	if err != nil {
-		return "", err
-	}
-	fin := &CollectRunFinish{Status: "succeeded"}
-	defer func() {
-		// 熔断回执（成功重置连击 / 失败累计，阈值到位自动 paused 30m —— data 层语义）
-		if oerr := u.sources.RecordRunOutcome(ctx, sourceID, fin.Status == "succeeded", fin.ErrorCode,
-			time.Now().UTC(), u.cfg.BreakerFailThreshold, u.cfg.BreakerCooldown); oerr != nil {
-			u.log.Warnf("record run outcome failed (source=%s): %s", sourceID, oerr.Error())
-		}
-		if ferr := u.runs.Finish(ctx, runID, fin); ferr != nil {
-			u.log.Warnf("finish run %s failed: %s", runID, ferr.Error())
-		}
-	}()
-
-	// ---- 采集 ----
-	items, cerr := collector.Collect(ctx, src)
-	if cerr != nil {
-		fin.Status, fin.ErrorCode = "failed", "IC_COLLECT_FAILED"
-		err = cerr
-		return runID, err
-	}
-	fin.Fetched = int32(len(items))
-
-	// ---- 逐条 B-8 第 2-4 步 ----
-	for _, item := range items {
-		outcome, perr := u.persistRawItem(ctx, src, item)
-		if perr != nil {
-			u.log.Warnf("persist raw item failed (source=%s, url=%s): %s", src.ID, item.SourceURL, perr.Error())
-			fin.Skipped++
-			continue
-		}
-		switch outcome {
-		case rawOutcomeCreated:
-			fin.Normalized++
-		case rawOutcomeDuplicate:
-			fin.Merged++
-		}
-	}
-	return runID, nil
+	runID, _, err = u.RunWithStats(ctx, sourceID, trigger, false)
+	return runID, err
 }
 
 // allowRate 平台 + 信源双桶（S-10）。
@@ -159,7 +88,8 @@ const (
 )
 
 // persistRawItem B-8 第 2-4 步单条实现（顺序不可换）。
-func (u *IcCollectUsecase) persistRawItem(ctx context.Context, src *IntelSourceRow, item *RawCollectItem) (rawOutcome, error) {
+// 返回落库条目的 intel_id（幂等重放时指向既有行——FetchURL/调用方按此取详情）。
+func (u *IcCollectUsecase) persistRawItem(ctx context.Context, src *IntelSourceRow, item *RawCollectItem) (string, rawOutcome, error) {
 	// 2. intel_id 立即生成（不依赖 DB）
 	intelID := contract.NewIntelItemID()
 	collectedAt := time.Now().UTC()
@@ -167,7 +97,7 @@ func (u *IcCollectUsecase) persistRawItem(ctx context.Context, src *IntelSourceR
 	// URL 归一 + 周期桶 + 幂等键（B-6）
 	urlKey, canonical, err := NormalizeURLKey(item.SourceURL)
 	if err != nil {
-		return 0, err
+		return "", 0, err
 	}
 	cycleBucket := CycleBucketFor(collectedAt, src.IntervalMinutes)
 	dedupKey := ComputeDedupKey(urlKey, src.ID, cycleBucket)
@@ -184,7 +114,7 @@ func (u *IcCollectUsecase) persistRawItem(ctx context.Context, src *IntelSourceR
 	// 3. 证据落盘 + 哈希链 + 同事务落库
 	ev, err := u.buildEvidence(ctx, intelID, src, item, canonical, collectedAt, robotsChecked, robotsAllowed, crawlDelayMs)
 	if err != nil {
-		return 0, err
+		return "", 0, err
 	}
 	upsert := &IntelItemUpsert{
 		Contract:    u.buildContract(intelID, src, item, canonical, collectedAt, ev),
@@ -199,12 +129,12 @@ func (u *IcCollectUsecase) persistRawItem(ctx context.Context, src *IntelSourceR
 	if item.Fragment != nil && int64(len(item.Fragment.Content)) > u.cfg.EvidenceRawMaxBytes {
 		upsert.RawTruncated = true
 	}
-	_, created, err := u.intel.UpsertWithEvidenceTx(ctx, upsert, ev)
+	persistedID, created, err := u.intel.UpsertWithEvidenceTx(ctx, upsert, ev)
 	if err != nil {
-		return 0, err
+		return "", 0, err
 	}
 	if !created {
-		return rawOutcomeDuplicate, nil // 幂等重放 / 周期内重复（热榜高频属预期）
+		return persistedID, rawOutcomeDuplicate, nil // 幂等重放 / 周期内重复（热榜高频属预期）
 	}
 
 	// 4. 发 mm.intel.raw（仅 RawMeta；证据盘路径 + 链哈希，B-21）
@@ -225,12 +155,12 @@ func (u *IcCollectUsecase) persistRawItem(ctx context.Context, src *IntelSourceR
 	}
 	env, err := contract.NewEnvelope("ic", contract.SubjectIntelRaw, "", notice)
 	if err != nil {
-		return 0, err
+		return "", 0, err
 	}
 	if err := u.publisher.PublishIntel(ctx, contract.SubjectIntelRaw, env, intelID); err != nil {
-		return 0, err
+		return "", 0, err
 	}
-	return rawOutcomeCreated, nil
+	return intelID, rawOutcomeCreated, nil
 }
 
 // checkRobots 包装 RobotsCheckerPort：仅 crawl/api 两路适用（S-7）。

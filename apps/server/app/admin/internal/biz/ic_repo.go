@@ -97,7 +97,9 @@ type IntelItemRepo interface {
 	GetByID(ctx context.Context, id string) (*IntelItemRow, error)
 	GetByDedupKey(ctx context.Context, dedupKey string) (*IntelItemRow, error)
 	// FindRecentByURLKey L1 去重：窗口内同 url_key 命中即合并。
-	FindRecentByURLKey(ctx context.Context, urlKey string, window time.Duration) (*IntelItemRow, error)
+	// selfID 必须排除自身——现役行在窗内且 collected_at 最新，不排除则命中恒为自身、
+	// L1 退化成只在乱序归一化时才会触发的死路径（M-27 黄金回放实锤）。
+	FindRecentByURLKey(ctx context.Context, selfID, urlKey string, window time.Duration) (*IntelItemRow, error)
 	// FindSimHashCandidates B-26 pigeonhole：四段任一等值即候选，Penelope 在 Go 侧算。
 	FindSimHashCandidates(ctx context.Context, segs [4]int16, window time.Duration, limit int) ([]*IntelItemRow, error)
 	// List 检测列表页（含 total）。

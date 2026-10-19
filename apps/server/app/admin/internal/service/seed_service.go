@@ -102,6 +102,19 @@ func (s *SeedService) seedAll(ctx context.Context) error {
 				s.log.Errorf("seed map menu [%d %s] failed: %v", r.id, r.title, err)
 			}
 		}
+		// IC 菜单同理（01-IC 情报收集页面入口，M-25 幂等）。
+		for _, r := range icMenuSeedRecords() {
+			if err := s.upsertSeedMenu(ctx, r); err != nil {
+				s.log.Errorf("seed ic menu [%d %s] failed: %v", r.id, r.title, err)
+			}
+		}
+		// Radar 菜单（id 段 [60,70)）同理：全量种子跳过而库龄早于雷达上线的库会永久缺
+		// /github-radar 入口（menus API 无此项 → 前端动态路由 404，b6 verify 实锤）。
+		for _, r := range radarMenuSeedRecords() {
+			if err := s.upsertSeedMenu(ctx, r); err != nil {
+				s.log.Errorf("seed radar menu [%d %s] failed: %v", r.id, r.title, err)
+			}
+		}
 	}
 
 	if err := s.menuUC.ResetSequence(ctx); err != nil {
@@ -124,7 +137,10 @@ func (s *SeedService) seedAll(ctx context.Context) error {
 	if err := s.seedUsers(ctx); err != nil {
 		return err
 	}
-	_ = s.seedUserRoles(ctx)
+	if err := s.seedUserRoles(ctx); err != nil {
+		// 不阻断启动（seed 失败可重跑），但必须可见——静默吞错曾导致线上 403 排障半天
+		s.log.Errorf("seed user roles failed: %v", err)
+	}
 
 	if err := s.dictUC.SeedDictCategories(ctx); err != nil {
 		s.log.Errorf("seed dict categories failed: %v", err)
@@ -166,6 +182,18 @@ func platformMenuSeedRecords() []seedMenuRecord {
 	}
 }
 
+// radarMenuSeedRecords Radar 菜单块（platform id 段 [60,70)）的过滤视图。
+// 事实源仍在 platformMenuSeedRecords——老库 skip 分支的幂等补齐只引用，不另抄一份。
+func radarMenuSeedRecords() []seedMenuRecord {
+	var out []seedMenuRecord
+	for _, r := range platformMenuSeedRecords() {
+		if r.id >= 60 && r.id < 70 {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
 func (s *SeedService) seedMenus(ctx context.Context) error {
 	for _, r := range platformMenuSeedRecords() {
 		if err := s.upsertSeedMenu(ctx, r); err != nil {
@@ -187,7 +215,32 @@ func (s *SeedService) seedMenus(ctx context.Context) error {
 			return err
 		}
 	}
+	for _, r := range icMenuSeedRecords() {
+		if err := s.upsertSeedMenu(ctx, r); err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+// icMenuSeedRecords ① IC 情报收集菜单（01-IC/02 §6.3 前端四页 + 簇治理）。
+// id 200-205（70-74=MIA、80-84=MAP、90-92=MME）；按 id 幂等 upsert（M-25）。
+// 详情页 /media/ic/intels/:id 只在路由表，不进菜单（沿用 MAP/MME 约定：组件内跳转）。
+func icMenuSeedRecords() []seedMenuRecord {
+	return []seedMenuRecord{
+		{id: 200, mType: adminV1.MenuType_FOLDER, path: "/media/ic", redirect: "/media/ic/intels",
+			name: "MediaIc", title: "情报收集IC", icon: "radar", order: 24},
+		{id: 201, parentID: 200, mType: adminV1.MenuType_MENU, path: "/media/ic/sources",
+			name: "MediaIcSources", component: "media/ic/SourceListPage", title: "信源注册表", icon: "rss_feed", order: 1},
+		{id: 202, parentID: 200, mType: adminV1.MenuType_MENU, path: "/media/ic/intels",
+			name: "MediaIcIntels", component: "media/ic/IntelListPage", title: "情报列表", icon: "article", order: 2},
+		{id: 203, parentID: 200, mType: adminV1.MenuType_MENU, path: "/media/ic/review",
+			name: "MediaIcReview", component: "media/ic/ReviewQueuePage", title: "合规复核", icon: "policy", order: 3},
+		{id: 204, parentID: 200, mType: adminV1.MenuType_MENU, path: "/media/ic/clusters",
+			name: "MediaIcClusters", component: "media/ic/ClusterListPage", title: "事件簇", icon: "bubble_chart", order: 4},
+		{id: 205, parentID: 200, mType: adminV1.MenuType_MENU, path: "/media/ic/health",
+			name: "MediaIcHealth", component: "media/ic/CollectorHealthPage", title: "采集器健康", icon: "monitor_heart", order: 5},
+	}
 }
 
 // miaMenuSeedRecords 03-MIA 市场影响分析菜单（详细设计 §8 落地清单）。
@@ -303,9 +356,9 @@ func (s *SeedService) seedRoles(ctx context.Context, apiIds []uint32) error {
 		}
 	}
 	if role, err := s.roleUC.GetRoleByCode(ctx, "super"); err == nil && role != nil {
-		// 已存在：补齐新增接口/菜单权限（新增 API 资源后 super 不应 403）。
-		// 只在有增量时更新，避免每次启动都全量重写关联表。
-		if len(apiIds) > 0 && !containsAll(role.GetApis(), apiIds) {
+		// 已存在：补齐新增接口/菜单权限（新增 API 资源/菜单后 super 不应 403/404）。
+		// 接口与菜单任一缺失即触发——此前只看接口增量，老库补种的新菜单永远不绑定。
+		if !containsAll(role.GetApis(), apiIds) || !containsAll(role.GetMenus(), menuIDs) {
 			merged := mergeUint32(role.GetApis(), apiIds)
 			menus := mergeUint32(role.GetMenus(), menuIDs)
 			if err := s.roleUC.Update(ctx, &userV1.UpdateRoleRequest{Data: &userV1.Role{
@@ -315,9 +368,10 @@ func (s *SeedService) seedRoles(ctx context.Context, apiIds []uint32) error {
 				Menus: menus,
 				Apis:  merged,
 			}}); err != nil {
-				s.log.Warnf("refresh super role api bindings failed: %v", err)
+				s.log.Warnf("refresh super role api/menu bindings failed: %v", err)
 			} else {
-				s.log.Infof("super role api bindings refreshed: %d -> %d", len(role.GetApis()), len(merged))
+				s.log.Infof("super role bindings refreshed: apis %d -> %d, menus %d -> %d",
+					len(role.GetApis()), len(merged), len(role.GetMenus()), len(menus))
 			}
 		}
 		return nil
@@ -433,6 +487,17 @@ func (s *SeedService) seedUsers(ctx context.Context) error {
 	}})
 }
 
+// seedUserRoles 用户-角色绑定播种（幂等 upsert，EnsureUserRole 已存在即跳过）。
+// 历史坑：admin 首次由 seedUsers 创建后，ap_org_user_role 的唯一生成路径即本函数；
+// 空壳意味着老库升级后 admin 无角色 → JWT roc 为空 → casbin 角色直绑模型下全端点 403。
 func (s *SeedService) seedUserRoles(ctx context.Context) error {
-	return nil
+	role, err := s.roleUC.GetRoleByCode(ctx, "super")
+	if err != nil || role == nil || role.GetId() == 0 {
+		return fmt.Errorf("seed user roles: super role missing: %w", err)
+	}
+	admin, err := s.userUC.GetUserByUserName(ctx, "admin")
+	if err != nil || admin == nil || admin.GetId() == 0 {
+		return fmt.Errorf("seed user roles: admin user missing: %w", err)
+	}
+	return s.roleUC.EnsureUserRole(ctx, admin.GetId(), role.GetId())
 }

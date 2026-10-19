@@ -100,15 +100,33 @@ func (uc *PublishUsecase) Publish(ctx context.Context, unitID string, operator A
 	}
 
 	// 2) 收集熔断/配额结论 → 审批门五校验（algo 纯算法）。
+	// 🔴 门检与第 6 步同一「未发平台」口径：已有回执的平台本轮必然跳过
+	// （适配器边界幂等，发帖不可逆），不参与熔断/配额预检——否则 A 成 B 败后
+	// 立即重试会被 A 的最小间隔配额整体拒死，跳过分支永远走不到（重试不可达）。
+	existing, err := uc.receipts.ListReceiptsByUnit(ctx, unitID)
+	if err != nil {
+		return nil, err
+	}
+	sentSet := make(map[string]struct{}, len(existing))
+	for _, r := range existing {
+		sentSet[r.PlatformKey] = struct{}{}
+	}
+	pending := make([]*ResolvedTarget, 0, len(resolved))
+	for _, rt := range resolved {
+		if _, done := sentSet[rt.Target.Platform]; done {
+			continue
+		}
+		pending = append(pending, rt)
+	}
 	now := uc.clock()
 	accountPaused := false
-	for _, rt := range resolved {
+	for _, rt := range pending {
 		if !Usable(rt.Account, now) {
 			accountPaused = true
 			break
 		}
 	}
-	quotaErr := uc.firstQuotaError(ctx, resolved)
+	quotaErr := uc.firstQuotaError(ctx, pending)
 	if err := CheckPublish(unit, operator, accountPaused, quotaErr != nil); err != nil {
 		outErr := err
 		if errors.Is(err, algopublisher.ErrQuotaExceeded) && quotaErr != nil {
@@ -171,12 +189,14 @@ func (uc *PublishUsecase) Publish(ctx context.Context, unitID string, operator A
 	// 🔴 适配器边界幂等：外部发帖不可逆，DB 唯一索引只能挡回执行、挡不住
 	// 平台侧重复发帖。此前 A 成功/B 失败后重试会重发 A——先读既有回执，已发的
 	// 平台直接跳过（失败重试 = 只补未成的平台）。
-	existing, err := uc.receipts.ListReceiptsByUnit(ctx, unitID)
-	if err != nil {
-		return nil, err
+	// 第 6 步锁后必须新读回执：等锁期间另一操作者可能已补发部分平台（第 2 步的
+	// 预检集合会滞后），以本处的 fresh 集合为跳过依据，防重复发帖红线。
+	fresh, ferr := uc.receipts.ListReceiptsByUnit(ctx, unitID)
+	if ferr != nil {
+		return nil, ferr
 	}
-	sent := make(map[string]struct{}, len(existing)+len(resolved))
-	for _, r := range existing {
+	sent := make(map[string]struct{}, len(fresh)+len(resolved))
+	for _, r := range fresh {
 		sent[r.PlatformKey] = struct{}{}
 	}
 

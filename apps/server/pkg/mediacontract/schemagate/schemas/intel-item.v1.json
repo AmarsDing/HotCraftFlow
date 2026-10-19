@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hotcraftflow.dev/schema/intel-item.v1.json",
+  "title": "IntelItem",
+  "description": "① IC 情报收集的输出契约（契约 §1）。生产者：IC 归一化层；消费者：② TT（全量）、③ MIA（仅 C_market）、④ MME（仅 B_material）。D_compliance 阻断自动流程（契约 §1 路由表）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version", "intel_id", "source", "payload", "entities",
+    "category", "metrics", "dedup", "compliance", "workability"
+  ],
+  "properties": {
+    "api_version": { "const": "1.0" },
+    "intel_id": { "type": "string", "pattern": "^it_[0-9A-HJKMNP-TV-Z]{26}$" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "region", "collect_method", "url", "collected_at", "evidence"],
+      "properties": {
+        "platform": {
+          "type": "string",
+          "enum": [
+            "weibo", "zhihu", "baidu", "toutiao", "douyin", "bilibili",
+            "xiaohongshu", "kuaishou", "weixin_channels",
+            "youtube", "youtube_shorts", "reddit", "x", "tiktok",
+            "facebook", "instagram", "telegram", "hackernews"
+          ],
+          "description": "契约 §1 平台词表（IC/TT/MAP 共用闭集；新增须先登记文档表）"
+        },
+        "region": { "type": "string", "enum": ["cn", "intl", "global"] },
+        "collect_method": {
+          "type": "string",
+          "enum": ["hotlist", "api", "rss", "crawl", "sidecar"],
+          "description": "决定取证强度与可信度权重，下游必须可见"
+        },
+        "url": { "type": "string", "minLength": 1 },
+        "author": { "type": "string", "description": "仅存公开昵称（PIPL）；平台用户 ID 与主页 URL 禁止" },
+        "collected_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "description": "本地接收时间 UTC 带 Z，必填；禁止用上游时间兜底（契约 §1）"
+        },
+        "published_at": {
+          "type": ["string", "null"],
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "description": "上游发布时间 UTC，可空；缺失/未来时间不计时延指标，不伪造"
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["snapshot_path", "raw_ref"],
+          "properties": {
+            "snapshot_path": { "type": "string" },
+            "raw_ref": { "type": "string", "description": "取证快照 ev_ 前缀 ID" },
+            "http_headers": {
+              "type": "object",
+              "additionalProperties": { "type": "string" },
+              "description": "脱敏后的受限集合（契约 §0.4 headers 纪律）"
+            }
+          },
+          "description": "取证链指针；原始 HTML 永不进消息体（B-21）"
+        }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "text", "lang"],
+      "properties": {
+        "title": { "type": "string" },
+        "text": { "type": "string" },
+        "media_refs": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^(asset://|https?://)" },
+          "description": "asset:// 可加工；https:// 外链须先下载——二者必须区分"
+        },
+        "lang": { "type": "string", "description": "BCP-47；und 兜底（S-25）" }
+      }
+    },
+    "entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "value", "confidence"],
+        "properties": {
+          "type": { "type": "string", "enum": ["person", "org", "policy", "tech", "place", "topic"] },
+          "value": { "type": "string", "minLength": 1 },
+          "confidence": {
+            "type": "number", "minimum": 0, "maximum": 1,
+            "description": "<0.6 不进 MIA 实体链接（契约 §1）"
+          }
+        }
+      }
+    },
+    "category": {
+      "type": "string",
+      "enum": ["A_hot", "B_material", "C_market", "D_compliance"],
+      "description": "决定下游路由（契约 §1 路由表）；D_compliance 阻断自动流程"
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rank", "rank_total", "views", "likes", "comments", "_as_of"],
+      "properties": {
+        "rank": { "type": "integer", "minimum": 0, "description": "无榜 = 0" },
+        "rank_total": { "type": "integer", "minimum": 0, "description": "无榜 = 0（0 与 null 语义不同）" },
+        "views": { "type": "integer", "minimum": 0 },
+        "likes": { "type": "integer", "minimum": 0 },
+        "comments": { "type": "integer", "minimum": 0 },
+        "_as_of": {
+          "type": ["string", "null"],
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "description": "指标快照时间；互动数时变，下游必须知道是「什么时候的数」"
+        }
+      }
+    },
+    "dedup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url_key", "fingerprint", "cluster_id"],
+      "properties": {
+        "url_key": { "type": "string" },
+        "fingerprint": {
+          "type": "string",
+          "pattern": "^([0-9a-f]{16})?$",
+          "description": "SimHash 16 位小写 hex（string，非 uint64）；指纹无效时为空串（不入 L2/L3）"
+        },
+        "cluster_id": {
+          "type": "string",
+          "pattern": "^(cl_[0-9A-HJKMNP-TV-Z]{26})?$",
+          "description": "cl_ 前缀（评审修正：初版误写 tp_，tp_ 归 TT 话题）；未入簇为空串"
+        }
+      }
+    },
+    "compliance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gate"],
+      "properties": {
+        "gate": {
+          "type": "string",
+          "enum": ["pass", "review", "block"],
+          "description": "block 条目不得进入 MME/MIA 自动流程，只进人工队列（FR-INT-12 无旁路）"
+        },
+        "reasons": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "workability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score"],
+      "properties": {
+        "score": { "type": "number", "minimum": 0, "maximum": 1, "description": "MME 准入依据；低分不自动进 MME" },
+        "reason": { "type": "string", "description": "低分原因（四词表：素材不足/时长不足/无明确观点/语言不支持）" }
+      }
+    }
+  }
+}

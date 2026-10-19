@@ -262,12 +262,12 @@ func (c *GitHubClient) fetchTrendingHTML(ctx context.Context, since, language st
 		if m := reHref.FindStringSubmatch(block); m != nil {
 			name = m[1]
 		}
-		if name == "" || !strings.Contains(name, "/") || strings.HasPrefix(name, "login") {
+		if name == "" || !strings.Contains(name, "/") || strings.HasPrefix(name, "login") || strings.HasPrefix(name, "sponsors/") {
 			continue
 		}
 		e := ghTrendingEntry{FullName: name}
 		if m := reDesc.FindStringSubmatch(block); m != nil {
-			e.Description = strings.TrimSpace(reHTMLTag.ReplaceAllString(m[1], ""))
+			e.Description = strings.Join(strings.Fields(reHTMLTag.ReplaceAllString(m[1], "")), " ")
 		}
 		if m := reProgLang.FindStringSubmatch(block); m != nil {
 			e.Language = strings.TrimSpace(m[1])

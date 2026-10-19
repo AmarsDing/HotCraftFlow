@@ -106,6 +106,13 @@ func (g *GovernanceGate) Evaluate(ctx context.Context, item *contract.IntelItem,
 			markErr(e)
 		}
 		if !matched {
+			// B-16 fail-closed 对偶：规则后端故障（如授权台账 down）返回未命中时，
+			// 不得按「规则不存在」放行——与 ListEffective 失败同口径落 review。
+			// 否则台账故障期内所有 authorization 规则集体失效，条目静默 pass。
+			if e != nil {
+				gates = append(gates, "review")
+				out.Reasons = append(out.Reasons, "internal:规则求值失败("+rule.ID+")")
+			}
 			continue
 		}
 		if gate == "" { // 模式等配置错误 → 保守 review（配置错误不等于放行）

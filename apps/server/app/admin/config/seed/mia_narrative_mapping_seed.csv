@@ -1,0 +1,35 @@
+narrative,keywords,coins,default_sentiment_hint,ttl_hours,confidence,enabled
+AI叙事,人工智能;AGI;AI概念;AI agent;大模型,FET;RENDER;TAO,bullish,12,0.60,true
+DePIN,去中心化物理设施;DePIN;物联网挖矿,HNT;FIL,bullish,12,0.55,true
+RWA,RWA;现实资产代币化;国债代币化;资产上链,ONDO,bullish,12,0.60,true
+比特币减半,减半;halving;产量减半,BTC,bullish,24,0.65,true
+现货ETF流入,ETF净流入;BTC ETF;贝莱德申购;IBIT流入,BTC;ETH,bullish,12,0.70,true
+现货ETF流出,ETF净流出;ETF赎回;GBTC流出,BTC;ETH,bearish,8,0.65,true
+机构入场,机构配置;企业买入;财库储备;战略储备,BTC;ETH,bullish,12,0.65,true
+山寨季,altseason;山寨币季节;山寨普涨,ETH;SOL;DOGE,bullish,12,0.55,true
+模因币热,meme;模因币;土狗;PEPE热,DOGE;PEPE;SHIB,bullish,6,0.55,true
+Solana生态,SOL生态;Solana链上;SOL链上数据,SOL,bullish,12,0.60,true
+Layer2叙事,Layer2;二层网络;Rollup;L2扩容,ARB;OP,bullish,12,0.55,true
+流动性质押,LST;质押收益;再质押;restaking,ETH;LDO,bullish,12,0.55,true
+GameFi,链游;GameFi;区块链游戏,IMX;AXS,bullish,8,0.55,true
+新公链,Move系;新公链;并行EVM,SUI;AVAX,bullish,12,0.55,true
+隐私叙事,隐私币;匿名交易;混币,XMR;ZEC,neutral,8,0.55,true
+平台币,交易所平台币;BNB销毁;平台币回购,BNB,bullish,12,0.55,true
+支付叙事,跨境支付;Ripple诉讼;支付牌照,XRP;XLM,bullish,12,0.60,true
+预言机叙事,预言机;Chainlink质押;CCIP,LINK,bullish,12,0.55,true
+比特币生态,铭文;Ordinals;BTC L2;比特币二层,STX,bullish,8,0.55,true
+降息周期,降息;流动性宽松;美联储鸽派,BTC;ETH,bullish,12,0.65,true
+加息恐慌,加息;鹰派;流动性紧缩,BTC;ETH,bearish,8,0.65,true
+美元走弱,美元走弱;DXY下跌;弱美元,BTC;ETH,bullish,12,0.60,true
+避险叙事,战争;冲突;避险;地缘政治,BTC,neutral,8,0.55,true
+通胀对冲,通胀;法币贬值;抗通胀,BTC,bullish,12,0.60,true
+监管收紧,监管;执法;SEC起诉;禁令,BTC;ETH,bearish,8,0.65,true
+监管明朗,立法通过;监管框架;加密法案,BTC;ETH,bullish,12,0.60,true
+稳定币立法,稳定币;USD稳定币;储备审计,BTC;ETH,neutral,8,0.55,true
+矿工抛售,矿工投降;算力下降;矿工出局,BTC,bearish,8,0.60,true
+代币解锁,大额解锁;解锁抛压;代币解锁,ARB;ONDO,neutral,8,0.55,true
+空投季,空投;积分计划;airdrop,JUP,bullish,6,0.55,true
+交易所风险,交易所暴雷;挤兑;黑客盗币;暂停提币,BTC;ETH,bearish,6,0.65,true
+衍生品清算,爆仓;清算;插针;多空双爆,BTC;ETH,bearish,4,0.60,true
+黄金联动,金价新高;数字黄金;黄金白银,BTC,neutral,8,0.55,true
+AI Agent,AI Agent;智能体;Agent代币,FET;TAO,bullish,8,0.55,true

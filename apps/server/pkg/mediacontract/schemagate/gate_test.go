@@ -107,6 +107,52 @@ func goodAlert(t *testing.T) map[string]any {
 	return m
 }
 
+func goodIntelItem(t *testing.T) map[string]any {
+	t.Helper()
+	at := time.Date(2026, 10, 19, 1, 0, 0, 0, time.UTC)
+	pub := at.Add(-2 * time.Minute)
+	it := &mediacontract.IntelItem{
+		APIVersion: "1.0",
+		IntelID:    mediacontract.NewID("it"),
+		Source: mediacontract.IntelSource{
+			Platform:      "weibo",
+			Region:        mediacontract.RegionCN,
+			CollectMethod: mediacontract.CollectHotlist,
+			URL:           "https://weibo.com/hot/1",
+			Author:        "公开昵称",
+			CollectedAt:   at,
+			PublishedAt:   &pub,
+			Evidence: mediacontract.IntelEvidence{
+				SnapshotPath: "202610/it_xxx.raw",
+				RawRef:       mediacontract.NewID("ev"),
+				HTTPHeaders:  map[string]string{"content-type": "text/html; charset=utf-8"},
+			},
+		},
+		Payload: mediacontract.IntelPayload{
+			Title: "示例标题", Text: "示例正文",
+			MediaRefs: []string{"asset://demo"}, Lang: "zh-CN",
+		},
+		Entities: []mediacontract.Entity{
+			{Type: mediacontract.EntityPolicy, Value: "网络平台内容审核规定", Confidence: 0.9},
+		},
+		Category: mediacontract.CategoryAHot,
+		Metrics: mediacontract.IntelMetrics{
+			Rank: 3, RankTotal: 50, Views: 1000, Likes: 12, Comments: 3, AsOf: &at,
+		},
+		Dedup: mediacontract.IntelDedup{
+			URLKey: "weibo.com/hot/1", Fingerprint: "0123abcd4567ef89",
+			ClusterID: mediacontract.NewID("cl"),
+		},
+		Compliance:  mediacontract.IntelCompliance{Gate: mediacontract.GatePass, Reasons: []string{"robots:pass"}},
+		Workability: mediacontract.IntelWorkability{Score: 0.82, Reason: ""},
+	}
+	var m map[string]any
+	if err := json.Unmarshal(mustJSON(t, it), &m); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	return m
+}
+
 func TestGoodDocsPass(t *testing.T) {
 	cases := []struct {
 		name   string
@@ -116,6 +162,7 @@ func TestGoodDocsPass(t *testing.T) {
 		{"TrendSeries", TrendSeries, goodTrendSeries(t)},
 		{"TopicCandidate", TopicCandidate, goodCandidate(t)},
 		{"Alert", Alert, goodAlert(t)},
+		{"IntelItem", IntelItem, goodIntelItem(t)},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -172,6 +219,31 @@ func TestBadDocsRejected(t *testing.T) {
 			m["triggered_at"] = "2026-10-18T10:00:00+08:00"
 		})},
 		{"AL channels 非法渠道", Alert, mut(goodAlert(t), func(m map[string]any) { m["channels"] = []any{"sms"} })},
+		{"IT platform 词表外造词", IntelItem, mut(goodIntelItem(t), func(m map[string]any) {
+			m["source"].(map[string]any)["platform"] = "web"
+		})},
+		{"IT collect_method 词表外", IntelItem, mut(goodIntelItem(t), func(m map[string]any) {
+			m["source"].(map[string]any)["collect_method"] = "scrape"
+		})},
+		{"IT category 非法", IntelItem, mut(goodIntelItem(t), func(m map[string]any) { m["category"] = "E_viral" })},
+		{"IT gate 非法", IntelItem, mut(goodIntelItem(t), func(m map[string]any) {
+			m["compliance"].(map[string]any)["gate"] = "yolo"
+		})},
+		{"IT entity confidence 越界", IntelItem, mut(goodIntelItem(t), func(m map[string]any) {
+			m["entities"].([]any)[0].(map[string]any)["confidence"] = 1.2
+		})},
+		{"IT fingerprint 大写（应小写 hex）", IntelItem, mut(goodIntelItem(t), func(m map[string]any) {
+			m["dedup"].(map[string]any)["fingerprint"] = "0123ABCD4567EF89"
+		})},
+		{"IT cluster_id 误用 tp_ 前缀（评审修正项）", IntelItem, mut(goodIntelItem(t), func(m map[string]any) {
+			m["dedup"].(map[string]any)["cluster_id"] = mediacontract.NewID("tp")
+		})},
+		{"IT collected_at 带 +08:00（M-21 口径）", IntelItem, mut(goodIntelItem(t), func(m map[string]any) {
+			m["source"].(map[string]any)["collected_at"] = "2026-10-19T09:00:00+08:00"
+		})},
+		{"IT 缺 evidence（取证链不可缺）", IntelItem, mut(goodIntelItem(t), func(m map[string]any) {
+			delete(m["source"].(map[string]any), "evidence")
+		})},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -185,7 +257,7 @@ func TestBadDocsRejected(t *testing.T) {
 // TestSchemaDrift 内嵌副本与 docs SSOT 逐字节一致（防双写漂移）。
 func TestSchemaDrift(t *testing.T) {
 	root := filepath.Join("..", "..", "..", "..", "..", "docs", "systems", "00-shared", "schema")
-	for _, name := range []string{TrendSeries, TopicCandidate, Alert} {
+	for _, name := range []string{TrendSeries, TopicCandidate, Alert, IntelItem} {
 		embedded, err := schemaFS.ReadFile("schemas/" + name)
 		if err != nil {
 			t.Fatalf("read embedded %s: %v", name, err)

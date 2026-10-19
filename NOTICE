@@ -1,0 +1,58 @@
+HotCraftFlow —— 第三方组件与致谢登记
+=========================================
+
+本文件登记 HotCraftFlow 全媒体内容矩阵系统使用的第三方组件（S-许可）。
+「独立服务」指以独立进程/容器部署、经内网 HTTP 边界调用的组件——
+**不 fork、不内嵌、不将代码并入本仓库**（协议边界即合规边界）。
+
+------------------------------------------------------------------------------
+独立服务（自部署；HTTP 边界调用）
+------------------------------------------------------------------------------
+
+newsnow —— 热榜聚合服务
+  上游: https://github.com/ourongxing/newsnow
+  用途: ① IC 热榜采集器默认来源（FR-INT-02）
+  部署纪律: 仅自部署实例；**公共实例禁用**（合规红线——公共实例的抓取行为不可控，
+            robots/授权状态不可审计）。
+  本仓库不含其代码；致敬上游作者与维护者。
+
+RSSHub —— RSS 生成服务
+  上游: https://github.com/DIYgod/RSSHub
+  许可证: AGPL-3.0
+  用途: ① IC RSS 路的可选源扩展（FR-INT-05）
+  部署纪律: **独立进程/容器，HTTP 调用**。AGPL-3.0 下本系统与其仅经网络协议交互，
+            不构成派生作品；禁止 fork、禁止内嵌、禁止将其代码并入本仓库或
+            任一进程地址空间（防火墙式协议边界为既定架构决策）。
+  本仓库不含其代码；致敬 DIYgod 与 RSSHub 社区。
+
+Crawl4AI —— 浏览器级正文抽取服务
+  上游: https://github.com/unclecode/crawl4ai
+  许可证: Apache-2.0
+  用途: ① IC 正文抽取（FR-INT-04），独立容器经 HTTP 调用。
+  许可证文本: https://github.com/unclecode/crawl4ai/blob/main/LICENSE
+  本仓库不含其代码；致敬上游作者。
+
+------------------------------------------------------------------------------
+Go 依赖（经 go.mod 引入；详见 apps/server/go.sum）
+------------------------------------------------------------------------------
+
+github.com/mmcdole/gofeed
+  许可证: MIT —— ① IC RSS 采集器（collector_rss.go）的 RSS/Atom 解析。
+  版权: Copyright (c) 2014-2024 mmcdole 及贡献者
+
+github.com/temoto/robotstxt
+  许可证: MIT —— ① IC robots.txt 解析（collector/ic/robots.go；fail-closed 三态）。
+  版权: Copyright (c) 2016 Sergei Shepelev 及贡献者
+
+golang.org/x/text
+  许可证: BSD-3-Clause —— 归一化/语言判定的 Unicode 支撑（S-25）。
+  版权: Copyright (c) 2009 The Go Authors
+
+------------------------------------------------------------------------------
+说明
+------------------------------------------------------------------------------
+
+1. 本文件登记的是「内容/采集侧」有合规义务的组件；完整 Go/Node 依赖清单一
+   以各模块 lockfile（go.sum / pnpm-lock.yaml）为准。
+2. 新增「独立服务」类组件时，先完成许可证复核并登记本文件，再接入代码（S-许可）。
+3. ULID、SimHash（4 段倒排实现）、信封协议为本仓库自研（pkg/mediacontract）。

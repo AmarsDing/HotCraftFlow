@@ -152,9 +152,11 @@ func processAuthz(
 		action = authzEngine.Action(htr.Request().Method)
 	}
 
-	sub := tokenPayload.GetUsername()
+	// 主体投影纪律：只投角色（Subjects），不投用户名（Subject）。
+	// 上游 tx7do authz middleware@v1.1.13 是 else-if 语义——Subject 非 nil 时只查
+	// Subject，Subjects 永远轮不到；而 generateAllPolicies 是「角色直绑」模型
+	// （p, <roleCode>, path, act，无 g 规则），用户名主体在策略中不存在，投了必 403。
 	authzClaims := authzEngine.AuthClaims{
-		Subject:  (*authzEngine.Subject)(&sub),
 		Subjects: trans.Ptr(tokenPayload.GetRoles()),
 		Action:   trans.Ptr(action),
 		Resource: trans.Ptr(path),

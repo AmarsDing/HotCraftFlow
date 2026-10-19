@@ -1,4 +1,4 @@
-﻿//go:build wireinject
+//go:build wireinject
 // +build wireinject
 
 package biz

@@ -1,0 +1,222 @@
+entity_name,entity_alias,entity_type,asset_class,symbol,direction_bias,confidence,source,notes,enabled
+美联储,Fed;FOMC;Federal Reserve;联储,org,index,SPY,neutral,0.70,seed,美联储货币政策决定美元流动性与美股估值中枢,true
+美联储,Fed;FOMC;Federal Reserve;联储,org,index,^IXIC,neutral,0.70,seed,利率预期主导纳指成长股估值分母端,true
+美联储,Fed;FOMC;Federal Reserve;联储,org,commodity,XAUUSD,neutral,0.70,seed,实际利率路径决定黄金机会成本,true
+美联储,Fed;FOMC;Federal Reserve;联储,org,index,US10Y,neutral,0.65,seed,政策利率预期直接定价十年期美债收益率,true
+鲍威尔,Jerome Powell;鲍威尔主席;鲍威尔讲话,person,index,SPY,neutral,0.65,seed,美联储主席表态引发利率预期重定价,true
+鲍威尔,Jerome Powell;鲍威尔主席;鲍威尔讲话,person,commodity,XAUUSD,neutral,0.60,seed,鹰鸽表态经实际利率渠道传导金价,true
+中国人民银行,央行;PBoC;人民银行;中国央行;中央银行,org,index,000300.SS,neutral,0.70,seed,货币政策取向影响A股流动性与风险偏好,true
+中国人民银行,央行;PBoC;人民银行;中国央行;中央银行,org,index,000001.SS,neutral,0.65,seed,宽松收紧周期直接影响上证指数,true
+中国人民银行,央行;PBoC;人民银行;中国央行;中央银行,org,fx,USDCNH,neutral,0.70,seed,中间价与流动性操作引导离岸人民币汇率,true
+中国人民银行,央行;PBoC;人民银行;中国央行;中央银行,org,index,^HSI,neutral,0.60,seed,内地流动性经港股通与情绪传导恒指,true
+潘功胜,潘功胜行长,person,index,000300.SS,neutral,0.60,seed,央行行长表态影响货币政策预期,true
+欧洲央行,ECB;European Central Bank;欧央行,org,fx,EURUSD,neutral,0.70,seed,欧央行利率路径决定欧元相对美元强弱,true
+欧洲央行,ECB;European Central Bank;欧央行,org,index,^STOXX50E,neutral,0.65,seed,欧元区流动性影响欧股估值,true
+拉加德,Christine Lagarde;拉加德行长,person,fx,EURUSD,neutral,0.60,seed,行长表态引导欧元利率预期,true
+日本央行,BOJ;Bank of Japan;日银;日本银行,org,fx,USDJPY,neutral,0.70,seed,日银政策正常化节奏决定日元走向,true
+日本央行,BOJ;Bank of Japan;日银;日本银行,org,index,^N225,neutral,0.65,seed,超宽松退出影响日股资金面,true
+植田和男,Kazuo Ueda;植田总裁,person,fx,USDJPY,neutral,0.60,seed,总裁讲话影响日元加息预期,true
+英格兰银行,Bank of England;英央行;英国央行,org,fx,GBPUSD,neutral,0.65,seed,英央行利率路径定价英镑,true
+英格兰银行,Bank of England;英央行;英国央行,org,index,^FTSE,neutral,0.60,seed,英国流动性与利率影响富时100,true
+利率决议,rate decision;政策利率;议息会议,policy,index,SPY,neutral,0.65,seed,利率决议直接重定价权益风险溢价,true
+降息,rate cut;减息;降息周期;下调利率,policy,index,SPY,bullish,0.65,seed,降息降低贴现率利好权益估值,true
+降息,rate cut;减息;降息周期;下调利率,policy,index,^IXIC,bullish,0.65,seed,分母端下行利好长久期成长股,true
+降息,rate cut;减息;降息周期;下调利率,policy,commodity,XAUUSD,bullish,0.65,seed,实际利率下行抬升黄金配置价值,true
+降息,rate cut;减息;降息周期;下调利率,policy,crypto,BTC/USDT,bullish,0.60,seed,流动性宽松外溢至加密风险资产,true
+加息,rate hike;加息周期;上调利率,policy,index,SPY,bearish,0.65,seed,加息抬升贴现率压制权益估值,true
+加息,rate hike;加息周期;上调利率,policy,index,^IXIC,bearish,0.65,seed,长久期资产对利率最敏感,true
+加息,rate hike;加息周期;上调利率,policy,commodity,XAUUSD,bearish,0.60,seed,实际利率上行抬升持金成本,true
+降准,RRR cut;存准率下调;降准降息,policy,index,000300.SS,bullish,0.65,seed,降准释放银行体系流动性利好权重股,true
+降准,RRR cut;存准率下调;降准降息,policy,index,000001.SS,bullish,0.60,seed,流动性宽松改善大盘风险偏好,true
+量化宽松,QE;quantitative easing;扩表,policy,index,SPY,bullish,0.65,seed,央行扩表直接注入市场流动性,true
+量化宽松,QE;quantitative easing;扩表,policy,commodity,XAUUSD,bullish,0.65,seed,货币超发预期强化黄金抗通胀需求,true
+量化紧缩,QT;缩表;quantitative tightening,policy,index,SPY,bearish,0.60,seed,缩表回笼流动性压制风险资产,true
+CPI,CPI数据;消费者价格指数;通胀数据;美国CPI,policy,index,SPY,neutral,0.60,seed,通胀数据通过利率预期影响市场方向不定,true
+非农就业,非农;nonfarm payrolls;新增非农就业,policy,index,SPY,neutral,0.60,seed,就业数据双向影响降息预期,true
+PCE物价指数,核心PCE;PCE通胀;PCE数据,policy,index,SPY,neutral,0.60,seed,美联储首选通胀指标左右降息路径,true
+财政刺激,fiscal stimulus;财政扩张;财政发力,policy,index,SPY,bullish,0.60,seed,财政扩张提振总需求与企业盈利,true
+债务上限,debt ceiling;美债上限;国债限额,policy,index,SPY,neutral,0.55,seed,债务上限僵局制造短期波动,true
+政府停摆,government shutdown;美国政府关门,policy,index,SPY,bearish,0.60,seed,停摆拖累经济数据与消费信心,true
+LPR,LPR报价;贷款市场报价利率,policy,index,000300.SS,neutral,0.60,seed,LPR调降直接利好信贷敏感板块方向需结合幅度,true
+MLF,中期借贷便利;麻辣粉;MLF操作,policy,index,000300.SS,neutral,0.55,seed,MLF量价操作引导中期利率预期,true
+经济制裁,sanctions;制裁;金融制裁,policy,index,^EEM,bearish,0.60,seed,制裁冲击目标市场并压制新兴市场风险偏好,true
+关税,加征关税;tariffs;贸易战;贸易摩擦,policy,index,SPY,bearish,0.65,seed,关税抬升企业成本压制盈利预期,true
+关税,加征关税;tariffs;贸易战;贸易摩擦,policy,index,000300.SS,bearish,0.65,seed,出口链承压拖累A股权重,true
+关税,加征关税;tariffs;贸易战;贸易摩擦,policy,index,^HSI,bearish,0.60,seed,港股对外部贸易冲击弹性大,true
+出口管制,export control;芯片禁令;实体清单;技术封锁,policy,equity,NVDA,bearish,0.65,seed,出口限制直接压缩中国区收入,true
+出口管制,export control;芯片禁令;实体清单;技术封锁,policy,equity,AMD,bearish,0.60,seed,高端GPU对华销售受限,true
+出口管制,export control;芯片禁令;实体清单;技术封锁,policy,equity,688981.SS,neutral,0.55,seed,制裁加速国产替代但设备受限方向不定,true
+地缘冲突,军事冲突;战争;地缘政治升级;武装冲突,place,commodity,XAUUSD,bullish,0.70,seed,避险资金涌入黄金,true
+地缘冲突,军事冲突;战争;地缘政治升级;武装冲突,place,commodity,USOUSD,bullish,0.60,seed,供应中断风险溢价推升油价,true
+地缘冲突,军事冲突;战争;地缘政治升级;武装冲突,place,index,SPY,bearish,0.60,seed,风险偏好回落压制权益,true
+台海局势,台海;海峡局势;两岸关系,place,index,^HSI,neutral,0.55,seed,地缘敏感事件冲击港股情绪,true
+台海局势,台海;海峡局势;两岸关系,place,index,000300.SS,neutral,0.55,seed,事件冲击A股风险偏好,true
+美元走强,强美元;美元升值;美元指数上行,topic,fx,EURUSD,bearish,0.65,seed,美元升值对应非美货币走弱,true
+美元走强,强美元;美元升值;美元指数上行,topic,commodity,XAUUSD,bearish,0.60,seed,美元走强抬升非美买家持金成本,true
+美元走强,强美元;美元升值;美元指数上行,topic,index,^EEM,bearish,0.60,seed,强美元抽离新兴市场流动性,true
+美元走弱,弱美元;美元贬值;美元指数下行,topic,commodity,XAUUSD,bullish,0.60,seed,美元走弱利好以美元计价商品,true
+美元走弱,弱美元;美元贬值;美元指数下行,topic,fx,EURUSD,bullish,0.60,seed,美元走弱对应欧元走强,true
+美债收益率飙升,美债利率上行;长端利率飙升;收益率飙升,topic,index,^IXIC,bearish,0.65,seed,分母端利率急升压制成长股,true
+美债收益率飙升,美债利率上行;长端利率飙升;收益率飙升,topic,index,SPY,bearish,0.60,seed,无风险利率上行压缩权益风险溢价,true
+英伟达,NVIDIA;NVDA;皮衣黄,org,equity,NVDA,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+黄仁勋,Jensen Huang;老黄,person,equity,NVDA,neutral,0.75,seed,CEO公开表态影响股价预期,true
+苹果,Apple;AAPL;苹果公司;iPhone,org,equity,AAPL,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+微软,Microsoft;MSFT;微软公司,org,equity,MSFT,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+谷歌,Google;GOOGL;Alphabet;谷歌母公司,org,equity,GOOGL,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+亚马逊,Amazon;AMZN;AWS,org,equity,AMZN,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+Meta,Meta Platforms;META;Facebook;脸书,org,equity,META,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+特斯拉,Tesla;TSLA;特斯拉汽车,org,equity,TSLA,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+马斯克,Elon Musk;马一龙,person,equity,TSLA,neutral,0.70,seed,创始人言论与交易直接冲击股价,true
+马斯克,Elon Musk;马一龙,person,crypto,DOGE/USDT,neutral,0.60,seed,马斯克长期关联狗狗币叙事,true
+博通,Broadcom;AVGO,org,equity,AVGO,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+AMD,超威半导体;Advanced Micro Devices;苏姿丰,org,equity,AMD,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+英特尔,Intel;INTC,org,equity,INTC,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+高通,Qualcomm;QCOM,org,equity,QCOM,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+美光科技,Micron;MU;美光,org,equity,MU,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+德州仪器,Texas Instruments;TXN,org,equity,TXN,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+奈飞,Netflix;NFLX;网飞,org,equity,NFLX,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+甲骨文,Oracle;ORCL,org,equity,ORCL,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+赛富时,Salesforce;CRM,org,equity,CRM,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+Adobe,ADBE;奥多比,org,equity,ADBE,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+ServiceNow,NOW,org,equity,NOW,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+Palantir,PLTR;帕兰提尔,org,equity,PLTR,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+超微电脑,Super Micro;SMCI;Supermicro,org,equity,SMCI,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+ARM,Arm Holdings;安谋,org,equity,ARM,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+戴尔,Dell;DELL;戴尔科技,org,equity,DELL,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+Arista,ANET;Arista Networks,org,equity,ANET,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+派拓网络,Palo Alto Networks;PANW,org,equity,PANW,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+Coinbase,COIN;Coinbase交易所,org,equity,COIN,neutral,0.90,seed,加密交易所营收与币价高度联动,true
+MicroStrategy,MSTR;微策略;Strategy公司,org,equity,MSTR,neutral,0.90,seed,公司净资产高度挂钩比特币持仓,true
+Robinhood,HOOD;罗宾汉,org,equity,HOOD,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+摩根大通,JPMorgan;JPM;小摩,org,equity,JPM,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+高盛,Goldman Sachs;GS,org,equity,GS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+摩根士丹利,Morgan Stanley;大摩,org,equity,MS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+美国银行,Bank of America;BAC;美银,org,equity,BAC,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+富国银行,Wells Fargo;WFC,org,equity,WFC,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+花旗集团,Citigroup;Citi;花旗,org,equity,C,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+Visa,维萨,org,equity,V,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+万事达,Mastercard;MA,org,equity,MA,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+PayPal,PYPL;贝宝,org,equity,PYPL,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+沃尔玛,Walmart;WMT,org,equity,WMT,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+好市多,Costco;COST,org,equity,COST,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+家得宝,Home Depot;HD,org,equity,HD,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+耐克,Nike;NKE,org,equity,NKE,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+星巴克,Starbucks;SBUX,org,equity,SBUX,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+麦当劳,McDonald;MCD,org,equity,MCD,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+迪士尼,Disney;DIS,org,equity,DIS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+埃克森美孚,Exxon Mobil;XOM,org,equity,XOM,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+雪佛龙,Chevron;CVX,org,equity,CVX,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+礼来,Eli Lilly;LLY;礼来制药,org,equity,LLY,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+联合健康,UnitedHealth;UNH,org,equity,UNH,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+强生,Johnson & Johnson;JNJ;强生公司,org,equity,JNJ,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+辉瑞,Pfizer;PFE,org,equity,PFE,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+默克,Merck;MRK;默沙东,org,equity,MRK,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+波音,Boeing;BA;波音公司,org,equity,BA,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+卡特彼勒,Caterpillar;CAT,org,equity,CAT,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+通用电气,GE Aerospace;GE,org,equity,GE,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+台积电,TSMC;TSM;台积电ADR,org,equity,TSM,neutral,0.90,seed,公司本体新闻直接定价其ADR,true
+阿斯麦,ASML;ASML Holding;艾司摩尔,org,equity,ASML,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+贵州茅台,茅台;600519,org,equity,600519.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+五粮液,000858,org,equity,000858.SZ,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+宁德时代,CATL;300750;宁德时代新能源,org,equity,300750.SZ,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+比亚迪,BYD;002594,org,equity,002594.SZ,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+赛力斯,601127;问界,org,equity,601127.SS,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+招商银行,招行;600036,org,equity,600036.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+中国平安,平安;平安集团;601318,org,equity,601318.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+工商银行,工行;601398,org,equity,601398.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+中国银行,中行;601988,org,equity,601988.SS,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+中信证券,600030,org,equity,600030.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+东方财富,东财;300059,org,equity,300059.SZ,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+中芯国际,SMIC;688981,org,equity,688981.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+寒武纪,寒武纪科技;688256,org,equity,688256.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+海光信息,海光;688041,org,equity,688041.SS,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+兆易创新,603986,org,equity,603986.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+中微公司,中微;688012,org,equity,688012.SS,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+北方华创,002371,org,equity,002371.SZ,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+韦尔股份,韦尔;603501,org,equity,603501.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+工业富联,富士康工业互联网;601138,org,equity,601138.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+立讯精密,立讯;002475,org,equity,002475.SZ,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+中际旭创,300308,org,equity,300308.SZ,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+新易盛,300502,org,equity,300502.SZ,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+京东方,京东方A;000725,org,equity,000725.SZ,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+海康威视,海康;002415,org,equity,002415.SZ,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+科大讯飞,讯飞;002230,org,equity,002230.SZ,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+汇川技术,汇川;300124,org,equity,300124.SZ,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+紫金矿业,紫金;601899,org,equity,601899.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+洛阳钼业,洛钼;603993,org,equity,603993.SS,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+江西铜业,江铜;600362,org,equity,600362.SS,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+中国海油,中海油;600938,org,equity,600938.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+中国石油,中石油;601857,org,equity,601857.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+中国移动,中移动;600941,org,equity,600941.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+长江电力,600900,org,equity,600900.SS,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+药明康德,药明;603259,org,equity,603259.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+药明生物,2269;WuXi Biologics,org,equity,2269.HK,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+恒瑞医药,恒瑞;600276,org,equity,600276.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+百济神州,BeiGene;688235,org,equity,688235.SS,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+隆基绿能,隆基;601012,org,equity,601012.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+阳光电源,300274,org,equity,300274.SZ,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+通威股份,通威;600438,org,equity,600438.SS,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+晶澳科技,晶澳;002459,org,equity,002459.SZ,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+天齐锂业,天齐;002466,org,equity,002466.SZ,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+长城汽车,长城;601633,org,equity,601633.SS,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+长安汽车,长安;000625,org,equity,000625.SZ,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+上汽集团,上汽;600104,org,equity,600104.SS,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+腾讯控股,腾讯;Tencent;0700,org,equity,0700.HK,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+阿里巴巴,阿里;Alibaba;9988,org,equity,9988.HK,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+美团,Meituan;3690,org,equity,3690.HK,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+小米集团,小米;Xiaomi;1810,org,equity,1810.HK,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+京东集团,京东;JD;9618,org,equity,9618.HK,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+理想汽车,理想;Li Auto;2015,org,equity,2015.HK,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+吉利汽车,吉利;0175,org,equity,0175.HK,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+泡泡玛特,Pop Mart;9992,org,equity,9992.HK,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+蔚来,NIO;9866,org,equity,NIO,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+小鹏汽车,XPeng;XPEV;小鹏,org,equity,XPEV,neutral,0.85,seed,公司本体新闻直接定价其股票,true
+拼多多,PDD;Temu;拼多多控股,org,equity,PDD,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+网易,NetEase;NTES;网易公司,org,equity,NTES,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+百度,Baidu;BIDU;文心一言,org,equity,BIDU,neutral,0.90,seed,公司本体新闻直接定价其股票,true
+半导体,芯片;semiconductor;半导体行业,tech,index,^SOX,neutral,0.65,seed,板块景气直接定价费城半导体指数,true
+HBM,高带宽内存;HBM3E;HBM4,tech,equity,MU,bullish,0.60,seed,HBM为美光核心增长线供需紧张利多,true
+先进封装,CoWoS;Chiplet;2.5D封装,tech,equity,TSM,bullish,0.60,seed,先进封装产能扩张主力为台积电,true
+光刻机,EUV;DUV光刻;光刻,tech,equity,ASML,bullish,0.60,seed,光刻设备需求直接对应ASML订单,true
+存储涨价,NAND涨价;DRAM涨价;存储周期上行,topic,equity,MU,bullish,0.60,seed,存储价格上行直接改善美光盈利,true
+晶圆代工涨价,代工涨价;晶圆代工,topic,equity,TSM,bullish,0.60,seed,代工提价直接增厚台积电毛利,true
+AI算力,AI服务器;算力需求;GPU需求;人工智能算力,topic,equity,NVDA,bullish,0.65,seed,AI算力资本开支直接对应英伟达GPU出货,true
+AI算力,AI服务器;算力需求;GPU需求;人工智能算力,topic,index,^IXIC,bullish,0.60,seed,算力景气外溢整个科技板块,true
+大模型,LLM;生成式AI;ChatGPT;GPT-5,tech,equity,MSFT,neutral,0.60,seed,大模型进展影响云与Copilot变现预期,true
+大模型,LLM;生成式AI;ChatGPT;GPT-5,tech,equity,GOOGL,neutral,0.60,seed,大模型竞争格局影响搜索广告基本盘,true
+人形机器人,Optimus;具身智能;humanoid robot,topic,equity,TSLA,neutral,0.60,seed,Optimus进展影响特斯拉远期估值叙事,true
+固态电池,solid-state battery;全固态电池,tech,equity,300750.SZ,neutral,0.60,seed,固态电池产业化影响动力电池格局,true
+金价上涨,黄金创新高;gold rally;金价飙升,topic,commodity,XAUUSD,bullish,0.70,seed,商品价格上行映射本体,true
+油价上涨,原油上涨;oil rally;油价飙升,topic,commodity,USOUSD,bullish,0.65,seed,商品价格上行映射本体,true
+OPEC减产,OPEC+减产;自愿减产;欧佩克减产,topic,commodity,USOUSD,bullish,0.65,seed,供应收缩推升油价,true
+铜价上涨,铜价创新高;copper rally,topic,equity,601899.SS,bullish,0.60,seed,铜价上行直接增厚紫金矿业利润,true
+铜价上涨,铜价创新高;copper rally,topic,equity,600362.SS,bullish,0.60,seed,铜价上行直接增厚江西铜业利润,true
+银价上涨,白银上涨;silver rally,topic,commodity,XAGUSD,bullish,0.65,seed,商品价格上行映射本体,true
+气价上涨,天然气上涨;LNG涨价,topic,commodity,NG=F,bullish,0.60,seed,商品价格上行映射本体,true
+锂价上涨,碳酸锂上涨;锂价反弹,topic,equity,002466.SZ,bullish,0.60,seed,锂盐价格上行修复天齐锂业盈利,true
+比特币,Bitcoin;BTC;大饼,topic,crypto,BTC/USDT,neutral,0.90,seed,资产本体新闻直接定价其行情,true
+以太坊,Ethereum;ETH;Vitalik;V神,topic,crypto,ETH/USDT,neutral,0.90,seed,资产本体新闻直接定价其行情,true
+Solana,SOL;索拉纳,topic,crypto,SOL/USDT,neutral,0.90,seed,资产本体新闻直接定价其行情,true
+BNB,币安币;Binance Coin,topic,crypto,BNB/USDT,neutral,0.85,seed,资产本体新闻直接定价其行情,true
+瑞波,Ripple;XRP,topic,crypto,XRP/USDT,neutral,0.90,seed,资产本体新闻直接定价其行情,true
+狗狗币,Dogecoin;DOGE;狗狗,topic,crypto,DOGE/USDT,neutral,0.85,seed,资产本体新闻直接定价其行情,true
+艾达币,Cardano;ADA;卡尔达诺,topic,crypto,ADA/USDT,neutral,0.85,seed,资产本体新闻直接定价其行情,true
+Avalanche,AVAX;雪崩协议,topic,crypto,AVAX/USDT,neutral,0.85,seed,资产本体新闻直接定价其行情,true
+Chainlink,LINK;预言机Chainlink,topic,crypto,LINK/USDT,neutral,0.85,seed,资产本体新闻直接定价其行情,true
+TON,Toncoin;电报币,topic,crypto,TON/USDT,neutral,0.80,seed,资产本体新闻直接定价其行情,true
+比特币ETF,BTC ETF;比特币现货ETF;IBIT,topic,crypto,BTC/USDT,bullish,0.70,seed,ETF资金流为币价边际主导变量,true
+以太坊ETF,ETH ETF;以太坊现货ETF,topic,crypto,ETH/USDT,bullish,0.65,seed,ETF资金流直接反映增量需求,true
+比特币减半,halving;BTC减半;减半行情,topic,crypto,BTC/USDT,bullish,0.65,seed,供给减半历史上对应中期上行周期,true
+加密监管,SEC起诉;加密执法;crypto regulation;加密监管收紧,topic,crypto,BTC/USDT,bearish,0.60,seed,监管不确定性压制整体估值,true
+交易所暴雷,交易所破产;FTX事件;交易所挤兑;交易所黑客,topic,crypto,BTC/USDT,bearish,0.60,seed,信任危机引发市场性抛售,true
+标普500,S&P 500;SPX;标普指数;SP500,topic,index,^GSPC,neutral,0.85,seed,指数本体新闻映射对应行情,true
+纳斯达克指数,纳指;Nasdaq Composite;纳斯达克综合指数,topic,index,^IXIC,neutral,0.85,seed,指数本体新闻映射对应行情,true
+道琼斯指数,道指;Dow Jones;道琼斯工业指数,topic,index,^DJI,neutral,0.85,seed,指数本体新闻映射对应行情,true
+恒生指数,恒指;HSI;香港恒生指数,topic,index,^HSI,neutral,0.85,seed,指数本体新闻映射对应行情,true
+沪深300,HS300;CSI300;沪深300指数,topic,index,000300.SS,neutral,0.85,seed,指数本体新闻映射对应行情,true
+上证指数,沪指;上证综指;上证,topic,index,000001.SS,neutral,0.85,seed,指数本体新闻映射对应行情,true
+创业板指,创业板;创业板指数,topic,index,399006.SZ,neutral,0.85,seed,指数本体新闻映射对应行情,true
+科创50,科创板50;科创50指数,topic,index,000688.SS,neutral,0.85,seed,指数本体新闻映射对应行情,true
+日经225,日经指数;Nikkei 225;Nikkei;日经平均,topic,index,^N225,neutral,0.85,seed,指数本体新闻映射对应行情,true
+恐慌指数,VIX;波动率指数,topic,index,^VIX,neutral,0.85,seed,指数本体新闻映射对应行情,true
+新兴市场指数,MSCI新兴市场;MSCI EM,topic,index,^EEM,neutral,0.85,seed,指数本体新闻映射对应行情,true
