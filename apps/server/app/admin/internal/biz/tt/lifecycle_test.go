@@ -159,8 +159,45 @@ func TestStageMinDwellSpec(t *testing.T) {
 		StageDecaying: 3, StageLongTail: 6, StageDormant: 0,
 	}
 	for s, w := range want {
-		if StageMinDwell[s] != w {
-			t.Fatalf("min_dwell(%s)=%d want %d（A-8/B-7 终稿）", s, StageMinDwell[s], w)
+		if got := MinDwellStage(s); got != w {
+			t.Fatalf("min_dwell(%s)=%d want %d（A-8/B-7 终稿）", s, got, w)
 		}
+	}
+	// 未知阶段返回 0（不设防，尽快转出脏状态）
+	if got := MinDwellStage(Stage("unknown")); got != 0 {
+		t.Fatalf("unknown stage 应返回 0: %d", got)
+	}
+}
+
+// TestLifecycleRule2ColdStart 对抗裁决发现：HeatP99=0（冷启动无分位基线）时
+// heat≥0 恒真 → 全站高热洪泛 peak。修复后相对线要求 P99>0，绝对线仍生效。
+func TestLifecycleRule2ColdStart(t *testing.T) {
+	in := baseInput()
+	in.HeatP99 = 0 // 冷启动：无相对线
+	in.Heat = 50   // < HeatPeakMin(80)，相对线若未禁用会误判
+	got := eval(in)
+	if got.Stage == StagePeak {
+		t.Fatalf("P99=0 时相对线必须禁用，heat=50 不应入 peak: %+v", got)
+	}
+	// 绝对线不受冷启动影响
+	in.Heat = 85
+	got = eval(in)
+	if got.Stage != StagePeak || got.Rule != 2 {
+		t.Fatalf("P99=0 时绝对线仍应生效: %+v", got)
+	}
+}
+
+// TestLifecycleConfValidate 零值配置静默灾变防线。
+func TestLifecycleConfValidate(t *testing.T) {
+	if err := DefaultLifecycleConf().Validate(); err != nil {
+		t.Fatalf("默认配置须过红线: %v", err)
+	}
+	if err := (LifecycleConf{}).Validate(); err == nil {
+		t.Fatal("零值 LifecycleConf 必须拒绝（HeatPeakMin=0 全量 peak 灾变）")
+	}
+	bad := DefaultLifecycleConf()
+	bad.RisingMinStreak = 0
+	if err := bad.Validate(); err == nil {
+		t.Fatal("RisingMinStreak=0 必须拒绝（抖动直入 rising）")
 	}
 }

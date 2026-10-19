@@ -1,5 +1,10 @@
 package tt
 
+import (
+	"fmt"
+	"math"
+)
+
 // ============================================================================
 // 话题聚类打分与归并决策（评审 B-1/A-1 可编码方案 Step3/Step4/Step6）
 //
@@ -39,6 +44,25 @@ func DefaultClusterConf() ClusterConf {
 	}
 }
 
+// Validate 配置红线校验（配置化入口必须调用）。零值/非法配置会静默灾变——
+// ThetaMerge=0 全量归入、Σw≠1 打分漂移、Σw=0 全量新建，无一报错。
+// DefaultClusterConf 必过；测试构造的退化配置允许旁路（旁路即显式知情）。
+func (c ClusterConf) Validate() error {
+	if c.WJaccard < 0 || c.WSimHash < 0 || c.WCos < 0 {
+		return fmt.Errorf("tt: cluster weights must be non-negative: %+v", c)
+	}
+	if sum := c.WJaccard + c.WSimHash + c.WCos; math.Abs(sum-1) > 1e-9 {
+		return fmt.Errorf("tt: cluster weights must sum to 1, got %v", sum)
+	}
+	if c.ThetaReview <= 0 || c.ThetaMerge <= c.ThetaReview || c.ThetaMerge > 1 {
+		return fmt.Errorf("tt: need 0 < theta_review(%v) < theta_merge(%v) <= 1", c.ThetaReview, c.ThetaMerge)
+	}
+	if c.CrossLangCosMin <= 0 || c.CrossLangCosMin > 1 {
+		return fmt.Errorf("tt: cross_lang_cos_min out of (0,1]: %v", c.CrossLangCosMin)
+	}
+	return nil
+}
+
 // SimParts 一次候选话题对比的已算好相似度分量。
 type SimParts struct {
 	// EntityJaccard 实体集合 Jaccard（confidence≥0.6 的 (type,value) 过滤后）。
@@ -74,7 +98,8 @@ const (
 //   - 跨语言且无 embedding：恒 new。
 func ScoreTopicPair(p SimParts, c ClusterConf) (float64, ClusterDecision) {
 	if !p.SameLang {
-		if !p.HasEmbedding || p.Cosine < c.CrossLangCosMin {
+		// NaN 防护：!(x>=t) 对 NaN 为 true → fail-closed（跨语言乱并污染曲线不可回滚）。
+		if !p.HasEmbedding || !(p.Cosine >= c.CrossLangCosMin) {
 			return p.Cosine, ClusterNew
 		}
 		return p.Cosine, ClusterMerge

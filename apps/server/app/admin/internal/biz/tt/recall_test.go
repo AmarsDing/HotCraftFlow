@@ -61,13 +61,17 @@ func TestSimHashSegments(t *testing.T) {
 }
 
 // TestPigeonholeRecallProperty 鸽笼召回性质：Hamming≤3 ⟹ 至少一段等值。
-// 这是「四段任一等值即候选」查询的正确性根基，全位级扫描验证。
+// 这是「四段任一等值即候选」查询的正确性根基，单/双/三比特全位级扫描
+// （对抗裁决发现：曾只测 ≤2 位，断言与覆盖不符）。
 func TestPigeonholeRecallProperty(t *testing.T) {
 	fp := TitleSimHash64("央行宣布降准降息 释放流动性支持实体经济")
 	for i := 0; i < 64; i++ { // 单比特
 		assertSomeSegmentEqual(t, fp, fp^(1<<uint(i)))
 		for j := i + 1; j < 64; j++ { // 双比特
 			assertSomeSegmentEqual(t, fp, fp^(1<<uint(i))^(1<<uint(j)))
+			for k := j + 1; k < 64; k++ { // 三比特（C(64,3)=41664 组合）
+				assertSomeSegmentEqual(t, fp, fp^(1<<uint(i))^(1<<uint(j))^(1<<uint(k)))
+			}
 		}
 	}
 }
@@ -118,9 +122,16 @@ func TestJaccardEntities(t *testing.T) {
 	if got < 0.333 || got > 0.334 {
 		t.Fatalf("1/3 附近: %v", got)
 	}
-	// 去重语义：重复实体不影响结果
+	// 去重语义：a 侧重复实体不影响结果
 	if g2 := JaccardEntities([]string{"a", "a", "b"}, []string{"b", "c"}); g2 != got {
-		t.Fatalf("重复元素不应改变 Jaccard: %v vs %v", g2, got)
+		t.Fatalf("a 侧重复不应改变 Jaccard: %v vs %v", g2, got)
+	}
+	// 对抗裁决发现：b 侧重复曾虚增交集，产出 2.0 / -3 的非法值。
+	if got := JaccardEntities([]string{"a"}, []string{"a", "a", "a"}); got != 1 {
+		t.Fatalf("b 侧重复应去重后全同=1: %v", got)
+	}
+	if got := JaccardEntities([]string{"a", "b"}, []string{"a", "a"}); got != 0.5 {
+		t.Fatalf("b 侧重复应去重: 1/2=0.5, got %v", got)
 	}
 }
 

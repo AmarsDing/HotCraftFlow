@@ -66,6 +66,43 @@ func TestClusterDecisionBands(t *testing.T) {
 	}
 }
 
+// TestClusterCrossLangNaN 对抗裁决发现：NaN cosine 曾漏过 cos>=0.72 门
+// （NaN < t 为 false）→ 误判 merge。修复后 !(cos>=t) fail-closed。
+func TestClusterCrossLangNaN(t *testing.T) {
+	nan := math.NaN()
+	if _, d := ScoreTopicPair(SimParts{Cosine: nan, HasEmbedding: true, SameLang: false}, cc); d != ClusterNew {
+		t.Fatalf("NaN cosine 跨语言应 new: d=%s", d)
+	}
+	// 同语言下 NaN cos 会污染加权分——fail-open 溢出到 NaN，决策段也 fail-closed。
+	s, d := ScoreTopicPair(SimParts{EntityJaccard: 1, SimHashSim: 1, Cosine: nan, HasEmbedding: true, SameLang: true}, cc)
+	if !math.IsNaN(s) {
+		t.Fatalf("NaN 传播可观测: s=%v", s)
+	}
+	if d != ClusterNew {
+		t.Fatalf("NaN 分不得归并: d=%s", d)
+	}
+}
+
+// TestClusterConfValidate 零值配置静默灾变防线（对抗裁决发现：ThetaMerge=0 全量归入）。
+func TestClusterConfValidate(t *testing.T) {
+	if err := DefaultClusterConf().Validate(); err != nil {
+		t.Fatalf("默认配置须过红线: %v", err)
+	}
+	if err := (ClusterConf{}).Validate(); err == nil {
+		t.Fatal("零值 ClusterConf 必须拒绝（ThetaMerge=0 全量归入灾变）")
+	}
+	bad := DefaultClusterConf()
+	bad.WJaccard = 0.5 // Σw=1.05
+	if err := bad.Validate(); err == nil {
+		t.Fatal("Σw≠1 必须拒绝（打分漂移）")
+	}
+	bad2 := DefaultClusterConf()
+	bad2.ThetaMerge = bad2.ThetaReview // 0.82→0.70
+	if err := bad2.Validate(); err == nil {
+		t.Fatal("theta_merge<=theta_review 必须拒绝")
+	}
+}
+
 // TestClusterCrossLang 跨语言：实体/SimHash 无效，只看 cos≥0.72；不设 review 档。
 func TestClusterCrossLang(t *testing.T) {
 	// cos 达标 → merge（即便实体/SimHash 全零也不影响）

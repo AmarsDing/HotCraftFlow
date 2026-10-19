@@ -71,6 +71,22 @@ func (r *FFmpegRenderer) Render(ctx context.Context, spec bizmme.RenderSpec, onP
 		return nil, fmt.Errorf("%w: invalid edl segment [%.2f,%.2f)", bizmme.ErrRenderFail, spec.StartSec, spec.EndSec)
 	}
 
+	// exec 面路径必须绝对化：exectree 子进程 cwd 被切到 Dir(spec.DstPath)，
+	// 相对 SrcPath/SrtPath 会被按变体产物目录解析而 ENOENT（冒烟实测复现）。
+	// 仅本地变量绝对化用于子进程参数；spec 保持相对值——RenderResult 回传
+	// 相对路径，与历史 DB 记录一致（media handler/QC 都按 media_dir 相对寻址）。
+	abs := func(p string) string {
+		if p == "" {
+			return p
+		}
+		if a, err := filepath.Abs(p); err == nil {
+			return a
+		}
+		return p
+	}
+	srcAbs, srtAbs := abs(spec.SrcPath), abs(spec.SrtPath)
+	dstAbs, coverAbs := abs(spec.DstPath), abs(spec.CoverPath)
+
 	watchDur := time.Duration(dur*20) * time.Second
 	if watchDur < 10*time.Minute {
 		watchDur = 10 * time.Minute // 长看门狗：慢机器不冤杀；硬上限
@@ -78,16 +94,16 @@ func (r *FFmpegRenderer) Render(ctx context.Context, spec bizmme.RenderSpec, onP
 
 	// ---- 1) 切 + reframe(+ 烧录) → video.mp4 ----
 	vf := spec.Aspect.Filter
-	if spec.SrtPath != "" {
+	if srtAbs != "" {
 		style := bizmme.ForceStyleFor(spec.Aspect.Key, r.cfg)
-		vf = fmt.Sprintf("%s,subtitles='%s':force_style='%s'", vf, escapeSubFilterPath(spec.SrtPath), style)
+		vf = fmt.Sprintf("%s,subtitles='%s':force_style='%s'", vf, escapeSubFilterPath(srtAbs), style)
 	}
 	args := []string{
 		"-hide_banner", "-nostats",
 		"-progress", "pipe:1",
 		"-ss", strconv.FormatFloat(spec.StartSec, 'f', 3, 64),
 		"-to", strconv.FormatFloat(spec.EndSec, 'f', 3, 64),
-		"-i", spec.SrcPath,
+		"-i", srcAbs,
 		"-vf", vf,
 		"-c:v", "libx264", "-preset", spec.Preset, "-crf", strconv.Itoa(spec.CRF),
 		"-pix_fmt", "yuv420p", // 兼容性（部分播放器不认 yuv444）
@@ -100,14 +116,14 @@ func (r *FFmpegRenderer) Render(ctx context.Context, spec bizmme.RenderSpec, onP
 	// 视频流 + 可选原音轨（源无音轨时 0:a? 为空映射，不报错）；保留 EDL 源声
 	args = append(args,
 		"-map", "0:v:0", "-map", "0:a?", "-c:a", "aac",
-		"-map_metadata", "-1", "-y", spec.DstPath,
+		"-map_metadata", "-1", "-y", dstAbs,
 	)
 
 	step := watchDur / 2
 	res := exectree.Run(ctx, exectree.RunSpec{
 		Bin:         r.cfg.FFmpegPath,
 		Args:        args,
-		Dir:         filepath.Dir(spec.DstPath),
+		Dir:         filepath.Dir(dstAbs),
 		Timeout:     watchDur,
 		OutputLines: 600,
 	})
@@ -132,11 +148,11 @@ func (r *FFmpegRenderer) Render(ctx context.Context, spec bizmme.RenderSpec, onP
 		Args: []string{
 			"-hide_banner",
 			"-ss", strconv.FormatFloat(spec.StartSec+coverAt, 'f', 3, 64),
-			"-i", spec.SrcPath,
+			"-i", srcAbs,
 			"-vf", spec.Aspect.Filter,
 			"-frames:v", "1",
 			"-q:v", "3",
-			"-y", spec.CoverPath,
+			"-y", coverAbs,
 		},
 		Timeout: step,
 	})
@@ -144,7 +160,7 @@ func (r *FFmpegRenderer) Render(ctx context.Context, spec bizmme.RenderSpec, onP
 		// 封面失败不判整变体失败（审核台可见缺图）；如实记日志
 		r.log.Warnf("cover extract failed for %s: %s", spec.VariantID, coverRes.Attribution)
 		spec.CoverPath = ""
-	} else if fi, err := os.Stat(spec.CoverPath); err != nil || fi.Size() == 0 {
+	} else if fi, err := os.Stat(coverAbs); err != nil || fi.Size() == 0 {
 		spec.CoverPath = ""
 	}
 	if onProgress != nil {

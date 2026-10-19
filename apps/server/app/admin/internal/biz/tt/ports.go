@@ -27,13 +27,22 @@ type PointSink interface {
 }
 
 // TimeSeries 时序库直连端口（data/tt/influx.go 唯一 InfluxDB 接触面）。
-// 供 worker 重放批、健康检查与未来 series 查询使用。
+// 供 worker 重放批、健康检查与生命周期评估的序列查询使用。
 type TimeSeries interface {
 	// WriteSnapshots 同步写一批点到 bucket_raw。
 	// (measurement + topic_id + platform + t_bucket) 重复写覆盖（NFR-TT-07 幂等）。
 	WriteSnapshots(ctx context.Context, points []SnapshotPoint) error
 	// Ping 健康检查。
 	Ping(ctx context.Context) (bool, error)
+
+	// ReadRecentPoints 按 t_raw 倒序读某话题某平台的最近 N 个快照点
+	// （生命周期评估推导 streak 用；N≤10 足够——rising 需 2 点、decaying 3 点）。
+	// 返回按 t_raw 降序（最新在前）；不足 limit 时返回实际条数。
+	ReadRecentPoints(ctx context.Context, topicID, platform string, limit int) ([]SnapshotPoint, error)
+
+	// ReadActiveHeatRange 读近 24h 全体活跃话题的 heat 序列（生命周期 P25/P99 分位用）。
+	// 返回 heat 值列表（0-100）；空窗口返回空切片（调用方禁用相对线）。
+	ReadActiveHeatRange(ctx context.Context, from, to time.Time) ([]float64, error)
 }
 
 // SnapshotBuffer 写失败缓冲端口（A-16：Redis Stream 死信队列）。
@@ -76,14 +85,14 @@ type TopicRepo interface {
 
 // CreateTopicInput 新建话题入参。
 type CreateTopicInput struct {
-	Label        string
-	Category     string // A_hot / B_material / C_market / D_compliance
-	Region       string // cn / intl / global
-	SeenAt       time.Time
-	IntelID      string
-	ClusterKey   string // 可空（无 cluster_id 时）
-	OriginURL    string
-	Platform     string
+	Label      string
+	Category   string // A_hot / B_material / C_market / D_compliance
+	Region     string // cn / intl / global
+	SeenAt     time.Time
+	IntelID    string
+	ClusterKey string // 可空（无 cluster_id 时）
+	OriginURL  string
+	Platform   string
 }
 
 // AttachSourceInput 追加来源入参。
@@ -107,13 +116,13 @@ type TopicHeatMeta struct {
 
 // TopicHeatUpdate 话题热度状态回写（B-3 因子取值/生效权重落库，NFR-TT-05 门禁）。
 type TopicHeatUpdate struct {
-	HeatScore, Velocity, Accel            float64
-	RankPct, EngPct, Freshness, Breadth   float64
-	WeightsEff                            HeatWeights
-	Missing                               []string
-	WeightEpoch                           string
-	PlatformCount24h                      int
-	Platforms24h                          []string
+	HeatScore, Velocity, Accel          float64
+	RankPct, EngPct, Freshness, Breadth float64
+	WeightsEff                          HeatWeights
+	Missing                             []string
+	WeightEpoch                         string
+	PlatformCount24h                    int
+	Platforms24h                        []string
 }
 
 // SnapshotPublisher 快照事件发布端口（C-9：mm.trend.snapshot.v1 由 ingest 产出、

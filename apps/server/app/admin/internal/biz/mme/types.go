@@ -287,8 +287,12 @@ type AspectSpec struct {
 
 // AspectSpecs 全量画幅表（map + 稳定次序）。
 var AspectSpecs = map[string]AspectSpec{
-	"9:16": {Key: "9:16", Width: 1080, Height: 1920, Filter: "crop=ih*9/16:ih,scale=1080:1920:flags=lanczos"},
-	"1:1":  {Key: "1:1", Width: 1080, Height: 1080, Filter: "crop=ih:ih,scale=1080:1080:flags=lanczos"},
+	// crop 须保证裁切窗口始终落在源内：竖屏/窄源上 ih*9/16 可能超过 iw
+	// （如 1320x2868 源 → 需 1613 宽），ffmpeg 直接 EINVAL(-22) 拒绝重建滤镜。
+	// 对称取 min 双向收拢，并向偶数对齐（yuv420p 兼容）。
+	// min(...) 内的逗号必须转义（\,），否则被当作滤镜链分隔符。
+	"9:16": {Key: "9:16", Width: 1080, Height: 1920, Filter: "crop=w=floor(min(iw\\,ih*9/16)/2)*2:h=floor(min(ih\\,iw*16/9)/2)*2,scale=1080:1920:flags=lanczos"},
+	"1:1":  {Key: "1:1", Width: 1080, Height: 1080, Filter: "crop=w=floor(min(iw\\,ih)/2)*2:h=floor(min(iw\\,ih)/2)*2,scale=1080:1080:flags=lanczos"},
 	"16:9": {Key: "16:9", Width: 1920, Height: 1080, Filter: "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2"},
 }
 

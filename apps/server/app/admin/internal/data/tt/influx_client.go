@@ -101,6 +101,99 @@ func (s *InfluxTS) WriteSnapshots(ctx context.Context, points []biztt.SnapshotPo
 	return nil
 }
 
+// ReadRecentPoints 按时间倒序读某话题最近 N 个快照点（生命周期 streak 推导）。
+// platform 语义：非空=精确平台；空串=跨全部平台（话题级视图）。
+// 行形：pivot(_field) 同时取 velocity+heat_score——单字段查询曾使 HeatScore 恒 0，
+// 下游规则 1（heat<20）会误判全站 long_tail。
+func (s *InfluxTS) ReadRecentPoints(ctx context.Context, topicID, platform string, limit int) ([]biztt.SnapshotPoint, error) {
+	if s.client == nil {
+		return nil, fmt.Errorf("influx client not initialized (degraded)")
+	}
+	ctx, cancel := context.WithTimeout(ctx, s.conf.Timeout)
+	defer cancel()
+
+	platformFilter := ""
+	if platform != "" {
+		platformFilter = fmt.Sprintf(` and r.platform == "%s"`, platform)
+	}
+	queryAPI := s.client.QueryAPI(s.conf.Org)
+	query := fmt.Sprintf(`from(bucket: "%s")
+		|> range(start: -168h)
+		|> filter(fn: (r) => r._measurement == "%s" and r.topic_id == "%s"%s)
+		|> filter(fn: (r) => r._field == "velocity" or r._field == "heat_score")
+		|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+		|> sort(columns: ["_time"], desc: true)
+		|> limit(n: %d)`, s.conf.BucketRaw, measurementTopicHeat, topicID, platformFilter, limit)
+
+	result, err := queryAPI.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("influx query recent points: %w", err)
+	}
+	defer result.Close()
+
+	points := make([]biztt.SnapshotPoint, 0, limit)
+	for result.Next() {
+		record := result.Record()
+		p := biztt.SnapshotPoint{
+			TopicID: topicID,
+			TRaw:    record.Time(),
+		}
+		// pivot 后 velocity/heat_score 成为两列，逐列提取（缺一列保持 0 值）。
+		if cols := record.Values(); cols != nil {
+			if hv, ok := cols["heat_score"].(float64); ok {
+				p.HeatScore = hv
+			}
+			if vv, ok := cols["velocity"].(float64); ok {
+				p.Velocity = vv
+			}
+		}
+		points = append(points, p)
+	}
+	if result.Err() != nil {
+		return nil, fmt.Errorf("influx query recent points result: %w", result.Err())
+	}
+	return points, nil
+}
+
+// ReadActiveHeatRange 读近 24h 全体活跃话题的 heat 序列（P25/P99 分位用）。
+// 空窗口返回空切片（调用方禁用相对线）。
+func (s *InfluxTS) ReadActiveHeatRange(ctx context.Context, from, to time.Time) ([]float64, error) {
+	if s.client == nil {
+		return nil, fmt.Errorf("influx client not initialized (degraded)")
+	}
+	ctx, cancel := context.WithTimeout(ctx, s.conf.Timeout)
+	defer cancel()
+
+	queryAPI := s.client.QueryAPI(s.conf.Org)
+	// 分位语义 = 「活跃话题热度分布」：按 (topic, platform) 分组后逐小时取均值，
+	// 再摊平为单切片。不做 group 的全局 hourly mean 会把全体话题揉成 24 个
+	// 站点级均值，P25/P99 失去话题级分布意义（A-8 冷启动保护仍由调用方 len<4 判定）。
+	query := fmt.Sprintf(`from(bucket: "%s")
+		|> range(start: %d, stop: %d)
+		|> filter(fn: (r) => r._measurement == "%s" and r._field == "heat_score")
+		|> group(columns: ["topic_id", "platform"])
+		|> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+		|> yield(name: "mean")`,
+		s.conf.BucketRaw, from.Unix(), to.Unix(), measurementTopicHeat)
+
+	result, err := queryAPI.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("influx query active heat: %w", err)
+	}
+	defer result.Close()
+
+	heats := make([]float64, 0, 48)
+	for result.Next() {
+		if v, ok := result.Record().Value().(float64); ok {
+			heats = append(heats, v)
+		}
+	}
+	if result.Err() != nil {
+		return nil, fmt.Errorf("influx query active heat result: %w", result.Err())
+	}
+	return heats, nil
+}
+
 // toPoint 构造 line-protocol 点。tags 只有 topic_id + platform（S-12 基数治理）。
 func toPoint(p *biztt.SnapshotPoint) *write.Point {
 	tags := map[string]string{
@@ -138,3 +231,6 @@ func toPoint(p *biztt.SnapshotPoint) *write.Point {
 	}
 	return influxdb2.NewPoint(measurementTopicHeat, tags, fields, p.TBucket.UTC())
 }
+
+// 编译期断言：端口签名漂移在编译期暴露，不在 wire 运行时。
+var _ biztt.TimeSeries = (*InfluxTS)(nil)

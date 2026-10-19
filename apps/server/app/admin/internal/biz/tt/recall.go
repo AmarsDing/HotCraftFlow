@@ -66,6 +66,8 @@ func HammingWithin(a, b uint64, maxDist int) bool { return Hamming64(a, b) <= ma
 // JaccardEntities 实体集合 Jaccard（|A∩B| / |A∪B|）。
 // 入参应为 (type,value) 规范化后的实体串（confidence≥0.6 过滤在调用方）。
 // 双边皆空定义为 0（无信息态不得产出相似度，否则空话题互相虚假合并）。
+// 交集按去重后的 setB 计数（评审对抗裁决发现：遍历原切片会被 b 侧重复元素
+// 虚增交集，产出 >1 或负值的非法 Jaccard）。
 func JaccardEntities(a, b []string) float64 {
 	if len(a) == 0 || len(b) == 0 {
 		return 0
@@ -74,19 +76,18 @@ func JaccardEntities(a, b []string) float64 {
 	for _, e := range a {
 		setA[e] = struct{}{}
 	}
-	inter := 0
 	setB := make(map[string]struct{}, len(b))
 	for _, e := range b {
 		setB[e] = struct{}{}
+	}
+	inter := 0
+	for e := range setB {
 		if _, ok := setA[e]; ok {
 			inter++
 		}
 	}
-	union := len(setA) + len(setB) - inter
-	if union == 0 {
-		return 0
-	}
-	return float64(inter) / float64(union)
+	// inter ≤ min(|setA|,|setB|) ⇒ union ≥ max(|setA|,|setB|) ≥ 1：无除零路径。
+	return float64(inter) / float64(len(setA)+len(setB)-inter)
 }
 
 // titleBigrams 抽取 rune 相邻二元组特征（滤标点/空白/符号，ToLower 归一）。

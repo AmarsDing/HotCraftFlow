@@ -1,5 +1,7 @@
 package tt
 
+import "fmt"
+
 // ============================================================================
 // 生命周期阶段评估（评审 A-8 有序判据 + B-6 状态空间全覆盖 + B-7 点数口径）
 //
@@ -28,14 +30,27 @@ const (
 	StageDormant  Stage = "dormant"
 )
 
-// StageMinDwell 各阶段最小驻留点数（A-8/B-7；切换离开该阶段前必须驻满）。
-var StageMinDwell = map[Stage]int{
-	StageLatent:   0, // 允许快速转出
-	StageRising:   2,
-	StagePeak:     1,
-	StageDecaying: 3,
-	StageLongTail: 6,
-	StageDormant:  0,
+// MinDwellStage 各阶段最小驻留点数（A-8/B-7；切换离开该阶段前必须驻满）。
+//
+// 未知阶段返回 0（驻留闸不设防）：未知值即脏数据/未来枚举，评估器应尽快把它
+// 纠正回已知阶段（规则命中即转出），冻结只会掩盖数据问题；规则未命中时
+// matchStageRule 的 default 分支仍保持原状。
+//
+// 用函数而非包级 map：导出 map 运行时可被任意包改写（并发读写 panic）；
+// switch 表编译期固定，外部无法篡改。
+func MinDwellStage(s Stage) int {
+	switch s {
+	case StageRising:
+		return 2
+	case StagePeak:
+		return 1
+	case StageDecaying:
+		return 3
+	case StageLongTail:
+		return 6
+	default: // latent / dormant / unknown
+		return 0
+	}
 }
 
 // LifecycleConf 阶段判定阈值（03 §2.2 判据表默认 + A-8 终稿）。
@@ -70,6 +85,31 @@ func DefaultLifecycleConf() LifecycleConf {
 		RisingMinStreak: 2,
 		DecayMinStreak:  3,
 	}
+}
+
+// Validate 配置红线校验（配置化入口必须调用）。零值配置会静默灾变——
+// HeatPeakMin=0 全量 peak、VMin=0 规则 3 永不命中、RisingMinStreak=0
+// 抖动直入 rising，无一报错。DefaultLifecycleConf 必过。
+func (c LifecycleConf) Validate() error {
+	if c.VMin <= 0 {
+		return fmt.Errorf("tt: lifecycle v_min must be > 0, got %v", c.VMin)
+	}
+	if c.HeatPeakMin <= 0 || c.HeatPeakMin > 100 {
+		return fmt.Errorf("tt: lifecycle heat_peak_min out of (0,100]: %v", c.HeatPeakMin)
+	}
+	if c.HeatTurnMin <= 0 || c.HeatTurnMin > 100 {
+		return fmt.Errorf("tt: lifecycle heat_turn_min out of (0,100]: %v", c.HeatTurnMin)
+	}
+	if c.LongTailHeatMax <= 0 || c.LongTailHeatMax > 100 {
+		return fmt.Errorf("tt: lifecycle long_tail_heat_max out of (0,100]: %v", c.LongTailHeatMax)
+	}
+	if c.LongTailAgeDays <= 0 || c.DormantHours <= 0 {
+		return fmt.Errorf("tt: lifecycle age/dormant thresholds must be > 0: %+v", c)
+	}
+	if c.RisingMinStreak < 1 || c.DecayMinStreak < 1 {
+		return fmt.Errorf("tt: lifecycle streak thresholds must be >= 1: %+v", c)
+	}
+	return nil
 }
 
 // StageInput 一次评估的事实输入（全部「由样本时间推导的事实」，禁止 now()）。
@@ -119,7 +159,7 @@ func EvalStage(in StageInput, c LifecycleConf) StageResult {
 		return StageResult{Stage: in.Current, Rule: rule, Changed: false}
 	}
 	// 最小驻留闸（B-7 点数口径）：当前阶段驻留不足则保持（防抖）。
-	if in.DwellPoints < StageMinDwell[in.Current] {
+	if in.DwellPoints < MinDwellStage(in.Current) {
 		return StageResult{Stage: in.Current, Rule: rule, Changed: false, Held: true}
 	}
 	return StageResult{Stage: cand, Rule: rule, Changed: true}
@@ -137,7 +177,9 @@ func matchStageRule(in StageInput, c LifecycleConf) (Stage, int) {
 		return StageLongTail, 1
 	}
 	// 2) peak：绝对阈值 ∨ 相对阈值 ∨ 由正转负的高位回落（仅自 rising/peak）。
-	if in.Heat >= c.HeatPeakMin || in.Heat >= in.HeatP99 ||
+	// 相对线要求 HeatP99>0（冷启动无分位基线时禁用：heat≥0 恒真会全站洪泛 peak；
+	// 绝对线不受冷启动影响，仍生效）。
+	if in.Heat >= c.HeatPeakMin || (in.HeatP99 > 0 && in.Heat >= in.HeatP99) ||
 		(in.V < 0 && in.Heat >= c.HeatTurnMin &&
 			(in.Current == StageRising || in.Current == StagePeak)) {
 		return StagePeak, 2

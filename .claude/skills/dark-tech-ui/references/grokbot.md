@@ -128,7 +128,7 @@ body {
 --dur-micro:120ms; --dur-fast:180ms; --dur-base:260ms; --dur-slow:500ms;
 ```
 
-- 数字插值：`cur += (target - cur) * 0.12` 每 100ms 更新（lerp 指数平滑），全局单 rAF。
+- 数字插值：`cur += (target - cur) * 0.12` 每 100ms 更新（lerp 指数平滑），全局单 rAF。边界：lerp 只用于连续量（金额/比率/吞吐）；离散状态计数（待办数/在线数）若两处语义强绑定同显，应 snap 直写或把系数提到 0.35+，把收敛压进 300ms，避免收敛窗内两处不同值。
 - 弹窗入场 180ms `opacity 0→1 + scale .96→1`（出现要 <66ms 感知，**不要做慢速放大**）。
 - 行入场 `opacity 0→1 + translateY(-6px)→0` 260ms；chip 220ms。
 - 状态点呼吸 `opacity .55↔1` 2s ease-in-out alternate；虚线环 `spin 14s linear infinite`。
@@ -146,4 +146,4 @@ body {
 
 ## 8. 易错点
 
-底色勿纯黑 · 弹窗勿加遮罩 · 数字勿 setInterval 直写（要 lerp+rAF） · 粒子勿用 left/top 动画 · 连接线是彩色点链非灰实线 · 断点压 380px 以下 · SVG viewBox 比例贴近容器 · SVG 呈现属性不支持 `var()` 须内联 · 异步移除节点用快照数组防 while 死循环 · 容器别写 `overflow:hidden`（弹窗要向外溢出）。
+底色勿纯黑 · 弹窗勿加遮罩 · 数字勿 setInterval 直写（要 lerp+rAF；离散计数 snap 或 0.35+ 快系数） · 粒子勿用 left/top 动画 · 连接线是彩色点链非灰实线 · 断点压 380px 以下 · SVG viewBox 比例贴近容器 · SVG 呈现属性不支持 `var()` 须内联 · 异步移除节点用快照数组防 while 死循环 · 容器别写 `overflow:hidden`（弹窗要向外溢出）。

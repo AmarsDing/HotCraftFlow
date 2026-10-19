@@ -4,6 +4,8 @@ import (
 	"context"
 	"reflect"
 	"strconv"
+	"strings"
+	"unicode"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
@@ -148,7 +150,7 @@ func processAuthz(
 	var htr *http.Transport
 	var ok bool
 	if htr, ok = tr.(*http.Transport); ok {
-		path = authzEngine.Resource(htr.PathTemplate())
+		path = authzEngine.Resource(normalizePathTemplate(htr.PathTemplate()))
 		action = authzEngine.Action(htr.Request().Method)
 	}
 
@@ -165,6 +167,44 @@ func processAuthz(
 	ctx = authz.NewContext(ctx, &authzClaims)
 
 	return ctx, nil
+}
+
+// normalizePathTemplate 归一路由模板与 openapi（gnostic）的路径参数命名。
+//
+// 背景：api_resource 与 casbin 策略由 app/admin/assets/openapi.yaml 同步而来，
+// 该文件由 protoc-gen-openapi(gnostic) 生成——它会把路径参数 camel 化
+// （proto 注解中的 {task_id} 在文档里变成 {taskId}）；而 kratos
+// http.Transport.PathTemplate() 保留 proto 注解开头的 snake 形态。
+// 两侧参数名不一致时模板字符串失配 → casbin 拒访（403），受影响面是所有
+// 多词参数路由（mme /tasks/{task_id}/expand、monitor roles/{role_id}/depts、
+// sessions/{user_id} 等）。这里把路由模板参数名归一到 gnostic 形态：
+// 仅重写 {} 内的参数名（下划线转小驼峰），静态段与自定义动词（:expand）不动。
+func normalizePathTemplate(t string) string {
+	if !strings.Contains(t, "_") {
+		return t
+	}
+	var b strings.Builder
+	b.Grow(len(t))
+	inParam := false
+	upperNext := false
+	for _, r := range t {
+		switch {
+		case r == '{':
+			inParam = true
+			b.WriteRune(r)
+		case r == '}':
+			inParam = false
+			b.WriteRune(r)
+		case inParam && r == '_':
+			upperNext = true
+		case inParam && upperNext:
+			b.WriteRune(unicode.ToUpper(r))
+			upperNext = false
+		default:
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
 }
 
 func FromContext(ctx context.Context) (*authenticationV1.UserTokenPayload, error) {
