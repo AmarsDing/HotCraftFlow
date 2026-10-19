@@ -15,7 +15,7 @@
 | H5 | Velocity=-1 哨兵当衰减 | ⚠️ 半确认（诊断偏差） | 等价问题已修 |
 | H6 | 按桶时间 _time 排序 | ✅ 确认 | **已修**（t_raw 落列+排序） |
 | H7 | pivot 后缺 group | ✅ 确认 | **已修**（group(topic_id) 后 sort/limit） |
-| M1 | 每 topic 全量扫 24h 聚合 | ✅ 确认 | 未修 |
+| M1 | 每 topic 全量扫 24h 聚合 | ✅ 确认 | **已修**（sweep 级 quant 注入+fallback） |
 | M2 | 幂等键只含 VariantID | ✅ 确认 | **已修**（载荷指纹）+本会话补回归闸 |
 | M3 | doctor 探针不看退出码 | ❌ 驳回（有实测依据） | 无需修 |
 | M4 | CRF=0 被当合法值 | ✅ 确认 | **已修**（normalize 回填23）+本会话补闸 |
@@ -104,10 +104,9 @@ Flux 侧已按评审建议修：t_raw 落列、按 t_raw 排序、pivot 后 grou
 
 1. **MAP worker 组（H2+H3）**：TaskID 纳入 scheduled_for；终态分支置 failed+deny 审计
    （Result 语义约束见 H3 节）。文件：worker/map/schedule_worker.go。
-2. **M1**：sweep 级 P25/P99 注入。
-3. **M6**：高水位游标（需 repo 演进，独立小设计）。
+2. **M6**：高水位游标（需 repo 演进，独立小设计）。
 
-> M2/M4/M5 已随 TT 线落地（本会话逐项复核 + 补闸），不在余留项。
+> M1/M2/M4/M5 已随 TT 线落地（本会话逐项复核 + 补闸），不在余留项。
 
 ## 与本附录无关
 
