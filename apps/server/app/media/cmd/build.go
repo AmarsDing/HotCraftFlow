@@ -87,6 +87,10 @@ func buildApp(bc *conf.Bootstrap, logger log.Logger, tp *tracesdk.TracerProvider
 		ArtifactDir:   media.GetStorage().GetArtifactDir(),
 	}))
 	executor.RegisterHandler("exec.probe", jobrun.ExecProbeHandler())
+	executor.RegisterHandler("mme.render", jobrun.MMERenderHandler(jobrun.MMERenderDeps{
+		FFmpegPath: envOr("MEDIA_FFMPEG_PATH", "ffmpeg"),
+		Log:        sl,
+	}))
 
 	// ---- 鉴权（与 admin 同钥互通）----
 	jwtKey := bc.GetAuth().GetAuthn().GetJwt().GetKey()
@@ -136,6 +140,14 @@ func buildApp(bc *conf.Bootstrap, logger log.Logger, tp *tracesdk.TracerProvider
 		_ = store.Close()
 	}
 	return app, cleanup, nil
+}
+
+// envOr 环境变量覆盖工具（空则取缺省）。
+func envOr(key, def string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return def
 }
 
 // sidecarEchoID 示范 sidecar 引擎的注册 id。

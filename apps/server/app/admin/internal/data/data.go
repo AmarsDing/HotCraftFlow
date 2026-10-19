@@ -122,7 +122,7 @@ var ProviderSet = wire.NewSet(
 	NewFfprobeProber,
 	NewWhisperASR,
 	NewOllamaLLM,
-	NewFFmpegRenderer,
+	NewMMERenderer, // env 开关：local=FFmpegRenderer / media=MediaServiceRenderer
 
 	wire.Bind(new(biz.MenuRepo), new(*MenuRepo)),
 	wire.Bind(new(biz.ApiResourceRepo), new(*ApiResourceRepo)),

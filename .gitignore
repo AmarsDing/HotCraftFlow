@@ -45,3 +45,5 @@ docs/UI/*.webm
 
 # Local research workspace (downloaded third-party OSS source for study)
 research-worker/
+# Local tool binaries (ffmpeg etc.; downloaded, not committed)
+apps/server/tools/

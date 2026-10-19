@@ -270,7 +270,7 @@ func wireApp(bc *conf.Bootstrap, ttb *tt.Conf, mc *publish.Conf, mpconfs publish
 	prober := data.NewFfprobeProber(mmeConfig, logger)
 	asrClient := data.NewWhisperASR(mmeConfig, logger)
 	llmClient := data.NewOllamaLLM(mmeConfig, logger)
-	renderer := data.NewFFmpegRenderer(mmeConfig, logger)
+	renderer := data.NewMMERenderer(mmeConfig, bc, logger)
 	mmeTaskUsecase := mme.NewTaskUsecase(mmeConfig, mmeTaskRepo, assetRepo, assetDeduper, analysisCache, mediaStorage, mmeTaskEnqueuer, downloader, prober, asrClient, llmClient, renderer, logger)
 	mmeTaskService := service.NewMmeTaskService(mmeTaskUsecase, logger)
 	variantSetRepo := data.NewMmeVariantSetRepo(dataData, logger)
