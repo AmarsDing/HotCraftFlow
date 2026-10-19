@@ -17,7 +17,8 @@
     "type-check": "vue-tsc --noEmit -p tsconfig.json",
     "test:unit": "vitest run",
     "test:unit:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "verify:radar": "cd ../.. && node -e \"require('fs').copyFileSync('docs/ui-verify/run-verify-radar.mjs','apps/web/scripts/run-radar-verify.mjs')\" && node apps/web/scripts/run-radar-verify.mjs"
   },
   "overrides": {
     "@zip.js/zip.js": "2.7.62",

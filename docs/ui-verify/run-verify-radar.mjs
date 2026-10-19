@@ -2,8 +2,10 @@
  * GitHub RADAR 三镜头 UI 验证：榜单 / 详情 / AI+源码。
  *
  * 前置：后端（BASE_BE）与前端（BASE_FE）均已启动，且至少跑一次榜单刷新（避免空榜）。
- * 用法：
- *   node docs/ui-verify/run-verify-radar.mjs
+ * 用法（唯一入口，自动把本真源同步到运行副本后执行）：
+ *   cd apps/web && pnpm verify:radar
+ * ⚠️ 勿直接 node 运行本文件：bare import "@playwright/test" 的依赖只装在
+ * apps/web/node_modules，需由 apps/web/scripts/run-radar-verify.mjs 镜像承载。
  * 环境变量（均有默认值）：
  *   BASE_FE=http://127.0.0.1:9001  BASE_BE=http://127.0.0.1:7788
  *   ADMIN_USER=admin  ADMIN_PASS=123456

@@ -206,6 +206,12 @@ func (c *GitHubClient) FetchTrending(ctx context.Context, since, language string
 		return entries, nil
 	}
 	apiEntries, apiErr := c.fetchTrendingSearch(ctx, since, language)
+	// 防空缓存投毒：搜索 API 返回 200 但 items 为空（反爬限流期的常见形态）
+	// 不能当作成功——否则上层 ListLatest 会把 stale:false 的空结果写进 10min
+	// 缓存，榜单整页空白。空结果一律视为失败，走 snapshot/stale 回退链。
+	if apiErr == nil && len(apiEntries) == 0 {
+		apiErr = errors.New("api engine: empty result")
+	}
 	if apiErr != nil {
 		if err != nil {
 			return nil, fmt.Errorf("html engine: %v; api engine: %v", err, apiErr)
@@ -262,7 +268,14 @@ func (c *GitHubClient) fetchTrendingHTML(ctx context.Context, since, language st
 		if m := reHref.FindStringSubmatch(block); m != nil {
 			name = m[1]
 		}
-		if name == "" || !strings.Contains(name, "/") || strings.HasPrefix(name, "login") || strings.HasPrefix(name, "sponsors/") {
+		// 仓库名形态白名单：仅接受 owner/repo 双段（去首末空白、双段非空），
+		// 同时滤掉 sponsors/、login/、orgs/、site/ 等非仓库前缀（反爬页会塞满磁贴）。
+		parts := strings.Split(strings.TrimSpace(name), "/")
+		if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+			continue
+		}
+		switch parts[0] {
+		case "sponsors", "login", "orgs", "site", "topics", "marketplace", "pricing", "features", "collections":
 			continue
 		}
 		e := ghTrendingEntry{FullName: name}

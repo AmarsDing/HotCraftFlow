@@ -17,6 +17,7 @@ func ProvideRadarGitHubClient(cfg RadarConfigProvider) *GitHubClient {
 // ProvideRadarTrendingReader 合并 demo/真实选择（原手工 `if RadarDemoEnabled()` 分支）。
 func ProvideRadarTrendingReader(gh *GitHubClient) RadarTrendingReader {
 	if RadarDemoEnabled() {
+		println("[radar] RADAR_DEMO=1 → DemoRadarTrendingReader (in-memory demo data)")
 		return ProvideDemoRadarTrendingReader()
 	}
 	return NewGitHubRadarTrendingReader(gh)
