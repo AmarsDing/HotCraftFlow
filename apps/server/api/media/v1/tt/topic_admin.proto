@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package media.tt.v1;
+
+// go_package 由 buf managed 注入，勿手写。
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+// ============================================================================
+// ② TT 话题人工管理（04-开发进度 M3「人工合并/拆分 API + 前端入口」+ Step5
+// merge_lock 写入路径 + needs_review 复核工作流）。
+//
+// 安全纪律：
+//  - 所有写操作置 merge_lock=true，防止自动聚类再拆散（B-1）；
+//  - 操作者从登录态 JWT 取（moved_by），不接受客户端传入；
+//  - 合并/拆分是破坏性操作，全部留审计（moved_at + 操作日志）。
+// ============================================================================
+
+// TopicItem 话题视图（列表/详情共用）。
+message TopicItem {
+  string topic_id = 1 [json_name = "topic_id"];
+  string label = 2 [json_name = "label"];
+  string category = 3 [json_name = "category"];
+  string stage = 4 [json_name = "stage"];
+  double heat_score = 5 [json_name = "heat_score"];
+  double velocity = 6 [json_name = "velocity"];
+  int32 platform_count = 7 [json_name = "platform_count"];
+  bool merge_lock = 8 [json_name = "merge_lock"];
+  bool needs_review = 9 [json_name = "needs_review"];
+  bool is_archived = 10 [json_name = "is_archived"];
+  google.protobuf.Timestamp first_seen_at = 11 [json_name = "first_seen_at"];
+  google.protobuf.Timestamp last_seen_at = 12 [json_name = "last_seen_at"];
+  int32 source_count = 13 [json_name = "source_count"]; // 来源条目数
+}
+
+// TopicSourceItem 话题来源条目（拆分对话框数据源）。
+message TopicSourceItem {
+  string intel_id = 1 [json_name = "intel_id"];
+  string platform = 2 [json_name = "platform"];
+  google.protobuf.Timestamp contributed_at = 3 [json_name = "contributed_at"];
+  double similarity = 4 [json_name = "similarity"];
+  string cluster_key = 5 [json_name = "cluster_key"];
+  string moved_by = 6 [json_name = "moved_by"]; // 空 = 自动聚类归入
+}
+
+// —— 拆分 ——
+
+message SplitTopicRequest {
+  string topic_id = 1 [json_name = "topic_id"];        // 待拆分的话题
+  repeated string intel_ids = 2 [json_name = "intel_ids"]; // 要拆出的来源条目
+  string reason = 3 [json_name = "reason"];            // 拆分原因（审计必填）
+}
+
+message SplitTopicResponse {
+  string new_topic_id = 1 [json_name = "new_topic_id"]; // 拆分产生的新话题
+}
+
+// —— 合并 ——
+
+message MergeTopicsRequest {
+  string target_topic_id = 1 [json_name = "target_topic_id"]; // 目标话题（保留）
+  repeated string source_topic_ids = 2 [json_name = "source_topic_ids"]; // 待并入的话题
+  string reason = 3 [json_name = "reason"]; // 合并原因（审计必填）
+}
+
+message MergeTopicsResponse {
+  int32 merged_count = 1 [json_name = "merged_count"]; // 实际并入的来源条目总数
+}
+
+// —— 复核队列 ——
+
+message ListNeedsReviewRequest {
+  int32 page = 1 [json_name = "page"];
+  int32 page_size = 2 [json_name = "page_size"];
+}
+
+message ListNeedsReviewResponse {
+  repeated TopicItem items = 1 [json_name = "items"];
+  int64 total = 2 [json_name = "total"];
+}
+
+// —— 复核确认 ——
+
+message AckReviewRequest {
+  string topic_id = 1 [json_name = "topic_id"];
+  // action: "confirm"（确认归并正确，needs_review=false）/
+  //         "split"（确认归并错误，引导拆分对话框，needs_review 保持 true）
+  string action = 2 [json_name = "action"];
+}
+
+message AckReviewResponse {
+  bool ok = 1 [json_name = "ok"];
+}
+
+// —— 话题详情（含来源列表，供拆分选择） ——
+
+message GetTopicDetailRequest {
+  string topic_id = 1 [json_name = "topic_id"];
+}
+
+message GetTopicDetailResponse {
+  TopicItem topic = 1 [json_name = "topic"];
+  repeated TopicSourceItem sources = 2 [json_name = "sources"];
+}
+
+// TopicAdminService 话题人工管理（合并/拆分/复核）。
+service TopicAdminService {
+  rpc ListNeedsReview(ListNeedsReviewRequest) returns (ListNeedsReviewResponse) {
+    option (google.api.http) = { get: "/api/v1/media/tt/topics/needs-review" };
+  }
+  rpc GetTopicDetail(GetTopicDetailRequest) returns (GetTopicDetailResponse) {
+    option (google.api.http) = { get: "/api/v1/media/tt/topics/{topic_id}/detail" };
+  }
+  rpc SplitTopic(SplitTopicRequest) returns (SplitTopicResponse) {
+    option (google.api.http) = { post: "/api/v1/media/tt/topics/{topic_id}/split" body: "*" };
+  }
+  rpc MergeTopics(MergeTopicsRequest) returns (MergeTopicsResponse) {
+    option (google.api.http) = { post: "/api/v1/media/tt/topics/merge" body: "*" };
+  }
+  rpc AckReview(AckReviewRequest) returns (AckReviewResponse) {
+    option (google.api.http) = { post: "/api/v1/media/tt/topics/{topic_id}/ack-review" body: "*" };
+  }
+}

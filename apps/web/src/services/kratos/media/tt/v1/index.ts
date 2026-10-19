@@ -2,6 +2,211 @@
 /* eslint-disable camelcase */
 // @ts-nocheck
 
+// TopicItem 话题视图（列表/详情共用）。
+export type TopicItem = {
+  topic_id: string | undefined;
+  label: string | undefined;
+  category: string | undefined;
+  stage: string | undefined;
+  heat_score: number | undefined;
+  velocity: number | undefined;
+  platform_count: number | undefined;
+  merge_lock: boolean | undefined;
+  needs_review: boolean | undefined;
+  is_archived: boolean | undefined;
+  first_seen_at: wellKnownTimestamp | undefined;
+  last_seen_at: wellKnownTimestamp | undefined;
+  source_count: number | undefined;
+};
+
+// Encoded using RFC 3339, where generated output will always be Z-normalized
+// and uses 0, 3, 6 or 9 fractional digits.
+// Offsets other than "Z" are also accepted.
+type wellKnownTimestamp = string;
+
+// TopicSourceItem 话题来源条目（拆分对话框数据源）。
+export type TopicSourceItem = {
+  intel_id: string | undefined;
+  platform: string | undefined;
+  contributed_at: wellKnownTimestamp | undefined;
+  similarity: number | undefined;
+  cluster_key: string | undefined;
+  moved_by: string | undefined;
+};
+
+export type SplitTopicRequest = {
+  topic_id: string | undefined;
+  intel_ids: string[] | undefined;
+  reason: string | undefined;
+};
+
+export type SplitTopicResponse = {
+  new_topic_id: string | undefined;
+};
+
+export type MergeTopicsRequest = {
+  target_topic_id: string | undefined;
+  source_topic_ids: string[] | undefined;
+  reason: string | undefined;
+};
+
+export type MergeTopicsResponse = {
+  merged_count: number | undefined;
+};
+
+export type ListNeedsReviewRequest = {
+  page: number | undefined;
+  page_size: number | undefined;
+};
+
+export type ListNeedsReviewResponse = {
+  items: TopicItem[] | undefined;
+  total: number | undefined;
+};
+
+export type AckReviewRequest = {
+  topic_id: string | undefined;
+  // action: "confirm"（确认归并正确，needs_review=false）/
+  // "split"（确认归并错误，引导拆分对话框，needs_review 保持 true）
+  action: string | undefined;
+};
+
+export type AckReviewResponse = {
+  ok: boolean | undefined;
+};
+
+export type GetTopicDetailRequest = {
+  topic_id: string | undefined;
+};
+
+export type GetTopicDetailResponse = {
+  topic: TopicItem | undefined;
+  sources: TopicSourceItem[] | undefined;
+};
+
+// TopicAdminService 话题人工管理（合并/拆分/复核）。
+export interface TopicAdminService {
+  ListNeedsReview(request: ListNeedsReviewRequest): Promise<ListNeedsReviewResponse>;
+  GetTopicDetail(request: GetTopicDetailRequest): Promise<GetTopicDetailResponse>;
+  SplitTopic(request: SplitTopicRequest): Promise<SplitTopicResponse>;
+  MergeTopics(request: MergeTopicsRequest): Promise<MergeTopicsResponse>;
+  AckReview(request: AckReviewRequest): Promise<AckReviewResponse>;
+}
+
+type RequestType = {
+  path: string;
+  method: string;
+  body: string | null;
+};
+
+type RequestHandler = (request: RequestType, meta: { service: string, method: string }) => Promise<unknown>;
+
+export function createTopicAdminServiceClient(
+  handler: RequestHandler
+): TopicAdminService {
+  return {
+    ListNeedsReview(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/tt/topics/needs-review`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(`page=${encodeURIComponent(request.page.toString())}`)
+      }
+      if (request.page_size) {
+        queryParams.push(`page_size=${encodeURIComponent(request.page_size.toString())}`)
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "TopicAdminService",
+        method: "ListNeedsReview",
+      }) as Promise<ListNeedsReviewResponse>;
+    },
+    GetTopicDetail(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.topic_id) {
+        throw new Error("missing required field request.topic_id");
+      }
+      const path = `api/v1/media/tt/topics/${request.topic_id}/detail`; // eslint-disable-line quotes
+      const body = null;
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "GET",
+        body,
+      }, {
+        service: "TopicAdminService",
+        method: "GetTopicDetail",
+      }) as Promise<GetTopicDetailResponse>;
+    },
+    SplitTopic(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.topic_id) {
+        throw new Error("missing required field request.topic_id");
+      }
+      const path = `api/v1/media/tt/topics/${request.topic_id}/split`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "TopicAdminService",
+        method: "SplitTopic",
+      }) as Promise<SplitTopicResponse>;
+    },
+    MergeTopics(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/v1/media/tt/topics/merge`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "TopicAdminService",
+        method: "MergeTopics",
+      }) as Promise<MergeTopicsResponse>;
+    },
+    AckReview(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.topic_id) {
+        throw new Error("missing required field request.topic_id");
+      }
+      const path = `api/v1/media/tt/topics/${request.topic_id}/ack-review`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "TopicAdminService",
+        method: "AckReview",
+      }) as Promise<AckReviewResponse>;
+    },
+  };
+}
 // TrendSeries 是 TT 的核心契约（评审 B-2：此前完全缺失，本文件补全）。
 export type TrendSeries = {
   api_version: string | undefined;
@@ -102,11 +307,6 @@ export type CandidateScore = {
   total: number | undefined;
 };
 
-// Encoded using RFC 3339, where generated output will always be Z-normalized
-// and uses 0, 3, 6 or 9 fractional digits.
-// Offsets other than "Z" are also accepted.
-type wellKnownTimestamp = string;
-
 // Alert 是突发告警（契约 §7）。
 export type Alert = {
   api_version: string | undefined;
@@ -159,14 +359,6 @@ export interface TrendWeightService {
   GetHeatWeights(request: GetHeatWeightsRequest): Promise<GetHeatWeightsResponse>;
   UpdateHeatWeights(request: UpdateHeatWeightsRequest): Promise<WeightView>;
 }
-
-type RequestType = {
-  path: string;
-  method: string;
-  body: string | null;
-};
-
-type RequestHandler = (request: RequestType, meta: { service: string, method: string }) => Promise<unknown>;
 
 export function createTrendWeightServiceClient(
   handler: RequestHandler
