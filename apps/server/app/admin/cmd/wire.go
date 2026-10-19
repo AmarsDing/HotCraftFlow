@@ -20,6 +20,7 @@ import (
 	"framework/app/admin/internal/service"
 	"framework/app/admin/internal/worker"
 	icworker "framework/app/admin/internal/worker/ic"
+	mapworker "framework/app/admin/internal/worker/map"
 	miaworker "framework/app/admin/internal/worker/mia"
 	mmeworker "framework/app/admin/internal/worker/mme"
 	ttworker "framework/app/admin/internal/worker/tt"
@@ -48,10 +49,11 @@ func wireApp(bc *conf.Bootstrap, ttb *biztt.Conf, mc *bizpublish.Conf, mpconfs p
 		// ③ MIA 市场影响（查询服务链 + NATS 消费/双调度）
 		bizmia.ProviderSet,
 		miaworker.ProviderSet,
-		// ⑤ MAP 媒体发布矩阵（审批门/账号池/适配器注册表；mc/mpconfs 由 main 从 map.yaml/platforms.yaml scan）
+		// ⑤ MAP 媒体发布矩阵（审批门/账号池/适配器注册表/排期到点发；mc/mpconfs 由 main 从 map.yaml/platforms.yaml scan）
 		bizpublish.ProviderSet,
 		pubdata.ProviderSet,
 		publishadapters.ProviderSet,
+		mapworker.ProviderSet,
 		// ④ MME 短视频矩阵混剪（任务/素材/展开/渲染规划/QC/差异化/分发）
 		bizmme.ProviderSet,
 		//   worker 侧：mme_render 专用 asynq 队列 + 契约事件发布（TaskEnqueuer/EventPublisher 真实 adapter）

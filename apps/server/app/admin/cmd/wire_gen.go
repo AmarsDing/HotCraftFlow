@@ -191,6 +191,9 @@ func wireApp(bc *conf.Bootstrap, ttb *tt.Conf, mc *publish.Conf, mpconfs publish
 	entWeightConfigRepo := ttdata.NewEntWeightConfigRepo(entClient, logger)
 	weightUsecase := tt.NewWeightUsecase(entWeightConfigRepo, logger)
 	ttWeightService := service.NewTtWeightService(weightUsecase, logger)
+	entTopicAdminRepo := ttdata.NewEntTopicAdminRepo(entClient, logger)
+	topicAdminUsecase := tt.NewTopicAdminUsecase(entTopicAdminRepo)
+	ttTopicAdminService := service.NewTtTopicAdminService(topicAdminUsecase, logger)
 	intelSourceRepo := data.NewIntelSourceRepo(dataData, logger)
 	icSourceUsecase := biz.NewIcSourceUsecase(intelSourceRepo, logger)
 	icConfig := biz.NewIcConfig(bc)
@@ -282,7 +285,7 @@ func wireApp(bc *conf.Bootstrap, ttb *tt.Conf, mc *publish.Conf, mpconfs publish
 	templateUsecase := mme.NewTemplateUsecase(mmeConfig, templateRepo, logger)
 	mmeVariantService := service.NewMmeVariantService(variantSetUsecase, templateUsecase, logger)
 	mmeRenderService := service.NewMmeRenderService(renderPlanner, logger)
-	httpServer := server.NewRESTServer(bc, logger, tp, authenticator, authorizer, dataData, adminOperationLogRepo, adminLoginLogRepo, userTokenCacheRepo, dataPermissionUsecase, authenticationService, userService, menuService, routerService, organizationService, roleService, positionService, dictService, departmentService, adminLoginLogService, adminOperationLogService, ossService, uEditorService, fileService, tenantService, taskService, notificationMessageService, notificationMessageCategoryService, notificationMessageRecipientService, privateMessageService, adminLoginRestrictionService, toolLinkService, toolLinkCategoryService, userProfileService, apiResourceService, seedService, sessionService, systemConfigService, dataPermissionService, roleDeptService, userPermissionService, userIOService, radarTrendingService, radarRepoService, radarWatchService, radarNotifyService, radarConfigService, miaMappingService, miaEventService, miaImpactService, ttWeightService, icSourceService, icIntelService, icCollectorService, mapService, mmeTaskService, mmeVariantService, mmeRenderService, mmeConfig, localStorage)
+	httpServer := server.NewRESTServer(bc, logger, tp, authenticator, authorizer, dataData, adminOperationLogRepo, adminLoginLogRepo, userTokenCacheRepo, dataPermissionUsecase, authenticationService, userService, menuService, routerService, organizationService, roleService, positionService, dictService, departmentService, adminLoginLogService, adminOperationLogService, ossService, uEditorService, fileService, tenantService, taskService, notificationMessageService, notificationMessageCategoryService, notificationMessageRecipientService, privateMessageService, adminLoginRestrictionService, toolLinkService, toolLinkCategoryService, userProfileService, apiResourceService, seedService, sessionService, systemConfigService, dataPermissionService, roleDeptService, userPermissionService, userIOService, radarTrendingService, radarRepoService, radarWatchService, radarNotifyService, radarConfigService, miaMappingService, miaEventService, miaImpactService, ttWeightService, ttTopicAdminService, icSourceService, icIntelService, icCollectorService, mapService, mmeTaskService, mmeVariantService, mmeRenderService, mmeConfig, localStorage)
 	taskWorker := server.NewTaskWorker(asynqServer, taskUsecase, sessionUsecase, logger)
 	siteMsgSubscriber := worker.NewSiteMsgSubscriber(coreServer, notificationMessageRepo, redisClient, logger)
 	logRetentionWorker := worker.NewLogRetentionWorker(adminOperationLogRepo, adminLoginLogRepo, logger)
@@ -294,7 +297,15 @@ func wireApp(bc *conf.Bootstrap, ttb *tt.Conf, mc *publish.Conf, mpconfs publish
 	redisEngHistogram := ttdata.NewRedisEngHistogram(client, logger)
 	redisDynamicsStore := ttdata.NewRedisDynamicsStore(client, logger)
 	heatEnricher := tt.NewHeatEnricher(ttb, entTopicRepo, redisEngHistogram, redisDynamicsStore, entWeightConfigRepo, logger)
-	ingestUsecase := tt.NewIngestUsecase(ttb, entTopicRepo, redisGuardStore, natsSnapshotPublisher, redisClient, heatEnricher, logger)
+	entClusterRepo := ttdata.NewEntClusterRepo(entClient, logger)
+	clusterUsecase, err := tt.NewClusterUsecase(entClusterRepo, entTopicRepo, entClusterRepo, nil, tt.DefaultClusterConf(), tt.DefaultClusterConfExtra())
+	if err != nil {
+		cleanup3()
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	ingestUsecase := tt.NewIngestUsecase(ttb, entTopicRepo, redisGuardStore, natsSnapshotPublisher, redisClient, heatEnricher, clusterUsecase, logger)
 	ingestSubscriber := ttworker.NewIngestSubscriber(ttb, coreServer, ingestUsecase, logger)
 	influxTS, cleanup4 := ttdata.NewInfluxTS(ttb, logger)
 	redisSnapshotBuffer, err := ttdata.NewRedisSnapshotBuffer(ttb, client, logger)
@@ -309,6 +320,16 @@ func wireApp(bc *conf.Bootstrap, ttb *tt.Conf, mc *publish.Conf, mpconfs publish
 	writerUsecase := tt.NewWriterUsecase(ttb, influxSink, logger)
 	snapshotWriter := ttworker.NewSnapshotWriter(ttb, coreServer, writerUsecase, logger)
 	bufferReplay := ttworker.NewBufferReplay(ttb, redisSnapshotBuffer, influxTS, logger)
+	entLifecycleRepo := ttdata.NewEntLifecycleRepo(entClient, logger)
+	lifecycleEvaluator, err := tt.NewLifecycleEvaluator(entLifecycleRepo, influxTS, ttb.Lifecycle.Rules)
+	if err != nil {
+		cleanup4()
+		cleanup3()
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	lifecycleWorker := ttworker.NewLifecycleWorker(ttb, lifecycleEvaluator, logger)
 	sentimentOrchestrator := data.NewMiaSentimentOrchestrator(bc, redisClient, logger)
 	natsImpactPublisher := miaworker.NewNatsImpactPublisher(coreServer, logger)
 	webhookSender := data.NewMiaWebhookSender(bc, logger)
@@ -322,7 +343,7 @@ func wireApp(bc *conf.Bootstrap, ttb *tt.Conf, mc *publish.Conf, mpconfs publish
 	mmeRenderWorker := mmeworker.NewMmeRenderWorker(renderQueue, coreServer, mmeTaskUsecase, toolUsecase, logger)
 	scheduler := icworker.NewScheduler(asynqServer, icConfig, intelSourceRepo, intelItemRepo, intelClusterRepo, evidenceRepo, fsEvidenceStore, icCollectUsecase, icNormalizeUsecase, logger)
 	normalizerConsumer := icworker.NewNormalizerConsumer(coreServer, icConfig, icNormalizeUsecase, logger)
-	app := newApp(logger, registrar, httpServer, coreServer, asynqServer, taskWorker, siteMsgSubscriber, logRetentionWorker, radarEventRetentionWorker, ingestSubscriber, snapshotWriter, bufferReplay, intelSubscriber, miaEquityScheduler, miaCryptoScheduler, renderQueue, mmeRenderWorker, scheduler, normalizerConsumer)
+	app := newApp(logger, registrar, httpServer, coreServer, asynqServer, taskWorker, siteMsgSubscriber, logRetentionWorker, radarEventRetentionWorker, ingestSubscriber, snapshotWriter, bufferReplay, lifecycleWorker, intelSubscriber, miaEquityScheduler, miaCryptoScheduler, renderQueue, mmeRenderWorker, scheduler, normalizerConsumer)
 	return app, func() {
 		cleanup4()
 		cleanup3()
