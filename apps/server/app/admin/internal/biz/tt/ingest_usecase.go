@@ -200,9 +200,9 @@ func (uc *IngestUsecase) HandleIntelData(ctx context.Context, data []byte) (Hand
 		heatMeta, enriched = meta, true
 	}
 
-	// 9) 迟到标记（写 Redis 标记占位；重算 worker 随后续里程碑落地后扫描消费）。
+	// 9) 迟到标记（Redis SET 首迟到样本时间为值；重算 worker 扫描消费，S-23/A-14）。
 	if kind == TimeLate {
-		uc.markRecompute(ctx, topicID)
+		uc.markRecompute(ctx, topicID, t)
 	}
 
 	// 10) 发布快照事件；失败 → ResultError → NAK 重投（不重发已去重 event_id，第 7 步守卫兜底幂等）。
@@ -347,12 +347,18 @@ func detectLang(title string) string {
 }
 
 // markRecompute 迟到回填重算标记（A-14：重算区间 [t_late, now] 内的派生指标）。
-// M1 仅落标记 + 计数；M2/M3 的 analytics 链路组装重算 worker。
-func (uc *IngestUsecase) markRecompute(ctx context.Context, topicID string) {
+// 值为窗口种子：首迟到样本的 unix 秒（SET NX 语义由「已有值不覆盖」模拟——
+// 已有标记说明该话题在排队，窗口起点取最早迟到点；覆盖会把窗口起点右移漏点）。
+func (uc *IngestUsecase) markRecompute(ctx context.Context, topicID string, lateAt time.Time) {
 	if uc.redis == nil || !uc.redis.IsConfigured() {
 		return
 	}
-	if err := uc.redis.SetStringEX(ctx, RecomputeMarkKey(topicID), "1", 7*24*time.Hour); err != nil {
+	key := RecomputeMarkKey(topicID)
+	// 已有值 = 更早的迟到点排队中：仅在无值/占位 "1" 时写入种子（最早者胜出）。
+	if cur, err := uc.redis.GetString(ctx, key); err == nil && cur != "" && cur != "1" {
+		return
+	}
+	if err := uc.redis.SetStringEX(ctx, key, fmt.Sprintf("%d", lateAt.UTC().Unix()), 7*24*time.Hour); err != nil {
 		uc.log.Warnf("mark recompute for %s failed: %v", topicID, err)
 	}
 }

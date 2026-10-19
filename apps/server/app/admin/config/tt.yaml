@@ -66,6 +66,12 @@ tt:
       rising_min_streak: 2
       decay_min_streak: 3
 
+  # M3-f 迟到回填重算 worker（S-23/A-14：扫描 tt:recompute:* 标记 → 分平台
+  # 回放 EWMA 链覆盖写 [t_late, now] 派生指标；重算期间 recompute_lock 抑制评估）。
+  recompute:
+    interval: 5m                    # 扫描周期（标记为 Redis SET 占位，扫描幂等）
+    scan_limit: 200                 # 单轮处理标记上限（超出留下轮）
+
   # M2 归一化参数（03 §2.1 + 评审 A-3/A-4/A-5/S-7 终稿口径；
   # 权重本身不在此——权重走 tt_weight_configs 表 + 权重配置页 API，A-15）。
   heat:

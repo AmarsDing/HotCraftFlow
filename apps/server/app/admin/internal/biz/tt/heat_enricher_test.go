@@ -54,6 +54,9 @@ type fakeHist struct {
 func (f fakeHist) ObserveAndPercentile(context.Context, string, string, time.Time, float64) (float64, int64, error) {
 	return f.pct, f.n, f.err
 }
+func (f fakeHist) ReadPercentile(context.Context, string, string, time.Time, float64) (float64, error) {
+	return 0.5, f.err // S-23 迟到回填只读分位（本测试不触）
+}
 
 type fakeDynStore struct {
 	prev   *DynamicsState

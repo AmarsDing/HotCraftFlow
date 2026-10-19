@@ -7,9 +7,9 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/tx7do/go-utils/entgo"
 
+	biztt "framework/app/admin/internal/biz/tt"
 	"framework/app/admin/internal/data/ent"
 	"framework/app/admin/internal/data/ent/topic"
-	biztt "framework/app/admin/internal/biz/tt"
 )
 
 // defaultLifecycleScanLimit ListActiveTopics 的兜底批量（limit≤0 时用）。
@@ -50,6 +50,8 @@ func (r *EntLifecycleRepo) ListActiveTopics(ctx context.Context, limit int) ([]b
 			topic.MergeLockEQ(false),
 			topic.StageNEQ(topic.StageDormant),
 		).
+		Select(topic.FieldTopicID, topic.FieldStage, topic.FieldStageSince,
+			topic.FieldStageDurationPoints, topic.FieldFirstSeenAt).
 		Order(ent.Asc(topic.FieldTopicID)).
 		Limit(limit).
 		All(ctx)
@@ -64,10 +66,27 @@ func (r *EntLifecycleRepo) ListActiveTopics(ctx context.Context, limit int) ([]b
 			Stage:               biztt.Stage(t.Stage),
 			StageSince:          t.StageSince.UTC(), // Optional 未配 Nillable：NULL 读为零值
 			StageDurationPoints: t.StageDurationPoints,
+			FirstSeenAt:         t.FirstSeenAt.UTC(), // A-8 AgeDays 锚点（H4）
 		}
 		out = append(out, row)
 	}
 	return out, nil
+}
+
+// GetFirstSeenAt 读主题首见时间（A-8 AgeDays 锚点）。未找到返回零值 + nil，
+// 组装侧退化为最新样本时间（AgeDays≈0，保守不迁老话题分支）。
+func (r *EntLifecycleRepo) GetFirstSeenAt(ctx context.Context, topicID string) (time.Time, error) {
+	t, err := r.cli.Client().Topic.Query().
+		Where(topic.TopicID(topicID)).
+		Select(topic.FieldFirstSeenAt).
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return time.Time{}, nil
+		}
+		return time.Time{}, err
+	}
+	return t.FirstSeenAt.UTC(), nil
 }
 
 // UpdateStage 条件更新阶段三元组 + stage_evidence JSON 落库（A-8 证据可追溯）。

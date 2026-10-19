@@ -330,6 +330,9 @@ func wireApp(bc *conf.Bootstrap, ttb *tt.Conf, mc *publish.Conf, mpconfs publish
 		return nil, nil, err
 	}
 	lifecycleWorker := ttworker.NewLifecycleWorker(ttb, lifecycleEvaluator, logger)
+	entRecomputeRepo := ttdata.NewEntRecomputeRepo(entClient, logger)
+	recomputeUsecase := tt.NewRecomputeUsecase(ttb, entRecomputeRepo, entTopicRepo, influxTS, redisDynamicsStore, redisEngHistogram, entWeightConfigRepo, redisClient, entClusterRepo, logger)
+	recomputeWorker := ttworker.NewRecomputeWorker(ttb, recomputeUsecase, logger)
 	sentimentOrchestrator := data.NewMiaSentimentOrchestrator(bc, redisClient, logger)
 	natsImpactPublisher := miaworker.NewNatsImpactPublisher(coreServer, logger)
 	webhookSender := data.NewMiaWebhookSender(bc, logger)
@@ -343,7 +346,7 @@ func wireApp(bc *conf.Bootstrap, ttb *tt.Conf, mc *publish.Conf, mpconfs publish
 	mmeRenderWorker := mmeworker.NewMmeRenderWorker(renderQueue, coreServer, mmeTaskUsecase, toolUsecase, logger)
 	scheduler := icworker.NewScheduler(asynqServer, icConfig, intelSourceRepo, intelItemRepo, intelClusterRepo, evidenceRepo, fsEvidenceStore, icCollectUsecase, icNormalizeUsecase, logger)
 	normalizerConsumer := icworker.NewNormalizerConsumer(coreServer, icConfig, icNormalizeUsecase, logger)
-	app := newApp(logger, registrar, httpServer, coreServer, asynqServer, taskWorker, siteMsgSubscriber, logRetentionWorker, radarEventRetentionWorker, ingestSubscriber, snapshotWriter, bufferReplay, lifecycleWorker, intelSubscriber, miaEquityScheduler, miaCryptoScheduler, renderQueue, mmeRenderWorker, scheduler, normalizerConsumer)
+	app := newApp(logger, registrar, httpServer, coreServer, asynqServer, taskWorker, siteMsgSubscriber, logRetentionWorker, radarEventRetentionWorker, ingestSubscriber, snapshotWriter, bufferReplay, lifecycleWorker, recomputeWorker, intelSubscriber, miaEquityScheduler, miaCryptoScheduler, renderQueue, mmeRenderWorker, scheduler, normalizerConsumer)
 	return app, func() {
 		cleanup4()
 		cleanup3()

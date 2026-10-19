@@ -28,6 +28,10 @@ type LifecycleWorker struct {
 	mu     sync.Mutex
 	stopCh chan struct{}
 	wg     sync.WaitGroup
+
+	// stopOnce 幂等关停守卫（B-25 评审：双调用方重复 Stop 时 close 已关通道
+	// 会 panic 阻断优雅停机链路；sync.Once 收敛为单次语义）。
+	stopOnce sync.Once
 }
 
 // NewLifecycleWorker 构造。evaluator 构造失败（配置红线）向上抛，wire 期即败，
@@ -57,8 +61,11 @@ func (w *LifecycleWorker) Start(ctx context.Context) error {
 }
 
 // Stop 停止循环（等当前轮结束；单轮有超时，不会悬挂）。
+// stopOnce 保证重复调用幂等（close 已关通道 panic 被收敛）。
 func (w *LifecycleWorker) Stop(ctx context.Context) error {
-	close(w.stopCh)
+	w.stopOnce.Do(func() {
+		close(w.stopCh)
+	})
 	w.wg.Wait()
 	w.log.Info("tt lifecycle worker stopped")
 	return nil
@@ -102,13 +109,21 @@ func (w *LifecycleWorker) scanOnce() {
 		return
 	}
 
+	// M1 修复：一轮 sweep 的近 24h 热度分位只算一次（全体活跃话题共享同一
+	// (from,to) 窗口），注入各 EvaluateOne，不再每话题全量扫 24h 聚合。
+	now := time.Now().UTC()
+	quant, err := w.eval.ComputeQuantiles(ctx, now)
+	if err != nil {
+		w.log.Warnf("compute quantiles failed: %v", err)
+		// 分位不可得：传 nil 由各 EvaluateOne 现场计算/降级，不致整轮停摆。
+	}
+
 	conc := w.conf.Lifecycle.Concurrency
 	if conc <= 0 {
 		conc = 8
 	}
 	sem := make(chan struct{}, conc)
 	var wg sync.WaitGroup
-	now := time.Now().UTC()
 	for _, row := range rows {
 		select {
 		case <-ctx.Done():
@@ -120,7 +135,7 @@ func (w *LifecycleWorker) scanOnce() {
 		go func(row biztt.LifecycleTopicRow) {
 			defer wg.Done()
 			defer func() { <-sem }()
-			changed, err := w.eval.EvaluateOne(ctx, row, now)
+			changed, err := w.eval.EvaluateOne(ctx, row, now, quant)
 			switch {
 			case err != nil:
 				biztt.LifecycleEvalTotal.WithLabelValues("error").Inc()

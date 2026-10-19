@@ -27,6 +27,9 @@ type BufferReplay struct {
 	mu     sync.Mutex
 	stopCh chan struct{}
 	wg     sync.WaitGroup
+
+	// stopOnce 幂等关停守卫（B-25：重复 Stop 时 close 已关通道会 panic；Once 收敛）。
+	stopOnce sync.Once
 }
 
 // NewBufferReplay 构造。
@@ -56,7 +59,9 @@ func (w *BufferReplay) Start(ctx context.Context) error {
 
 // Stop 停止循环（等当前轮结束）。
 func (w *BufferReplay) Stop(ctx context.Context) error {
-	close(w.stopCh)
+	w.stopOnce.Do(func() {
+		close(w.stopCh)
+	})
 	w.wg.Wait()
 	w.log.Info("tt buffer replay stopped")
 	return nil

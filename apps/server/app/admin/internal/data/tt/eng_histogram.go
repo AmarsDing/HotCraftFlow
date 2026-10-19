@@ -131,6 +131,59 @@ func (h *RedisEngHistogram) ObserveAndPercentile(
 	return pct, n, nil
 }
 
+// ReadPercentile 只读分位（不 HINCRBY；S-23 迟到回填重算用——迟到点已由
+// ingest 观测过当日键，重算再观测会双倍计数）。窗口数据为空或故障返回 -1。
+// category 为空串时无法定位日键，直接返回 -1（调用方保留原值）。
+func (h *RedisEngHistogram) ReadPercentile(
+	ctx context.Context, platform, category string, t time.Time, engagement float64,
+) (float64, error) {
+	if h.rdb == nil {
+		return -1, errRedisDisabled
+	}
+	if category == "" {
+		return -1, nil
+	}
+	t = t.UTC()
+	b := engBucket(engagement)
+
+	// 合并窗口内 7 个日键（与 ObserveAndPercentile 同一查询路径，仅差写入步）。
+	counts := make([]int64, engHistBuckets)
+	for i := 0; i < engHistWindowDays; i++ {
+		key := engHistKey(platform, category, t.AddDate(0, 0, -i))
+		fields, err := h.rdb.HGetAll(ctx, key).Result()
+		if err != nil {
+			return -1, fmt.Errorf("read window key %s: %w", key, err)
+		}
+		for f, cs := range fields {
+			bi, cerr := strconv.Atoi(f)
+			if cerr != nil || bi < 0 || bi >= engHistBuckets {
+				continue
+			}
+			c, cerr := strconv.ParseInt(cs, 10, 64)
+			if cerr != nil {
+				continue
+			}
+			counts[bi] += c
+		}
+	}
+
+	var below, total int64
+	for bi, c := range counts {
+		total += c
+		if bi < b {
+			below += c
+		}
+	}
+	if total == 0 {
+		return -1, nil // 无窗口数据：调用方保留原值（口径不随空窗跳变）
+	}
+	pct := (float64(below) + 0.5*float64(counts[b])) / float64(total)
+	if pct > 1 {
+		pct = 1
+	}
+	return pct, nil
+}
+
 // errRedisDisabled Redis 未配置（与 buffer/guard 的禁用语义一致，biz 层兜底）。
 var errRedisDisabled = fmt.Errorf("redis disabled")
 

@@ -99,4 +99,16 @@ var (
 		Name: "tt_cluster_fallback_total",
 		Help: "Step2-4 聚类决策计数（resolve_error=聚类失败降级新建；hit_merge/hit_review=归并命中）",
 	}, []string{"reason"})
+
+	// RecomputeTotal 迟到回填重算计数（result: ok/error/locked_skip；S-23/A-14）。
+	RecomputeTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "tt_recompute_total",
+		Help: "迟到回填重算话题计数（ok=完成, error=失败保留标记下轮重试, locked_skip=他人持锁）",
+	}, []string{"result"})
+
+	// RecomputePointsTotal 重算覆盖写点数（观测回填体量）。
+	RecomputePointsTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "tt_recompute_points_total",
+		Help: "迟到回填覆盖写的快照点总数（派生指标重算量观测）",
+	})
 )

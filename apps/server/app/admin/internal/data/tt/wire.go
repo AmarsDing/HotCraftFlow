@@ -32,6 +32,7 @@ var ProviderSet = wire.NewSet(
 	NewEntLifecycleRepo,
 	NewEntClusterRepo,
 	NewEntTopicAdminRepo,
+	NewEntRecomputeRepo,
 
 	wire.Bind(new(biztt.TimeSeries), new(*InfluxTS)),
 	wire.Bind(new(biztt.SnapshotBuffer), new(*RedisSnapshotBuffer)),
@@ -45,4 +46,6 @@ var ProviderSet = wire.NewSet(
 	wire.Bind(new(biztt.ClusterRepo), new(*EntClusterRepo)),
 	wire.Bind(new(biztt.NeedsReviewStore), new(*EntClusterRepo)),
 	wire.Bind(new(biztt.TopicAdminRepo), new(*EntTopicAdminRepo)),
+	wire.Bind(new(biztt.RecomputeRepo), new(*EntRecomputeRepo)),
+	wire.Bind(new(biztt.EntityIndexCleaner), new(*EntClusterRepo)),
 )

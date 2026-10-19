@@ -14,6 +14,7 @@ var ProviderSet = wire.NewSet(
 	NewSnapshotWriter,
 	NewBufferReplay,
 	NewLifecycleWorker,
+	NewRecomputeWorker,
 
 	wire.Bind(new(biztt.SnapshotPublisher), new(*NatsSnapshotPublisher)),
 )

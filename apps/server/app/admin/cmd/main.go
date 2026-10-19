@@ -64,6 +64,7 @@ func newApp(
 	ttSnapshotWriter *ttworker.SnapshotWriter,
 	ttBufferReplay *ttworker.BufferReplay,
 	ttLifecycleWorker *ttworker.LifecycleWorker,
+	ttRecomputeWorker *ttworker.RecomputeWorker,
 	miaIntelSub *miaworker.IntelSubscriber,
 	miaEquitySched *miaworker.MiaEquityScheduler,
 	miaCryptoSched *miaworker.MiaCryptoScheduler,
@@ -77,7 +78,7 @@ func newApp(
 	// MME 队列/worker 未配置 asynq 时 Start no-op（入队以 MME_QUEUE_UNAVAILABLE 如实报错），可无条件注册。
 	// IC 调度器/归一化消费者同样内部降级（ic.enabled=false 或 asynq/nats 缺失时 Start no-op）。
 	servers := []transport.Server{hs, coreSrv, taskWorker, siteMsgSub, logRetentionWorker, radarEventRetentionWorker,
-		ttIngestSub, ttSnapshotWriter, ttBufferReplay, ttLifecycleWorker, miaIntelSub, miaEquitySched, miaCryptoSched,
+		ttIngestSub, ttSnapshotWriter, ttBufferReplay, ttLifecycleWorker, ttRecomputeWorker, miaIntelSub, miaEquitySched, miaCryptoSched,
 		mmeQueue, mmeWorker,
 		icScheduler, icNormalizer}
 	if asynqSrv != nil {

@@ -43,6 +43,12 @@ type TimeSeries interface {
 	// ReadActiveHeatRange 读近 24h 全体活跃话题的 heat 序列（生命周期 P25/P99 分位用）。
 	// 返回 heat 值列表（0-100）；空窗口返回空切片（调用方禁用相对线）。
 	ReadActiveHeatRange(ctx context.Context, from, to time.Time) ([]float64, error)
+
+	// ReadPlatforms 列出某话题在 [from, to] 内有采样点的平台集合（迟到回填分平台回放用）。
+	ReadPlatforms(ctx context.Context, topicID string, from, to time.Time) ([]string, error)
+	// ReadSeriesAsc 按 t_bucket 升序读某话题某平台 [from, to] 内的完整快照点
+	// （迟到回填重放 EWMA 链用；返回点含全部 field，不足字段保持哨兵/零值）。
+	ReadSeriesAsc(ctx context.Context, topicID, platform string, from, to time.Time) ([]SnapshotPoint, error)
 }
 
 // SnapshotBuffer 写失败缓冲端口（A-16：Redis Stream 死信队列）。
@@ -175,6 +181,10 @@ type GuardStore interface {
 // 做冷启动判定（n < EngMinWindowN → 退化静态基线）。
 type EngHistogram interface {
 	ObserveAndPercentile(ctx context.Context, platform, category string, t time.Time, engagement float64) (pct float64, n int64, err error)
+	// ReadPercentile 只读分位（不 HINCRBY；S-23 迟到回填重算用——迟到点已由
+	// ingest 观测过当日键，重算再观测会双倍计数）。category 为话题分类（直方图日键
+	// 组成）。返回 -1 表示无窗口数据/故障（调用方保留原值）。
+	ReadPercentile(ctx context.Context, platform, category string, t time.Time, engagement float64) (float64, error)
 }
 
 // DynamicsStateStore 动态链状态端口（每 (topic, platform) 一条）。

@@ -11,4 +11,5 @@ var ProviderSet = wire.NewSet(
 	NewClusterUsecase,
 	NewTopicAdminUsecase,
 	NewLifecycleEvaluator,
+	NewRecomputeUsecase,
 )

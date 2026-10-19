@@ -21,6 +21,7 @@ type Conf struct {
 	Timezone  TimezoneConf        `json:"timezone"`
 	Heat      HeatConf            `json:"heat"`
 	Lifecycle LifecycleWorkerConf `json:"lifecycle"`
+	Recompute RecomputeWorkerConf `json:"recompute"`
 }
 
 // durationJSONPaths 登记 Conf 中所有 time.Duration 字段的 JSON 路径。
@@ -34,6 +35,7 @@ var durationJSONPaths = [][]string{
 	{"influx", "timeout"},
 	{"buffer", "replay_interval"},
 	{"lifecycle", "interval"},
+	{"recompute", "interval"},
 }
 
 // UnmarshalJSON 时长字面量 "24h" → 纳秒数的预归一（动机见 durationJSONPaths 注释）。
@@ -170,6 +172,14 @@ type TimezoneConf struct {
 	Display string `json:"display"`
 }
 
+// RecomputeWorkerConf 迟到回填重算 worker 运行参数（S-23/A-14）。
+type RecomputeWorkerConf struct {
+	// Interval 扫描周期（默认 5min；标记为 Redis SET 占位，扫描幂等）。
+	Interval time.Duration `json:"interval"`
+	// ScanLimit 单轮处理标记上限（防爆量；超出留下轮）。
+	ScanLimit int `json:"scan_limit"`
+}
+
 // LifecycleWorkerConf 生命周期评估 worker 运行参数（A-8 周期评估）。
 type LifecycleWorkerConf struct {
 	// Interval 评估周期（默认 15min，对齐采样桶节奏；重启幂等使周期错位无害）。
@@ -267,6 +277,10 @@ func DefaultConf() Conf {
 			ScanLimit:   500,
 			Concurrency: 8,
 			Rules:       DefaultLifecycleConf(),
+		},
+		Recompute: RecomputeWorkerConf{
+			Interval:  5 * time.Minute,
+			ScanLimit: 200,
 		},
 	}
 }
@@ -381,6 +395,12 @@ func (c *Conf) Normalize() {
 	}
 	// 规则零值逐项兜底（Rules 无整块零值判定——Validate 拒零值配置前须先填默认）。
 	c.Lifecycle.NormalizeLifecycleRules()
+	if c.Recompute.Interval <= 0 {
+		c.Recompute.Interval = d.Recompute.Interval
+	}
+	if c.Recompute.ScanLimit <= 0 {
+		c.Recompute.ScanLimit = d.Recompute.ScanLimit
+	}
 }
 
 // Validate 校验红线配置。
