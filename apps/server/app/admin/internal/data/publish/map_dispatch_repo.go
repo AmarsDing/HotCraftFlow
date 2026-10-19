@@ -191,6 +191,35 @@ func (r *EntDispatchRepo) ListScheduledBetween(ctx context.Context, from, to tim
 	return rows, nil
 }
 
+// ListPublishDue 到点扫描（worker/map 30s 轮询）：
+// local_worker 模式 + 已审批 + pending/failed + scheduled_for ≤ before。
+// 🔴 只读不改态——是否真正点火由 worker 侧拟人化偏移与执行器状态复核决定。
+func (r *EntDispatchRepo) ListPublishDue(ctx context.Context, before time.Time, limit int) ([]*bizpub.UnitRow, error) {
+	if limit <= 0 {
+		limit = 64
+	}
+	entities, err := r.cli.Client().MapDispatchUnit.Query().
+		Where(
+			mapdispatchunit.ScheduledForNotNil(),
+			mapdispatchunit.ScheduledForLTE(before.UTC()),
+			mapdispatchunit.ScheduleModeEQ(mapdispatchunit.ScheduleModeLocalWorker),
+			mapdispatchunit.ApprovalStateEQ(mapdispatchunit.ApprovalStateApproved),
+			mapdispatchunit.PublishStateIn(mapdispatchunit.PublishStatePending, mapdispatchunit.PublishStateFailed),
+		).
+		Order(ent.Asc(mapdispatchunit.FieldScheduledFor)).
+		Limit(limit).
+		All(ctx)
+	if err != nil {
+		r.log.Errorf("list map publish-due units failed: %v", err)
+		return nil, fmt.Errorf("%w: 查询到点单元失败", bizpub.ErrInternal)
+	}
+	rows := make([]*bizpub.UnitRow, 0, len(entities))
+	for _, e := range entities {
+		rows = append(rows, unitToRow(e))
+	}
+	return rows, nil
+}
+
 func unitToRow(e *ent.MapDispatchUnit) *bizpub.UnitRow {
 	return &bizpub.UnitRow{
 		ID:                       uint32(e.ID),

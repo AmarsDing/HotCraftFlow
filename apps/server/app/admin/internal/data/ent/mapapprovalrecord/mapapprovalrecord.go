@@ -149,8 +149,9 @@ const DefaultResult = ResultAllow
 
 // Result values.
 const (
-	ResultAllow Result = "allow"
-	ResultDeny  Result = "deny"
+	ResultAllow      Result = "allow"
+	ResultDeny       Result = "deny"
+	ResultDeadletter Result = "deadletter"
 )
 
 func (r Result) String() string {
@@ -160,7 +161,7 @@ func (r Result) String() string {
 // ResultValidator is a validator for the "result" field enum values. It is called by the builders before save.
 func ResultValidator(r Result) error {
 	switch r {
-	case ResultAllow, ResultDeny:
+	case ResultAllow, ResultDeny, ResultDeadletter:
 		return nil
 	default:
 		return fmt.Errorf("mapapprovalrecord: invalid enum value for result field: %q", r)

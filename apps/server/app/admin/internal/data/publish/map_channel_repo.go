@@ -82,6 +82,25 @@ func (r *EntChannelRepo) GetChannel(ctx context.Context, channelID string) (*biz
 	return channelToRow(e), nil
 }
 
+// ListChannelsByPlatform 直查指定平台的全部渠道（无分页、无 clampPage）。
+// 🔴 与 ListChannels 语义分离：后者是后台 REST 分页（pageSize>200 钳到 200 的 UI 护栏），
+// 内部「取平台全量」路径若误用后者会被静默截断（worker/map 回流曾如此）。
+func (r *EntChannelRepo) ListChannelsByPlatform(ctx context.Context, platform string) ([]*bizpub.ChannelRow, error) {
+	entities, err := r.cli.Client().MapPublishChannel.Query().
+		Where(mappublishchannel.PlatformKeyEQ(platform)).
+		Order(ent.Asc(mappublishchannel.FieldSlot), ent.Asc(mappublishchannel.FieldID)).
+		All(ctx)
+	if err != nil {
+		r.log.Errorf("list map channels by platform failed platform=%s: %v", platform, err)
+		return nil, fmt.Errorf("%w: 查询平台渠道失败", bizpub.ErrInternal)
+	}
+	rows := make([]*bizpub.ChannelRow, 0, len(entities))
+	for _, e := range entities {
+		rows = append(rows, channelToRow(e))
+	}
+	return rows, nil
+}
+
 // ListChannels 分页列出（create_time 倒序）。
 func (r *EntChannelRepo) ListChannels(ctx context.Context, pageNo, pageSize int) ([]*bizpub.ChannelRow, int, error) {
 	pageNo, pageSize = clampPage(pageNo, pageSize)

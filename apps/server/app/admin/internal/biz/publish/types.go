@@ -91,16 +91,16 @@ func (t Target) String() string { return t.Platform + ":" + t.Slot }
 
 // ChannelRow 平台渠道（map_publish_channels 业务视图）。
 type ChannelRow struct {
-	ID            uint32
-	ChannelID     string
-	PlatformKey   string
-	Slot          string
-	Region        string
-	Enabled       bool
-	Capability    map[string]any
+	ID             uint32
+	ChannelID      string
+	PlatformKey    string
+	Slot           string
+	Region         string
+	Enabled        bool
+	Capability     map[string]any
 	AdapterVersion *string
-	Priority      int
-	CreateTime    time.Time
+	Priority       int
+	CreateTime     time.Time
 }
 
 // AccountRow 账号（map_publish_accounts 业务视图；🔴 不含凭据明文/密文）。
@@ -261,6 +261,8 @@ type PerformanceSnapshotRow struct {
 	SnapshotID     string
 	ReceiptID      string
 	PlatformKey    string
+	DispatchUnitID *string // 回指分发单元（发布→表现→反哺选题闭环字段；可空）
+	VariantID      *string // 回指 MME 变体（同一闭环；worker 经单元回填，可空）
 	Views          int64
 	Likes          int64
 	Comments       int64

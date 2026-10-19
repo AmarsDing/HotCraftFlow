@@ -397,8 +397,9 @@ func (s *MapService) GetAnalytics(ctx context.Context, req *mapV1.GetAnalyticsRe
 		PlatformKey: receipt.PlatformKey,
 	}
 	if snap == nil {
-		// 🔴 诚实空态：拉取管道（mm.map.feedback.v1 / analytics worker）属 Phase 3。
-		view.Note = "表现数据尚未回流（拉取管道 Phase 3 未启用）；计数为 0 表示无数据而非真实为零"
+		// 🔴 诚实空态：拉取管道已落地（worker/map analytics），但总闸 feedback.enabled 默认关闭
+		// 或该回执尚无快照（30 天窗/平台未声明 analytics 能力）。
+		view.Note = "表现数据尚未回流（feedback.enabled 未开启或该回执尚无快照）；计数为 0 表示无数据而非真实为零"
 		return view, nil
 	}
 	view.Views = snap.Views
@@ -408,6 +409,13 @@ func (s *MapService) GetAnalytics(ctx context.Context, req *mapV1.GetAnalyticsRe
 	view.Favorites = snap.Favorites
 	view.CompletionRate = snap.CompletionRate
 	view.FetchedAt = timestamppb.New(snap.FetchedAt)
+	// 🔴 冻结态诚实标注：回执出回流扫描窗（bizpub.FeedbackScanWindow）后 worker 停止
+	// 追加快照（详细设计 §7.4），最新一行即窗口沿冻结值——不伪装新鲜，消费方按 fetched_at
+	// 判断陈旧度。窗口常量与 worker 同源，避免两侧口径漂移。
+	if receipt.PublishedAt.Before(time.Now().Add(-bizpub.FeedbackScanWindow)) {
+		view.Note = fmt.Sprintf("该回执已超出 %d 天回流窗（published_at=%s），快照停止更新；fetched_at 为最后一轮拉取时间，计数为冻结值",
+			int(bizpub.FeedbackScanWindow/(24*time.Hour)), receipt.PublishedAt.UTC().Format(time.RFC3339))
+	}
 	return view, nil
 }
 

@@ -6,6 +6,8 @@ import (
 	"sort"
 	"sync"
 	"time"
+
+	"framework/pkg/mediacontract"
 )
 
 // ============================================================================
@@ -49,12 +51,55 @@ func (f *fakeChannels) GetChannel(_ context.Context, channelID string) (*Channel
 	return nil, ErrNotFound
 }
 
-func (f *fakeChannels) ListChannels(_ context.Context, _, _ int) ([]*ChannelRow, int, error) {
+// ListChannels 分页副本（与 Ent 实现对齐：clampPage 护栏 + create_time 倒序 + 偏移/限长）。
+func (f *fakeChannels) ListChannels(_ context.Context, pageNo, pageSize int) ([]*ChannelRow, int, error) {
+	if pageNo < 1 {
+		pageNo = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+	if pageSize > 200 {
+		pageSize = 200
+	}
+	all := make([]*ChannelRow, 0, len(f.byID))
+	for _, r := range f.byID {
+		all = append(all, r)
+	}
+	// Ent 侧为 create_time 倒序；时间相同按 ID 倒序保确定性（DB 平局序未定义）。
+	sort.Slice(all, func(i, j int) bool {
+		if !all[i].CreateTime.Equal(all[j].CreateTime) {
+			return all[i].CreateTime.After(all[j].CreateTime)
+		}
+		return all[i].ID > all[j].ID
+	})
+	total := len(all)
+	start := (pageNo - 1) * pageSize
+	if start >= total {
+		return []*ChannelRow{}, total, nil
+	}
+	end := start + pageSize
+	if end > total {
+		end = total
+	}
+	return all[start:end], total, nil
+}
+
+// ListChannelsByPlatform 直查副本（与 Ent 实现对齐：平台谓词过滤、无分页钳制）。
+func (f *fakeChannels) ListChannelsByPlatform(_ context.Context, platform string) ([]*ChannelRow, error) {
 	out := make([]*ChannelRow, 0, len(f.byID))
 	for _, r := range f.byID {
-		out = append(out, r)
+		if r.PlatformKey == platform {
+			out = append(out, r)
+		}
 	}
-	return out, len(out), nil
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].Slot != out[j].Slot {
+			return out[i].Slot < out[j].Slot
+		}
+		return out[i].ID < out[j].ID
+	})
+	return out, nil
 }
 
 // ---------- Accounts ----------
@@ -319,6 +364,29 @@ func (f *fakeDispatch) ListScheduledBetween(_ context.Context, from, to time.Tim
 	return out, nil
 }
 
+// ListPublishDue 与 Ent 实现同谓词：local_worker + approved + pending/failed + scheduled_for ≤ before。
+func (f *fakeDispatch) ListPublishDue(_ context.Context, before time.Time, limit int) ([]*UnitRow, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	var out []*UnitRow
+	for _, r := range f.units {
+		if r.ScheduledFor == nil || r.ScheduledFor.After(before) {
+			continue
+		}
+		if r.ScheduleMode != "local_worker" || r.ApprovalState != string(mediacontract.ApprovalApproved) {
+			continue
+		}
+		if r.PublishState != "pending" && r.PublishState != "failed" {
+			continue
+		}
+		out = append(out, cloneUnit(r))
+		if limit > 0 && len(out) >= limit {
+			break
+		}
+	}
+	return out, nil
+}
+
 // ---------- Records ----------
 
 type fakeRecords struct {
@@ -431,6 +499,86 @@ func (f *fakeReceipts) CountReceiptsByPlatformSince(_ context.Context, platform 
 	return f.platformCnt[platform], nil
 }
 
+// ListReceiptsPublishedSince 谓词副本（与 Ent 实现对齐：≥since 且 post_id 非空，
+// published_at 倒序，limit<=0 默认 64——Ent 语义，fake 必须逐字复制）。
+func (f *fakeReceipts) ListReceiptsPublishedSince(_ context.Context, since time.Time, limit int) ([]*ReceiptRow, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if limit <= 0 {
+		limit = 64
+	}
+	out := make([]*ReceiptRow, 0, len(f.rows))
+	for _, r := range f.rows {
+		if r.PublishedAt.Before(since) || r.PostID == nil || *r.PostID == "" {
+			continue
+		}
+		out = append(out, r)
+	}
+	sort.Slice(out, func(i, j int) bool {
+		if !out[i].PublishedAt.Equal(out[j].PublishedAt) {
+			return out[i].PublishedAt.After(out[j].PublishedAt)
+		}
+		return out[i].ID > out[j].ID
+	})
+	if len(out) > limit {
+		out = out[:limit]
+	}
+	return out, nil
+}
+
+// ListReceiptsPublishedSinceBefore 分页谓词副本（M6）：published_at ∈ [since, before)。
+func (f *fakeReceipts) ListReceiptsPublishedSinceBefore(_ context.Context, since, before time.Time, limit int) ([]*ReceiptRow, error) {
+	if !before.IsZero() {
+		filtered := make([]*ReceiptRow, 0, len(f.rows))
+		for _, r := range f.rows {
+			if r.PublishedAt.Before(before) {
+				filtered = append(filtered, r)
+			}
+		}
+		saved := f.rows
+		f.rows = filtered
+		defer func() { f.rows = saved }()
+	}
+	return f.ListReceiptsPublishedSince(context.Background(), since, limit)
+}
+
+// ---------- Performance snapshots（FR-PUB-08） ----------
+
+type fakePerformance struct {
+	mu        sync.Mutex
+	bySnap    map[string]*PerformanceSnapshotRow
+	byReceipt map[string][]*PerformanceSnapshotRow
+	saveErr   error
+}
+
+func newFakePerformance() *fakePerformance {
+	return &fakePerformance{bySnap: map[string]*PerformanceSnapshotRow{}, byReceipt: map[string][]*PerformanceSnapshotRow{}}
+}
+
+func (f *fakePerformance) SaveSnapshot(_ context.Context, row *PerformanceSnapshotRow) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.saveErr != nil {
+		return f.saveErr
+	}
+	f.bySnap[row.SnapshotID] = row
+	f.byReceipt[row.ReceiptID] = append(f.byReceipt[row.ReceiptID], row)
+	return nil
+}
+
+func (f *fakePerformance) LatestByReceipt(_ context.Context, receiptID string) (*PerformanceSnapshotRow, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	list := f.byReceipt[receiptID]
+	var best *PerformanceSnapshotRow
+	for _, s := range list {
+		if best == nil || s.FetchedAt.After(best.FetchedAt) {
+			best = s
+		}
+	}
+	return best, nil
+}
+
 // ---------- Vault ----------
 
 type fakeVault struct {
@@ -532,8 +680,8 @@ type fakePublisher struct {
 
 func newSuccessPublisher(key string, order *[]string, mu *sync.Mutex) *fakePublisher {
 	return &fakePublisher{
-		key:  key,
-		mu:   mu,
+		key:   key,
+		mu:    mu,
 		order: order,
 		publishRes: &PublishResult{
 			PostID:      "post_" + key,
@@ -545,8 +693,8 @@ func newSuccessPublisher(key string, order *[]string, mu *sync.Mutex) *fakePubli
 	}
 }
 
-func (p *fakePublisher) PlatformKey() string          { return p.key }
-func (p *fakePublisher) Capability() Capability       { return p.capability }
+func (p *fakePublisher) PlatformKey() string    { return p.key }
+func (p *fakePublisher) Capability() Capability { return p.capability }
 func (p *fakePublisher) FetchAnalytics(context.Context, *AccountRow, string) (*Performance, error) {
 	return nil, errors.New("not implemented in fake")
 }

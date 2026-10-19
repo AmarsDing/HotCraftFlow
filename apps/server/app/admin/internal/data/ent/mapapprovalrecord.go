@@ -49,7 +49,7 @@ type MapApprovalRecord struct {
 	IP *string `json:"ip,omitempty"`
 	// 操作者 UA（可空）
 	UserAgent *string `json:"user_agent,omitempty"`
-	// 裁决：allow / deny（deny 即越权尝试痕迹，如自批/自动化/未审批发布）
+	// 裁决：allow / deny / deadletter（deny=越权尝试痕迹；deadletter=重试耗尽死信，草稿保留待人工重发）
 	Result       mapapprovalrecord.Result `json:"result,omitempty"`
 	selectValues sql.SelectValues
 }

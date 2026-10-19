@@ -143,6 +143,68 @@ func (r *EntReceiptRepo) CountReceiptsByPlatformSince(ctx context.Context, platf
 	return n, nil
 }
 
+// ListReceiptsPublishedSince 回流扫描源（worker/map 分析拉取管道）：
+// published_at ≥ since 且 post_id 非空（无 post_id = 平台无回执对象，无可拉取），
+// published_at 倒序（新鲜数据优先——批量受限时优先保新鲜轮次），限 limit。
+func (r *EntReceiptRepo) ListReceiptsPublishedSince(ctx context.Context, since time.Time, limit int) ([]*bizpub.ReceiptRow, error) {
+	// limit <= 0 → 默认 64（接口语义，见 biz/publish/ports.go；fake 必须复制本默认）。
+	if limit <= 0 {
+		limit = 64
+	}
+	entities, err := r.cli.Client().MapPublishReceipt.Query().
+		Where(
+			mappublishreceipt.PublishedAtGTE(since.UTC()),
+			mappublishreceipt.PostIDNotNil(),
+			mappublishreceipt.PostIDNEQ(""),
+		).
+		Order(ent.Desc(mappublishreceipt.FieldPublishedAt), ent.Desc(mappublishreceipt.FieldID)).
+		Limit(limit).
+		All(ctx)
+	if err != nil {
+		r.log.Errorf("list receipts for analytics pull failed since=%s: %v", since.Format(time.RFC3339), err)
+		return nil, fmt.Errorf("%w: 查询回流回执失败", bizpub.ErrInternal)
+	}
+	rows := make([]*bizpub.ReceiptRow, 0, len(entities))
+	for _, e := range entities {
+		rows = append(rows, receiptToRow(e))
+	}
+	return rows, nil
+}
+
+// ListReceiptsPublishedSinceBefore 分页变体（M6 修复）：published_at ∈ [since, before)
+// 且 post_id 非空，published_at 倒序，限 limit。worker/map 单轮内以「本页最旧
+// published_at」为下一页 before 游标翻页，把 30 天窗口拉满——此前无分页，>256 条
+// 时最老回执永远进不了任何一轮。before 为零值时退化为窗口上界 now（首页）。
+func (r *EntReceiptRepo) ListReceiptsPublishedSinceBefore(ctx context.Context, since, before time.Time, limit int) ([]*bizpub.ReceiptRow, error) {
+	if limit <= 0 {
+		limit = 64
+	}
+	q := r.cli.Client().MapPublishReceipt.Query().
+		Where(
+			mappublishreceipt.PublishedAtGTE(since.UTC()),
+			mappublishreceipt.PostIDNotNil(),
+			mappublishreceipt.PostIDNEQ(""),
+		)
+	if !before.IsZero() {
+		// 严格小于：上一页最旧行已在上一页处理，等值会重复拉同一行。
+		q = q.Where(mappublishreceipt.PublishedAtLT(before.UTC()))
+	}
+	entities, err := q.
+		Order(ent.Desc(mappublishreceipt.FieldPublishedAt), ent.Desc(mappublishreceipt.FieldID)).
+		Limit(limit).
+		All(ctx)
+	if err != nil {
+		r.log.Errorf("list receipts page for analytics pull failed since=%s before=%s: %v",
+			since.Format(time.RFC3339), before.Format(time.RFC3339), err)
+		return nil, fmt.Errorf("%w: 查询回流回执分页失败", bizpub.ErrInternal)
+	}
+	rows := make([]*bizpub.ReceiptRow, 0, len(entities))
+	for _, e := range entities {
+		rows = append(rows, receiptToRow(e))
+	}
+	return rows, nil
+}
+
 func receiptToRow(e *ent.MapPublishReceipt) *bizpub.ReceiptRow {
 	return &bizpub.ReceiptRow{
 		ID:                 uint32(e.ID),

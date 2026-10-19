@@ -1082,7 +1082,7 @@ var (
 		{Name: "visibility_at_action", Type: field.TypeString, Nullable: true, Comment: "动作时刻的可见性（private/unlisted/public）"},
 		{Name: "ip", Type: field.TypeString, Nullable: true, Comment: "操作者 IP（可空，内部调用无）"},
 		{Name: "user_agent", Type: field.TypeString, Nullable: true, Comment: "操作者 UA（可空）"},
-		{Name: "result", Type: field.TypeEnum, Comment: "裁决：allow / deny（deny 即越权尝试痕迹，如自批/自动化/未审批发布）", Enums: []string{"allow", "deny"}, Default: "allow"},
+		{Name: "result", Type: field.TypeEnum, Comment: "裁决：allow / deny / deadletter（deny=越权尝试痕迹；deadletter=重试耗尽死信，草稿保留待人工重发）", Enums: []string{"allow", "deny", "deadletter"}, Default: "allow"},
 	}
 	// MapApprovalRecordsTable holds the schema information for the "map_approval_records" table.
 	MapApprovalRecordsTable = &schema.Table{

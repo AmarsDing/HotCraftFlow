@@ -106,6 +106,27 @@ func TestMock_ErrorsNeverLeakCredential(t *testing.T) {
 	}
 }
 
+// FetchAnalytics 错误消息同样🔴绝不夹带账号凭据引用（契约断言补齐：发布侧有
+// Publish 断言，回流侧此前无 CI 护栏——真实适配器接入后 error 文本若拼接 acct
+// 字段，本断言即第一道闸）。
+func TestMock_FetchAnalyticsErrorsNeverLeakCredential(t *testing.T) {
+	secretRef := "enc:v1:TOP-SECRET-ACCOUNT-REF"
+	acct := &bizpub.AccountRow{
+		AccountID:      "pa_test",
+		CredentialRef:  &secretRef,
+		CredentialType: "oauth",
+	}
+	for _, mode := range []string{mockModeCredentialInvalid, mockModeUnsupported} {
+		_, err := NewMockPublisher(mode).FetchAnalytics(context.Background(), acct, "mock_abc")
+		if err == nil {
+			t.Fatalf("mode=%s 期望错误", mode)
+		}
+		if msg := err.Error(); strings.Contains(msg, secretRef) || strings.Contains(msg, "TOP-SECRET") {
+			t.Fatalf("🔴 mode=%s 回流错误消息泄漏凭据引用: %s", mode, msg)
+		}
+	}
+}
+
 // FetchAnalytics：固定样例 + unsupported/credential_invalid 拒绝。
 func TestMock_FetchAnalytics(t *testing.T) {
 	m := NewMockPublisher(mockModeSuccess)
@@ -127,8 +148,8 @@ func TestPlatformCatalog_Precedence(t *testing.T) {
 	reg.Register(NewMockPublisher(mockModeSuccess)) // mock 全能力声明（TitleMaxLen=100）
 
 	confs := PlatformConfMap{
-		"mock":    {Enabled: true, Capability: bizpub.Capability{TitleMaxLen: 10}}, // 与注册表冲突 → 注册表赢
-		"youtube": {Enabled: true, Capability: bizpub.Capability{TitleMaxLen: 100, Video: true}},
+		"mock":              {Enabled: true, Capability: bizpub.Capability{TitleMaxLen: 10}}, // 与注册表冲突 → 注册表赢
+		"youtube":           {Enabled: true, Capability: bizpub.Capability{TitleMaxLen: 100, Video: true}},
 		"disabled_platform": {Enabled: false, Capability: bizpub.Capability{Video: true}},
 	}
 	cat := NewPlatformCatalog(reg, confs, log.DefaultLogger)

@@ -25,17 +25,19 @@ map:
     pause_duration: 30m                # 账号熔断暂停时长（到时惰性恢复）
 
   retry:
-    max_attempts: 3                    # asynq worker 消费语义（M4 后续）；V1 即时发布仅 1 次
+    max_attempts: 3                    # asynq 重投上限（worker/map 排期执行器）；即时发布仅 1 次
     backoff: "exponential"
     base_delay: 30s
 
   schedule:
     humanize_jitter: 3m                # 拟人化偏移 ±3m（FR-PUB-06，避免整点批量模式）
-    local_worker_enabled: false        # 🔴 本机到点发 worker 属 M4；V1 仅平台原生排期/立即发
+    local_worker_enabled: false        # 运维总闸：worker 已落地（worker/map，30s 扫描 + 重试/死信）；
+                                       # 上线前确认 asynq/PG 就绪后置 true（ADR-MAP-11 代发语义）
 
   feedback:
-    enabled: false                     # 🔴 表现回流管道属 Phase 3（mm.map.feedback.v1 未建）
-    fetch_interval: 6h
+    enabled: false                     # 运维总闸：worker 已落地（worker/map，6h 周期拉取 + 时序快照）；
+                                       # 上线前确认平台凭据就绪后置 true（MM_PUB stream 事件发射待补）
+    fetch_interval: 6h                 # 表现拉取节奏（30 天回执窗，每轮回执 ≤256 条）
     csv_fallback: true                 # 回执 CSV 导出兜底（FR-PUB-07 已交付）
 
   credential:

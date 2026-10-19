@@ -80,10 +80,12 @@ func (MapApprovalRecord) Fields() []ent.Field {
 			Optional().
 			Nillable(),
 
-		// 被审计的拒绝也属于审计：result 记录 allow/deny，留痕越权尝试。
+		// 被审计的拒绝也属于审计：result 记录 allow/deny/deadletter，留痕越权尝试与死信。
+		// deadletter（H1 修复）：asynq 重试耗尽的终态留痕——此前传 "deadletter" 被枚举
+		// 校验拒收，恰恰在最需要留证的人工重发场景一条审计都写不下。
 		field.Enum("result").
-			Comment("裁决：allow / deny（deny 即越权尝试痕迹，如自批/自动化/未审批发布）").
-			Values("allow", "deny").
+			Comment("裁决：allow / deny / deadletter（deny=越权尝试痕迹；deadletter=重试耗尽死信，草稿保留待人工重发）").
+			Values("allow", "deny", "deadletter").
 			Default("allow"),
 	}
 }

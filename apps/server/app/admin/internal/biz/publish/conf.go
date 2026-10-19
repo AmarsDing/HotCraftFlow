@@ -65,11 +65,12 @@ type RetryConf struct {
 	BaseDelay   time.Duration `json:"base_delay"`
 }
 
-// ScheduleConf 排期（FR-PUB-06，双模式）。LocalWorkerEnabled 默认 false：asynq worker 属 M4 后续。
+// ScheduleConf 排期（FR-PUB-06，双模式）。LocalWorkerEnabled 默认 false：
+// worker/map 已落地，此为运维级总闸——部署就绪后才由配置置 true（ADR-MAP-11 代发语义）。
 type ScheduleConf struct {
 	// HumanizeJitter 拟人化偏移（±该值），避免整点批量可识别模式。
 	HumanizeJitter time.Duration `json:"humanize_jitter"`
-	// LocalWorkerEnabled 本机 worker 到点发是否启用（M4 后置，V1 仅平台原生/立即）。
+	// LocalWorkerEnabled 本机 worker 到点发是否启用（运维总闸，重启生效）。
 	LocalWorkerEnabled bool `json:"local_worker_enabled"`
 }
 
@@ -79,6 +80,12 @@ type FeedbackConf struct {
 	FetchInterval time.Duration `json:"fetch_interval"`
 	CsvFallback   bool          `json:"csv_fallback"`
 }
+
+// FeedbackScanWindow 回流回执扫描窗（设计常量，详细设计 §7.4 第 1 条；不可配置）。
+// worker 每轮只扫描 published_at ≥ now-window 的回执；出窗后该回执的快照停止追加
+// （冻结态）。读侧（service.GetAnalytics）用同一常量判定 stale note——两侧同源，
+// 避免「worker 窗 30 天、读侧判 7 天」的口径漂移。
+const FeedbackScanWindow = 30 * 24 * time.Hour
 
 // CredentialConf 凭据安全（🔴 NFR-MAP-03）。
 type CredentialConf struct {
