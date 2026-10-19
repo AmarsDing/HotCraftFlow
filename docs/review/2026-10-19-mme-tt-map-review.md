@@ -4,7 +4,7 @@
 >
 > **状态标注**：`[已入库]` = 已在 HEAD（8345701）；`[工作区]` = 仍在工作区未提交；`[未跟踪]` = 新文件尚未 add。
 >
-> 归属（2026-10-19 对账闭环）：H1–H7 / M1 / M2 / M4 / M5 / M6 / S1 = **TT 线 hotcraftflow-6e** 统一修复（随 TT commit 收敛；S1=提交前回退+env 覆盖，勿裸回退）；S2 = **MME 线 hotcraftflow-72**（已落盘并验证全绿）；M3 = 核验驳回，维持现状（gyan ffmpeg 9.x 宿主怪癖）。M2/M4/M5 主体 + mmesub 单测作者已确认为 6e。由 hotcraftflow-59 代发并归档。
+> 归属（2026-10-19 三方对账裁决——72 组织，05/6e/ad 证词+独立取证互锁）：H1–H7 / M1 / M6 / S1 = **TT 线 hotcraftflow-6e**（S1=提交前回退+env 覆盖，勿裸回退）；**M2** = 6e（fnv 全参数指纹键块，mme_renderer_media.go:285-296）；**M4** = 6e（14:33 内联回填块）+ **ad**（normalize() 抽取重构 + normalize 表测 7 例）；**M5** = 6e（mmesub 迁移 + 薄壳化），ad 结构化收尾；S2 = **MME 线 hotcraftflow-72**（已落盘并验证全绿）；M3 = 核验驳回，维持现状（gyan ffmpeg 9.x 宿主怪癖）。**载体文件主体 = hotcraftflow-05 未入库批**（mme_renderer_media.go / mme_render.go 均 untracked、零 git 历史）——根因：05 与 6e 对 M2/M4/M5 无协调并行实现（05 上午落基础版后写通道被分类器封锁，对 6e 下午修复块失明），提交时须按块署名（body=05 / 修复块=6e / normalize+测试=ad）。由 hotcraftflow-59 代发并归档。
 
 ---
 
