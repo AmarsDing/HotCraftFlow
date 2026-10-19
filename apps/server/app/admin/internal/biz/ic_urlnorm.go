@@ -59,19 +59,20 @@ func CanonicalizeURL(raw string) (string, error) {
 	u.User = nil
 	u.Fragment = ""
 
-	p := u.EscapedPath()
-	if p == "" {
+	if u.EscapedPath() == "" {
 		u.Path = "/"
+		u.RawPath = ""
 	} else {
-		// 注视：RawPath 若包含默认编码差异，去原始形式重编码对齐
+		// 尾斜杠修剪必须作用在**已解码**的 u.Path 上（EscapedPath 是编码形态，
+		// 直接赋给 u.Path 会让其中的字面 '%' 被二次转义成 %25——评审坐实：
+		// /a%20b/ 归一出 /a%2520b，既与无尾斜杠形态 key 不同，落库 URL 本身也错）。
+		p := u.Path
 		if strings.HasSuffix(p, "/") && len(p) > 1 {
 			p = strings.TrimSuffix(p, "/")
-			u.RawPath = ""
-			u.Path = p
 		}
-		if u.RawPath != "" && u.RawPath != u.EscapedPath() {
-			u.RawPath = u.EscapedPath()
-		}
+		u.Path = p
+		// RawPath 清空，让 String() 从解码后的 Path 统一重编码——编码形态唯一。
+		u.RawPath = ""
 	}
 
 	if u.RawQuery != "" {

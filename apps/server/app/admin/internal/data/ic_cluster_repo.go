@@ -113,8 +113,12 @@ func (r *IntelClusterRepo) List(ctx context.Context, q *biz.IntelClusterListQuer
 	return out, total, nil
 }
 
+// TouchSeen 刷新簇活跃时间。只前进不回拨（GREATEST 语义）：乱序/迟到并入
+// （NATS at-least-once 重投、队列积压）携带的是旧 collected_at，若无条件覆盖
+// 会把 LastSeenAt 拨回过去，触发 S-2 idle-close 误关仍活跃收新成员的簇。
 func (r *IntelClusterRepo) TouchSeen(ctx context.Context, id string, at time.Time) error {
 	if _, err := r.data.db.Client().IntelCluster.UpdateOneID(id).
+		Where(intelcluster.LastSeenAtLT(at.UTC())).
 		SetLastSeenAt(at.UTC()).
 		SetUpdateTime(time.Now().UTC()).
 		Save(ctx); err != nil {

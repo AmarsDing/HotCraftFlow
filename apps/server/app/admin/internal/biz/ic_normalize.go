@@ -251,8 +251,13 @@ func (u *IcNormalizeUsecase) publish(ctx context.Context, subject string, item *
 	return u.publisher.PublishIntel(ctx, subject, env, item.IntelID)
 }
 
-// RepublishPending B-25 打捞入口：pending ≤1h 的条目重发 normalized/blocked。
-// 供 worker republish 任务循环调用；返回发布成功数。
+// RepublishPending B-25 打捞入口：pending ≤1h 的条目按状态分两路自救。
+//  - 未归一化行（raw 事件从未到消费者：发布失败/半事务）→ 重建 RawIntelNotice
+//    重发 mm.intel.raw，由 NormalizerConsumer 走完整 Process（幂等）。
+//    这是 B-25 承诺的「NATS 故障期间采集不停、恢复后补齐」的落点——
+//    此前版本对这类行只 continue，等于把采集成功的条目永久晾成孤儿（评审坐实 critical）。
+//  - 已归一化行（指纹已写）→ 重发 normalized/blocked。
+// 供 worker republish 任务循环调用；返回重驱动成功数。
 func (u *IcNormalizeUsecase) RepublishPending(ctx context.Context, limit int) (int, error) {
 	rows, err := u.intel.ListPendingPublish(ctx, limit)
 	if err != nil {
@@ -260,8 +265,15 @@ func (u *IcNormalizeUsecase) RepublishPending(ctx context.Context, limit int) (i
 	}
 	n := 0
 	for _, row := range rows {
-		// 重发前校验契约仍完整（归一化半途崩掉的行：指纹空 → 重新进 normalize 更稳，跳过让重试链路处理）
+		// 未归一化行：raw 事件从未被消费（raw 发布失败孤儿）。重发 raw 主题重驱动，
+		// 不直接内联 Process——asynq 重试上下文里跑整条归一化会拖住打捞循环，
+		// 且 Process 走 consumer 路径天然带死信兜底。
 		if !row.FingerprintValid && row.Dedup.Fingerprint == "" {
+			if err := u.reemitRaw(ctx, row); err != nil {
+				u.log.Warnf("re-emit raw failed (intel=%s): %s", row.IntelID, err.Error())
+				continue
+			}
+			n++
 			continue
 		}
 		subject := contract.SubjectIntelNormalized
@@ -279,3 +291,41 @@ func (u *IcNormalizeUsecase) RepublishPending(ctx context.Context, limit int) (i
 	}
 	return n, nil
 }
+
+// reemitRaw 重建 mm.intel.raw 载荷并重发。证据元数据取该条目最近一条快照
+// （raw 发布失败的那次采集，其快照与条目同事务已落库，链哈希可复用——
+// 重发不改取证链，只是把「已落库但从未上消息总线」的事实补播出去）。
+func (u *IcNormalizeUsecase) reemitRaw(ctx context.Context, row *IntelItemRow) error {
+	ev, err := u.evidence.GetLatestByIntelID(ctx, row.IntelID)
+	if err != nil {
+		return err
+	}
+	if ev == nil {
+		// 无快照的 pending 行无法自证来源（理论上半事务不该出现），不盲发。
+		return errOrphanNoEvidence
+	}
+	notice := &contract.RawIntelNotice{
+		APIVersion:  "1.0",
+		IntelID:     row.IntelID,
+		SourceID:    row.SourceID,
+		CollectedAt: row.Source.CollectedAt.UTC(),
+		Raw: contract.RawMeta{
+			RawPath:      ev.RawPath,
+			RawHash:      ev.RawHash,
+			RawSize:      ev.RawSizeBytes,
+			RawTruncated: row.RawTruncated,
+			PrevHash:     ev.PrevHash,
+			ChainHash:    ev.ChainHash,
+			EvidenceID:   ev.ID,
+		},
+	}
+	env, err := contract.NewEnvelope("ic", contract.SubjectIntelRaw, "", notice)
+	if err != nil {
+		return err
+	}
+	// 幂等键 = intel_id：与首次发布同键，NATS 去重窗口内重发安全。
+	return u.publisher.PublishIntel(ctx, contract.SubjectIntelRaw, env, row.IntelID)
+}
+
+// errOrphanNoEvidence pending 行查不到任何取证快照（半事务残留），不具备重驱动条件。
+var errOrphanNoEvidence = icErrorSentinel("orphan pending row without evidence")

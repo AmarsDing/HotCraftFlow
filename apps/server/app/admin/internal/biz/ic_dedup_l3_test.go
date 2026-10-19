@@ -375,7 +375,8 @@ func TestDedupManualOps(t *testing.T) {
 		base := newGoldenClusterRepo(intel)
 		base.byID["cl_src"] = &IntelClusterRow{ID: "cl_src", Status: "open", MemberCount: 2}
 		base.byID["cl_dst"] = &IntelClusterRow{ID: "cl_dst", Status: "open", MemberCount: 1}
-		return intel, &adminClusterRepo{goldenClusterRepo: base}, &goldenSampleRepo{}
+		samples := &goldenSampleRepo{}
+		return intel, &adminClusterRepo{goldenClusterRepo: base, samples: samples}, samples
 	}
 
 	t.Run("MergeClusters 落审计样本", func(t *testing.T) {
@@ -451,8 +452,11 @@ func TestDedupManualOps(t *testing.T) {
 }
 
 // adminClusterRepo 人工调参需要 SplitTx 行为（黄金回放用不到 → 那里保持 panic）。
+// samples 字段：SplitTx 事务内写 manual_split 审计（镜像生产 ic_cluster_repo.go:336-350），
+// biz 层不再重复写——stub 必须承托同一语义，否则样本断言落空。
 type adminClusterRepo struct {
 	*goldenClusterRepo
+	samples   *goldenSampleRepo
 	failSplit bool
 }
 
@@ -481,7 +485,15 @@ func (s *adminClusterRepo) SplitTx(_ context.Context, fromID string, intelIDs []
 	if src := s.byID[fromID]; src != nil {
 		src.MemberCount -= moved
 	}
-	_ = operator // 审计由 sample 承托
+	// 镜像生产 SplitTx：事务内为每个劈出成员写一条 manual_split 审计样本
+	// （M-27 黄金集评审依据）；biz 层不再重复写。
+	if s.samples != nil {
+		for _, id := range intelIDs {
+			s.samples.rows = append(s.samples.rows, &DedupSampleRow{
+				IntelID: id, ClusterID: newID, Action: "manual_split", Operator: operator,
+			})
+		}
+	}
 	return newID, nil
 }
 

@@ -70,14 +70,19 @@ func (u *IcDedupUsecase) Resolve(ctx context.Context, row *IntelItemRow, sim *Si
 	if hit, err := u.intel.FindRecentByURLKey(ctx, self, row.Dedup.URLKey, u.cfg.DedupMergeWindow); err != nil {
 		return nil, err
 	} else if hit != nil && hit.IntelID != self {
-		out, merr := u.mergeIntoCluster(ctx, row, hit.Dedup.ClusterID, hit.IntelID, "L1", 1.0)
-		if merr != nil {
-			return nil, merr
+		// S-2：L1 命中只并入开簇——命中行的簇若已 idle-close，并入等于把新条目
+		// 埋进下游按 status=open 过滤永远看不见的闭簇（评审坐实：48h 闭簇窗 <
+		// 72h 合并窗，同 URL 迟到重采必踩）。闭簇时按未命中继续走 L2/L3。
+		if l1ClusterID, l1Open := u.openClusterOf(ctx, hit); l1Open {
+			out, merr := u.mergeIntoCluster(ctx, row, l1ClusterID, hit.IntelID, "L1", 1.0)
+			if merr != nil {
+				return nil, merr
+			}
+			if out != nil {
+				return out, nil
+			}
 		}
-		if out != nil {
-			return out, nil
-		}
-		// out=nil：对端竞态不可见 → 按未命中继续走 L2/L3
+		// out=nil：对端竞态不可见；l1Open=false：闭簇——均按未命中继续走 L2/L3
 	}
 
 	// ---- L2：SimHash 四段倒排召回 + 汉明判定（B-9/B-26）----
@@ -240,6 +245,11 @@ func (u *IcDedupUsecase) resolveL3(ctx context.Context, row *IntelItemRow, sim *
 		if merr != nil {
 			return nil, merr
 		}
+		if out == nil {
+			// 对端竞态不可见（peer 在两次读之间被清扫/删除）：与 L2 同口径按未命中
+			// 继续扫描下一邻居——不得解引用 out（评审坐实 nil deref panic）。
+			continue
+		}
 		out.EmbeddingID = embeddingID
 		return out, nil
 	}
@@ -339,8 +349,13 @@ func (u *IcDedupUsecase) mergeIntoCluster(ctx context.Context, row *IntelItemRow
 }
 
 // ForceL1Merge 外部触发的 L1 合并（短链展开换 key 撞车场景：本行被判定为同 URL 迟到采样）。
+// S-2 同 L1 主路径：peer 所在簇已闭则不并入（返回 merged=false 由调用方按未合并继续）。
 func (u *IcDedupUsecase) ForceL1Merge(ctx context.Context, row *IntelItemRow, peer *IntelItemRow) (*DedupOutcome, error) {
-	return u.mergeIntoCluster(ctx, row, peer.Dedup.ClusterID, peer.IntelID, "L1", 1.0)
+	cid, open := u.openClusterOf(ctx, peer)
+	if !open {
+		return nil, nil
+	}
+	return u.mergeIntoCluster(ctx, row, cid, peer.IntelID, "L1", 1.0)
 }
 
 // ---------- 人工调参（S-23：Split/Merge API 的 biz 入口） ----------
@@ -369,18 +384,10 @@ func (u *IcDedupUsecase) SplitCluster(ctx context.Context, fromID string, intelI
 	if operator == "" {
 		operator = "unknown"
 	}
-	newID, err := u.clusters.SplitTx(ctx, fromID, intelIDs, operator, label)
-	if err != nil {
-		return "", err
-	}
-	for _, id := range intelIDs {
-		if serr := u.samples.Create(ctx, &DedupSampleRow{
-			IntelID: id, ClusterID: newID, Action: "manual_split", Operator: operator,
-		}); serr != nil {
-			u.log.Warnf("split sample write failed (non-blocking): %s", serr.Error())
-		}
-	}
-	return newID, nil
+	// SplitTx 事务内已为每个成员写 manual_split 审计样本（M-27 黄金集评审依据，
+	// ic_cluster_repo.go:336-350）；此处不再重复写——否则一次 split 每成员双份，
+	// 黄金集回放按样本统计人工干预量时翻倍失真。
+	return u.clusters.SplitTx(ctx, fromID, intelIDs, operator, label)
 }
 
 var ErrIcInvalidArgument = icSentinel("invalid argument")

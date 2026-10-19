@@ -104,7 +104,12 @@ func ResolveIcConfig(bc *conf.Bootstrap) *IcConfig {
 		return cfg
 	}
 
-	cfg.Enabled = ic.GetEnabled()
+	// Enabled 不做零值覆写：proto3 下省略 enabled 字段时 GetEnabled() 返回 false，
+	// 若无条件赋值，配置段写了 ic 但漏写 enabled=true 就会把默认开启的整个 IC
+	// 子系统静默关闭（评审坐实 major）。显式关站须写 enabled:false——但 proto3
+	// 无法区分「省略」与「显式 false」，故约定：ic 段存在即视为启用，关站走
+	// 删除整段或调度层开关，不由此字段承载。
+	_ = ic.GetEnabled()
 	if v := ic.GetConcurrency(); v > 0 {
 		cfg.Concurrency = v
 	}
