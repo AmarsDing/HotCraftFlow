@@ -36,7 +36,7 @@ func (s *MmeRenderService) ListJobs(ctx context.Context, req *pagination.PagingR
 		PageSize: normalizePageSize(req.GetPageSize()),
 	})
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	out := make([]*mmeV1.RenderJob, 0, len(items))
 	for _, j := range items {
@@ -52,7 +52,7 @@ func (s *MmeRenderService) GetSetProgress(ctx context.Context, req *mmeV1.GetVar
 	}
 	v, err := s.planner.SetProgress(ctx, req.GetId())
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	// 每 job 剩余时间不可精算（单 job 级 out_time 进度在 worker 侧）；
 	// 本端点 job 行仍然如实回填 eta=-1，簇级 ETA 用 SetEta。
@@ -80,7 +80,7 @@ func (s *MmeRenderService) RetryJob(ctx context.Context, req *mmeV1.RetryJobRequ
 		return nil, adminV1.ErrorBadRequest("id 必填")
 	}
 	if err := s.planner.RetryJob(ctx, req.GetId()); err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	return &emptypb.Empty{}, nil
 }
@@ -91,7 +91,7 @@ func (s *MmeRenderService) CancelJob(ctx context.Context, req *mmeV1.RetryJobReq
 		return nil, adminV1.ErrorBadRequest("id 必填")
 	}
 	if err := s.planner.CancelJob(ctx, req.GetId()); err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	return &emptypb.Empty{}, nil
 }

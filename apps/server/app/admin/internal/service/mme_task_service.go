@@ -36,7 +36,7 @@ func (s *MmeTaskService) List(ctx context.Context, req *pagination.PagingRequest
 		PageSize: normalizePageSize(req.GetPageSize()),
 	})
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	out := make([]*mmeV1.MontageTask, 0, len(items))
 	for _, t := range items {
@@ -51,11 +51,11 @@ func (s *MmeTaskService) Get(ctx context.Context, req *mmeV1.GetMontageTaskReque
 	}
 	t, err := s.uc.Get(ctx, req.GetId())
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	asset, err := s.uc.GetAsset(ctx, req.GetId())
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	return toProtoMontageTask(t, asset), nil
 }
@@ -66,7 +66,7 @@ func (s *MmeTaskService) Create(ctx context.Context, req *mmeV1.CreateMontageTas
 	}
 	t, err := s.uc.Create(ctx, req.GetTitle(), req.GetSourceType(), req.GetSourceRef(), req.GetUserIntent(), "", "")
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	return toProtoMontageTask(t, nil), nil
 }
@@ -76,7 +76,7 @@ func (s *MmeTaskService) Delete(ctx context.Context, req *mmeV1.GetMontageTaskRe
 		return nil, adminV1.ErrorBadRequest("id 必填")
 	}
 	if err := s.uc.Delete(ctx, req.GetId()); err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	return &emptypb.Empty{}, nil
 }
@@ -87,11 +87,11 @@ func (s *MmeTaskService) Analyze(ctx context.Context, req *mmeV1.GetMontageTaskR
 		return nil, adminV1.ErrorBadRequest("id 必填")
 	}
 	if err := s.uc.RequestAnalyze(ctx, req.GetId()); err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	t, err := s.uc.Get(ctx, req.GetId())
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	return toProtoMontageTask(t, nil), nil
 }
@@ -103,7 +103,7 @@ func (s *MmeTaskService) ListHighlights(ctx context.Context, req *mmeV1.GetMonta
 	}
 	hs, err := s.uc.ListHighlights(ctx, req.GetId())
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	return &mmeV1.ListHighlightsResponse{Items: toProtoHighlights(hs)}, nil
 }
@@ -126,7 +126,7 @@ func (s *MmeTaskService) UpsertHighlights(ctx context.Context, req *mmeV1.Upsert
 	}
 	t, err := s.uc.UpsertHighlights(ctx, req.GetId(), hs)
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	// 返回落库后的视图（ID/Origin 缺省值已补齐）
 	return &mmeV1.ListHighlightsResponse{Items: toProtoHighlights(t.Highlights)}, nil
@@ -136,7 +136,7 @@ func (s *MmeTaskService) UpsertHighlights(ctx context.Context, req *mmeV1.Upsert
 func (s *MmeTaskService) Doctor(ctx context.Context, _ *emptypb.Empty) (*mmeV1.DoctorReport, error) {
 	r, err := s.uc.Doctor(ctx)
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	items := make([]*mmeV1.DoctorItem, 0, len(r.Items))
 	for _, it := range r.Items {

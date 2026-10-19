@@ -297,6 +297,13 @@ func (u *TaskUsecase) RunDownload(ctx context.Context, taskID string) error {
 		return u.failNow(ctx, t, fmt.Errorf("asset ingest: %w", err))
 	}
 	if dr.Duplicate {
+		// 命中场景同样补齐字幕直通：既有行缺字幕而本次下载带来源字幕时回填。
+		if subPath != "" && dr.Asset.SubtitlePath == "" {
+			dr.Asset.SubtitlePath = subPath
+			if uerr := u.assets.Update(ctx, dr.Asset); uerr != nil {
+				u.log.Warnf("asset subtitle path persist failed (dedup hit): %v", uerr)
+			}
+		}
 		u.log.Infof("task %s reuses asset %s (fingerprint hit)", t.ID, dr.Asset.ID)
 	} else if subPath != "" {
 		dr.Asset.SubtitlePath = subPath

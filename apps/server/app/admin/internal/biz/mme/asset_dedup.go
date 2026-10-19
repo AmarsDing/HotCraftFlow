@@ -43,6 +43,13 @@ func (d *AssetDeduper) Ingest(ctx context.Context, filePath, sourceURL, title st
 			return nil, err
 		}
 		existing.RefCount = n
+		// 元数据回填：既有行若是早期探测缺失环境入的库（0x0/0.0s），用本次实测值补齐。
+		// 只填 0 值/空串字段，绝不覆盖既有真实值；回填失败仅告警（复用主线不中断）。
+		if backfillAssetMeta(existing, sizeBytes, durationMS, width, height, title) {
+			if uerr := d.assets.Update(ctx, existing); uerr != nil {
+				d.log.Warnf("dedup hit metadata backfill failed: %s: %v", existing.ID, uerr)
+			}
+		}
 		// 重复副本删除失败仅告警——不阻断主流程，但日志留痕。
 		if rmErr := d.storage.Remove(ctx, filePath); rmErr != nil {
 			d.log.Warnf("dedup hit but remove dup file failed: %s: %v", filePath, rmErr)
@@ -65,4 +72,27 @@ func (d *AssetDeduper) Ingest(ctx context.Context, filePath, sourceURL, title st
 		return nil, err
 	}
 	return &DedupeResult{Asset: a}, nil
+}
+
+// backfillAssetMeta 用本次实测值补齐既有素材的零值字段（只填空位，不覆盖）。
+// 返回是否有变更。
+func backfillAssetMeta(a *Asset, sizeBytes, durationMS int64, width, height int, title string) bool {
+	changed := false
+	if a.DurationSec <= 0 && durationMS > 0 {
+		a.DurationSec = float64(durationMS) / 1000.0
+		changed = true
+	}
+	if a.Width <= 0 && width > 0 {
+		a.Width, a.Height = width, height
+		changed = true
+	}
+	if a.SizeBytes <= 0 && sizeBytes > 0 {
+		a.SizeBytes = sizeBytes
+		changed = true
+	}
+	if a.MetaTitle == "" && title != "" {
+		a.MetaTitle = title
+		changed = true
+	}
+	return changed
 }

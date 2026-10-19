@@ -387,11 +387,52 @@ func (u *VariantSetUsecase) GetDiffCheck(ctx context.Context, setID string) (*Di
 	if set == nil {
 		return nil, ErrSetNotFound
 	}
-	return &DiffOutcome{
+	// 自愈：Expand 里的 recalc 失败按设计非阻断（仅告警日志），缓存可能因此留空；
+	// 读路径发现「空缓存 + 存在可比对变体对」时当场重算，让审核台看到真实告警。
+	if u.cfg.DiffEnabled && len(set.DiffPairs) == 0 {
+		vs, lerr := u.variants.ListBySet(ctx, setID)
+		if lerr != nil {
+			return nil, lerr
+		}
+		if hasComparableDiffPair(vs) {
+			if rerr := u.recalcDiff(ctx, setID, nil); rerr != nil {
+				return nil, rerr
+			}
+			set, err = u.sets.Get(ctx, setID)
+			if err != nil {
+				return nil, err
+			}
+			if set == nil {
+				return nil, ErrSetNotFound
+			}
+		}
+	}
+	out := &DiffOutcome{
 		MinSimilarity: set.DiffMinSimilarity,
 		Warn:          set.DiffWarn,
 		Pairs:         set.DiffPairs,
-	}, nil
+	}
+	switch {
+	case set.DiffWarn:
+		out.Summary = sprintfDiff(set.DiffMinSimilarity, u.cfg.DiffWarnThreshold)
+	case len(set.DiffPairs) > 0:
+		out.Summary = sprintfOK(set.DiffMinSimilarity)
+	default:
+		out.Summary = "无同内容版本的变体对，无需告警"
+	}
+	return out, nil
+}
+
+// hasComparableDiffPair Check 只比对同 content_version 的变体对（跨版本天然差异）。
+func hasComparableDiffPair(vs []*Variant) bool {
+	seen := map[string]int{}
+	for _, v := range vs {
+		seen[v.ContentVersion]++
+		if seen[v.ContentVersion] >= 2 {
+			return true
+		}
+	}
+	return false
 }
 
 // RecalcDiffCheck 手动重算（模板/文案修正后）。
@@ -412,7 +453,14 @@ func (u *VariantSetUsecase) recalcDiff(ctx context.Context, setID string, hookTe
 	if err != nil {
 		return err
 	}
-	resolve := func(id string) string { return hookText[id] }
+	// Hook 文本缺失（DefaultHooks 无 Text / 手动重算未传）时按 HookID 区分维度，
+	// 避免空串两两恒 1.0 的高估；有真实文案则始终用文案。
+	resolve := func(id string) string {
+		if t := hookText[id]; t != "" {
+			return t
+		}
+		return id
+	}
 	out := u.diff.Check(ctx, vs, resolve, "douyin", nil)
 	set.DiffMinSimilarity = out.MinSimilarity
 	set.DiffWarn = out.Warn

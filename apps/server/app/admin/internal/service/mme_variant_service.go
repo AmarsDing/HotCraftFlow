@@ -45,7 +45,7 @@ func (s *MmeVariantService) Expand(ctx context.Context, req *mmeV1.ExpandRequest
 		TemplateID:        req.GetTemplateId(),
 	})
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	return toProtoVariantSetView(set, variants), nil
 }
@@ -56,7 +56,7 @@ func (s *MmeVariantService) GetVariantSet(ctx context.Context, req *mmeV1.GetVar
 	}
 	set, variants, err := s.uc.GetSet(ctx, req.GetId())
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	return toProtoVariantSetView(set, variants), nil
 }
@@ -68,7 +68,7 @@ func (s *MmeVariantService) UpdateSelection(ctx context.Context, req *mmeV1.Upda
 	}
 	set, variants, err := s.uc.GetSet(ctx, req.GetId())
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	want := make(map[string]bool, len(req.GetSelectedVariantIds()))
 	for _, id := range req.GetSelectedVariantIds() {
@@ -83,11 +83,11 @@ func (s *MmeVariantService) UpdateSelection(ctx context.Context, req *mmeV1.Upda
 		}
 	}
 	if err = s.uc.UpdateSelection(ctx, set.ID, selected, deselected); err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	set, variants, err = s.uc.GetSet(ctx, req.GetId())
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	return toProtoVariantSetView(set, variants), nil
 }
@@ -99,7 +99,7 @@ func (s *MmeVariantService) Render(ctx context.Context, req *mmeV1.RenderRequest
 	}
 	res, err := s.uc.Render(ctx, req.GetId())
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	return &mmeV1.RenderResponse{Queued: res.Queued, Skipped: res.Skipped, AlreadyDone: res.AlreadyDone}, nil
 }
@@ -116,7 +116,7 @@ func (s *MmeVariantService) Review(ctx context.Context, req *mmeV1.ReviewRequest
 	}
 	res, err := s.uc.Review(ctx, req.GetId(), in)
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	if len(res.BlockedQC) > 0 {
 		// 门禁拦截如实落日志（响应里无法多字段带出——前端通过 QC badge 可视化）
@@ -124,7 +124,7 @@ func (s *MmeVariantService) Review(ctx context.Context, req *mmeV1.ReviewRequest
 	}
 	set, variants, err := s.uc.GetSet(ctx, req.GetId())
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	return toProtoVariantSetView(set, variants), nil
 }
@@ -136,7 +136,7 @@ func (s *MmeVariantService) GetDiffCheck(ctx context.Context, req *mmeV1.GetVari
 	}
 	d, err := s.uc.GetDiffCheck(ctx, req.GetId())
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	return toProtoDiffResult(d), nil
 }
@@ -148,7 +148,7 @@ func (s *MmeVariantService) RecalcDiffCheck(ctx context.Context, req *mmeV1.GetV
 	}
 	d, err := s.uc.RecalcDiffCheck(ctx, req.GetId())
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	return toProtoDiffResult(d), nil
 }
@@ -160,7 +160,7 @@ func (s *MmeVariantService) Dispatch(ctx context.Context, req *mmeV1.GetVariantS
 	}
 	payload, err := s.uc.Dispatch(ctx, req.GetId(), "")
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	return toProtoContractVariantSet(payload), nil
 }
@@ -169,7 +169,7 @@ func (s *MmeVariantService) Dispatch(ctx context.Context, req *mmeV1.GetVariantS
 func (s *MmeVariantService) ListTemplates(ctx context.Context, _ *emptypb.Empty) (*mmeV1.ListTemplatesResponse, error) {
 	ts, err := s.tplUC.List(ctx, false)
 	if err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	items := make([]*mmeV1.MontageTemplate, 0, len(ts))
 	for _, t := range ts {
@@ -198,7 +198,7 @@ func (s *MmeVariantService) RerenderVariant(ctx context.Context, req *mmeV1.Rere
 		return nil, adminV1.ErrorBadRequest("id 必填")
 	}
 	if _, err := s.uc.RerenderByVariant(ctx, req.GetId()); err != nil {
-		return nil, err
+		return nil, mmeBizErr(err)
 	}
 	return &emptypb.Empty{}, nil
 }
