@@ -65,6 +65,7 @@ type TaskUsecase struct {
 	downloader Downloader
 	prober     Prober
 	asr        ASRClient
+	llm        LLMClient
 	renderer   Renderer
 	log        *log.Helper
 }
@@ -81,10 +82,11 @@ func NewTaskUsecase(
 	downloader Downloader,
 	prober Prober,
 	asr ASRClient,
+	llm LLMClient,
 	renderer Renderer,
 	logger log.Logger,
 ) *TaskUsecase {
-	return &TaskUsecase{cfg: cfg, tasks: tasks, assets: assets, dedup: dedup, cache: cache, storage: storage, enq: enq, downloader: downloader, prober: prober, asr: asr, renderer: renderer, log: log.NewHelper(log.With(logger, "module", "biz/mme/task"))}
+	return &TaskUsecase{cfg: cfg, tasks: tasks, assets: assets, dedup: dedup, cache: cache, storage: storage, enq: enq, downloader: downloader, prober: prober, asr: asr, llm: llm, renderer: renderer, log: log.NewHelper(log.With(logger, "module", "biz/mme/task"))}
 }
 
 // Create 建任务（source_type=url|local）。仅建档+入队下载/入库，不阻塞。
@@ -401,7 +403,16 @@ func (u *TaskUsecase) Doctor(ctx context.Context) (*DoctorReport, error) {
 	add("ffmpeg", u.renderer.Available(ctx), true, u.renderer.Version(ctx), u.cfg.FFmpegPath)
 	add("ffprobe", u.prober.Available(ctx), true, "", u.cfg.FFprobePath)
 	add("whisper", u.asr.Available(ctx), false, "", "缺失时不影响手工 EDL 通路")
-	// ollama 可用性由 LLMClient 端口报（HTTP 探活）
+	// LLM 可用性由 LLMClient 端口报（HTTP 探活）；缺失 → 平台文案走模板降级并标 copy_degraded
+	add("llm/ollama", u.llm.Available(ctx), false, "", u.cfg.OllamaURL+" model="+u.cfg.OllamaModel+"（缺失 → copy_degraded 模板降级）")
+	// cookies 仅配置了才检查（风控平台登录态）；未配置不展示，避免噪音
+	if u.cfg.CookiesPath != "" {
+		if _, err := os.Stat(u.cfg.CookiesPath); err == nil {
+			add("cookies", true, false, "", u.cfg.CookiesPath)
+		} else {
+			add("cookies", false, false, "", u.cfg.CookiesPath+": "+err.Error())
+		}
+	}
 	if fi, err := os.Stat(u.cfg.MediaDir); err == nil && fi.IsDir() || err == nil {
 		add("media_dir", true, true, "", u.cfg.MediaDir)
 	} else {
@@ -412,8 +423,30 @@ func (u *TaskUsecase) Doctor(ctx context.Context) (*DoctorReport, error) {
 			add("media_dir", false, true, "", mkErr.Error())
 		}
 	}
+	// 可写探针：目录在但只读（挂载错误/权限）会让下载与渲染连环失败，必须体检
+	add("storage_writable", u.probeStorageWritable(), true, "", "media_dir 写入探针")
 	add("cache", u.cfg.CacheEnabled, false, "", "analysis cache 4-level")
 	return rep, nil
+}
+
+// probeStorageWritable 在 MediaDir 下做临时文件写删探针（W1 doctor 诚实化）。
+func (u *TaskUsecase) probeStorageWritable() bool {
+	if err := os.MkdirAll(u.cfg.MediaDir, 0o755); err != nil {
+		return false
+	}
+	f, err := os.CreateTemp(u.cfg.MediaDir, ".doctor-write-probe-*")
+	if err != nil {
+		return false
+	}
+	name := f.Name()
+	if _, err := f.Write([]byte("probe")); err != nil {
+		_ = f.Close()
+		return false
+	}
+	if err := f.Close(); err != nil {
+		return false
+	}
+	return os.Remove(name) == nil
 }
 
 // failNow 统一失败落库：state=failed + error_msg（可读原文），返回原始错误。
